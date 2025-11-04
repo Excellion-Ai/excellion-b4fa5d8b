@@ -13,7 +13,8 @@ const Pricing = () => {
     {
       name: "Free",
       credits: "10 credits",
-      price: "Free",
+      monthlyPrice: "Free",
+      yearlyPrice: "Free",
       description: "For getting started",
       features: [
         "10 credits",
@@ -26,7 +27,8 @@ const Pricing = () => {
     {
       name: "Builder",
       credits: "100 credits",
-      price: "$20",
+      monthlyPrice: 20,
+      yearlyPrice: 192,
       description: "For small businesses building their own site",
       features: [
         "100 credits per month",
@@ -42,7 +44,8 @@ const Pricing = () => {
     {
       name: "Groups",
       credits: "200 credits",
-      price: "$40",
+      monthlyPrice: 40,
+      yearlyPrice: 384,
       description: "For teams and growing businesses",
       features: [
         "200 credits per month",
@@ -57,7 +60,8 @@ const Pricing = () => {
     {
       name: "Agency",
       credits: "400 credits",
-      price: "$80",
+      monthlyPrice: 80,
+      yearlyPrice: 768,
       description: "For agencies and power users",
       features: [
         "400 credits per month",
@@ -70,6 +74,18 @@ const Pricing = () => {
       ]
     }
   ];
+
+  const getPrice = (plan: typeof plans[0]) => {
+    if (plan.monthlyPrice === "Free") return "Free";
+    return billingPeriod === "monthly" 
+      ? `$${plan.monthlyPrice}` 
+      : `$${plan.yearlyPrice}`;
+  };
+
+  const getPeriodText = (plan: typeof plans[0]) => {
+    if (plan.monthlyPrice === "Free") return "";
+    return billingPeriod === "monthly" ? "/ month" : "/ year";
+  };
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -147,16 +163,14 @@ const Pricing = () => {
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <CardDescription className="text-sm">{plan.credits}</CardDescription>
                   <div className="mt-4">
-                    <span className="text-4xl font-bold text-accent">{plan.price}</span>
-                    {plan.price !== "Free" && (
-                      <span className="text-muted-foreground ml-2">/ month</span>
-                    )}
+                    <span className="text-4xl font-bold text-accent">{getPrice(plan)}</span>
+                    <span className="text-muted-foreground ml-2">{getPeriodText(plan)}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
                 </CardHeader>
 
                 <CardContent className="flex-grow">
-                  {plan.price !== "Free" && (
+                  {plan.monthlyPrice !== "Free" && (
                     <div className="mb-6 pb-6 border-b border-border">
                       <p className="text-sm font-medium text-foreground mb-2">Super Credits Add-on</p>
                       <p className="text-xs text-muted-foreground mb-3">For video generation (recurring monthly)</p>
