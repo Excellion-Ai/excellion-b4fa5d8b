@@ -1,0 +1,102 @@
+import Navigation from "@/components/Navigation";
+import { Button } from "@/components/ui/button";
+import { Rocket, Code, Zap, Shield } from "lucide-react";
+
+const DFY = () => {
+  const services = [
+    {
+      icon: <Code className="h-12 w-12 text-accent" />,
+      title: "Custom Development",
+      description: "Our expert developers build your entire website or app from scratch, tailored to your exact specifications."
+    },
+    {
+      icon: <Zap className="h-12 w-12 text-accent" />,
+      title: "Rapid Deployment",
+      description: "Launch your project in days, not months. We handle everything from design to deployment."
+    },
+    {
+      icon: <Shield className="h-12 w-12 text-accent" />,
+      title: "Full Support",
+      description: "Ongoing maintenance, updates, and technical support to keep your business running smoothly."
+    },
+    {
+      icon: <Rocket className="h-12 w-12 text-accent" />,
+      title: "Scalable Solutions",
+      description: "Built to grow with your business, from startup to enterprise-level applications."
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      
+      {/* Hero Section */}
+      <section className="container mx-auto px-6 py-32">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-4">
+            <span className="text-sm font-medium text-accent">✨ Done For You Service</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
+            We Build It <span className="text-accent">For You</span>
+          </h1>
+          
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Sit back and relax while our expert team creates your perfect website or web application. No technical knowledge required.
+          </p>
+
+          <Button 
+            size="lg"
+            className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
+          >
+            Start Your Project
+          </Button>
+        </div>
+      </section>
+
+      {/* Services Grid */}
+      <section className="container mx-auto px-6 py-16">
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {services.map((service, index) => (
+            <div
+              key={index}
+              className="bg-card border border-border rounded-2xl p-8 hover:border-accent/50 transition-all"
+            >
+              <div className="mb-4">{service.icon}</div>
+              <h3 className="text-2xl font-bold text-foreground mb-3">{service.title}</h3>
+              <p className="text-muted-foreground">{service.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section className="container mx-auto px-6 py-16">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-4xl font-bold text-center text-foreground mb-12">
+            Our <span className="text-accent">Process</span>
+          </h2>
+          
+          <div className="space-y-8">
+            {[
+              { step: "01", title: "Discovery", description: "We learn about your business, goals, and vision through detailed consultation." },
+              { step: "02", title: "Design", description: "Our designers create beautiful mockups that bring your vision to life." },
+              { step: "03", title: "Development", description: "Expert developers build your website or app with clean, efficient code." },
+              { step: "04", title: "Launch", description: "We deploy your project and provide ongoing support for smooth operation." }
+            ].map((item, index) => (
+              <div key={index} className="flex gap-6 items-start">
+                <div className="text-5xl font-bold text-accent/20">{item.step}</div>
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default DFY;
