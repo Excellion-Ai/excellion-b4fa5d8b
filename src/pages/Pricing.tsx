@@ -76,14 +76,25 @@ const Pricing = () => {
 
   const getPrice = (plan: typeof plans[0]) => {
     if (plan.monthlyPrice === "Free") return "Free";
-    return billingPeriod === "monthly" 
-      ? `$${plan.monthlyPrice}` 
-      : `$${plan.yearlyPrice}`;
+    if (billingPeriod === "yearly" && typeof plan.yearlyPrice === "number") {
+      // Show monthly equivalent for yearly plans
+      const monthlyEquivalent = Math.floor(plan.yearlyPrice / 12);
+      return `$${monthlyEquivalent}`;
+    }
+    return `$${plan.monthlyPrice}`;
   };
 
   const getPeriodText = (plan: typeof plans[0]) => {
     if (plan.monthlyPrice === "Free") return "";
-    return billingPeriod === "monthly" ? "/ month" : "/ year";
+    return "/ month";
+  };
+
+  const getYearlyTotal = (plan: typeof plans[0]) => {
+    if (plan.monthlyPrice === "Free" || billingPeriod === "monthly") return null;
+    if (typeof plan.yearlyPrice === "number") {
+      return `$${plan.yearlyPrice}/year total`;
+    }
+    return null;
   };
 
   return (
@@ -161,15 +172,22 @@ const Pricing = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl text-foreground">{plan.name}</CardTitle>
                   <CardDescription className="text-sm text-foreground/80">{plan.credits}</CardDescription>
-                  <div className="mt-4 flex items-center gap-3">
-                    <div>
-                      <span className="text-4xl font-bold text-accent">{getPrice(plan)}</span>
-                      <span className="text-foreground/70 ml-2">{getPeriodText(plan)}</span>
+                  <div className="mt-4">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <span className="text-4xl font-bold text-accent">{getPrice(plan)}</span>
+                        <span className="text-foreground/70 ml-2">{getPeriodText(plan)}</span>
+                      </div>
+                      {billingPeriod === "monthly" && plan.monthlyPrice !== "Free" && (
+                        <span className="text-xs font-bold text-accent bg-accent/10 px-2 py-1 rounded">
+                          COMING SOON!
+                        </span>
+                      )}
                     </div>
-                    {billingPeriod === "monthly" && plan.monthlyPrice !== "Free" && (
-                      <span className="text-xs font-bold text-accent bg-accent/10 px-2 py-1 rounded">
-                        COMING SOON!
-                      </span>
+                    {getYearlyTotal(plan) && (
+                      <p className="text-xs text-foreground/60 mt-2">
+                        {getYearlyTotal(plan)}
+                      </p>
                     )}
                   </div>
                   <p className="text-sm text-foreground/70 mt-2">{plan.description}</p>
