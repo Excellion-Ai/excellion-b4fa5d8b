@@ -107,8 +107,7 @@ const Pricing = () => {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 w-full h-full object-cover scale-110"
-          style={{ minWidth: '100%', minHeight: '100%' }}
+          className="absolute inset-0 w-full h-full object-cover will-change-transform"
         >
           <source src={pricingBackgroundVideo} type="video/mp4" />
         </video>
