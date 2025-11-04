@@ -3,11 +3,8 @@ import { Link } from "react-router-dom";
 import excellionLogo from "@/assets/excellion-logo.png";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { useState } from "react";
 
 const Navigation = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
       <div className="container mx-auto px-6">
@@ -41,7 +38,7 @@ const Navigation = () => {
               </Link>
             </div>
 
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <Sheet>
               <SheetTrigger asChild className="md:hidden">
                 <Button variant="ghost" size="sm">
                   <Menu className="h-5 w-5" />
@@ -52,21 +49,18 @@ const Navigation = () => {
                   <Link 
                     to="/pricing" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
                   >
                     Pricing
                   </Link>
                   <Link 
                     to="/dfy" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
                   >
                     DFY
                   </Link>
                   <Link 
                     to="/operations" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
                   >
                     Operations
                   </Link>
@@ -74,7 +68,7 @@ const Navigation = () => {
                     <Button variant="ghost" size="sm" className="w-full">
                       Sign In
                     </Button>
-                    <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+                    <Link to="/">
                       <Button variant="secondary" size="sm" className="w-full">
                         Home
                       </Button>
