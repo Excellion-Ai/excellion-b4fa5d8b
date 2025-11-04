@@ -1,51 +1,71 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 
 const Pricing = () => {
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+
   const plans = [
     {
-      name: "Starter",
-      price: "$99",
-      period: "/month",
-      description: "Perfect for small businesses getting started",
+      name: "Free",
+      credits: "10 credits",
+      price: "Free",
+      description: "For getting started",
       features: [
-        "Up to 5 pages",
-        "Mobile responsive design",
-        "Basic SEO optimization",
-        "Contact form integration",
-        "1 month support"
+        "10 credits",
+        "Public projects",
+        "Basic templates",
+        "Community support",
+        "SSL included"
       ]
     },
     {
-      name: "Professional",
-      price: "$299",
-      period: "/month",
-      description: "Ideal for growing businesses",
+      name: "Builder",
+      credits: "100 credits",
+      price: "$20",
+      description: "For small businesses building their own site",
       features: [
-        "Up to 15 pages",
-        "Advanced animations",
-        "Full SEO optimization",
-        "Database integration",
-        "User authentication",
-        "3 months support",
-        "Priority updates"
+        "100 credits per month",
+        "Private projects",
+        "Unlimited custom domains",
+        "Code download",
+        "Remove branding",
+        "Email support",
+        "All templates"
       ],
       popular: true
     },
     {
-      name: "Enterprise",
-      price: "$599",
-      period: "/month",
-      description: "For large-scale applications",
+      name: "Groups",
+      credits: "200 credits",
+      price: "$40",
+      description: "For teams and growing businesses",
       features: [
-        "Unlimited pages",
-        "Custom integrations",
-        "Advanced security",
+        "200 credits per month",
+        "Everything in Builder",
+        "Team collaboration (5 users)",
+        "Priority support",
+        "Advanced integrations",
+        "Advanced analytics",
+        "Custom branding"
+      ]
+    },
+    {
+      name: "Agency",
+      credits: "400 credits",
+      price: "$80",
+      description: "For agencies and power users",
+      features: [
+        "400 credits per month",
+        "Everything in Groups",
+        "Unlimited team members",
+        "White-label options",
         "Dedicated support",
-        "Performance optimization",
-        "12 months support",
-        "Custom features"
+        "Custom integrations",
+        "Advanced security"
       ]
     }
   ];
@@ -53,63 +73,111 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <section className="container mx-auto px-6 py-32">
-        <div className="text-center mb-16 space-y-4">
-          <h1 className="text-5xl md:text-6xl font-bold text-foreground">
-            Simple, Transparent <span className="text-accent">Pricing</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Choose the perfect plan for your business needs
-          </p>
-        </div>
+      <main className="container mx-auto px-6 py-20">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
+              Pricing
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              Start for free. Upgrade as you go.
+            </p>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {plans.map((plan, index) => (
-            <div
-              key={index}
-              className={`relative rounded-2xl p-8 ${
-                plan.popular
-                  ? "bg-accent/10 border-2 border-accent"
-                  : "bg-card border border-border"
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-4 py-1 rounded-full text-sm font-semibold">
-                  Most Popular
-                </div>
-              )}
-              
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-foreground mb-2">{plan.name}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{plan.description}</p>
-                <div className="flex items-baseline justify-center">
-                  <span className="text-5xl font-bold text-accent">{plan.price}</span>
-                  <span className="text-muted-foreground ml-2">{plan.period}</span>
-                </div>
-              </div>
-
-              <ul className="space-y-4 mb-8">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
-                    <span className="text-foreground">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                className={`w-full ${
-                  plan.popular
-                    ? "bg-accent hover:bg-accent/90 text-accent-foreground"
-                    : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+            {/* Billing Toggle */}
+            <div className="inline-flex items-center gap-3 p-1 bg-secondary rounded-lg">
+              <button
+                onClick={() => setBillingPeriod("monthly")}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                  billingPeriod === "monthly"
+                    ? "bg-accent text-accent-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Get Started
-              </Button>
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingPeriod("yearly")}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                  billingPeriod === "yearly"
+                    ? "bg-accent text-accent-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Yearly
+                <span className="text-xs bg-accent/20 px-2 py-0.5 rounded-full">Save 20%</span>
+              </button>
             </div>
-          ))}
+          </div>
+
+          {/* Pricing Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+            {plans.map((plan) => (
+              <Card 
+                key={plan.name}
+                className={`relative flex flex-col ${
+                  plan.popular ? "border-accent shadow-lg shadow-accent/20" : ""
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                      Popular
+                    </span>
+                  </div>
+                )}
+                
+                <CardHeader>
+                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <CardDescription className="text-sm">{plan.credits}</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold text-accent">{plan.price}</span>
+                    {plan.price !== "Free" && (
+                      <span className="text-muted-foreground ml-2">/ month</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+                </CardHeader>
+
+                <CardContent className="flex-grow">
+                  {plan.price !== "Free" && (
+                    <div className="mb-6 pb-6 border-b border-border">
+                      <p className="text-sm font-medium text-foreground mb-2">Super Credits Add-on</p>
+                      <p className="text-xs text-muted-foreground mb-3">For video generation (recurring monthly)</p>
+                      <select className="w-full px-3 py-2 bg-secondary border border-border rounded-md text-sm">
+                        <option>None</option>
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-foreground mb-3">What you get:</p>
+                    {plan.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                        <span className="text-sm text-muted-foreground">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+
+                <CardFooter>
+                  <Button 
+                    className={`w-full ${
+                      plan.popular 
+                        ? "bg-accent hover:bg-accent/90 text-accent-foreground" 
+                        : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+                    }`}
+                  >
+                    Get Started
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         </div>
-      </section>
+      </main>
+      <Footer />
     </div>
   );
 };
