@@ -1,11 +1,11 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Paperclip } from "lucide-react";
 import excellionCityVideo from "@/assets/excellion-city.mp4";
 
 const Hero = () => {
-  const [inputValue, setInputValue] = useState("");
+  const inputValue = "";
+  const setInputValue = (_: string) => {};
 
   const suggestions = [
     "Restaurant website with menu",
