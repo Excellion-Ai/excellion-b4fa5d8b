@@ -88,7 +88,7 @@ const DFY = () => {
 
       {/* Process Section */}
       <section className="container mx-auto px-6 py-16">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto bg-background/80 backdrop-blur-md rounded-2xl p-8 md:p-12 border border-border/50">
           <h2 className="text-4xl font-bold text-center text-foreground mb-12">
             Our <span className="text-accent">Process</span>
           </h2>
@@ -101,7 +101,7 @@ const DFY = () => {
               { step: "04", title: "Launch", description: "We deploy your project and provide ongoing support for smooth operation." }
             ].map((item, index) => (
               <div key={index} className="flex gap-6 items-start">
-                <div className="text-5xl font-bold text-accent/20">{item.step}</div>
+                <div className="text-5xl font-bold text-accent/40">{item.step}</div>
                 <div>
                   <h3 className="text-2xl font-bold text-foreground mb-2">{item.title}</h3>
                   <p className="text-muted-foreground">{item.description}</p>
