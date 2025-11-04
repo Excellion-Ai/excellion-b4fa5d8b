@@ -8,26 +8,26 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 26% 8%;
-    --foreground: 0 0% 98%;
+    --background: 220 30% 6%;
+    --foreground: 38 35% 75%;
 
-    --card: 220 20% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 25% 10%;
+    --card-foreground: 38 35% 75%;
 
-    --popover: 220 20% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 25% 10%;
+    --popover-foreground: 38 35% 75%;
 
-    --primary: 38 55% 50%;
-    --primary-foreground: 220 26% 8%;
+    --primary: 38 45% 55%;
+    --primary-foreground: 220 30% 6%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 20% 15%;
+    --secondary-foreground: 38 35% 75%;
 
-    --muted: 220 15% 20%;
-    --muted-foreground: 220 8% 65%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 38 20% 55%;
 
-    --accent: 38 55% 50%;
-    --accent-foreground: 220 26% 8%;
+    --accent: 38 45% 55%;
+    --accent-foreground: 220 30% 6%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -38,8 +38,8 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
     
-    --gradient-hero: linear-gradient(135deg, hsl(220 26% 8%), hsl(220 26% 12%));
-    --shadow-glow: 0 0 30px hsl(38 55% 50% / 0.2);
+    --gradient-hero: linear-gradient(135deg, hsl(220 30% 6%), hsl(220 25% 10%));
+    --shadow-glow: 0 0 35px hsl(38 45% 55% / 0.25);
 
     --sidebar-background: 0 0% 98%;
 
@@ -59,26 +59,26 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 26% 8%;
-    --foreground: 0 0% 98%;
+    --background: 220 30% 6%;
+    --foreground: 38 35% 75%;
 
-    --card: 220 20% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 25% 10%;
+    --card-foreground: 38 35% 75%;
 
-    --popover: 220 20% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 25% 10%;
+    --popover-foreground: 38 35% 75%;
 
-    --primary: 38 55% 50%;
-    --primary-foreground: 220 26% 8%;
+    --primary: 38 45% 55%;
+    --primary-foreground: 220 30% 6%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 20% 15%;
+    --secondary-foreground: 38 35% 75%;
 
-    --muted: 220 15% 20%;
-    --muted-foreground: 220 8% 65%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 38 20% 55%;
 
-    --accent: 38 55% 50%;
-    --accent-foreground: 220 26% 8%;
+    --accent: 38 45% 55%;
+    --accent-foreground: 220 30% 6%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
