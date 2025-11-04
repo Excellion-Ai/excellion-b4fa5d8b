@@ -1,6 +1,7 @@
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Rocket, Code, Zap, Shield } from "lucide-react";
+import cityAnimatedVideo from "@/assets/city-animated-2.mp4";
 
 const DFY = () => {
   const services = [
@@ -27,8 +28,23 @@ const DFY = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      {/* Video Background */}
+      <div className="fixed inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover scale-110"
+          style={{ minWidth: '100%', minHeight: '100%' }}
+        >
+          <source src={cityAnimatedVideo} type="video/mp4" />
+        </video>
+      </div>
+
+      <div className="relative z-10">
+        <Navigation />
       
       {/* Hero Section */}
       <section className="container mx-auto px-6 py-32">
@@ -95,6 +111,7 @@ const DFY = () => {
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 };
