@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Sparkles, BookOpen, Egg, Users } from "lucide-react";
 
-const Catacombs = () => {
+const Operations = () => {
   const sections = [
     {
       title: "Hidden Features",
@@ -66,15 +66,15 @@ const Catacombs = () => {
         {/* Hero Section */}
         <div className="max-w-4xl mx-auto text-center space-y-6 mb-16">
           <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-            Catacombs
+            Operations
           </h1>
           
           <p className="text-xl text-accent italic">
-            Hidden depths of Excellion's digital realm
+            Command center of Excellion's digital realm
           </p>
 
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Welcome to The Catacombs — Excellion's connected hub for creators. Chat with the community, explore app templates, use our AI prompt builder, and track your orders. Talk directly with Excellion experts through our Discord server, get instant customer service for our DIY bot, or reach real founder support — all in one powerful space built for you.
+            Welcome to Operations — Excellion's connected hub for creators. Chat with the community, explore app templates, use our AI prompt builder, and track your orders. Talk directly with Excellion experts through our Discord server, get instant customer service for our DIY bot, or reach real founder support — all in one powerful space built for you.
           </p>
 
           <Button 
@@ -137,4 +137,4 @@ const Catacombs = () => {
   );
 };
 
-export default Catacombs;
+export default Operations;
