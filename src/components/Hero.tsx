@@ -27,7 +27,6 @@ const Hero = () => {
         >
           <source src={excellionCityVideo} type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background/90" />
       </div>
 
       {/* Content */}
