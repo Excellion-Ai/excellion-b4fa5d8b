@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Paperclip } from "lucide-react";
-import cityscapeHero from "@/assets/cityscape-hero.jpg";
+import excellionCityVideo from "@/assets/excellion-city.mp4";
 
 const Hero = () => {
   const [inputValue, setInputValue] = useState("");
@@ -15,11 +15,18 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${cityscapeHero})` }}
-      >
+      {/* Video Background */}
+      <div className="absolute inset-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover scale-110"
+          style={{ minWidth: '100%', minHeight: '100%' }}
+        >
+          <source src={excellionCityVideo} type="video/mp4" />
+        </video>
         <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background/90" />
       </div>
 
