@@ -162,9 +162,16 @@ const Pricing = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <CardDescription className="text-sm">{plan.credits}</CardDescription>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-accent">{getPrice(plan)}</span>
-                    <span className="text-muted-foreground ml-2">{getPeriodText(plan)}</span>
+                  <div className="mt-4 flex items-center gap-3">
+                    <div>
+                      <span className="text-4xl font-bold text-accent">{getPrice(plan)}</span>
+                      <span className="text-muted-foreground ml-2">{getPeriodText(plan)}</span>
+                    </div>
+                    {billingPeriod === "monthly" && plan.monthlyPrice !== "Free" && (
+                      <span className="text-xs font-bold text-accent bg-accent/10 px-2 py-1 rounded">
+                        COMING SOON!
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
                 </CardHeader>
