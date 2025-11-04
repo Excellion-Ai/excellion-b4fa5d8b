@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import pricingBackgroundVideo from "@/assets/pricing-background.mp4";
 
 const Pricing = () => {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
@@ -71,9 +72,24 @@ const Pricing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <main className="container mx-auto px-6 py-20">
+    <div className="min-h-screen bg-background relative">
+      {/* Video Background */}
+      <div className="fixed inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover scale-110"
+          style={{ minWidth: '100%', minHeight: '100%' }}
+        >
+          <source src={pricingBackgroundVideo} type="video/mp4" />
+        </video>
+      </div>
+
+      <div className="relative z-10">
+        <Navigation />
+        <main className="container mx-auto px-6 py-20">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
@@ -178,6 +194,7 @@ const Pricing = () => {
         </div>
       </main>
       <Footer />
+      </div>
     </div>
   );
 };
