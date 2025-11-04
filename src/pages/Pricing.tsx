@@ -1,8 +1,7 @@
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import pricingBackgroundVideo from "@/assets/pricing-background.mp4";
 
@@ -147,7 +146,7 @@ const Pricing = () => {
             {plans.map((plan) => (
               <Card 
                 key={plan.name}
-                className={`relative flex flex-col ${
+                className={`relative flex flex-col bg-background/10 backdrop-blur-md border-white/20 ${
                   plan.popular ? "border-accent shadow-lg shadow-accent/20" : ""
                 }`}
               >
@@ -160,12 +159,12 @@ const Pricing = () => {
                 )}
                 
                 <CardHeader>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription className="text-sm">{plan.credits}</CardDescription>
+                  <CardTitle className="text-2xl text-foreground">{plan.name}</CardTitle>
+                  <CardDescription className="text-sm text-foreground/80">{plan.credits}</CardDescription>
                   <div className="mt-4 flex items-center gap-3">
                     <div>
                       <span className="text-4xl font-bold text-accent">{getPrice(plan)}</span>
-                      <span className="text-muted-foreground ml-2">{getPeriodText(plan)}</span>
+                      <span className="text-foreground/70 ml-2">{getPeriodText(plan)}</span>
                     </div>
                     {billingPeriod === "monthly" && plan.monthlyPrice !== "Free" && (
                       <span className="text-xs font-bold text-accent bg-accent/10 px-2 py-1 rounded">
@@ -173,15 +172,15 @@ const Pricing = () => {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+                  <p className="text-sm text-foreground/70 mt-2">{plan.description}</p>
                 </CardHeader>
 
                 <CardContent className="flex-grow">
                   {plan.monthlyPrice !== "Free" && (
-                    <div className="mb-6 pb-6 border-b border-border">
+                    <div className="mb-6 pb-6 border-b border-white/20">
                       <p className="text-sm font-medium text-foreground mb-2">Super Credits Add-on</p>
-                      <p className="text-xs text-muted-foreground mb-3">For video generation (recurring monthly)</p>
-                      <select className="w-full px-3 py-2 bg-secondary border border-border rounded-md text-sm">
+                      <p className="text-xs text-foreground/60 mb-3">For video generation (recurring monthly)</p>
+                      <select className="w-full px-3 py-2 bg-background/20 border border-white/20 rounded-md text-sm text-foreground">
                         <option>None</option>
                       </select>
                     </div>
@@ -192,23 +191,11 @@ const Pricing = () => {
                     {plan.features.map((feature, idx) => (
                       <div key={idx} className="flex items-start gap-2">
                         <Check className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">{feature}</span>
+                        <span className="text-sm text-foreground/80">{feature}</span>
                       </div>
                     ))}
                   </div>
                 </CardContent>
-
-                <CardFooter>
-                  <Button 
-                    className={`w-full ${
-                      plan.popular 
-                        ? "bg-accent hover:bg-accent/90 text-accent-foreground" 
-                        : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-                    }`}
-                  >
-                    Get Started
-                  </Button>
-                </CardFooter>
               </Card>
             ))}
           </div>
