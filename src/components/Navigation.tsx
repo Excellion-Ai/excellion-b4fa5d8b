@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import excellionLogo from "@/assets/excellion-logo.png";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+import { useState } from "react";
 
 const Navigation = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
       <div className="container mx-auto px-6">
@@ -25,14 +30,59 @@ const Navigation = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Link to="/">
-              <Button variant="secondary" size="sm">
-                Home
+            <div className="hidden md:flex items-center gap-4">
+              <Button variant="ghost" size="sm">
+                Sign In
               </Button>
-            </Link>
+              <Link to="/">
+                <Button variant="secondary" size="sm">
+                  Home
+                </Button>
+              </Link>
+            </div>
+
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="sm">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px]">
+                <div className="flex flex-col gap-6 mt-8">
+                  <Link 
+                    to="/pricing" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Pricing
+                  </Link>
+                  <Link 
+                    to="/dfy" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    DFY
+                  </Link>
+                  <Link 
+                    to="/operations" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Operations
+                  </Link>
+                  <div className="pt-6 border-t border-border flex flex-col gap-3">
+                    <Button variant="ghost" size="sm" className="w-full">
+                      Sign In
+                    </Button>
+                    <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="secondary" size="sm" className="w-full">
+                        Home
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
