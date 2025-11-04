@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Sparkles, BookOpen, Egg, Users } from "lucide-react";
 
-const Cafacombe = () => {
+const Catacombs = () => {
   const sections = [
     {
       title: "Hidden Features",
@@ -137,4 +137,4 @@ const Cafacombe = () => {
   );
 };
 
-export default Cafacombe;
+export default Catacombs;

@@ -19,8 +19,8 @@ const Navigation = () => {
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               DFY
             </Link>
-            <Link to="/cafacombe" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Cafacombe
+            <Link to="/catacombs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Catacombs
             </Link>
           </div>
 
