@@ -48,23 +48,19 @@ const Hero = () => {
               <Textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Describe your website or app idea... (Try: 'add auth' or 'switch to dark mode')"
+                placeholder="Coming soon..."
+                disabled
                 className="min-h-[120px] bg-card/50 backdrop-blur-sm border-border/50 text-foreground placeholder:text-muted-foreground resize-none pr-24 text-base"
               />
               <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                <Button size="icon" variant="ghost" className="h-9 w-9">
+                <Button size="icon" variant="ghost" className="h-9 w-9" disabled>
                   <Paperclip className="h-4 w-4" />
                 </Button>
-                <Button size="icon" className="h-9 w-9 bg-accent hover:bg-accent/90 text-accent-foreground">
+                <Button size="icon" className="h-9 w-9 bg-accent hover:bg-accent/90 text-accent-foreground" disabled>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-
-            {/* Helper text */}
-            <p className="text-sm text-muted-foreground text-left">
-              Press Enter to send • Shift+Enter for new line
-            </p>
 
             {/* Suggestions */}
             <div className="flex flex-wrap gap-3 justify-center">
