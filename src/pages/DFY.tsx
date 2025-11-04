@@ -57,7 +57,7 @@ const DFY = () => {
             We Build It <span className="text-accent">For You</span>
           </h1>
           
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-foreground max-w-2xl mx-auto bg-background/80 backdrop-blur-sm px-6 py-4 rounded-lg border border-border/50">
             Sit back and relax while our expert team creates your perfect website or web application. No technical knowledge required.
           </p>
 
