@@ -18,11 +18,11 @@ const Navigation = () => {
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               DFY
             </Link>
-            <Link to="/operations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Operations
-            </Link>
             <Link to="/diy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               DIY
+            </Link>
+            <Link to="/operations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Operations
             </Link>
           </div>
 
@@ -53,16 +53,16 @@ const Navigation = () => {
                     DFY
                   </Link>
                   <Link 
-                    to="/operations" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    Operations
-                  </Link>
-                  <Link 
                     to="/diy" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
                     DIY
+                  </Link>
+                  <Link 
+                    to="/operations" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                  >
+                    Operations
                   </Link>
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
                     <Button variant="ghost" size="sm" className="w-full">
