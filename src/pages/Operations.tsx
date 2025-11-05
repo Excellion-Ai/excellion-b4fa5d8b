@@ -90,7 +90,7 @@ const Operations = () => {
               Command center of Excellion's digital realm
             </p>
 
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mt-6">
+            <p className="text-lg text-black max-w-3xl mx-auto leading-relaxed mt-6">
               Welcome to Operations — Excellion's connected hub for creators. Chat with the community, explore app templates, use our AI prompt builder, and track your orders. Talk directly with Excellion experts through our Discord server, get instant customer service for our DIY bot, or reach real founder support — all in one powerful space built for you.
             </p>
 
