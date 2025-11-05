@@ -17,17 +17,19 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover will-change-transform"
-          style={{ backfaceVisibility: 'hidden', transform: 'translate3d(-50%, -50%, 0)' }}
-        >
-          <source src={excellionCityVideo} type="video/mp4" />
-        </video>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="w-full h-auto min-h-full object-cover will-change-transform"
+            style={{ backfaceVisibility: 'hidden' }}
+          >
+            <source src={excellionCityVideo} type="video/mp4" />
+          </video>
+        </div>
       </div>
 
       {/* Content */}
