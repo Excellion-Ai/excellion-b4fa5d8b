@@ -76,7 +76,7 @@ const DFY = () => {
       </section>
 
       {/* Services Grid */}
-      <section className="container mx-auto px-6 py-16">
+      <section className="container mx-auto px-6 pt-4 pb-16">
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {services.map((service, index) => (
             <div
