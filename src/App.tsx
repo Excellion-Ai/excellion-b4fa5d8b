@@ -15,7 +15,7 @@ const App = () => (
     <Sonner />
     <Routes>
       <Route path="/" element={<Index />} />
-      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/diy" element={<Pricing />} />
       <Route path="/dfy" element={<DFY />} />
       <Route path="/operations" element={<Operations />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

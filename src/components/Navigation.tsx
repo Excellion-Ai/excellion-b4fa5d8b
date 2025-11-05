@@ -15,8 +15,8 @@ const Navigation = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
+            <Link to="/diy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              DIY
             </Link>
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               DFY
@@ -47,10 +47,10 @@ const Navigation = () => {
               <SheetContent side="right" className="w-[280px]">
                 <div className="flex flex-col gap-6 mt-8">
                   <Link 
-                    to="/pricing" 
+                    to="/diy" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
-                    Pricing
+                    DIY
                   </Link>
                   <Link 
                     to="/dfy" 
