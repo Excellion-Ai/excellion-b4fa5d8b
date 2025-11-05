@@ -37,8 +37,8 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-6 py-32">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
-            <span className="text-sm font-medium text-accent">✨ Launch your business fast</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/30 border border-accent/50">
+            <span className="text-sm font-bold text-accent">✨ Launch your business fast</span>
           </div>
 
           {/* Headline */}
