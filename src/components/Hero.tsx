@@ -52,41 +52,8 @@ const Hero = () => {
             Describe your dream website and/or web app, and launch fast.
           </p>
 
-          {/* Input Area */}
-          <div className="max-w-3xl mx-auto space-y-4">
-            <div className="relative">
-              <Textarea
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Coming soon..."
-                disabled
-                className="min-h-[120px] bg-card/50 backdrop-blur-sm border-border/50 text-foreground placeholder:text-muted-foreground resize-none pr-24 text-base"
-              />
-              <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                <Button size="icon" variant="ghost" className="h-9 w-9" disabled>
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-                <Button size="icon" className="h-9 w-9 bg-accent hover:bg-accent/90 text-accent-foreground" disabled>
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Suggestions */}
-            <div className="flex flex-wrap gap-3 justify-center">
-              <span className="text-sm text-muted-foreground">Try:</span>
-              {suggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => setInputValue(suggestion)}
-                  className="px-4 py-2 rounded-full bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-medium transition-all hover:scale-105"
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-
-            {/* CTA Button */}
+          {/* CTA Button */}
+          <div className="mt-8">
             <Link to="/dfy">
               <Button 
                 size="lg" 
