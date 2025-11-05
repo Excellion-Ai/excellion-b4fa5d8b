@@ -49,7 +49,7 @@ const Hero = () => {
 
           {/* Subheadline */}
           <p className="text-xl text-foreground max-w-2xl mx-auto bg-background/80 backdrop-blur-sm px-6 py-4 rounded-lg border border-border/50">
-            Describe your dream website and/or web app, and launch fast.
+            Share your vision. We'll build and launch it fast.
           </p>
 
           {/* CTA Button */}
