@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import pricingBackgroundVideo from "@/assets/pricing-background.mp4";
 
@@ -112,24 +113,16 @@ const Pricing = () => {
             </p>
 
             {/* Billing Toggle */}
-            <div className="inline-flex items-center gap-3 p-1 bg-secondary rounded-lg">
+            <div className="inline-flex items-center gap-3 p-1 bg-secondary rounded-lg opacity-50 cursor-not-allowed">
               <button
-                onClick={() => setBillingPeriod("monthly")}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                  billingPeriod === "monthly"
-                    ? "bg-accent text-accent-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                disabled
+                className="px-6 py-2 rounded-md text-sm font-medium bg-accent text-accent-foreground shadow-sm cursor-not-allowed"
               >
                 Monthly
               </button>
               <button
-                onClick={() => setBillingPeriod("yearly")}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
-                  billingPeriod === "yearly"
-                    ? "bg-accent text-accent-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                disabled
+                className="px-6 py-2 rounded-md text-sm font-medium text-muted-foreground flex items-center gap-2 cursor-not-allowed"
               >
                 Yearly
                 <span className="text-xs bg-accent/20 px-2 py-0.5 rounded-full">Save 20%</span>
@@ -183,7 +176,7 @@ const Pricing = () => {
                     <div className="mb-6 pb-6 border-b border-white/20">
                       <p className="text-sm font-medium text-foreground mb-2">Super Credits Add-on</p>
                       <p className="text-xs text-foreground/60 mb-3">For video generation (recurring monthly)</p>
-                      <select className="w-full px-3 py-2 bg-background/20 border border-white/20 rounded-md text-sm text-foreground">
+                      <select disabled className="w-full px-3 py-2 bg-background/20 border border-white/20 rounded-md text-sm text-foreground opacity-50 cursor-not-allowed">
                         <option>None</option>
                       </select>
                     </div>
@@ -199,6 +192,15 @@ const Pricing = () => {
                     ))}
                   </div>
                 </CardContent>
+
+                <CardFooter>
+                  <Button 
+                    disabled 
+                    className="w-full bg-accent/50 text-accent-foreground cursor-not-allowed hover:bg-accent/50"
+                  >
+                    Coming Soon
+                  </Button>
+                </CardFooter>
               </Card>
             ))}
           </div>
