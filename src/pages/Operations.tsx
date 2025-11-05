@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Sparkles, BookOpen, Egg, Users } from "lucide-react";
+import operationsBackgroundVideo from "@/assets/operations-background.mov";
 
 const Operations = () => {
   const sections = [
@@ -50,8 +51,23 @@ const Operations = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      {/* Video Background */}
+      <div className="fixed inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover will-change-transform"
+        >
+          <source src={operationsBackgroundVideo} type="video/mp4" />
+        </video>
+      </div>
+
+      <div className="relative z-10">
+        <Navigation />
       
       <main className="container mx-auto px-6 py-20">
         {/* Back to Home */}
@@ -133,6 +149,7 @@ const Operations = () => {
       </main>
 
       <Footer />
+      </div>
     </div>
   );
 };
