@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
           {/* Brand Column */}
-          <div className="space-y-4 md:col-span-4">
+          <div className="space-y-4 md:col-span-3">
             <h3 className="text-xl font-bold text-foreground">Excellion</h3>
             <p className="text-sm text-muted-foreground">
               Building beautiful websites and apps for small businesses. Choose DIY templates or let our experts handle everything.
@@ -14,7 +14,7 @@ const Footer = () => {
           </div>
 
           {/* Solutions Column */}
-          <div className="space-y-4 md:col-span-2 md:col-start-6">
+          <div className="space-y-4 md:col-span-3">
             <h4 className="text-sm font-semibold text-foreground">Solutions</h4>
             <ul className="space-y-2">
               <li>
