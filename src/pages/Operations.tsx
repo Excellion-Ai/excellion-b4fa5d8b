@@ -148,41 +148,6 @@ const Operations = () => {
           })}
         </div>
 
-        {/* Action Buttons */}
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-            <h2 className="text-3xl font-bold text-foreground text-center mb-4">
-              Need Help?
-            </h2>
-            <p className="text-lg text-muted-foreground text-center mb-8">
-              Ping @Excellion Support in #help-desk or open a ticket—human support when you need it.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="https://discord.gg/tmDTkwVY9u" target="_blank" rel="noopener noreferrer">
-                <Button 
-                  size="lg"
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8"
-                >
-                  Enter the Server
-                </Button>
-              </a>
-              <Button 
-                size="lg"
-                variant="outline"
-                className="font-semibold px-8"
-              >
-                Browse Templates
-              </Button>
-              <Button 
-                size="lg"
-                variant="outline"
-                className="font-semibold px-8"
-              >
-                Request Expert Build
-              </Button>
-            </div>
-          </div>
-        </div>
       </main>
 
       <Footer />
