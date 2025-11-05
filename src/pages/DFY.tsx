@@ -18,7 +18,7 @@ const DFY = () => {
     {
       icon: <Shield className="h-12 w-12 text-accent" />,
       title: "Full Support",
-      description: "Ongoing maintenance, updates, and technical support to keep your business running smoothly."
+      description: "Get total support and peace of mind.\n\nWe handle all maintenance, updates, and tech support 24/7.\n\nYour business runs smoothly, guaranteed.\n\nGet instant help from our expert team in our private Discord."
     },
     {
       icon: <Rocket className="h-12 w-12 text-accent" />,
