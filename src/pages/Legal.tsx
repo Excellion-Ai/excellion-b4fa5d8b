@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import legalBackground from "@/assets/legal-background.mp4";
 
 const Legal = () => {
   const location = useLocation();
@@ -17,10 +18,25 @@ const Legal = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <main className="container mx-auto px-6 py-24">
+    <div className="min-h-screen bg-background relative">
+      {/* Video Background */}
+      <div className="fixed inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source src={legalBackground} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-background/80" />
+      </div>
+
+      <div className="relative z-10">
+        <Navigation />
+        
+        <main className="container mx-auto px-6 py-24">
         <div className="max-w-4xl mx-auto space-y-16">
           {/* Privacy Policy Section */}
           <section id="privacy" className="scroll-mt-24">
@@ -166,9 +182,10 @@ const Legal = () => {
             </div>
           </section>
         </div>
-      </main>
+        </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };
