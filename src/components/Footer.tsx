@@ -58,16 +58,6 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  Legal
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                   Privacy Policy
                 </Link>
               </li>
