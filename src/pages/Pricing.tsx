@@ -33,8 +33,7 @@ const Pricing = () => {
       features: [
         "100 credits per month",
         "Coming soon"
-      ],
-      popular: true
+      ]
     },
     {
       name: "Groups",
@@ -135,17 +134,8 @@ const Pricing = () => {
             {plans.map((plan) => (
               <Card 
                 key={plan.name}
-                className={`relative flex flex-col bg-background/10 backdrop-blur-md border-white/20 ${
-                  plan.popular ? "border-accent shadow-lg shadow-accent/20" : ""
-                }`}
+                className="relative flex flex-col bg-background/10 backdrop-blur-md border-white/20"
               >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-accent text-accent-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                      Popular
-                    </span>
-                  </div>
-                )}
                 
                 <CardHeader>
                   <CardTitle className="text-2xl text-foreground">{plan.name}</CardTitle>
