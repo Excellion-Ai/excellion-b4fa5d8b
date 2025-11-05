@@ -15,14 +15,14 @@ const Navigation = () => {
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/diy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              DIY
-            </Link>
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               DFY
             </Link>
             <Link to="/operations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Operations
+            </Link>
+            <Link to="/diy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              DIY
             </Link>
           </div>
 
@@ -47,12 +47,6 @@ const Navigation = () => {
               <SheetContent side="right" className="w-[280px]">
                 <div className="flex flex-col gap-6 mt-8">
                   <Link 
-                    to="/diy" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    DIY
-                  </Link>
-                  <Link 
                     to="/dfy" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
@@ -63,6 +57,12 @@ const Navigation = () => {
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
                     Operations
+                  </Link>
+                  <Link 
+                    to="/diy" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                  >
+                    DIY
                   </Link>
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
                     <Button variant="ghost" size="sm" className="w-full">
