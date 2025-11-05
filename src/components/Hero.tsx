@@ -24,7 +24,7 @@ const Hero = () => {
             muted
             playsInline
             preload="auto"
-            className="w-full h-auto min-h-full object-cover will-change-transform"
+            className="w-full h-auto min-h-full object-cover will-change-transform scale-150"
             style={{ backfaceVisibility: 'hidden' }}
           >
             <source src={excellionCityVideo} type="video/mp4" />
