@@ -1,7 +1,7 @@
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Rocket, Code, Zap, Shield } from "lucide-react";
-import cityAnimatedVideo from "@/assets/city-animated-2.mp4";
+import dfyBackgroundVideo from "@/assets/dfy-background.mov";
 
 const DFY = () => {
   const services = [
@@ -39,7 +39,7 @@ const DFY = () => {
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover will-change-transform"
         >
-          <source src={cityAnimatedVideo} type="video/mp4" />
+          <source src={dfyBackgroundVideo} type="video/mp4" />
         </video>
       </div>
 
