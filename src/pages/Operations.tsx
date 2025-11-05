@@ -156,12 +156,14 @@ const Operations = () => {
               Ping @Excellion Support in #help-desk or open a ticket—human support when you need it.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8"
-              >
-                Enter the Server
-              </Button>
+              <a href="https://discord.gg/tmDTkwVY9u" target="_blank" rel="noopener noreferrer">
+                <Button 
+                  size="lg"
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8"
+                >
+                  Enter the Server
+                </Button>
+              </a>
               <Button 
                 size="lg"
                 variant="outline"
