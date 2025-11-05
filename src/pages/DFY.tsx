@@ -1,7 +1,7 @@
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Rocket, Code, Zap, Shield } from "lucide-react";
-import dfyBackgroundVideo from "@/assets/dfy-background.mov";
+import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 
 const DFY = () => {
   const services = [
