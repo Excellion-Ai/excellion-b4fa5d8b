@@ -99,7 +99,7 @@ const DFY = () => {
           
           <div className="space-y-8">
             {[
-              { step: "01", title: "Discovery", description: "We learn about your business, goals, and vision through detailed consultation." },
+              { step: "01", title: "Discovery", description: "We get right to work. When we hop on the call, we'll have an initial mockup ready for you. We'll review it together and quickly align the design with your business goals." },
               { step: "02", title: "Design", description: "Our designers create beautiful mockups that bring your vision to life." },
               { step: "03", title: "Development", description: "Expert developers build your website or app with clean, efficient code." },
               { step: "04", title: "Launch", description: "We deploy your project and provide ongoing support for smooth operation." }
