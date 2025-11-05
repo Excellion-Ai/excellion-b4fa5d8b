@@ -45,12 +45,12 @@ const Hero = () => {
           <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
             The Most Convenient<br />
             <span className="text-accent">Website & App Builder</span>{" "}
-            <span className="text-muted-foreground text-3xl md:text-4xl">"Coming soon..."</span>
+            <span className="text-muted-foreground text-3xl md:text-4xl">Coming soon...</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-xl text-foreground max-w-2xl mx-auto bg-background/80 backdrop-blur-sm px-6 py-4 rounded-lg border border-border/50">
-            Share your vision. We'll build and launch it fast.
+            In the meantime, let us build your site—done right, done fast.
           </p>
 
           {/* CTA Button */}
