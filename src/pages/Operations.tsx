@@ -81,24 +81,26 @@ const Operations = () => {
 
         {/* Hero Section */}
         <div className="max-w-4xl mx-auto text-center space-y-6 mb-16">
-          <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-            Operations
-          </h1>
-          
-          <p className="text-xl text-accent italic">
-            Command center of Excellion's digital realm
-          </p>
+          <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 md:p-12 border border-white/10">
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
+              Operations
+            </h1>
+            
+            <p className="text-xl text-accent italic mt-4">
+              Command center of Excellion's digital realm
+            </p>
 
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Welcome to Operations — Excellion's connected hub for creators. Chat with the community, explore app templates, use our AI prompt builder, and track your orders. Talk directly with Excellion experts through our Discord server, get instant customer service for our DIY bot, or reach real founder support — all in one powerful space built for you.
-          </p>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mt-6">
+              Welcome to Operations — Excellion's connected hub for creators. Chat with the community, explore app templates, use our AI prompt builder, and track your orders. Talk directly with Excellion experts through our Discord server, get instant customer service for our DIY bot, or reach real founder support — all in one powerful space built for you.
+            </p>
 
-          <Button 
-            size="lg"
-            className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
-          >
-            Join the Future?
-          </Button>
+            <Button 
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
+            >
+              Join the Future?
+            </Button>
+          </div>
         </div>
 
         {/* Feature Sections */}
