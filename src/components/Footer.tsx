@@ -35,23 +35,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support Column */}
-          <div className="space-y-4 md:col-span-3">
-            <h4 className="text-sm font-semibold text-foreground">Support</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/contact" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  Contact Support
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  FAQ
-                </Link>
-              </li>
-            </ul>
-          </div>
-
           {/* Company Column */}
           <div className="space-y-4 md:col-span-3">
             <h4 className="text-sm font-semibold text-foreground">Company</h4>
@@ -69,6 +52,23 @@ const Footer = () => {
               <li>
                 <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                   Cookie Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support Column */}
+          <div className="space-y-4 md:col-span-3">
+            <h4 className="text-sm font-semibold text-foreground">Support</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/contact" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  Contact Support
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  FAQ
                 </Link>
               </li>
             </ul>
