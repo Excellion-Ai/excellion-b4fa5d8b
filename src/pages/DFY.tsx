@@ -1,9 +1,12 @@
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Rocket, Code, Zap, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 
 const DFY = () => {
+  const navigate = useNavigate();
+  
   const services = [
     {
       icon: <Code className="h-12 w-12 text-accent" />,
@@ -63,9 +66,10 @@ const DFY = () => {
 
           <Button 
             size="lg"
+            onClick={() => navigate("/survey")}
             className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
           >
-            Free quote!?
+            Get Your Free Quote
           </Button>
         </div>
       </section>
