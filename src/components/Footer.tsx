@@ -62,16 +62,6 @@ const Footer = () => {
             <h4 className="text-sm font-semibold text-foreground">Support</h4>
             <ul className="space-y-2">
               <li>
-                <a 
-                  href="https://discord.gg/tmDTkwVY9u" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-accent transition-colors"
-                >
-                  Discord
-                </a>
-              </li>
-              <li>
                 <Link to="/contact" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                   Contact Support
                 </Link>
@@ -80,6 +70,16 @@ const Footer = () => {
                 <Link to="/faq" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                   FAQ
                 </Link>
+              </li>
+              <li>
+                <a 
+                  href="https://discord.gg/tmDTkwVY9u" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-accent transition-colors"
+                >
+                  Discord
+                </a>
               </li>
             </ul>
           </div>
