@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Paperclip } from "lucide-react";
+import { Link } from "react-router-dom";
 import excellionCityVideo from "@/assets/excellion-city.mp4";
 
 const Hero = () => {
@@ -86,12 +87,14 @@ const Hero = () => {
             </div>
 
             {/* CTA Button */}
-            <Button 
-              size="lg" 
-              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
-            >
-              Request Expert Build
-            </Button>
+            <Link to="/dfy">
+              <Button 
+                size="lg" 
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
+              >
+                Request Expert Build
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
