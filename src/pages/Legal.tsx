@@ -30,7 +30,7 @@ const Legal = () => {
         >
           <source src={legalBackground} type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-background/80" />
+        <div className="absolute inset-0 bg-background/60" />
       </div>
 
       <div className="relative z-10">
