@@ -9,43 +9,47 @@ import operationsBackgroundVideo from "@/assets/operations-background.mov";
 const Operations = () => {
   const sections = [
     {
-      title: "Hidden Features",
+      title: "What's Inside",
       icon: Sparkles,
-      description: "Explore experimental features and early access to upcoming tools that are shaping the future of Excellion.",
+      description: "Everything you need to build faster and smarter with Excellion.",
       items: [
-        "AI-Powered Design Suggestions",
-        "Advanced Analytics Engine",
-        "Automation Studio Beta"
+        "Live Expert Help — Chat with Excellion pros for fast answers and build reviews",
+        "Templates Library — Grab starter apps and workflows you can clone in minutes",
+        "AI Prompt Builder — Craft better prompts for builders, ads, and automations",
+        "Order Tracking — See your Expert Build status, milestones, and delivery ETA"
       ]
     },
     {
-      title: "Knowledge Base",
-      icon: BookOpen,
-      description: "Deep dive into advanced tutorials, architectural decisions, and the philosophy behind Excellion's design.",
-      items: [
-        "System Architecture Guide",
-        "Performance Optimization Tips",
-        "Custom Integrations Guide"
-      ]
-    },
-    {
-      title: "Easter Eggs",
-      icon: Egg,
-      description: "Secret shortcuts, hidden commands, and fun surprises scattered throughout Excellion for the curious explorer.",
-      items: [
-        "Developer Console Commands",
-        "Hidden Keyboard Shortcuts",
-        "Secret Achievements"
-      ]
-    },
-    {
-      title: "Community Secrets",
+      title: "Community Lanes",
       icon: Users,
-      description: "Shared discoveries from the Excellion community, pro tips, and tricks from power users.",
+      description: "Join dedicated channels where creators share, learn, and collaborate.",
       items: [
-        "User Contributed Plugins",
-        "Advanced Workflow Templates",
-        "Performance Leaderboard"
+        "#announcements — Launches, updates, and limited drops",
+        "#showcase — Share your builds, get feedback, earn spotlights",
+        "#help-desk — Quick questions, real answers",
+        "#templates — New blueprints from the team + community",
+        "#prompts — High-performing prompts, crits, and upgrades",
+        "#build-requests — Scope an Expert Build, get a quote"
+      ]
+    },
+    {
+      title: "Build With Us",
+      icon: BookOpen,
+      description: "Get hands-on support whether you're DIY-ing or want expert help.",
+      items: [
+        "DIY Fast-Track — Step-by-step mini guides and 'copy → paste → ship' snippets",
+        "Expert Build Queue — Priority intake, clear scope, transparent timelines",
+        "Creator Perks — Beta access, partner slots, and first dibs on new features"
+      ]
+    },
+    {
+      title: "Learn & Level Up",
+      icon: BookOpen,
+      description: "Proven flows, powerful skills, and practical tooling to ship better work.",
+      items: [
+        "Micro-Workshops — 10–15 min sessions on one powerful skill",
+        "Playbooks — Proven flows for creators, founders, and agencies",
+        "Tooling Tips — Wire Excellion with your stack (Blink, Typeform, etc.)"
       ]
     }
   ];
@@ -142,11 +146,38 @@ const Operations = () => {
           })}
         </div>
 
-        {/* Quote Section */}
-        <div className="max-w-3xl mx-auto text-center py-12">
-          <blockquote className="text-2xl md:text-3xl font-medium text-foreground italic">
-            "In the depths, wisdom awaits those who venture beyond the surface."
-          </blockquote>
+        {/* Action Buttons */}
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+            <h2 className="text-3xl font-bold text-foreground text-center mb-4">
+              Need Help?
+            </h2>
+            <p className="text-lg text-muted-foreground text-center mb-8">
+              Ping @Excellion Support in #help-desk or open a ticket—human support when you need it.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8"
+              >
+                Enter the Server
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="font-semibold px-8"
+              >
+                Browse Templates
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="font-semibold px-8"
+              >
+                Request Expert Build
+              </Button>
+            </div>
+          </div>
         </div>
       </main>
 
