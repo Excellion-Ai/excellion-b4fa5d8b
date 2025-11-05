@@ -13,28 +13,6 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Solutions Column */}
-          <div className="space-y-4 md:col-span-3">
-            <h4 className="text-sm font-semibold text-foreground">Solutions</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/diy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  DIY Builder
-                </Link>
-              </li>
-              <li>
-                <Link to="/dfy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  DFY Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  Maintenance
-                </Link>
-              </li>
-            </ul>
-          </div>
-
           {/* Company Column */}
           <div className="space-y-4 md:col-span-3">
             <h4 className="text-sm font-semibold text-foreground">Company</h4>
@@ -52,6 +30,28 @@ const Footer = () => {
               <li>
                 <Link to="/legal#cookies" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                   Cookie Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Solutions Column */}
+          <div className="space-y-4 md:col-span-3">
+            <h4 className="text-sm font-semibold text-foreground">Solutions</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/diy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  DIY Builder
+                </Link>
+              </li>
+              <li>
+                <Link to="/dfy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  DFY Service
+                </Link>
+              </li>
+              <li>
+                <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  Maintenance
                 </Link>
               </li>
             </ul>
