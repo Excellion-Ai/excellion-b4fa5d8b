@@ -31,12 +31,7 @@ const Pricing = () => {
       description: "For small businesses building their own site",
       features: [
         "100 credits per month",
-        "Private projects",
-        "Unlimited custom domains",
-        "Code download",
-        "Remove branding",
-        "Email support",
-        "All templates"
+        "Coming soon"
       ],
       popular: true
     },
@@ -48,12 +43,7 @@ const Pricing = () => {
       description: "For teams and growing businesses",
       features: [
         "200 credits per month",
-        "Everything in Builder",
-        "Team collaboration (5 users)",
-        "Priority support",
-        "Advanced integrations",
-        "Advanced analytics",
-        "Custom branding"
+        "Coming soon"
       ]
     },
     {
@@ -64,12 +54,7 @@ const Pricing = () => {
       description: "For agencies and power users",
       features: [
         "400 credits per month",
-        "Everything in Groups",
-        "Unlimited team members",
-        "White-label options",
-        "Dedicated support",
-        "Custom integrations",
-        "Advanced security"
+        "Coming soon"
       ]
     }
   ];
