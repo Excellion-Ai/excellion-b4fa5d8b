@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="border-t border-border/50 bg-background">
       <div className="container mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
           {/* Brand Column */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-foreground">Excellion</h3>
