@@ -98,12 +98,14 @@ const Operations = () => {
               Welcome to Operations — Excellion's connected hub for creators. Chat with the community, explore app templates, use our AI prompt builder, and track your orders. Talk directly with Excellion experts through our Discord server, get instant customer service for our DIY bot, or reach real founder support — all in one powerful space built for you.
             </p>
 
-            <Button 
-              size="lg"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
-            >
-              Join the Future?
-            </Button>
+            <a href="https://discord.gg/tmDTkwVY9u" target="_blank" rel="noopener noreferrer">
+              <Button 
+                size="lg"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
+              >
+                Enter the Server
+              </Button>
+            </a>
           </div>
         </div>
 
