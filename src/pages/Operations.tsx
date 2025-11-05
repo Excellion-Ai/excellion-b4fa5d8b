@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Sparkles, BookOpen, Egg, Users } from "lucide-react";
-import operationsBackgroundVideo from "@/assets/operations-background.mov";
+import operationsBackgroundVideo from "@/assets/operations-background-new.mp4";
 
 const Operations = () => {
   const sections = [
