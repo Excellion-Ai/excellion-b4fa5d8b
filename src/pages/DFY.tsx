@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Rocket, Code, Zap, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -114,6 +115,8 @@ const DFY = () => {
           </div>
         </div>
       </section>
+      
+      <Footer />
       </div>
     </div>
   );
