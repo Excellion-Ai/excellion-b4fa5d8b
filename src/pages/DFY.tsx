@@ -70,7 +70,7 @@ const DFY = () => {
             onClick={() => navigate("/survey")}
             className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
           >
-            Get Your Free Quote
+            Get quote
           </Button>
         </div>
       </section>
