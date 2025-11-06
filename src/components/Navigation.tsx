@@ -28,9 +28,11 @@ const Navigation = () => {
 
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-4">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
+              <Link to="/auth">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </Link>
               <Link to="/">
                 <Button variant="secondary" size="sm">
                   Home
@@ -65,9 +67,11 @@ const Navigation = () => {
                     Operations
                   </Link>
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
-                    <Button variant="ghost" size="sm" className="w-full">
-                      Sign In
-                    </Button>
+                    <Link to="/auth">
+                      <Button variant="ghost" size="sm" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
                     <Link to="/">
                       <Button variant="secondary" size="sm" className="w-full">
                         Home
