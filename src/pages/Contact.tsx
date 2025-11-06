@@ -30,7 +30,7 @@ const Contact = () => {
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
             Contact Support
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-2xl font-semibold text-foreground max-w-2xl mx-auto">
             Need help? We're here for you. Choose your preferred way to reach us.
           </p>
         </div>
