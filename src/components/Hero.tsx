@@ -37,12 +37,12 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-6 py-32">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/30 border border-accent/50">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-accent/50">
             <span className="text-sm font-bold text-accent">✨ Launch your business fast</span>
           </div>
 
           {/* Headline and Subheadline */}
-          <div className="bg-background/60 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center">
+          <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
               The Most Convenient{" "}
               <span className="text-accent">Website Builder</span>
