@@ -38,7 +38,7 @@ const Hero = () => {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-accent/50">
-            <span className="text-sm font-bold text-accent">✨ Launch your business fast</span>
+            <span className="text-sm font-bold text-black">✨ Launch your business fast</span>
           </div>
 
           {/* Headline and Subheadline */}
