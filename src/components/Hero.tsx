@@ -42,10 +42,11 @@ const Hero = () => {
           </div>
 
           {/* Headline and Subheadline */}
-          <div className="bg-background/80 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto">
+          <div className="bg-background/80 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
               The Most Convenient{" "}
-              <span className="text-accent">Website Builder</span>{" "}
+              <span className="text-accent">Website Builder</span>
+              <br />
               <span className="text-muted-foreground text-3xl md:text-4xl">Coming Soon...</span>
             </h1>
 
