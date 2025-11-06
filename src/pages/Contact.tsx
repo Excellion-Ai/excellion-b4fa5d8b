@@ -2,13 +2,29 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Mail, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import contactBackgroundVideo from "@/assets/contact-background.mp4";
 
 const Contact = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <main className="container mx-auto px-6 py-24">
+    <div className="min-h-screen bg-background relative">
+      {/* Video Background */}
+      <div className="fixed inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover will-change-transform"
+        >
+          <source src={contactBackgroundVideo} type="video/mp4" />
+        </video>
+      </div>
+
+      <div className="relative z-10">
+        <Navigation />
+        
+        <main className="container mx-auto px-6 py-24">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
@@ -111,9 +127,10 @@ const Contact = () => {
             </ul>
           </div>
         </div>
-      </main>
+        </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };
