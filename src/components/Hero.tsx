@@ -44,8 +44,8 @@ const Hero = () => {
           {/* Headline */}
           <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
             The Most Convenient{" "}
-            <span className="text-accent">Personal Web Builder</span>{" "}
-            <span className="text-muted-foreground text-3xl md:text-4xl">— Coming Soon.</span>
+            <span className="text-accent">Website Builder</span>{" "}
+            <span className="text-muted-foreground text-3xl md:text-4xl">Coming Soon...</span>
           </h1>
 
           {/* Subheadline */}
