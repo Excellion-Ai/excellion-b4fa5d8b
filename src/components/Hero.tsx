@@ -41,17 +41,18 @@ const Hero = () => {
             <span className="text-sm font-bold text-accent">✨ Launch your business fast</span>
           </div>
 
-          {/* Headline */}
-          <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-            The Most Convenient{" "}
-            <span className="text-accent">Website Builder</span>{" "}
-            <span className="text-muted-foreground text-3xl md:text-4xl">Coming Soon...</span>
-          </h1>
+          {/* Headline and Subheadline */}
+          <div className="bg-background/80 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto">
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
+              The Most Convenient{" "}
+              <span className="text-accent">Website Builder</span>{" "}
+              <span className="text-muted-foreground text-3xl md:text-4xl">Coming Soon...</span>
+            </h1>
 
-          {/* Subheadline */}
-          <p className="text-xl text-foreground max-w-2xl mx-auto bg-background/80 backdrop-blur-sm px-6 py-4 rounded-lg border border-border/50">
-            In the meantime, let us build your site—done right, done fast.
-          </p>
+            <p className="text-xl text-foreground max-w-2xl mx-auto mt-6">
+              In the meantime, let us build your site—done right, done fast.
+            </p>
+          </div>
 
           {/* CTA Button */}
           <div className="mt-8">
