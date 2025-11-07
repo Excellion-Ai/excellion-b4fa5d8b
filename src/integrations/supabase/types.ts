@@ -16,36 +16,57 @@ export type Database = {
     Tables: {
       quote_requests: {
         Row: {
+          additional_notes: string | null
+          brand_content_status: string | null
+          brand_name: string | null
           budget: string | null
           company: string | null
           created_at: string
           description: string | null
           email: string
+          features_needed: string[] | null
           id: string
+          main_outcome: string | null
           name: string
+          pages_needed: string | null
           project_type: string
+          qualified_plan: string | null
           timeline: string | null
         }
         Insert: {
+          additional_notes?: string | null
+          brand_content_status?: string | null
+          brand_name?: string | null
           budget?: string | null
           company?: string | null
           created_at?: string
           description?: string | null
           email: string
+          features_needed?: string[] | null
           id?: string
+          main_outcome?: string | null
           name: string
+          pages_needed?: string | null
           project_type: string
+          qualified_plan?: string | null
           timeline?: string | null
         }
         Update: {
+          additional_notes?: string | null
+          brand_content_status?: string | null
+          brand_name?: string | null
           budget?: string | null
           company?: string | null
           created_at?: string
           description?: string | null
           email?: string
+          features_needed?: string[] | null
           id?: string
+          main_outcome?: string | null
           name?: string
+          pages_needed?: string | null
           project_type?: string
+          qualified_plan?: string | null
           timeline?: string | null
         }
         Relationships: []

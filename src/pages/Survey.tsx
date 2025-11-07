@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,21 +16,53 @@ import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 const Survey = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [showResult, setShowResult] = useState(false);
+  const [qualifiedPlan, setQualifiedPlan] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    company: "",
+    brandName: "",
     projectType: "",
-    budget: "",
+    mainOutcome: "",
+    pagesNeeded: "",
+    featuresNeeded: [] as string[],
+    brandContentStatus: "",
     timeline: "",
-    description: ""
+    additionalNotes: ""
   });
+
+  const qualifyPlan = () => {
+    // Premium Build conditions
+    const isPremium = 
+      formData.projectType === "online-store" ||
+      formData.featuresNeeded.includes("online-ordering") ||
+      formData.pagesNeeded === "7-10" ||
+      formData.pagesNeeded === "10-plus" ||
+      formData.brandContentStatus === "need-branding-content" ||
+      formData.timeline === "2-3-days";
+
+    if (isPremium) return "Premium";
+
+    // Core Build conditions
+    const isCore = 
+      formData.projectType === "website-with-features" ||
+      formData.pagesNeeded === "4-6" ||
+      formData.featuresNeeded.some(f => ["booking", "email-capture", "payments", "automations"].includes(f)) ||
+      formData.timeline === "3-5-days";
+
+    if (isCore) return "Core";
+
+    // Essential Build (default)
+    return "Essential";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.name || !formData.email || !formData.projectType) {
+    if (!formData.name || !formData.email || !formData.brandName || !formData.projectType || 
+        !formData.mainOutcome || !formData.pagesNeeded || formData.featuresNeeded.length === 0 || 
+        !formData.brandContentStatus || !formData.timeline) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -38,17 +71,25 @@ const Survey = () => {
       return;
     }
 
+    // Determine qualified plan
+    const plan = qualifyPlan();
+    setQualifiedPlan(plan);
+
     // Insert into database
     const { error } = await supabase
       .from('quote_requests')
       .insert({
         name: formData.name,
         email: formData.email,
-        company: formData.company || null,
+        brand_name: formData.brandName,
         project_type: formData.projectType,
-        budget: formData.budget || null,
-        timeline: formData.timeline || null,
-        description: formData.description || null
+        main_outcome: formData.mainOutcome,
+        pages_needed: formData.pagesNeeded,
+        features_needed: formData.featuresNeeded,
+        brand_content_status: formData.brandContentStatus,
+        timeline: formData.timeline,
+        additional_notes: formData.additionalNotes || null,
+        qualified_plan: plan
       });
 
     if (error) {
@@ -61,8 +102,37 @@ const Survey = () => {
       return;
     }
 
-    // Navigate to thank you page
-    navigate("/thank-you");
+    // Show result modal
+    setShowResult(true);
+  };
+
+  const toggleFeature = (feature: string) => {
+    setFormData(prev => ({
+      ...prev,
+      featuresNeeded: prev.featuresNeeded.includes(feature)
+        ? prev.featuresNeeded.filter(f => f !== feature)
+        : [...prev.featuresNeeded, feature]
+    }));
+  };
+
+  const getPlanContent = () => {
+    switch (qualifiedPlan) {
+      case "Premium":
+        return {
+          title: "You qualify for the Premium Build.",
+          description: "You're ready for a high-priority, fully loaded build — advanced features, content support, and rapid launch. We'll email your detailed Premium Build estimate and next steps."
+        };
+      case "Core":
+        return {
+          title: "You qualify for the Core Build.",
+          description: "You're a match for a feature-rich build with smarter flows and a fast 3–5 day launch window. We'll email your custom Core Build estimate based on the pages and features you selected."
+        };
+      default:
+        return {
+          title: "You qualify for the Essential Build.",
+          description: "Perfect for a fast, clean, high-conversion site with a tight turnaround. Our team will review your answers and email you a personalized Essential Build estimate shortly."
+        };
+    }
   };
 
   return (
@@ -88,16 +158,15 @@ const Survey = () => {
           <div className="max-w-3xl mx-auto">
             {/* Header */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-4">
-                <span className="text-sm font-medium text-accent">📋 Free Quote Survey</span>
-              </div>
-              
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-                Let's Build Something <span className="text-accent">Amazing</span>
+                Share your vision. We'll tell you your <span className="text-accent">Excellion build plan</span>.
               </h1>
               
+              <p className="text-lg text-muted-foreground mb-2">
+                Answer a few quick questions. We'll instantly show your recommended plan
+              </p>
               <p className="text-lg text-muted-foreground">
-                Tell us about your project and we'll provide a free, detailed quote within 24 hours.
+                <span className="text-accent font-semibold">(Essential, Core, or Premium)</span> and send a custom estimate to your email.
               </p>
             </div>
 
@@ -106,7 +175,7 @@ const Survey = () => {
               {/* Name */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-foreground">
-                  Full Name <span className="text-accent">*</span>
+                  Your name <span className="text-accent">*</span>
                 </Label>
                 <Input
                   id="name"
@@ -118,10 +187,25 @@ const Survey = () => {
                 />
               </div>
 
+              {/* Brand Name */}
+              <div className="space-y-2">
+                <Label htmlFor="brandName" className="text-foreground">
+                  Brand / business name <span className="text-accent">*</span>
+                </Label>
+                <Input
+                  id="brandName"
+                  value={formData.brandName}
+                  onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+                  placeholder="Your Brand"
+                  required
+                  className="bg-background/50"
+                />
+              </div>
+
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-foreground">
-                  Email Address <span className="text-accent">*</span>
+                  Email <span className="text-accent">*</span>
                 </Label>
                 <Input
                   id="email"
@@ -134,97 +218,183 @@ const Survey = () => {
                 />
               </div>
 
-              {/* Company */}
-              <div className="space-y-2">
-                <Label htmlFor="company" className="text-foreground">
-                  Company Name (Optional)
-                </Label>
-                <Input
-                  id="company"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  placeholder="Your Company Inc."
-                  className="bg-background/50"
-                />
-              </div>
-
               {/* Project Type */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label className="text-foreground">
-                  Project Type <span className="text-accent">*</span>
+                  What do you want us to build? <span className="text-accent">*</span>
                 </Label>
                 <RadioGroup
                   value={formData.projectType}
                   onValueChange={(value) => setFormData({ ...formData, projectType: value })}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  className="space-y-3"
                 >
                   <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="website" id="website" />
-                    <Label htmlFor="website" className="cursor-pointer flex-1">Website</Label>
+                    <RadioGroupItem value="simple-website" id="simple-website" />
+                    <Label htmlFor="simple-website" className="cursor-pointer flex-1">Simple website / landing page</Label>
                   </div>
                   <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="webapp" id="webapp" />
-                    <Label htmlFor="webapp" className="cursor-pointer flex-1">Web Application</Label>
+                    <RadioGroupItem value="website-with-features" id="website-with-features" />
+                    <Label htmlFor="website-with-features" className="cursor-pointer flex-1">Website with a few key features (forms, booking, etc.)</Label>
                   </div>
                   <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="ecommerce" id="ecommerce" />
-                    <Label htmlFor="ecommerce" className="cursor-pointer flex-1">E-commerce</Label>
+                    <RadioGroupItem value="online-store" id="online-store" />
+                    <Label htmlFor="online-store" className="cursor-pointer flex-1">Online store (products + checkout)</Label>
                   </div>
                   <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="other" id="other" />
-                    <Label htmlFor="other" className="cursor-pointer flex-1">Other</Label>
+                    <RadioGroupItem value="lead-gen-funnel" id="lead-gen-funnel" />
+                    <Label htmlFor="lead-gen-funnel" className="cursor-pointer flex-1">Lead-gen funnel (opt-in + thank-you page)</Label>
                   </div>
                 </RadioGroup>
               </div>
 
-              {/* Budget */}
-              <div className="space-y-2">
-                <Label htmlFor="budget" className="text-foreground">
-                  Budget Range
+              {/* Main Outcome */}
+              <div className="space-y-3">
+                <Label className="text-foreground">
+                  Main outcome you care about most <span className="text-accent">*</span>
                 </Label>
-                <Select value={formData.budget} onValueChange={(value) => setFormData({ ...formData, budget: value })}>
-                  <SelectTrigger className="bg-background/50">
-                    <SelectValue placeholder="Select your budget range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="under-5k">Under $5,000</SelectItem>
-                    <SelectItem value="5k-10k">$5,000 - $10,000</SelectItem>
-                    <SelectItem value="10k-25k">$10,000 - $25,000</SelectItem>
-                    <SelectItem value="25k-50k">$25,000 - $50,000</SelectItem>
-                    <SelectItem value="over-50k">Over $50,000</SelectItem>
-                  </SelectContent>
-                </Select>
+                <RadioGroup
+                  value={formData.mainOutcome}
+                  onValueChange={(value) => setFormData({ ...formData, mainOutcome: value })}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="professional" id="professional" />
+                    <Label htmlFor="professional" className="cursor-pointer flex-1">Look professional + trustworthy</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="leads" id="leads" />
+                    <Label htmlFor="leads" className="cursor-pointer flex-1">Get more leads / bookings</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="sell-online" id="sell-online" />
+                    <Label htmlFor="sell-online" className="cursor-pointer flex-1">Sell products or services online</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="convert-better" id="convert-better" />
+                    <Label htmlFor="convert-better" className="cursor-pointer flex-1">Make my ads / social convert better</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Pages Needed */}
+              <div className="space-y-3">
+                <Label className="text-foreground">
+                  How many pages do you think you need? <span className="text-accent">*</span>
+                </Label>
+                <RadioGroup
+                  value={formData.pagesNeeded}
+                  onValueChange={(value) => setFormData({ ...formData, pagesNeeded: value })}
+                  className="grid grid-cols-2 gap-3"
+                >
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="1-3" id="1-3" />
+                    <Label htmlFor="1-3" className="cursor-pointer flex-1">1–3</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="4-6" id="4-6" />
+                    <Label htmlFor="4-6" className="cursor-pointer flex-1">4–6</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="7-10" id="7-10" />
+                    <Label htmlFor="7-10" className="cursor-pointer flex-1">7–10</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="10-plus" id="10-plus" />
+                    <Label htmlFor="10-plus" className="cursor-pointer flex-1">10+ / not sure</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Features Needed */}
+              <div className="space-y-3">
+                <Label className="text-foreground">
+                  Which features do you need? <span className="text-accent">*</span>
+                </Label>
+                <div className="space-y-3">
+                  {[
+                    { id: "contact-form", label: "Contact / quote form" },
+                    { id: "booking", label: "Booking / calendar" },
+                    { id: "email-capture", label: "Email list or lead capture" },
+                    { id: "payments", label: "Payments / checkout" },
+                    { id: "online-ordering", label: "Online ordering (restaurant / delivery)" },
+                    { id: "automations", label: "Basic automations (emails, confirmations, reminders)" },
+                    { id: "not-sure", label: "Not sure, recommend for me" }
+                  ].map((feature) => (
+                    <div key={feature.id} className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <Checkbox
+                        id={feature.id}
+                        checked={formData.featuresNeeded.includes(feature.id)}
+                        onCheckedChange={() => toggleFeature(feature.id)}
+                      />
+                      <Label htmlFor={feature.id} className="cursor-pointer flex-1">
+                        {feature.label}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Brand & Content Status */}
+              <div className="space-y-3">
+                <Label className="text-foreground">
+                  Brand & content status <span className="text-accent">*</span>
+                </Label>
+                <RadioGroup
+                  value={formData.brandContentStatus}
+                  onValueChange={(value) => setFormData({ ...formData, brandContentStatus: value })}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="have-ready" id="have-ready" />
+                    <Label htmlFor="have-ready" className="cursor-pointer flex-1">I have logo + content ready</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="need-help-finishing" id="need-help-finishing" />
+                    <Label htmlFor="need-help-finishing" className="cursor-pointer flex-1">I have some, need help finishing</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="need-branding-content" id="need-branding-content" />
+                    <Label htmlFor="need-branding-content" className="cursor-pointer flex-1">I need help with branding + content</Label>
+                  </div>
+                </RadioGroup>
               </div>
 
               {/* Timeline */}
-              <div className="space-y-2">
-                <Label htmlFor="timeline" className="text-foreground">
-                  Desired Timeline
+              <div className="space-y-3">
+                <Label className="text-foreground">
+                  When are you hoping to launch? <span className="text-accent">*</span>
                 </Label>
-                <Select value={formData.timeline} onValueChange={(value) => setFormData({ ...formData, timeline: value })}>
-                  <SelectTrigger className="bg-background/50">
-                    <SelectValue placeholder="When do you need this completed?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="asap">ASAP (1-2 weeks)</SelectItem>
-                    <SelectItem value="1-month">1 Month</SelectItem>
-                    <SelectItem value="2-3-months">2-3 Months</SelectItem>
-                    <SelectItem value="flexible">Flexible</SelectItem>
-                  </SelectContent>
-                </Select>
+                <RadioGroup
+                  value={formData.timeline}
+                  onValueChange={(value) => setFormData({ ...formData, timeline: value })}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="2-3-days" id="2-3-days" />
+                    <Label htmlFor="2-3-days" className="cursor-pointer flex-1">2–3 days</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="3-5-days" id="3-5-days" />
+                    <Label htmlFor="3-5-days" className="cursor-pointer flex-1">3–5 days</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                    <RadioGroupItem value="5-7-days" id="5-7-days" />
+                    <Label htmlFor="5-7-days" className="cursor-pointer flex-1">5–7 days</Label>
+                  </div>
+                </RadioGroup>
               </div>
 
-              {/* Project Description */}
+              {/* Additional Notes */}
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-foreground">
-                  Project Description
+                <Label htmlFor="additionalNotes" className="text-foreground">
+                  Anything else we should know about your vision?
                 </Label>
                 <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Tell us about your project vision, key features you need, and any specific requirements..."
-                  rows={6}
+                  id="additionalNotes"
+                  value={formData.additionalNotes}
+                  onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
+                  placeholder="Share any additional details about your project..."
+                  rows={4}
                   className="bg-background/50"
                 />
               </div>
@@ -236,7 +406,7 @@ const Survey = () => {
                   size="lg"
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
                 >
-                  Get My Free Quote
+                  Submit & See My Plan
                 </Button>
               </div>
 
@@ -249,6 +419,45 @@ const Survey = () => {
         
         <Footer />
       </div>
+
+      {/* Result Dialog */}
+      <Dialog open={showResult} onOpenChange={setShowResult}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-accent">
+              {getPlanContent().title}
+            </DialogTitle>
+            <DialogDescription className="text-base pt-4 space-y-4">
+              <p>{getPlanContent().description}</p>
+              
+              <p className="text-foreground">
+                We've received your details at <span className="text-accent font-semibold">{formData.email}</span>. 
+                Watch for your Excellion estimate and build plan.
+              </p>
+
+              <p className="text-xs text-muted-foreground italic">
+                This is an instant plan recommendation. Final pricing is confirmed after a quick review by our team.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              onClick={() => navigate("/contact")}
+              className="w-full bg-accent hover:bg-accent/90"
+            >
+              Book a Call with Excellion
+            </Button>
+            <Button
+              onClick={() => navigate("/")}
+              variant="outline"
+              className="w-full"
+            >
+              Back to Home
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
