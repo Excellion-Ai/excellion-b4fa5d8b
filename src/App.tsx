@@ -11,6 +11,7 @@ import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import Legal from "./pages/Legal";
 import Auth from "./pages/Auth";
+import ThankYou from "./pages/ThankYou";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
       <Route path="/contact" element={<Contact />} />
       <Route path="/legal" element={<Legal />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/thank-you" element={<ThankYou />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

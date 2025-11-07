@@ -61,24 +61,8 @@ const Survey = () => {
       return;
     }
 
-    toast({
-      title: "Survey Submitted!",
-      description: "We'll get back to you within 24 hours with your free quote.",
-    });
-
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      company: "",
-      projectType: "",
-      budget: "",
-      timeline: "",
-      description: ""
-    });
-
-    // Navigate back after 2 seconds
-    setTimeout(() => navigate("/dfy"), 2000);
+    // Navigate to thank you page
+    navigate("/thank-you");
   };
 
   return (
