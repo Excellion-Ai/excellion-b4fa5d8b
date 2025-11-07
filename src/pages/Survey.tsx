@@ -176,7 +176,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="name" className="text-foreground text-sm">
-                    Your name <span className="text-accent">*</span>
+                    Your name <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                   </Label>
                   <Input
                     id="name"
@@ -190,7 +190,7 @@ const Survey = () => {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="brandName" className="text-foreground text-sm">
-                    Brand / business name <span className="text-accent">*</span>
+                    Brand / business name <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                   </Label>
                   <Input
                     id="brandName"
@@ -205,7 +205,7 @@ const Survey = () => {
 
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-foreground text-sm">
-                  Email <span className="text-accent">*</span>
+                  Email <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                 </Label>
                 <Input
                   id="email"
@@ -222,7 +222,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    What do you want us to build? <span className="text-accent">*</span>
+                    What do you want us to build? <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.projectType}
@@ -250,7 +250,7 @@ const Survey = () => {
 
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Main outcome <span className="text-accent">*</span>
+                    Main outcome <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.mainOutcome}
@@ -281,7 +281,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    How many pages? <span className="text-accent">*</span>
+                    How many pages? <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.pagesNeeded}
@@ -309,7 +309,7 @@ const Survey = () => {
 
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Launch timeline <span className="text-accent">*</span>
+                    Launch timeline <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.timeline}
@@ -336,7 +336,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Features needed <span className="text-accent">*</span>
+                    Features needed <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                   </Label>
                   <div className="space-y-2">
                     {[
@@ -364,7 +364,7 @@ const Survey = () => {
 
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Brand & content <span className="text-accent">*</span>
+                    Brand & content <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.brandContentStatus}
