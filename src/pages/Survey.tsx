@@ -171,7 +171,7 @@ const Survey = () => {
             </div>
 
             {/* Survey Form */}
-            <form onSubmit={handleSubmit} className="bg-white/60 backdrop-blur-md border border-border rounded-2xl p-6 md:p-8 space-y-5 shadow-xl">
+            <form onSubmit={handleSubmit} className="bg-black/80 backdrop-blur-md border border-accent/30 rounded-2xl p-6 md:p-8 space-y-5 shadow-xl">
               {/* Contact Info - Grid Layout */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
