@@ -3,7 +3,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Sparkles, BookOpen, Egg, Users } from "lucide-react";
+import { ArrowLeft, Sparkles, BookOpen, Egg, Users, Wrench } from "lucide-react";
 import operationsBackgroundVideo from "@/assets/operations-background-new.mp4";
 
 const Operations = () => {
@@ -146,6 +146,41 @@ const Operations = () => {
               </Card>
             );
           })}
+        </div>
+
+        {/* Site Maintenance Section - Centered */}
+        <div className="flex justify-center max-w-6xl mx-auto mb-16">
+          <Card 
+            className="bg-card border-border hover:border-accent/50 transition-all duration-300 animate-fade-in w-full md:w-[calc(50%-0.75rem)]"
+          >
+            <CardHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-accent/10 rounded-lg">
+                  <Wrench className="h-6 w-6 text-accent" />
+                </div>
+                <CardTitle className="text-2xl">Site Maintenance</CardTitle>
+              </div>
+              <CardDescription className="text-base">
+                We handle the tech, security, and updates so your site stays fast and safe.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  <span className="text-sm">Technical Health: Daily backups, plugin/core updates, and performance checks.</span>
+                </li>
+                <li className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  <span className="text-sm">Security Shield: 24/7 uptime monitoring, malware removal, and SSL management.</span>
+                </li>
+                <li className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  <span className="text-sm">Priority Support: Includes managed hosting, domain renewal, and content edits.</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
 
       </main>
