@@ -175,7 +175,7 @@ const Survey = () => {
               {/* Contact Info - Grid Layout */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="name" className="text-foreground text-sm">
+                  <Label htmlFor="name" className="text-accent text-base font-semibold">
                     Your name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <Input
@@ -189,7 +189,7 @@ const Survey = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="brandName" className="text-foreground text-sm">
+                  <Label htmlFor="brandName" className="text-accent text-base font-semibold">
                     Brand / business name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <Input
@@ -204,7 +204,7 @@ const Survey = () => {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-foreground text-sm">
+                <Label htmlFor="email" className="text-accent text-base font-semibold">
                   Email <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                 </Label>
                 <Input
@@ -221,7 +221,7 @@ const Survey = () => {
               {/* Project Type & Main Outcome - Side by Side */}
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label className="text-foreground text-sm">
+                  <Label className="text-accent text-base font-semibold">
                     What do you want us to build? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
@@ -231,25 +231,25 @@ const Survey = () => {
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="simple-website" id="simple-website" />
-                      <Label htmlFor="simple-website" className="cursor-pointer flex-1 text-sm">Simple website / landing page</Label>
+                      <Label htmlFor="simple-website" className="cursor-pointer flex-1 text-base font-medium text-foreground">Simple website / landing page</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="website-with-features" id="website-with-features" />
-                      <Label htmlFor="website-with-features" className="cursor-pointer flex-1 text-sm">Website with features</Label>
+                      <Label htmlFor="website-with-features" className="cursor-pointer flex-1 text-base font-medium text-foreground">Website with features</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="online-store" id="online-store" />
-                      <Label htmlFor="online-store" className="cursor-pointer flex-1 text-sm">Online store</Label>
+                      <Label htmlFor="online-store" className="cursor-pointer flex-1 text-base font-medium text-foreground">Online store</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="lead-gen-funnel" id="lead-gen-funnel" />
-                      <Label htmlFor="lead-gen-funnel" className="cursor-pointer flex-1 text-sm">Lead-gen funnel</Label>
+                      <Label htmlFor="lead-gen-funnel" className="cursor-pointer flex-1 text-base font-medium text-foreground">Lead-gen funnel</Label>
                     </div>
                   </RadioGroup>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-foreground text-sm">
+                  <Label className="text-accent text-base font-semibold">
                     Main outcome <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
@@ -259,19 +259,19 @@ const Survey = () => {
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="professional" id="professional" />
-                      <Label htmlFor="professional" className="cursor-pointer flex-1 text-sm">Look professional</Label>
+                      <Label htmlFor="professional" className="cursor-pointer flex-1 text-base font-medium text-foreground">Look professional</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="leads" id="leads" />
-                      <Label htmlFor="leads" className="cursor-pointer flex-1 text-sm">Get more leads</Label>
+                      <Label htmlFor="leads" className="cursor-pointer flex-1 text-base font-medium text-foreground">Get more leads</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="sell-online" id="sell-online" />
-                      <Label htmlFor="sell-online" className="cursor-pointer flex-1 text-sm">Sell online</Label>
+                      <Label htmlFor="sell-online" className="cursor-pointer flex-1 text-base font-medium text-foreground">Sell online</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="convert-better" id="convert-better" />
-                      <Label htmlFor="convert-better" className="cursor-pointer flex-1 text-sm">Better conversions</Label>
+                      <Label htmlFor="convert-better" className="cursor-pointer flex-1 text-base font-medium text-foreground">Better conversions</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -280,7 +280,7 @@ const Survey = () => {
               {/* Pages & Timeline - Compact Grid */}
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label className="text-foreground text-sm">
+                  <Label className="text-accent text-base font-semibold">
                     How many pages? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
@@ -290,25 +290,25 @@ const Survey = () => {
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="1-3" id="1-3" />
-                      <Label htmlFor="1-3" className="cursor-pointer flex-1 text-sm">1–3</Label>
+                      <Label htmlFor="1-3" className="cursor-pointer flex-1 text-base font-medium text-foreground">1–3</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="4-6" id="4-6" />
-                      <Label htmlFor="4-6" className="cursor-pointer flex-1 text-sm">4–6</Label>
+                      <Label htmlFor="4-6" className="cursor-pointer flex-1 text-base font-medium text-foreground">4–6</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="7-10" id="7-10" />
-                      <Label htmlFor="7-10" className="cursor-pointer flex-1 text-sm">7–10</Label>
+                      <Label htmlFor="7-10" className="cursor-pointer flex-1 text-base font-medium text-foreground">7–10</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="10-plus" id="10-plus" />
-                      <Label htmlFor="10-plus" className="cursor-pointer flex-1 text-sm">10+</Label>
+                      <Label htmlFor="10-plus" className="cursor-pointer flex-1 text-base font-medium text-foreground">10+</Label>
                     </div>
                   </RadioGroup>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-foreground text-sm">
+                  <Label className="text-accent text-base font-semibold">
                     Launch timeline <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
@@ -318,15 +318,15 @@ const Survey = () => {
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="2-3-days" id="2-3-days" />
-                      <Label htmlFor="2-3-days" className="cursor-pointer flex-1 text-sm">2–3 days</Label>
+                      <Label htmlFor="2-3-days" className="cursor-pointer flex-1 text-base font-medium text-foreground">2–3 days</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="3-5-days" id="3-5-days" />
-                      <Label htmlFor="3-5-days" className="cursor-pointer flex-1 text-sm">3–5 days</Label>
+                      <Label htmlFor="3-5-days" className="cursor-pointer flex-1 text-base font-medium text-foreground">3–5 days</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="5-7-days" id="5-7-days" />
-                      <Label htmlFor="5-7-days" className="cursor-pointer flex-1 text-sm">5–7 days</Label>
+                      <Label htmlFor="5-7-days" className="cursor-pointer flex-1 text-base font-medium text-foreground">5–7 days</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -335,8 +335,8 @@ const Survey = () => {
               {/* Features & Brand Status - Grid */}
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label className="text-foreground text-sm">
-                    Features needed <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span> <span className="text-muted-foreground text-xs">(select all that apply)</span>
+                  <Label className="text-accent text-base font-semibold">
+                    Features needed <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span> <span className="text-foreground text-sm font-medium">(select all that apply)</span>
                   </Label>
                   <div className="space-y-2">
                     {[
@@ -348,22 +348,22 @@ const Survey = () => {
                       { id: "automations", label: "Automations" },
                       { id: "not-sure", label: "Not sure" }
                     ].map((feature) => (
-                      <div key={feature.id} className="flex items-center space-x-2 bg-background/50 p-2 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                        <Checkbox
-                          id={feature.id}
-                          checked={formData.featuresNeeded.includes(feature.id)}
-                          onCheckedChange={() => toggleFeature(feature.id)}
-                        />
-                        <Label htmlFor={feature.id} className="cursor-pointer flex-1 text-sm">
-                          {feature.label}
-                        </Label>
-                      </div>
+                       <div key={feature.id} className="flex items-center space-x-2 bg-background/50 p-2 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                         <Checkbox
+                           id={feature.id}
+                           checked={formData.featuresNeeded.includes(feature.id)}
+                           onCheckedChange={() => toggleFeature(feature.id)}
+                         />
+                         <Label htmlFor={feature.id} className="cursor-pointer flex-1 text-base font-medium text-foreground">
+                           {feature.label}
+                         </Label>
+                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-foreground text-sm">
+                  <Label className="text-accent text-base font-semibold">
                     Brand & content <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
@@ -373,15 +373,15 @@ const Survey = () => {
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="have-ready" id="have-ready" />
-                      <Label htmlFor="have-ready" className="cursor-pointer flex-1 text-sm">Have ready</Label>
+                      <Label htmlFor="have-ready" className="cursor-pointer flex-1 text-base font-medium text-foreground">Have ready</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="need-help-finishing" id="need-help-finishing" />
-                      <Label htmlFor="need-help-finishing" className="cursor-pointer flex-1 text-sm">Need help finishing</Label>
+                      <Label htmlFor="need-help-finishing" className="cursor-pointer flex-1 text-base font-medium text-foreground">Need help finishing</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="need-branding-content" id="need-branding-content" />
-                      <Label htmlFor="need-branding-content" className="cursor-pointer flex-1 text-sm">Need branding + content</Label>
+                      <Label htmlFor="need-branding-content" className="cursor-pointer flex-1 text-base font-medium text-foreground">Need branding + content</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -389,7 +389,7 @@ const Survey = () => {
 
               {/* Additional Notes */}
               <div className="space-y-1.5">
-                <Label htmlFor="additionalNotes" className="text-foreground text-sm">
+                <Label htmlFor="additionalNotes" className="text-accent text-base font-semibold">
                   Anything else we should know?
                 </Label>
                 <Textarea
