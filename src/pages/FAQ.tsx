@@ -77,7 +77,7 @@ const FAQ = () => {
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
             Frequently Asked Questions
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-white font-semibold max-w-2xl mx-auto leading-relaxed">
             Got questions? We've got answers. Can't find what you're looking for? 
             Join our Discord and ask away!
           </p>
