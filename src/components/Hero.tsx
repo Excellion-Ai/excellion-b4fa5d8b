@@ -50,7 +50,7 @@ const Hero = () => {
               <span className="text-muted-foreground text-3xl md:text-4xl">Coming Soon...</span>
             </h1>
 
-            <p className="text-xl text-foreground max-w-2xl mx-auto mt-6">
+            <p className="text-xl text-white max-w-2xl mx-auto mt-6" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000' }}>
               In the meantime, let us build your site—done right, done fast.
             </p>
           </div>
