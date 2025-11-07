@@ -18,15 +18,15 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-end flex-col">
           <video
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
-            className="w-full h-auto min-h-full object-cover will-change-transform scale-150"
-            style={{ backfaceVisibility: 'hidden' }}
+            className="w-full h-auto min-h-full object-cover will-change-transform scale-125"
+            style={{ backfaceVisibility: 'hidden', objectPosition: 'center bottom' }}
           >
             <source src={excellionCityVideo} type="video/mp4" />
           </video>
@@ -34,7 +34,7 @@ const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-6 py-32">
+      <div className="relative z-10 container mx-auto px-6 py-24">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-accent/50">
