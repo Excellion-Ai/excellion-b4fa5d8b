@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="space-y-4 md:col-span-3">
             <h3 className="text-xl font-bold text-foreground">Excellion</h3>
             <p className="text-sm text-muted-foreground">
-              Building beautiful websites and apps for small businesses. Choose DIY templates or let our experts handle everything.
+              Excellion is a done-for-you and AI-assisted web builder, created by AI engineers, offering professional custom builds that design, build, and launch high-converting websites fast from a simple survey—no coding, no hassle.
             </p>
           </div>
 
