@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 
 const Survey = () => {
@@ -24,7 +25,7 @@ const Survey = () => {
     description: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -34,6 +35,29 @@ const Survey = () => {
         description: "Please fill in all required fields.",
         variant: "destructive"
       });
+      return;
+    }
+
+    // Insert into database
+    const { error } = await supabase
+      .from('quote_requests')
+      .insert({
+        name: formData.name,
+        email: formData.email,
+        company: formData.company || null,
+        project_type: formData.projectType,
+        budget: formData.budget || null,
+        timeline: formData.timeline || null,
+        description: formData.description || null
+      });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit your request. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error submitting quote request:", error);
       return;
     }
 
