@@ -151,7 +151,7 @@ const Operations = () => {
         {/* Site Maintenance Section - Centered */}
         <div className="flex justify-center max-w-6xl mx-auto mb-16">
           <Card 
-            className="bg-card border-border hover:border-accent/50 transition-all duration-300 animate-fade-in w-full md:w-3/4 lg:w-2/3"
+            className="bg-card border-border hover:border-accent/50 transition-all duration-300 animate-fade-in w-full"
           >
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
