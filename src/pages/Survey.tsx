@@ -171,12 +171,12 @@ const Survey = () => {
             </div>
 
             {/* Survey Form */}
-            <form onSubmit={handleSubmit} className="bg-white/95 backdrop-blur-md border border-border rounded-2xl p-6 md:p-8 space-y-5 shadow-xl">
+            <form onSubmit={handleSubmit} className="bg-white/60 backdrop-blur-md border border-border rounded-2xl p-6 md:p-8 space-y-5 shadow-xl">
               {/* Contact Info - Grid Layout */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="name" className="text-foreground text-sm">
-                    Your name <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                    Your name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <Input
                     id="name"
@@ -190,7 +190,7 @@ const Survey = () => {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="brandName" className="text-foreground text-sm">
-                    Brand / business name <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                    Brand / business name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <Input
                     id="brandName"
@@ -205,7 +205,7 @@ const Survey = () => {
 
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-foreground text-sm">
-                  Email <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                  Email <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                 </Label>
                 <Input
                   id="email"
@@ -222,7 +222,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    What do you want us to build? <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                    What do you want us to build? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.projectType}
@@ -250,7 +250,7 @@ const Survey = () => {
 
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Main outcome <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                    Main outcome <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.mainOutcome}
@@ -281,7 +281,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    How many pages? <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                    How many pages? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.pagesNeeded}
@@ -309,7 +309,7 @@ const Survey = () => {
 
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Launch timeline <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                    Launch timeline <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.timeline}
@@ -336,7 +336,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Features needed <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span> <span className="text-muted-foreground text-xs">(select all that apply)</span>
+                    Features needed <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span> <span className="text-muted-foreground text-xs">(select all that apply)</span>
                   </Label>
                   <div className="space-y-2">
                     {[
@@ -364,7 +364,7 @@ const Survey = () => {
 
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Brand & content <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                    Brand & content <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
                   <RadioGroup
                     value={formData.brandContentStatus}
