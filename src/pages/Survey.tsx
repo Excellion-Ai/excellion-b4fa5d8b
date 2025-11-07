@@ -184,15 +184,8 @@ const Survey = () => {
             {/* Header */}
             <div className="text-center mb-12 bg-black/80 backdrop-blur-md rounded-2xl p-8 border border-accent/20">
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Share your vision. We'll tell you your <span className="text-accent">Excellion build plan</span>.
+                Share your vision in a quick survey, and we'll have your custom <span className="text-accent">Excellion estimate</span> ready within hours.
               </h1>
-              
-              <p className="text-lg text-white/90 mb-2">
-                Answer a few quick questions. We'll instantly show your recommended plan
-              </p>
-              <p className="text-lg text-white/90">
-                <span className="text-accent font-semibold">(Essential, Core, or Premium)</span> and send a custom estimate to your email.
-              </p>
             </div>
 
             {/* Survey Form */}
