@@ -184,7 +184,7 @@ const Survey = () => {
             {/* Header */}
             <div className="text-center mb-12 bg-black/80 backdrop-blur-md rounded-2xl p-8 border border-accent/20">
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Share your vision in a quick survey, and we'll email or text you your custom <span className="text-accent">website estimate</span>.
+                Share your vision in a quick survey, and we'll send your <span className="text-accent">estimate</span> plus a link to book a call by email or text.
               </h1>
             </div>
 
