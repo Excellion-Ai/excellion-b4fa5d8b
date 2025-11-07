@@ -171,40 +171,40 @@ const Survey = () => {
             </div>
 
             {/* Survey Form */}
-            <form onSubmit={handleSubmit} className="bg-card/95 backdrop-blur-md border border-border rounded-2xl p-8 space-y-6">
-              {/* Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-foreground">
-                  Your name <span className="text-accent">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="John Doe"
-                  required
-                  className="bg-background/50"
-                />
+            <form onSubmit={handleSubmit} className="bg-card/95 backdrop-blur-md border border-border rounded-2xl p-6 md:p-8 space-y-5">
+              {/* Contact Info - Grid Layout */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="name" className="text-foreground text-sm">
+                    Your name <span className="text-accent">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="John Doe"
+                    required
+                    className="bg-background/50 h-9"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="brandName" className="text-foreground text-sm">
+                    Brand / business name <span className="text-accent">*</span>
+                  </Label>
+                  <Input
+                    id="brandName"
+                    value={formData.brandName}
+                    onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+                    placeholder="Your Brand"
+                    required
+                    className="bg-background/50 h-9"
+                  />
+                </div>
               </div>
 
-              {/* Brand Name */}
-              <div className="space-y-2">
-                <Label htmlFor="brandName" className="text-foreground">
-                  Brand / business name <span className="text-accent">*</span>
-                </Label>
-                <Input
-                  id="brandName"
-                  value={formData.brandName}
-                  onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
-                  placeholder="Your Brand"
-                  required
-                  className="bg-background/50"
-                />
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-foreground text-sm">
                   Email <span className="text-accent">*</span>
                 </Label>
                 <Input
@@ -214,193 +214,196 @@ const Survey = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="john@example.com"
                   required
-                  className="bg-background/50"
+                  className="bg-background/50 h-9"
                 />
               </div>
 
-              {/* Project Type */}
-              <div className="space-y-3">
-                <Label className="text-foreground">
-                  What do you want us to build? <span className="text-accent">*</span>
-                </Label>
-                <RadioGroup
-                  value={formData.projectType}
-                  onValueChange={(value) => setFormData({ ...formData, projectType: value })}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="simple-website" id="simple-website" />
-                    <Label htmlFor="simple-website" className="cursor-pointer flex-1">Simple website / landing page</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="website-with-features" id="website-with-features" />
-                    <Label htmlFor="website-with-features" className="cursor-pointer flex-1">Website with a few key features (forms, booking, etc.)</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="online-store" id="online-store" />
-                    <Label htmlFor="online-store" className="cursor-pointer flex-1">Online store (products + checkout)</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="lead-gen-funnel" id="lead-gen-funnel" />
-                    <Label htmlFor="lead-gen-funnel" className="cursor-pointer flex-1">Lead-gen funnel (opt-in + thank-you page)</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {/* Main Outcome */}
-              <div className="space-y-3">
-                <Label className="text-foreground">
-                  Main outcome you care about most <span className="text-accent">*</span>
-                </Label>
-                <RadioGroup
-                  value={formData.mainOutcome}
-                  onValueChange={(value) => setFormData({ ...formData, mainOutcome: value })}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="professional" id="professional" />
-                    <Label htmlFor="professional" className="cursor-pointer flex-1">Look professional + trustworthy</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="leads" id="leads" />
-                    <Label htmlFor="leads" className="cursor-pointer flex-1">Get more leads / bookings</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="sell-online" id="sell-online" />
-                    <Label htmlFor="sell-online" className="cursor-pointer flex-1">Sell products or services online</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="convert-better" id="convert-better" />
-                    <Label htmlFor="convert-better" className="cursor-pointer flex-1">Make my ads / social convert better</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {/* Pages Needed */}
-              <div className="space-y-3">
-                <Label className="text-foreground">
-                  How many pages do you think you need? <span className="text-accent">*</span>
-                </Label>
-                <RadioGroup
-                  value={formData.pagesNeeded}
-                  onValueChange={(value) => setFormData({ ...formData, pagesNeeded: value })}
-                  className="grid grid-cols-2 gap-3"
-                >
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="1-3" id="1-3" />
-                    <Label htmlFor="1-3" className="cursor-pointer flex-1">1–3</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="4-6" id="4-6" />
-                    <Label htmlFor="4-6" className="cursor-pointer flex-1">4–6</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="7-10" id="7-10" />
-                    <Label htmlFor="7-10" className="cursor-pointer flex-1">7–10</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="10-plus" id="10-plus" />
-                    <Label htmlFor="10-plus" className="cursor-pointer flex-1">10+ / not sure</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {/* Features Needed */}
-              <div className="space-y-3">
-                <Label className="text-foreground">
-                  Which features do you need? <span className="text-accent">*</span>
-                </Label>
-                <div className="space-y-3">
-                  {[
-                    { id: "contact-form", label: "Contact / quote form" },
-                    { id: "booking", label: "Booking / calendar" },
-                    { id: "email-capture", label: "Email list or lead capture" },
-                    { id: "payments", label: "Payments / checkout" },
-                    { id: "online-ordering", label: "Online ordering (restaurant / delivery)" },
-                    { id: "automations", label: "Basic automations (emails, confirmations, reminders)" },
-                    { id: "not-sure", label: "Not sure, recommend for me" }
-                  ].map((feature) => (
-                    <div key={feature.id} className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <Checkbox
-                        id={feature.id}
-                        checked={formData.featuresNeeded.includes(feature.id)}
-                        onCheckedChange={() => toggleFeature(feature.id)}
-                      />
-                      <Label htmlFor={feature.id} className="cursor-pointer flex-1">
-                        {feature.label}
-                      </Label>
+              {/* Project Type & Main Outcome - Side by Side */}
+              <div className="grid md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm">
+                    What do you want us to build? <span className="text-accent">*</span>
+                  </Label>
+                  <RadioGroup
+                    value={formData.projectType}
+                    onValueChange={(value) => setFormData({ ...formData, projectType: value })}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="simple-website" id="simple-website" />
+                      <Label htmlFor="simple-website" className="cursor-pointer flex-1 text-sm">Simple website / landing page</Label>
                     </div>
-                  ))}
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="website-with-features" id="website-with-features" />
+                      <Label htmlFor="website-with-features" className="cursor-pointer flex-1 text-sm">Website with features</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="online-store" id="online-store" />
+                      <Label htmlFor="online-store" className="cursor-pointer flex-1 text-sm">Online store</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="lead-gen-funnel" id="lead-gen-funnel" />
+                      <Label htmlFor="lead-gen-funnel" className="cursor-pointer flex-1 text-sm">Lead-gen funnel</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm">
+                    Main outcome <span className="text-accent">*</span>
+                  </Label>
+                  <RadioGroup
+                    value={formData.mainOutcome}
+                    onValueChange={(value) => setFormData({ ...formData, mainOutcome: value })}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="professional" id="professional" />
+                      <Label htmlFor="professional" className="cursor-pointer flex-1 text-sm">Look professional</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="leads" id="leads" />
+                      <Label htmlFor="leads" className="cursor-pointer flex-1 text-sm">Get more leads</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="sell-online" id="sell-online" />
+                      <Label htmlFor="sell-online" className="cursor-pointer flex-1 text-sm">Sell online</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="convert-better" id="convert-better" />
+                      <Label htmlFor="convert-better" className="cursor-pointer flex-1 text-sm">Better conversions</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
               </div>
 
-              {/* Brand & Content Status */}
-              <div className="space-y-3">
-                <Label className="text-foreground">
-                  Brand & content status <span className="text-accent">*</span>
-                </Label>
-                <RadioGroup
-                  value={formData.brandContentStatus}
-                  onValueChange={(value) => setFormData({ ...formData, brandContentStatus: value })}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="have-ready" id="have-ready" />
-                    <Label htmlFor="have-ready" className="cursor-pointer flex-1">I have logo + content ready</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="need-help-finishing" id="need-help-finishing" />
-                    <Label htmlFor="need-help-finishing" className="cursor-pointer flex-1">I have some, need help finishing</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="need-branding-content" id="need-branding-content" />
-                    <Label htmlFor="need-branding-content" className="cursor-pointer flex-1">I need help with branding + content</Label>
-                  </div>
-                </RadioGroup>
+              {/* Pages & Timeline - Compact Grid */}
+              <div className="grid md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm">
+                    How many pages? <span className="text-accent">*</span>
+                  </Label>
+                  <RadioGroup
+                    value={formData.pagesNeeded}
+                    onValueChange={(value) => setFormData({ ...formData, pagesNeeded: value })}
+                    className="grid grid-cols-2 gap-2"
+                  >
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="1-3" id="1-3" />
+                      <Label htmlFor="1-3" className="cursor-pointer flex-1 text-sm">1–3</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="4-6" id="4-6" />
+                      <Label htmlFor="4-6" className="cursor-pointer flex-1 text-sm">4–6</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="7-10" id="7-10" />
+                      <Label htmlFor="7-10" className="cursor-pointer flex-1 text-sm">7–10</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="10-plus" id="10-plus" />
+                      <Label htmlFor="10-plus" className="cursor-pointer flex-1 text-sm">10+</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm">
+                    Launch timeline <span className="text-accent">*</span>
+                  </Label>
+                  <RadioGroup
+                    value={formData.timeline}
+                    onValueChange={(value) => setFormData({ ...formData, timeline: value })}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="2-3-days" id="2-3-days" />
+                      <Label htmlFor="2-3-days" className="cursor-pointer flex-1 text-sm">2–3 days</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="3-5-days" id="3-5-days" />
+                      <Label htmlFor="3-5-days" className="cursor-pointer flex-1 text-sm">3–5 days</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="5-7-days" id="5-7-days" />
+                      <Label htmlFor="5-7-days" className="cursor-pointer flex-1 text-sm">5–7 days</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
               </div>
 
-              {/* Timeline */}
-              <div className="space-y-3">
-                <Label className="text-foreground">
-                  When are you hoping to launch? <span className="text-accent">*</span>
-                </Label>
-                <RadioGroup
-                  value={formData.timeline}
-                  onValueChange={(value) => setFormData({ ...formData, timeline: value })}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="2-3-days" id="2-3-days" />
-                    <Label htmlFor="2-3-days" className="cursor-pointer flex-1">2–3 days</Label>
+              {/* Features & Brand Status - Grid */}
+              <div className="grid md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm">
+                    Features needed <span className="text-accent">*</span>
+                  </Label>
+                  <div className="space-y-2">
+                    {[
+                      { id: "contact-form", label: "Contact form" },
+                      { id: "booking", label: "Booking" },
+                      { id: "email-capture", label: "Email capture" },
+                      { id: "payments", label: "Payments" },
+                      { id: "online-ordering", label: "Online ordering" },
+                      { id: "automations", label: "Automations" },
+                      { id: "not-sure", label: "Not sure" }
+                    ].map((feature) => (
+                      <div key={feature.id} className="flex items-center space-x-2 bg-background/50 p-2 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                        <Checkbox
+                          id={feature.id}
+                          checked={formData.featuresNeeded.includes(feature.id)}
+                          onCheckedChange={() => toggleFeature(feature.id)}
+                        />
+                        <Label htmlFor={feature.id} className="cursor-pointer flex-1 text-sm">
+                          {feature.label}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="3-5-days" id="3-5-days" />
-                    <Label htmlFor="3-5-days" className="cursor-pointer flex-1">3–5 days</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-4 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                    <RadioGroupItem value="5-7-days" id="5-7-days" />
-                    <Label htmlFor="5-7-days" className="cursor-pointer flex-1">5–7 days</Label>
-                  </div>
-                </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-foreground text-sm">
+                    Brand & content <span className="text-accent">*</span>
+                  </Label>
+                  <RadioGroup
+                    value={formData.brandContentStatus}
+                    onValueChange={(value) => setFormData({ ...formData, brandContentStatus: value })}
+                    className="space-y-2"
+                  >
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="have-ready" id="have-ready" />
+                      <Label htmlFor="have-ready" className="cursor-pointer flex-1 text-sm">Have ready</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="need-help-finishing" id="need-help-finishing" />
+                      <Label htmlFor="need-help-finishing" className="cursor-pointer flex-1 text-sm">Need help finishing</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="need-branding-content" id="need-branding-content" />
+                      <Label htmlFor="need-branding-content" className="cursor-pointer flex-1 text-sm">Need branding + content</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
               </div>
 
               {/* Additional Notes */}
-              <div className="space-y-2">
-                <Label htmlFor="additionalNotes" className="text-foreground">
-                  Anything else we should know about your vision?
+              <div className="space-y-1.5">
+                <Label htmlFor="additionalNotes" className="text-foreground text-sm">
+                  Anything else we should know?
                 </Label>
                 <Textarea
                   id="additionalNotes"
                   value={formData.additionalNotes}
                   onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
-                  placeholder="Share any additional details about your project..."
-                  rows={4}
-                  className="bg-background/50"
+                  placeholder="Share any additional details..."
+                  rows={3}
+                  className="bg-background/50 text-sm"
                 />
               </div>
 
               {/* Submit Button */}
-              <div className="pt-4">
+              <div className="pt-2">
                 <Button 
                   type="submit"
                   size="lg"
@@ -410,7 +413,7 @@ const Survey = () => {
                 </Button>
               </div>
 
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 We respect your privacy. Your information will never be shared with third parties.
               </p>
             </form>
