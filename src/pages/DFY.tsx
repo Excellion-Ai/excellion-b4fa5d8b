@@ -14,7 +14,7 @@ const DFY = () => {
     {
       icon: <Code className="h-12 w-12 text-accent animate-code" />,
       title: "Custom Development",
-      description: "Our expert developers build your entire website or app from scratch, tailored to your exact specifications."
+      description: "Our expert developers build your entire website from scratch, tailored to your exact specifications."
     },
     {
       icon: <Zap className="h-12 w-12 text-accent animate-lightning" />,
