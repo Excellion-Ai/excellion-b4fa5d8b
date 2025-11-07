@@ -106,7 +106,7 @@ const DFY = () => {
           
           <div className="space-y-8">
             {[
-              { step: "01", title: "Discovery", description: "We get right to work. When we hop on the call, we'll have an initial mockup ready for you. We'll review it together and quickly align the design with your business goals." },
+              { step: "01", title: "Discovery", description: "First, you'll get a free website estimate based on your vision. Then you'll book a call, and we'll already have an initial mockup ready—together we'll refine it live and align everything with your brand and business goals." },
               { step: "02", title: "Development", description: "Expert developers build your website or app with clean, efficient code." },
               { step: "03", title: "Launch", description: "We deploy your project and provide ongoing support for smooth operation." }
             ].map((item, index) => (
@@ -153,7 +153,7 @@ const DFY = () => {
                   <div>
                     <h3 className="text-3xl font-bold text-foreground mb-3">Discovery</h3>
                     <p className="text-lg text-muted-foreground leading-relaxed">
-                      We get right to work. When we hop on the call, we'll have an initial mockup ready for you. We'll review it together and quickly align the design with your business goals.
+                      First, you'll get a free website estimate based on your vision. Then you'll book a call, and we'll already have an initial mockup ready—together we'll refine it live and align everything with your brand and business goals.
                     </p>
                   </div>
                 </div>
