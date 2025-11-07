@@ -131,7 +131,7 @@ const DFY = () => {
                 setShowProcessModal(false);
                 navigate("/survey");
               }}
-              className="absolute top-6 right-6 p-2 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
+              className="absolute top-4 right-4 md:top-6 md:right-6 p-3 md:p-2 rounded-full bg-red-500 hover:bg-red-600 transition-colors z-50 min-w-[48px] min-h-[48px] flex items-center justify-center"
               aria-label="Close and continue to survey"
             >
               <X className="h-6 w-6 text-white" />
