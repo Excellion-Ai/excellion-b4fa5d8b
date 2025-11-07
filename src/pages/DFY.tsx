@@ -29,7 +29,7 @@ const DFY = () => {
     {
       icon: <Rocket className="h-12 w-12 text-accent animate-rocket" />,
       title: "Scalable Solutions",
-      description: "Built to grow with your business, from startup to enterprise-level applications."
+      description: "Built to grow with your business, from startup to enterprise-level assistance."
     }
   ];
 
