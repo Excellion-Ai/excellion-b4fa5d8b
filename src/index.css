@@ -106,3 +106,66 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Icon Animations */
+  @keyframes lightning-flash {
+    0%, 100% {
+      opacity: 1;
+      filter: drop-shadow(0 0 8px hsl(38 45% 55%));
+    }
+    50% {
+      opacity: 0.7;
+      filter: drop-shadow(0 0 20px hsl(38 45% 55%)) drop-shadow(0 0 30px hsl(38 70% 60%));
+    }
+  }
+
+  @keyframes rocket-float {
+    0%, 100% {
+      transform: translateY(0px) rotate(-5deg);
+    }
+    50% {
+      transform: translateY(-10px) rotate(-5deg);
+    }
+  }
+
+  @keyframes shield-shine {
+    0% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.5) drop-shadow(0 0 10px hsl(38 45% 55%));
+    }
+    100% {
+      filter: brightness(1);
+    }
+  }
+
+  @keyframes code-bounce {
+    0%, 100% {
+      transform: translateX(0) scale(1);
+    }
+    25% {
+      transform: translateX(-3px) scale(1.05);
+    }
+    75% {
+      transform: translateX(3px) scale(1.05);
+    }
+  }
+
+  .animate-lightning {
+    animation: lightning-flash 2s ease-in-out infinite;
+  }
+
+  .animate-rocket {
+    animation: rocket-float 3s ease-in-out infinite;
+  }
+
+  .animate-shield {
+    animation: shield-shine 3s ease-in-out infinite;
+  }
+
+  .animate-code {
+    animation: code-bounce 2s ease-in-out infinite;
+  }
+}

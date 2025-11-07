@@ -12,22 +12,22 @@ const DFY = () => {
   
   const services = [
     {
-      icon: <Code className="h-12 w-12 text-accent" />,
+      icon: <Code className="h-12 w-12 text-accent animate-code" />,
       title: "Custom Development",
       description: "Our expert developers build your entire website or app from scratch, tailored to your exact specifications."
     },
     {
-      icon: <Zap className="h-12 w-12 text-accent" />,
+      icon: <Zap className="h-12 w-12 text-accent animate-lightning" />,
       title: "Rapid Deployment",
       description: "Launch your project in days, not months. We handle everything from design to deployment."
     },
     {
-      icon: <Shield className="h-12 w-12 text-accent" />,
+      icon: <Shield className="h-12 w-12 text-accent animate-shield" />,
       title: "Full Support",
       description: "Get total support and peace of mind.\n\nWe handle all maintenance, updates, and tech support 24/7.\n\nYour business runs smoothly, guaranteed.\n\nGet instant help from our expert team in our private Discord."
     },
     {
-      icon: <Rocket className="h-12 w-12 text-accent" />,
+      icon: <Rocket className="h-12 w-12 text-accent animate-rocket" />,
       title: "Scalable Solutions",
       description: "Built to grow with your business, from startup to enterprise-level applications."
     }
