@@ -1,12 +1,14 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Rocket, Code, Zap, Shield } from "lucide-react";
+import { Rocket, Code, Zap, Shield, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 
 const DFY = () => {
   const navigate = useNavigate();
+  const [showProcessModal, setShowProcessModal] = useState(false);
   
   const services = [
     {
@@ -67,7 +69,7 @@ const DFY = () => {
 
           <Button 
             size="lg"
-            onClick={() => navigate("/survey")}
+            onClick={() => setShowProcessModal(true)}
             className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
           >
             Get quote
@@ -118,6 +120,64 @@ const DFY = () => {
       
       <Footer />
       </div>
+
+      {/* Fullscreen Process Modal */}
+      {showProcessModal && (
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-md flex items-center justify-center animate-fade-in">
+          <div className="max-w-4xl mx-auto px-6 py-12 relative">
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setShowProcessModal(false);
+                navigate("/survey");
+              }}
+              className="absolute top-6 right-6 p-2 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
+              aria-label="Close and continue to survey"
+            >
+              <X className="h-6 w-6 text-white" />
+            </button>
+
+            {/* Process Content */}
+            <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-8 md:p-12 border border-border/50">
+              <h2 className="text-4xl md:text-5xl font-bold text-center text-foreground mb-12">
+                Our <span className="text-accent">Process</span>
+              </h2>
+              
+              <div className="space-y-10">
+                <div className="flex gap-6 items-start">
+                  <div className="text-6xl font-bold text-accent">01</div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-foreground mb-3">Discovery</h3>
+                    <p className="text-lg text-muted-foreground leading-relaxed">
+                      We get right to work. When we hop on the call, we'll have an initial mockup ready for you. We'll review it together and quickly align the design with your business goals.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-6 items-start">
+                  <div className="text-6xl font-bold text-accent">02</div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-foreground mb-3">Development</h3>
+                    <p className="text-lg text-muted-foreground leading-relaxed">
+                      Expert developers build your website or app with clean, efficient code.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-6 items-start">
+                  <div className="text-6xl font-bold text-accent">03</div>
+                  <div>
+                    <h3 className="text-3xl font-bold text-foreground mb-3">Launch</h3>
+                    <p className="text-lg text-muted-foreground leading-relaxed">
+                      We deploy your project and provide ongoing support for smooth operation.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
