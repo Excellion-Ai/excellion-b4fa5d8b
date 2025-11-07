@@ -409,7 +409,7 @@ const Survey = () => {
                   size="lg"
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
                 >
-                  Submit & See My Plan
+                  Done, get my estimate.
                 </Button>
               </div>
 
