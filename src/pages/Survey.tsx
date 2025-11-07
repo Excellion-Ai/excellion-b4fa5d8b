@@ -157,15 +157,15 @@ const Survey = () => {
         <section className="container mx-auto px-6 py-16">
           <div className="max-w-3xl mx-auto">
             {/* Header */}
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            <div className="text-center mb-12 bg-black/80 backdrop-blur-md rounded-2xl p-8 border border-accent/20">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                 Share your vision. We'll tell you your <span className="text-accent">Excellion build plan</span>.
               </h1>
               
-              <p className="text-lg text-muted-foreground mb-2">
+              <p className="text-lg text-white/90 mb-2">
                 Answer a few quick questions. We'll instantly show your recommended plan
               </p>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-white/90">
                 <span className="text-accent font-semibold">(Essential, Core, or Premium)</span> and send a custom estimate to your email.
               </p>
             </div>
