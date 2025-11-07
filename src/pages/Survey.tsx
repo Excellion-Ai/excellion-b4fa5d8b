@@ -119,18 +119,43 @@ const Survey = () => {
     switch (qualifiedPlan) {
       case "Premium":
         return {
-          title: "You qualify for the Premium Build.",
-          description: "You're ready for a high-priority, fully loaded build — advanced features, content support, and rapid launch. We'll email your detailed Premium Build estimate and next steps."
+          title: "You qualify for the Premium Build",
+          description: "Your answers show you're building something bigger—advanced features, higher volume, or a faster rollout—so you qualify for Premium.",
+          includes: [
+            "7+ pages or complex flows",
+            "Online store or ordering, payments, advanced automations, or custom experiences",
+            "Optional full brand + content support",
+            "Priority handling and white-glove launch"
+          ],
+          pricing: "$3,000 – $10,000",
+          footerLine: "You qualify for Premium. We've received your details and will email a detailed Premium estimate and next-step gameplan.",
+          buttonText: "Talk with Excellion About Your Premium Build"
         };
       case "Core":
         return {
-          title: "You qualify for the Core Build.",
-          description: "You're a match for a feature-rich build with smarter flows and a fast 3–5 day launch window. We'll email your custom Core Build estimate based on the pages and features you selected."
+          title: "You qualify for the Core Build",
+          description: "Your project needs more than a basic landing page—and your answers clearly qualify you for Core.",
+          includes: [
+            "4–6 pages with a guided user journey",
+            "Features like booking, lead capture, forms, basic automations, or simple integrations",
+            "Built to support active leads, clients, and campaigns"
+          ],
+          pricing: "$1,200 – $2,800",
+          footerLine: "You qualify for Core. Our team will review your survey and send a tailored Core estimate and breakdown to your email.",
+          buttonText: "Book a Core Build Call"
         };
       default:
         return {
-          title: "You qualify for the Essential Build.",
-          description: "Perfect for a fast, clean, high-conversion site with a tight turnaround. Our team will review your answers and email you a personalized Essential Build estimate shortly."
+          title: "You qualify for the Essential Build",
+          description: "Based on your answers, you're a perfect fit for our Essential Build — a clean, high-trust site without unnecessary complexity.",
+          includes: [
+            "1–3 core pages (Home, About, Services, Contact)",
+            "Modern, conversion-focused layout",
+            "Contact or quote form so people can reach you fast"
+          ],
+          pricing: "$600 – $1,000",
+          footerLine: "You qualify for Essential. We've received your details and will email your exact estimate and timeline shortly.",
+          buttonText: "Book an Essential Call"
         };
     }
   };
@@ -425,21 +450,33 @@ const Survey = () => {
 
       {/* Result Dialog */}
       <Dialog open={showResult} onOpenChange={setShowResult}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl text-accent">
+            <DialogTitle className="text-2xl text-accent mb-4">
               {getPlanContent().title}
             </DialogTitle>
-            <DialogDescription className="text-base pt-4 space-y-4">
-              <p>{getPlanContent().description}</p>
+            <DialogDescription className="text-base space-y-4">
+              <p className="text-foreground">{getPlanContent().description}</p>
               
-              <p className="text-foreground">
-                We've received your details at <span className="text-accent font-semibold">{formData.email}</span>. 
-                Watch for your Excellion estimate and build plan.
-              </p>
+              <div>
+                <p className="text-foreground font-semibold mb-2">What this usually includes:</p>
+                <ul className="space-y-1.5 ml-4">
+                  {getPlanContent().includes.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-foreground">
+                      <span className="text-accent mt-1.5">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-              <p className="text-xs text-muted-foreground italic">
-                This is an instant plan recommendation. Final pricing is confirmed after a quick review by our team.
+              <div>
+                <p className="text-foreground font-semibold">Typical investment:</p>
+                <p className="text-accent font-bold text-xl">{getPlanContent().pricing}</p>
+              </div>
+
+              <p className="text-sm text-muted-foreground pt-2">
+                {getPlanContent().footerLine}
               </p>
             </DialogDescription>
           </DialogHeader>
@@ -449,7 +486,7 @@ const Survey = () => {
               onClick={() => navigate("/contact")}
               className="w-full bg-accent hover:bg-accent/90"
             >
-              Book a Call with Excellion
+              {getPlanContent().buttonText}
             </Button>
             <Button
               onClick={() => navigate("/")}
