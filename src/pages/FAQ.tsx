@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import faqBackgroundVideo from "@/assets/faq-background.mp4";
 
 const FAQ = () => {
   const faqs = [
@@ -52,10 +53,25 @@ const FAQ = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      {/* Video Background */}
+      <div className="fixed inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover will-change-transform"
+        >
+          <source src={faqBackgroundVideo} type="video/mp4" />
+        </video>
+      </div>
+
+      <div className="relative z-10">
+        <Navigation />
       
-      <main className="container mx-auto px-6 py-24">
+        <main className="container mx-auto px-6 py-24">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
@@ -111,6 +127,7 @@ const FAQ = () => {
       </main>
 
       <Footer />
+      </div>
     </div>
   );
 };
