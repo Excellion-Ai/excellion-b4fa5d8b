@@ -336,7 +336,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label className="text-foreground text-sm">
-                    Features needed <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span>
+                    Features needed <span className="text-accent text-xl font-bold" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>*</span> <span className="text-muted-foreground text-xs">(select all that apply)</span>
                   </Label>
                   <div className="space-y-2">
                     {[
