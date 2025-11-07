@@ -149,7 +149,7 @@ const Operations = () => {
         </div>
 
         {/* Site Maintenance Section - Centered */}
-        <div className="flex justify-center max-w-6xl mx-auto mb-16">
+        <div id="maintenance" className="flex justify-center max-w-6xl mx-auto mb-16 scroll-mt-24">
           <Card 
             className="bg-card border-border hover:border-accent/50 transition-all duration-300 animate-fade-in w-fit mx-auto"
           >
