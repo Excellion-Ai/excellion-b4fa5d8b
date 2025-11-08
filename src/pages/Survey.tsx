@@ -247,6 +247,7 @@ const Survey = () => {
                     value={formData.projectType}
                     onValueChange={(value) => setFormData({ ...formData, projectType: value })}
                     className="space-y-2"
+                    required
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="simple-website" id="simple-website" />
@@ -275,6 +276,7 @@ const Survey = () => {
                     value={formData.mainOutcome}
                     onValueChange={(value) => setFormData({ ...formData, mainOutcome: value })}
                     className="space-y-2"
+                    required
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="professional" id="professional" />
@@ -306,6 +308,7 @@ const Survey = () => {
                     value={formData.pagesNeeded}
                     onValueChange={(value) => setFormData({ ...formData, pagesNeeded: value })}
                     className="grid grid-cols-2 gap-2"
+                    required
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="1-3" id="1-3" />
@@ -334,6 +337,7 @@ const Survey = () => {
                     value={formData.timeline}
                     onValueChange={(value) => setFormData({ ...formData, timeline: value })}
                     className="space-y-2"
+                    required
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="2-3-days" id="2-3-days" />
@@ -389,6 +393,7 @@ const Survey = () => {
                     value={formData.brandContentStatus}
                     onValueChange={(value) => setFormData({ ...formData, brandContentStatus: value })}
                     className="space-y-2"
+                    required
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="have-ready" id="have-ready" />
