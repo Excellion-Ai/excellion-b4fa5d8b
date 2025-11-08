@@ -20,6 +20,7 @@ const Hero = () => {
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-end flex-col">
           <video
+            ref={(el) => el && (el.playbackRate = 0.75)}
             autoPlay
             loop
             muted

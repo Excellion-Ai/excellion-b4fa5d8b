@@ -88,6 +88,7 @@ const Auth = () => {
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
+          ref={(el) => el && (el.playbackRate = 0.75)}
           autoPlay
           loop
           muted
