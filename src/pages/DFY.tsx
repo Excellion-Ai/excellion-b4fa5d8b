@@ -18,95 +18,29 @@ const DFY = () => {
     {
       number: "01",
       title: "Discovery: From Idea to Exact Game Plan",
-      subtitle: "We don't waste your time with vague calls.",
       points: [
-        {
-          heading: "Tell us what you want",
-          content: "A quick intake (or survey) captures your vision: industry, style, goals, features, and what \"done\" looks like for you. No tech talk needed."
-        },
-        {
-          heading: "Instant alignment, upfront pricing",
-          content: "Using your answers, we map you to the right Excellion tier (Essential, Core, or Premium) and give you a clear estimate before we start. No surprise invoices."
-        },
-        {
-          heading: "Live strategy + preview",
-          content: "When we meet, we're not starting from zero—you'll see an early layout or structure already in place. On the call we:",
-          subPoints: [
-            "Move sections around live",
-            "Match visuals to your brand",
-            "Confirm pages, features, and deadlines"
-          ]
-        },
-        {
-          heading: "Outcome:",
-          content: "You leave this step with a locked-in plan: what we're building, how it works, how fast it ships, and what it'll cost."
-        }
+        "Share your vision in a quick intake (or survey): goals, pages, features, style. No tech talk.",
+        "We map you to Essential, Core, or Premium and give you a clear estimate upfront.",
+        "On our call, you see an initial layout already started. We adjust it live to match your brand, pages, and timeline.",
+        "You leave with a locked plan: what we're building, how it works, and how fast it ships."
       ]
     },
     {
       number: "02",
       title: "Build: Design, Develop, Tighten",
-      subtitle: "Now we execute—fast, structured, and transparent.",
       points: [
-        {
-          heading: "Polished visual system",
-          content: "We finalize the look: typography, colors, layout, and content flow so your brand feels sharp and consistent."
-        },
-        {
-          heading: "Real engineers + smart tools",
-          content: "Excellion's AI workflows speed up production, but every build is reviewed and refined by experienced developers:",
-          subPoints: [
-            "Clean, reliable code",
-            "Mobile-first layouts",
-            "Fast performance"
-          ]
-        },
-        {
-          heading: "Features built around outcomes",
-          content: "Whether it's selling, booking, collecting leads, or managing clients, we build exactly what your flow needs:",
-          subPoints: [
-            "Forms, menus, bookings, quote flows",
-            "Simple dashboards or portals",
-            "Automations + integrations (email, CRM, payments, etc.)"
-          ]
-        },
-        {
-          heading: "You see it as it comes together",
-          content: "We share working previews instead of static screenshots, collect your feedback in simple rounds, and adjust as we go—no disappearing act."
-        }
+        "We lock in a clean visual system so everything feels sharp and consistent.",
+        "Real engineers + AI tools deliver fast, reliable, maintainable builds.",
+        "We set up what you actually need: forms, menus, bookings, quote flows, portals, automations, and integrations."
       ]
     },
     {
       number: "03",
       title: "Launch & Beyond: Live, Backed, Supported",
-      subtitle: "Going live is handled end-to-end.",
       points: [
-        {
-          heading: "Full deployment done for you",
-          content: "We:",
-          subPoints: [
-            "Connect your domain",
-            "Set up hosting & SSL",
-            "Configure essential SEO structure"
-          ]
-        },
-        {
-          heading: "Quality checks before launch",
-          content: "Every key piece is tested:",
-          subPoints: [
-            "Forms, flows, checkouts, bookings",
-            "Mobile & desktop views",
-            "Speed and basic security"
-          ]
-        },
-        {
-          heading: "Simple handoff (no overwhelm)",
-          content: "We show you how to update key content so you're not locked to a dev for every small change."
-        },
-        {
-          heading: "Ongoing support if you want it",
-          content: "Need tweaks, new pages, or added features later? Excellion stays available as your build partner, not just a one-time project."
-        }
+        "We handle deployment end-to-end: domain, hosting, SSL, and final checks.",
+        "Forms, bookings, checkouts, and mobile/desktop views are tested before launch.",
+        "Need tweaks or new features later? Excellion stays available as your long-term build partner."
       ]
     }
   ];
@@ -171,25 +105,9 @@ const DFY = () => {
                 <div className="text-5xl font-bold text-accent/40">{step.number}</div>
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-foreground mb-3">{step.title}</h3>
-                  <p className="text-muted-foreground mb-4">{step.subtitle}</p>
-                  <ul className="space-y-4 text-muted-foreground">
+                  <ul className="space-y-3 text-muted-foreground list-disc ml-6">
                     {step.points.map((point, pointIndex) => (
-                      <li key={pointIndex}>
-                        <strong className="text-foreground">{point.heading}</strong>
-                        {point.content && (
-                          <>
-                            <br />
-                            {point.content}
-                          </>
-                        )}
-                        {point.subPoints && (
-                          <ul className="ml-6 mt-2 space-y-1 list-disc">
-                            {point.subPoints.map((subPoint, subIndex) => (
-                              <li key={subIndex}>{subPoint}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
+                      <li key={pointIndex}>{point}</li>
                     ))}
                   </ul>
                 </div>
