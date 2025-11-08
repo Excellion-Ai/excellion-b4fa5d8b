@@ -128,7 +128,7 @@ const Survey = () => {
             "Priority handling and white-glove launch"
           ],
           pricing: "$3,000 – $10,000",
-          footerLine: "You qualify for Premium. We've received your details and will email a detailed Premium estimate and next-step gameplan.",
+          footerLine: "You qualify for Premium. We've received your details and will email a detailed Premium estimate and link to book a call.",
           buttonText: "Talk with Excellion About Your Premium Build"
         };
       case "Core":
@@ -141,7 +141,7 @@ const Survey = () => {
             "Built to support active leads, clients, and campaigns"
           ],
           pricing: "$1,200 – $2,800",
-          footerLine: "You qualify for Core. Our team will review your survey and send a tailored Core estimate and breakdown to your email.",
+          footerLine: "You qualify for Core. We've received your details and will email a detailed Core estimate and link to book a call.",
           buttonText: "Book a Core Build Call"
         };
       default:
@@ -154,7 +154,7 @@ const Survey = () => {
             "Contact or quote form so people can reach you fast"
           ],
           pricing: "$600 – $1,000",
-          footerLine: "You qualify for Essential. We've received your details and will email your exact estimate and timeline shortly.",
+          footerLine: "You qualify for Essential. We've received your details and will email a detailed Essential estimate and link to book a call.",
           buttonText: "Book an Essential Call"
         };
     }
