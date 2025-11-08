@@ -482,12 +482,6 @@ const Survey = () => {
           
           <div className="flex flex-col gap-3 mt-4">
             <Button
-              onClick={() => navigate("/contact")}
-              className="w-full bg-accent hover:bg-accent/90"
-            >
-              {getPlanContent().buttonText}
-            </Button>
-            <Button
               onClick={() => navigate("/")}
               variant="outline"
               className="w-full"

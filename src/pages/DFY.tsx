@@ -124,20 +124,8 @@ const DFY = () => {
       {showProcessModal && (
         <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-md flex items-center justify-center animate-fade-in">
           <div className="max-w-4xl mx-auto px-6 py-12 relative">
-            {/* Close Button moved inside content card for better visibility on mobile */}
-
             {/* Process Content */}
             <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl p-8 md:p-12 border border-border/50 max-h-[85vh] overflow-y-auto">
-              <button
-                onClick={() => {
-                  setShowProcessModal(false);
-                  navigate("/survey");
-                }}
-                className="absolute top-3 right-3 md:top-4 md:right-4 p-3 rounded-full bg-red-500 hover:bg-red-600 shadow-lg ring-1 ring-white/20 transition-colors z-10 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Close and continue to survey"
-              >
-                <X className="h-5 w-5 text-white" />
-              </button>
               <h2 className="text-4xl md:text-5xl font-bold text-center text-foreground mb-12">
                 Our <span className="text-accent">Process</span>
               </h2>
@@ -244,6 +232,20 @@ const DFY = () => {
                     </ul>
                   </div>
                 </div>
+              </div>
+
+              {/* Proceed Button */}
+              <div className="mt-12 text-center">
+                <Button
+                  size="lg"
+                  onClick={() => {
+                    setShowProcessModal(false);
+                    navigate("/survey");
+                  }}
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-12 py-6 text-lg"
+                >
+                  Click to proceed
+                </Button>
               </div>
             </div>
           </div>
