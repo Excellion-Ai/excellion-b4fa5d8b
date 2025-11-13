@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -20,6 +19,7 @@ const ThankYou = () => {
           playsInline
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover will-change-transform"
+          style={{ transform: 'translateZ(0)' }}
         >
           <source src={dfyBackgroundVideo} type="video/mp4" />
         </video>

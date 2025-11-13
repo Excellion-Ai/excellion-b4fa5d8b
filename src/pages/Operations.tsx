@@ -66,6 +66,7 @@ const Operations = () => {
           playsInline
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover will-change-transform"
+          style={{ transform: 'translateZ(0)' }}
         >
           <source src={operationsBackgroundVideo} type="video/mp4" />
         </video>
@@ -113,7 +114,7 @@ const Operations = () => {
         {/* Site Maintenance Section - Centered */}
         <div id="maintenance" className="flex justify-center max-w-6xl mx-auto mb-16 scroll-mt-24">
           <Card 
-            className="bg-card border-border hover:border-accent/50 transition-all duration-300 animate-fade-in w-fit mx-auto"
+            className="bg-card border-border hover:border-accent/50 transition-all duration-300 w-fit mx-auto"
           >
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3 mb-2">
@@ -152,8 +153,7 @@ const Operations = () => {
             return (
               <Card 
                 key={index}
-                className="bg-card border-border hover:border-accent/50 transition-all duration-300 animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="bg-card border-border hover:border-accent/50 transition-all duration-300"
               >
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">

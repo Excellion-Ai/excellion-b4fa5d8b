@@ -3,16 +3,12 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Rocket, Code, Zap, Shield, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 
 const DFY = () => {
   const navigate = useNavigate();
   const [showProcessModal, setShowProcessModal] = useState(false);
-  
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
   
   const processSteps = [
     {
