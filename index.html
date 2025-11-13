@@ -7,7 +7,11 @@
     <meta name="description" content="Describe your dream website and/or web app, and launch fast with Excellion's convenient website and app builder platform.">
     <meta name="author" content="Excellion" />
 
-    
+    <!-- Preconnect to external domains for faster resource loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/ViJNibNqf3RrjmrhXO3W5aL39vS2/social-images/social-1762590392281-Excellion UI.png">
@@ -23,6 +27,10 @@
     <link rel="preload" href="/src/assets/faq-background.mp4" as="video" type="video/mp4" />
     <link rel="preload" href="/src/assets/diy-background.mp4" as="video" type="video/mp4" />
     <link rel="preload" href="/src/assets/operations-background-new.mp4" as="video" type="video/mp4" />
+    
+    <!-- Preload logo for instant header rendering -->
+    <link rel="preload" href="/src/assets/excellion-logo.png" as="image" fetchpriority="high" />
+    
     <meta property="og:title" content="Excellion - The Most Convenient Website &amp; App Builder">
   <meta name="twitter:title" content="Excellion - The Most Convenient Website &amp; App Builder">
   <meta property="og:description" content="Describe your dream website and/or web app, and launch fast with Excellion&#39;s convenient website and app builder platform.">
@@ -33,5 +41,8 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Prefetch likely next pages for instant navigation -->
+    <link rel="prefetch" href="/dfy" />
+    <link rel="prefetch" href="/survey" />
   </body>
 </html>

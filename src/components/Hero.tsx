@@ -20,14 +20,27 @@ const Hero = () => {
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-end flex-col">
           <video
-            ref={(el) => el && (el.playbackRate = 0.75)}
+            ref={(el) => {
+              if (el) {
+                el.playbackRate = 0.75;
+                // Force hardware acceleration
+                el.style.willChange = 'transform';
+              }
+            }}
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
-            className="w-full h-full object-cover will-change-transform"
-            style={{ backfaceVisibility: 'hidden', objectPosition: 'center center', transform: 'translateZ(0) scale(1.5)', minWidth: '100%', minHeight: '100%' }}
+            className="w-full h-full object-cover"
+            style={{ 
+              backfaceVisibility: 'hidden', 
+              objectPosition: 'center center', 
+              transform: 'translateZ(0) scale(1.5)', 
+              minWidth: '100%', 
+              minHeight: '100%',
+              WebkitTransform: 'translateZ(0) scale(1.5)'
+            }}
           >
             <source src={excellionCityVideo} type="video/mp4" />
           </video>
@@ -40,12 +53,12 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-6 py-24">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-accent/50">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-accent/50 will-change-transform">
             <span className="text-sm font-bold text-black">✨ Launch your website fast</span>
           </div>
 
           {/* Headline and Subheadline */}
-          <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center">
+          <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
               The Most Convenient{" "}
               <span className="text-accent">Website Builder</span>
