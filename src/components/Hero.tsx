@@ -27,7 +27,7 @@ const Hero = () => {
             playsInline
             preload="auto"
             className="w-full h-full object-cover will-change-transform"
-            style={{ backfaceVisibility: 'hidden', objectPosition: 'center center', transform: 'translateZ(0) scale(1.15)' }}
+            style={{ backfaceVisibility: 'hidden', objectPosition: 'center center', transform: 'translateZ(0) scale(1.5)', minWidth: '100%', minHeight: '100%' }}
           >
             <source src={excellionCityVideo} type="video/mp4" />
           </video>
