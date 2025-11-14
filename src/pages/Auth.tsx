@@ -12,6 +12,74 @@ import { Github } from "lucide-react";
 import diyBackgroundVideo from "@/assets/diy-background.mp4";
 import { z } from "zod";
 
+// Rate limiting configuration
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATIONS = [60000, 300000, 900000]; // 1min, 5min, 15min
+const ATTEMPT_WINDOW = 300000; // 5 minutes
+
+interface LoginAttempt {
+  timestamp: number;
+  email: string;
+}
+
+const getLoginAttempts = (): LoginAttempt[] => {
+  try {
+    const attempts = localStorage.getItem('auth_attempts');
+    return attempts ? JSON.parse(attempts) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveLoginAttempts = (attempts: LoginAttempt[]) => {
+  localStorage.setItem('auth_attempts', JSON.stringify(attempts));
+};
+
+const getLockoutInfo = (email: string) => {
+  const attempts = getLoginAttempts();
+  const now = Date.now();
+  
+  // Filter recent attempts for this email
+  const recentAttempts = attempts.filter(
+    (a) => a.email === email && now - a.timestamp < ATTEMPT_WINDOW
+  );
+  
+  if (recentAttempts.length < MAX_ATTEMPTS) {
+    return { isLocked: false, remainingTime: 0, attemptCount: recentAttempts.length };
+  }
+  
+  // Calculate lockout duration based on attempt count
+  const lockoutIndex = Math.min(
+    Math.floor(recentAttempts.length / MAX_ATTEMPTS) - 1,
+    LOCKOUT_DURATIONS.length - 1
+  );
+  const lockoutDuration = LOCKOUT_DURATIONS[lockoutIndex];
+  const lastAttempt = recentAttempts[recentAttempts.length - 1];
+  const lockoutEnd = lastAttempt.timestamp + lockoutDuration;
+  
+  if (now < lockoutEnd) {
+    return {
+      isLocked: true,
+      remainingTime: lockoutEnd - now,
+      attemptCount: recentAttempts.length,
+    };
+  }
+  
+  return { isLocked: false, remainingTime: 0, attemptCount: recentAttempts.length };
+};
+
+const recordFailedAttempt = (email: string) => {
+  const attempts = getLoginAttempts();
+  attempts.push({ timestamp: Date.now(), email });
+  saveLoginAttempts(attempts);
+};
+
+const clearLoginAttempts = (email: string) => {
+  const attempts = getLoginAttempts();
+  const filtered = attempts.filter((a) => a.email !== email);
+  saveLoginAttempts(filtered);
+};
+
 const authSchema = z.object({
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
   password: z.string()
@@ -36,7 +104,17 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [lockoutTime, setLockoutTime] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (lockoutTime > 0) {
+      const timer = setInterval(() => {
+        setLockoutTime((prev) => Math.max(0, prev - 1000));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [lockoutTime]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -58,6 +136,16 @@ const Auth = () => {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check rate limiting
+    const lockoutInfo = getLockoutInfo(email);
+    if (lockoutInfo.isLocked) {
+      setLockoutTime(lockoutInfo.remainingTime);
+      const minutes = Math.ceil(lockoutInfo.remainingTime / 60000);
+      toast.error(`Too many failed attempts. Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.`);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -81,7 +169,22 @@ const Auth = () => {
           password,
         });
 
-        if (error) throw error;
+        if (error) {
+          recordFailedAttempt(email);
+          const updatedLockout = getLockoutInfo(email);
+          if (updatedLockout.isLocked) {
+            setLockoutTime(updatedLockout.remainingTime);
+          }
+          const remainingAttempts = MAX_ATTEMPTS - (updatedLockout.attemptCount % MAX_ATTEMPTS);
+          throw new Error(
+            error.message + 
+            (remainingAttempts > 0 && remainingAttempts < MAX_ATTEMPTS 
+              ? ` (${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining)` 
+              : '')
+          );
+        }
+        
+        clearLoginAttempts(email);
         toast.success("Logged in successfully!");
       } else {
         const { error } = await supabase.auth.signUp({
@@ -250,10 +353,16 @@ const Auth = () => {
                   </div>
                 )}
 
+                {lockoutTime > 0 && (
+                  <div className="text-sm text-destructive text-center p-3 bg-destructive/10 rounded-md">
+                    Account temporarily locked. Try again in {Math.ceil(lockoutTime / 1000)} seconds.
+                  </div>
+                )}
+
                 <Button
                   type="submit"
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                  disabled={loading}
+                  disabled={loading || lockoutTime > 0}
                 >
                   {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
                 </Button>
