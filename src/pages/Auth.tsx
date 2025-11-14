@@ -171,6 +171,14 @@ const Auth = () => {
 
         if (error) {
           recordFailedAttempt(email);
+          
+          // Log failed authentication
+          await supabase.from('auth_activity').insert({
+            email,
+            event_type: 'login',
+            success: false,
+          });
+          
           const updatedLockout = getLockoutInfo(email);
           if (updatedLockout.isLocked) {
             setLockoutTime(updatedLockout.remainingTime);
@@ -185,6 +193,14 @@ const Auth = () => {
         }
         
         clearLoginAttempts(email);
+        
+        // Log successful authentication
+        await supabase.from('auth_activity').insert({
+          email,
+          event_type: 'login',
+          success: true,
+        });
+        
         toast.success("Logged in successfully!");
       } else {
         const { error } = await supabase.auth.signUp({
@@ -195,7 +211,23 @@ const Auth = () => {
           },
         });
 
-        if (error) throw error;
+        if (error) {
+          // Log failed signup
+          await supabase.from('auth_activity').insert({
+            email,
+            event_type: 'signup',
+            success: false,
+          });
+          throw error;
+        }
+        
+        // Log successful signup
+        await supabase.from('auth_activity').insert({
+          email,
+          event_type: 'signup',
+          success: true,
+        });
+        
         toast.success("Account created successfully!");
       }
     } catch (error: any) {
