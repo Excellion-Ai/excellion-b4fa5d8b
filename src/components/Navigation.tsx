@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import excellionLogo from "@/assets/excellion-logo.png";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Shield } from "lucide-react";
+import { useAdmin } from "@/hooks/useAdmin";
 
 const Navigation = () => {
+  const { isAdmin } = useAdmin();
+  
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
       <div className="flex h-16 items-center justify-between pl-4 pr-6">
@@ -27,6 +30,14 @@ const Navigation = () => {
 
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-4">
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <Shield className="h-4 w-4" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <Link to="/auth">
                 <Button variant="ghost" size="sm">
                   Sign In
@@ -66,6 +77,14 @@ const Navigation = () => {
                     Operations
                   </Link>
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
+                    {isAdmin && (
+                      <Link to="/admin">
+                        <Button variant="ghost" size="sm" className="w-full gap-2">
+                          <Shield className="h-4 w-4" />
+                          Admin
+                        </Button>
+                      </Link>
+                    )}
                     <Link to="/auth">
                       <Button variant="ghost" size="sm" className="w-full">
                         Sign In
