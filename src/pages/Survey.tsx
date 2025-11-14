@@ -12,6 +12,20 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
+import { z } from "zod";
+
+const surveySchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
+  projectType: z.enum(["simple-website", "website-with-features", "online-store", "lead-gen-funnel"]),
+  mainOutcome: z.enum(["professional", "leads", "sell-online", "convert-better"]),
+  pagesNeeded: z.enum(["1-3", "4-6", "7-10", "10-plus"]),
+  featuresNeeded: z.array(z.string()).min(1, "Please select at least one feature"),
+  brandContentStatus: z.enum(["have-ready", "need-help-finishing", "need-branding-content"]),
+  timeline: z.enum(["2-3-days", "3-5-days", "5-7-days"]),
+  additionalNotes: z.string().max(1000, "Additional notes must be less than 1000 characters").optional()
+});
 
 const Survey = () => {
   const { toast } = useToast();
@@ -59,21 +73,27 @@ const Survey = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.brandName || !formData.projectType || 
-        !formData.mainOutcome || !formData.pagesNeeded || formData.featuresNeeded.length === 0 || 
-        !formData.brandContentStatus || !formData.timeline) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
-      });
+    // Validate form data with zod
+    try {
+      surveySchema.parse(formData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Validation Error",
+          description: firstError.message,
+          variant: "destructive"
+        });
+      }
       return;
     }
 
     // Determine qualified plan
     const plan = qualifyPlan();
     setQualifiedPlan(plan);
+
+    // Get current user session
+    const { data: { session } } = await supabase.auth.getSession();
 
     // Insert into database
     const { error } = await supabase
@@ -89,16 +109,19 @@ const Survey = () => {
         brand_content_status: formData.brandContentStatus,
         timeline: formData.timeline,
         additional_notes: formData.additionalNotes || null,
-        qualified_plan: plan
+        qualified_plan: plan,
+        user_id: session?.user?.id || null
       });
 
     if (error) {
+      if (import.meta.env.DEV) {
+        console.error("Error submitting quote request:", error);
+      }
       toast({
         title: "Error",
         description: "Failed to submit your request. Please try again.",
         variant: "destructive"
       });
-      console.error("Error submitting quote request:", error);
       return;
     }
 
