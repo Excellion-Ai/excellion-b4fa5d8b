@@ -10,11 +10,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Github } from "lucide-react";
 import diyBackgroundVideo from "@/assets/diy-background.mp4";
+import { z } from "zod";
+
+const authSchema = z.object({
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  confirmPassword: z.string().optional()
+}).refine((data) => {
+  if (data.confirmPassword !== undefined) {
+    return data.password === data.confirmPassword;
+  }
+  return true;
+}, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"]
+});
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -41,6 +61,20 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate form data
+      const validationData = isLogin 
+        ? { email, password }
+        : { email, password, confirmPassword };
+      
+      const result = authSchema.safeParse(validationData);
+      
+      if (!result.success) {
+        const firstError = result.error.errors[0];
+        toast.error(firstError.message);
+        setLoading(false);
+        return;
+      }
+
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -190,10 +224,31 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                     className="bg-background/20 border-white/20 text-foreground"
                   />
+                  {!isLogin && (
+                    <p className="text-xs text-foreground/60 mt-1">
+                      Must be at least 8 characters with uppercase, lowercase, and number
+                    </p>
+                  )}
                 </div>
+
+                {!isLogin && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      className="bg-background/20 border-white/20 text-foreground"
+                    />
+                  </div>
+                )}
 
                 <Button
                   type="submit"
