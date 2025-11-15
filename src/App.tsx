@@ -33,7 +33,7 @@ const App = () => (
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/diy" element={<Pricing />} />
+        {/* HIDDEN - Uncomment to restore DIY page: <Route path="/diy" element={<Pricing />} /> */}
         <Route path="/dfy" element={<DFY />} />
         <Route path="/operations" element={<Operations />} />
         <Route path="/survey" element={<Survey />} />
