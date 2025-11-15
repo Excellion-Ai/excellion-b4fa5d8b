@@ -20,9 +20,11 @@ const Navigation = () => {
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               DFY
             </Link>
+            {/* HIDDEN - Uncomment to restore DIY link:
             <Link to="/diy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               DIY
             </Link>
+            */}
             <Link to="/operations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Operations
             </Link>
@@ -64,12 +66,14 @@ const Navigation = () => {
                   >
                     DFY
                   </Link>
+                  {/* HIDDEN - Uncomment to restore DIY link:
                   <Link 
                     to="/diy" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
                     DIY
                   </Link>
+                  */}
                   <Link 
                     to="/operations" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
