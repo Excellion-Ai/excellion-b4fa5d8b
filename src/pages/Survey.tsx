@@ -18,12 +18,10 @@ const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
-  projectType: z.enum(["simple-website", "website-with-features", "online-store", "lead-gen-funnel"]),
   mainOutcome: z.enum(["professional", "leads", "sell-online", "convert-better"]),
-  pagesNeeded: z.enum(["1-3", "4-6", "7-10", "10-plus"]),
   featuresNeeded: z.array(z.string()).min(1, "Please select at least one feature"),
   brandContentStatus: z.enum(["have-ready", "need-help-finishing", "need-branding-content"]),
-  timeline: z.enum(["2-3-days", "3-5-days", "5-7-days"]),
+  timeline: z.enum(["2-3-days", "4-7-days"]),
   additionalNotes: z.string().max(1000, "Additional notes must be less than 1000 characters").optional()
 });
 
@@ -36,9 +34,7 @@ const Survey = () => {
     name: "",
     email: "",
     brandName: "",
-    projectType: "",
     mainOutcome: "",
-    pagesNeeded: "",
     featuresNeeded: [] as string[],
     brandContentStatus: "",
     timeline: "",
@@ -48,10 +44,7 @@ const Survey = () => {
   const qualifyPlan = () => {
     // Premium Build conditions
     const isPremium = 
-      formData.projectType === "online-store" ||
       formData.featuresNeeded.includes("online-ordering") ||
-      formData.pagesNeeded === "7-10" ||
-      formData.pagesNeeded === "10-plus" ||
       formData.brandContentStatus === "need-branding-content" ||
       formData.timeline === "2-3-days";
 
@@ -59,10 +52,8 @@ const Survey = () => {
 
     // Core Build conditions
     const isCore = 
-      formData.projectType === "website-with-features" ||
-      formData.pagesNeeded === "4-6" ||
       formData.featuresNeeded.some(f => ["booking", "email-capture", "payments", "automations"].includes(f)) ||
-      formData.timeline === "3-5-days";
+      formData.timeline === "4-7-days";
 
     if (isCore) return "Core";
 
@@ -102,9 +93,8 @@ const Survey = () => {
         name: formData.name,
         email: formData.email,
         brand_name: formData.brandName,
-        project_type: formData.projectType,
+        project_type: "survey-submission",
         main_outcome: formData.mainOutcome,
-        pages_needed: formData.pagesNeeded,
         features_needed: formData.featuresNeeded,
         brand_content_status: formData.brandContentStatus,
         timeline: formData.timeline,
@@ -261,38 +251,8 @@ const Survey = () => {
                 />
               </div>
 
-              {/* Project Type & Main Outcome - Side by Side */}
-              <div className="grid md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <Label className="text-accent text-base font-semibold">
-                    What do you want us to build? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
-                  <RadioGroup
-                    value={formData.projectType}
-                    onValueChange={(value) => setFormData({ ...formData, projectType: value })}
-                    className="space-y-2"
-                    required
-                  >
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="simple-website" id="simple-website" />
-                      <Label htmlFor="simple-website" className="cursor-pointer flex-1 text-base font-medium text-foreground">Simple website / landing page</Label>
-                    </div>
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="website-with-features" id="website-with-features" />
-                      <Label htmlFor="website-with-features" className="cursor-pointer flex-1 text-base font-medium text-foreground">Website with features</Label>
-                    </div>
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="online-store" id="online-store" />
-                      <Label htmlFor="online-store" className="cursor-pointer flex-1 text-base font-medium text-foreground">Online store</Label>
-                    </div>
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="lead-gen-funnel" id="lead-gen-funnel" />
-                      <Label htmlFor="lead-gen-funnel" className="cursor-pointer flex-1 text-base font-medium text-foreground">Lead-gen funnel</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="space-y-2">
+              {/* Main Outcome */}
+              <div className="space-y-2">
                   <Label className="text-accent text-base font-semibold">
                     Main outcome <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
@@ -320,40 +280,9 @@ const Survey = () => {
                     </div>
                   </RadioGroup>
                 </div>
-              </div>
 
-              {/* Pages & Timeline - Compact Grid */}
-              <div className="grid md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <Label className="text-accent text-base font-semibold">
-                    How many pages? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
-                  <RadioGroup
-                    value={formData.pagesNeeded}
-                    onValueChange={(value) => setFormData({ ...formData, pagesNeeded: value })}
-                    className="grid grid-cols-2 gap-2"
-                    required
-                  >
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="1-3" id="1-3" />
-                      <Label htmlFor="1-3" className="cursor-pointer flex-1 text-base font-medium text-foreground">1–3</Label>
-                    </div>
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="4-6" id="4-6" />
-                      <Label htmlFor="4-6" className="cursor-pointer flex-1 text-base font-medium text-foreground">4–6</Label>
-                    </div>
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="7-10" id="7-10" />
-                      <Label htmlFor="7-10" className="cursor-pointer flex-1 text-base font-medium text-foreground">7–10</Label>
-                    </div>
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="10-plus" id="10-plus" />
-                      <Label htmlFor="10-plus" className="cursor-pointer flex-1 text-base font-medium text-foreground">10+</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="space-y-2">
+              {/* Timeline */}
+              <div className="space-y-2">
                   <Label className="text-accent text-base font-semibold">
                     Launch timeline <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
@@ -368,16 +297,11 @@ const Survey = () => {
                       <Label htmlFor="2-3-days" className="cursor-pointer flex-1 text-base font-medium text-foreground">2–3 days</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="3-5-days" id="3-5-days" />
-                      <Label htmlFor="3-5-days" className="cursor-pointer flex-1 text-base font-medium text-foreground">3–5 days</Label>
-                    </div>
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="5-7-days" id="5-7-days" />
-                      <Label htmlFor="5-7-days" className="cursor-pointer flex-1 text-base font-medium text-foreground">5–7 days</Label>
+                      <RadioGroupItem value="4-7-days" id="4-7-days" />
+                      <Label htmlFor="4-7-days" className="cursor-pointer flex-1 text-base font-medium text-foreground">4–7 days</Label>
                     </div>
                   </RadioGroup>
                 </div>
-              </div>
 
               {/* Features & Brand Status - Grid */}
               <div className="grid md:grid-cols-2 gap-5">
