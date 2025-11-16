@@ -35,7 +35,7 @@ const Hero = () => {
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
-              objectPosition: 'center center', 
+              objectPosition: 'center 20%', 
               transform: 'translateZ(0) scale(2.5)', 
               minWidth: '100%', 
               minHeight: '100%',
