@@ -393,7 +393,7 @@ const Survey = () => {
                       { id: "payments", label: "Payments" },
                       { id: "online-ordering", label: "Online ordering" },
                       { id: "automations", label: "Automations" },
-                      { id: "not-sure", label: "Not sure" }
+                      { id: "other", label: "Other" }
                     ].map((feature) => (
                        <div key={feature.id} className="flex items-center space-x-2 bg-background/50 p-2 rounded-lg border border-border hover:border-accent/50 transition-colors">
                          <Checkbox
