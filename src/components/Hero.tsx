@@ -45,8 +45,6 @@ const Hero = () => {
             <source src={excellionCityVideo} type="video/mp4" />
           </video>
         </div>
-        {/* Dark Overlay for Better Text Contrast */}
-        <div className="absolute inset-0 bg-black/40"></div>
       </div>
 
       {/* Content */}
