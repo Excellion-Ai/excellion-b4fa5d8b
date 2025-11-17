@@ -17,6 +17,7 @@ import { z } from "zod";
 const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 characters"),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
   mainOutcome: z.enum(["professional", "leads", "sell-online", "convert-better"]),
   featuresNeeded: z.array(z.string()).min(1, "Please select at least one feature"),
@@ -33,6 +34,7 @@ const Survey = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     brandName: "",
     mainOutcome: "",
     featuresNeeded: [] as string[],
@@ -92,6 +94,7 @@ const Survey = () => {
       .insert({
         name: formData.name,
         email: formData.email,
+        phone: formData.phone,
         brand_name: formData.brandName,
         project_type: "survey-submission",
         main_outcome: formData.mainOutcome,
@@ -235,6 +238,24 @@ const Survey = () => {
                     className="bg-background/50 h-9"
                   />
                 </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone" className="text-accent text-base font-semibold">
+                    Phone number <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="(555) 123-4567"
+                    required
+                    className="bg-background/50 h-9"
+                  />
+                </div>
+
               </div>
 
               <div className="space-y-1.5">

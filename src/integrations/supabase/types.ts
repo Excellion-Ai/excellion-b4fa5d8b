@@ -62,6 +62,7 @@ export type Database = {
           main_outcome: string | null
           name: string
           pages_needed: string | null
+          phone: string | null
           project_type: string
           qualified_plan: string | null
           timeline: string | null
@@ -81,6 +82,7 @@ export type Database = {
           main_outcome?: string | null
           name: string
           pages_needed?: string | null
+          phone?: string | null
           project_type: string
           qualified_plan?: string | null
           timeline?: string | null
@@ -100,6 +102,7 @@ export type Database = {
           main_outcome?: string | null
           name?: string
           pages_needed?: string | null
+          phone?: string | null
           project_type?: string
           qualified_plan?: string | null
           timeline?: string | null
