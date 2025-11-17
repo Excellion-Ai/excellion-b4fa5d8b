@@ -16,15 +16,30 @@ import { z } from "zod";
 
 const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
-  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
-  phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 characters"),
+  contactMethod: z.enum(["email", "phone"]),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters").optional(),
+  phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 characters").optional(),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
   mainOutcome: z.enum(["professional", "leads", "sell-online", "convert-better"]),
   featuresNeeded: z.array(z.string()).min(1, "Please select at least one feature"),
   brandContentStatus: z.enum(["have-ready", "need-help-finishing", "need-branding-content"]),
   timeline: z.enum(["2-3-days", "4-7-days"]),
   additionalNotes: z.string().max(1000, "Additional notes must be less than 1000 characters").optional()
-});
+}).refine(
+  (data) => {
+    if (data.contactMethod === "email") {
+      return data.email && data.email.length > 0;
+    }
+    if (data.contactMethod === "phone") {
+      return data.phone && data.phone.length >= 10;
+    }
+    return false;
+  },
+  {
+    message: "Please provide your email or phone number",
+    path: ["contactMethod"],
+  }
+);
 
 const Survey = () => {
   const { toast } = useToast();
@@ -33,6 +48,7 @@ const Survey = () => {
   const [qualifiedPlan, setQualifiedPlan] = useState("");
   const [formData, setFormData] = useState({
     name: "",
+    contactMethod: "email" as "email" | "phone",
     email: "",
     phone: "",
     brandName: "",
@@ -93,8 +109,8 @@ const Survey = () => {
       .from('quote_requests')
       .insert({
         name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
+        email: formData.contactMethod === "email" ? formData.email : null,
+        phone: formData.contactMethod === "phone" ? formData.phone : null,
         brand_name: formData.brandName,
         project_type: "survey-submission",
         main_outcome: formData.mainOutcome,
@@ -208,68 +224,90 @@ const Survey = () => {
 
             {/* Survey Form */}
             <form onSubmit={handleSubmit} className="bg-black/80 backdrop-blur-md border border-accent/30 rounded-2xl p-6 md:p-8 space-y-5 shadow-xl">
-              {/* Contact Info - Grid Layout */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="name" className="text-accent text-base font-semibold">
-                    Your name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="John Doe"
-                    required
-                    className="bg-background/50 h-9"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-accent text-base font-semibold">
-                    Email <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="john@example.com"
-                    required
-                    className="bg-background/50 h-9"
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone" className="text-accent text-base font-semibold">
-                    Phone number <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="(555) 123-4567"
-                    required
-                    className="bg-background/50 h-9"
-                  />
-                </div>
-
-              </div>
-
+              {/* Contact Info - Name */}
               <div className="space-y-1.5">
-                <Label htmlFor="brandName" className="text-accent text-base font-semibold">
-                  Brand / business name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                <Label htmlFor="name" className="text-accent text-base font-semibold">
+                  Your name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                 </Label>
                 <Input
-                  id="brandName"
-                  value={formData.brandName}
-                  onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
-                  placeholder="Your Brand"
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="John Doe"
                   required
                   className="bg-background/50 h-9"
                 />
+              </div>
+
+              {/* Contact Method Toggle */}
+              <div className="space-y-2">
+                <Label className="text-accent text-base font-semibold">
+                  Preferred contact method <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                </Label>
+                <RadioGroup
+                  value={formData.contactMethod}
+                  onValueChange={(value: "email" | "phone") => setFormData({ ...formData, contactMethod: value })}
+                  className="flex gap-4"
+                  required
+                >
+                  <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors flex-1">
+                    <RadioGroupItem value="email" id="contact-email" />
+                    <Label htmlFor="contact-email" className="cursor-pointer flex-1 text-base font-medium text-foreground">Email</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors flex-1">
+                    <RadioGroupItem value="phone" id="contact-phone" />
+                    <Label htmlFor="contact-phone" className="cursor-pointer flex-1 text-base font-medium text-foreground">Phone</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Contact Input - Conditional */}
+              <div className="grid md:grid-cols-2 gap-4">
+                {formData.contactMethod === "email" ? (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-accent text-base font-semibold">
+                      Email <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="john@example.com"
+                      required
+                      className="bg-background/50 h-9"
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" className="text-accent text-base font-semibold">
+                      Phone number <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="(555) 123-4567"
+                      required
+                      className="bg-background/50 h-9"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="brandName" className="text-accent text-base font-semibold">
+                    Brand / business name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                  </Label>
+                  <Input
+                    id="brandName"
+                    value={formData.brandName}
+                    onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+                    placeholder="Your Brand"
+                    required
+                    className="bg-background/50 h-9"
+                  />
+                </div>
               </div>
 
               {/* Main Outcome */}
