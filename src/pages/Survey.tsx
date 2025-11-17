@@ -347,7 +347,6 @@ const Survey = () => {
                     {[
                       { id: "contact-form", label: "Contact form" },
                       { id: "booking", label: "Booking" },
-                      { id: "email-capture", label: "Email capture" },
                       { id: "payments", label: "Payments" },
                       { id: "online-ordering", label: "Online ordering" },
                       { id: "automations", label: "Automations" },
