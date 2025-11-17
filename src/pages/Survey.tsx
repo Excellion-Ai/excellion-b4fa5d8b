@@ -16,30 +16,14 @@ import { z } from "zod";
 
 const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
-  contactMethod: z.enum(["email", "phone"]),
-  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters").optional(),
-  phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 characters").optional(),
+  phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 characters"),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
   mainOutcome: z.enum(["professional", "leads", "sell-online", "convert-better"]),
   featuresNeeded: z.array(z.string()).min(1, "Please select at least one feature"),
-  brandContentStatus: z.enum(["have-ready", "need-help-finishing", "need-branding-content"]),
+  brandContentStatus: z.enum(["have-ready", "need-branding"]),
   timeline: z.enum(["2-3-days", "4-7-days"]),
   additionalNotes: z.string().max(1000, "Additional notes must be less than 1000 characters").optional()
-}).refine(
-  (data) => {
-    if (data.contactMethod === "email") {
-      return data.email && data.email.length > 0;
-    }
-    if (data.contactMethod === "phone") {
-      return data.phone && data.phone.length >= 10;
-    }
-    return false;
-  },
-  {
-    message: "Please provide your email or phone number",
-    path: ["contactMethod"],
-  }
-);
+});
 
 const Survey = () => {
   const { toast } = useToast();
@@ -48,8 +32,6 @@ const Survey = () => {
   const [qualifiedPlan, setQualifiedPlan] = useState("");
   const [formData, setFormData] = useState({
     name: "",
-    contactMethod: "email" as "email" | "phone",
-    email: "",
     phone: "",
     brandName: "",
     mainOutcome: "",
@@ -78,8 +60,8 @@ const Survey = () => {
       complexity_points += 1;
     }
 
-    // Add complexity points for branding + content needs
-    if (formData.brandContentStatus === "need-branding-content") {
+    // Add complexity points for branding needs
+    if (formData.brandContentStatus === "need-branding") {
       complexity_points += 1;
     }
 
@@ -96,10 +78,8 @@ const Survey = () => {
       const isLeadsOrConversion = 
         formData.mainOutcome === "leads" || 
         formData.mainOutcome === "convert-better";
-      
-      const needsFinishing = formData.brandContentStatus === "need-help-finishing";
 
-      if (isLeadsOrConversion || feature_count >= 3 || needsFinishing) {
+      if (isLeadsOrConversion || feature_count >= 3) {
         plan_tier = "Core";
       }
     }
@@ -137,8 +117,8 @@ const Survey = () => {
       .from('quote_requests')
       .insert({
         name: formData.name,
-        email: formData.contactMethod === "email" ? formData.email : null,
-        phone: formData.contactMethod === "phone" ? formData.phone : null,
+        email: null,
+        phone: formData.phone,
         brand_name: formData.brandName,
         project_type: "survey-submission",
         main_outcome: formData.mainOutcome,
@@ -267,61 +247,22 @@ const Survey = () => {
                 />
               </div>
 
-              {/* Contact Method Toggle */}
-              <div className="space-y-2">
-                <Label className="text-accent text-base font-semibold">
-                  Preferred contact method <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                </Label>
-                <RadioGroup
-                  value={formData.contactMethod}
-                  onValueChange={(value: "email" | "phone") => setFormData({ ...formData, contactMethod: value })}
-                  className="flex gap-4"
-                  required
-                >
-                  <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors flex-1">
-                    <RadioGroupItem value="email" id="contact-email" />
-                    <Label htmlFor="contact-email" className="cursor-pointer flex-1 text-base font-medium text-foreground">Email</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors flex-1">
-                    <RadioGroupItem value="phone" id="contact-phone" />
-                    <Label htmlFor="contact-phone" className="cursor-pointer flex-1 text-base font-medium text-foreground">Phone</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {/* Contact Input - Conditional */}
+              {/* Contact Info */}
               <div className="grid md:grid-cols-2 gap-4">
-                {formData.contactMethod === "email" ? (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-accent text-base font-semibold">
-                      Email <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="john@example.com"
-                      required
-                      className="bg-background/50 h-9"
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="phone" className="text-accent text-base font-semibold">
-                      Phone number <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                    </Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="(555) 123-4567"
-                      required
-                      className="bg-background/50 h-9"
-                    />
-                  </div>
-                )}
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone" className="text-accent text-base font-semibold">
+                    Phone number <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="(555) 123-4567"
+                    required
+                    className="bg-background/50 h-9"
+                  />
+                </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="brandName" className="text-accent text-base font-semibold">
@@ -435,12 +376,8 @@ const Survey = () => {
                       <Label htmlFor="have-ready" className="cursor-pointer flex-1 text-base font-medium text-foreground">Have ready</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="need-help-finishing" id="need-help-finishing" />
-                      <Label htmlFor="need-help-finishing" className="cursor-pointer flex-1 text-base font-medium text-foreground">Need help finishing</Label>
-                    </div>
-                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
-                      <RadioGroupItem value="need-branding-content" id="need-branding-content" />
-                      <Label htmlFor="need-branding-content" className="cursor-pointer flex-1 text-base font-medium text-foreground">Need branding + content</Label>
+                      <RadioGroupItem value="need-branding" id="need-branding" />
+                      <Label htmlFor="need-branding" className="cursor-pointer flex-1 text-base font-medium text-foreground">Need branding</Label>
                     </div>
                   </RadioGroup>
                 </div>
