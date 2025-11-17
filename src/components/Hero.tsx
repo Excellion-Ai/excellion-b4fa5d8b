@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Paperclip } from "lucide-react";
 import { Link } from "react-router-dom";
-import excellionCityVideo from "@/assets/exc-city.mp4";
+import excellionCityVideo from "@/assets/excellion-city-realistic.mp4";
 
 const Hero = () => {
   const inputValue = "";
@@ -23,8 +23,10 @@ const Hero = () => {
             ref={(el) => {
               if (el) {
                 el.playbackRate = 0.75;
-                // Force hardware acceleration
                 el.style.willChange = 'transform';
+                // Optimize for quality
+                el.setAttribute('playsinline', '');
+                el.setAttribute('webkit-playsinline', '');
               }
             }}
             autoPlay
