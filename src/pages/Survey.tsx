@@ -60,23 +60,51 @@ const Survey = () => {
   });
 
   const qualifyPlan = () => {
-    // Premium Build conditions
-    const isPremium = 
+    let plan_tier = "Essential";
+    const feature_count = formData.featuresNeeded.length;
+    let complexity_points = 0;
+
+    // Add complexity points based on feature count
+    if (feature_count >= 4) {
+      complexity_points += 1;
+    }
+
+    // Add complexity points for specific features
+    if (
+      formData.featuresNeeded.includes("automations") ||
       formData.featuresNeeded.includes("online-ordering") ||
-      formData.brandContentStatus === "need-branding-content" ||
-      formData.timeline === "2-3-days";
+      formData.featuresNeeded.includes("other")
+    ) {
+      complexity_points += 1;
+    }
 
-    if (isPremium) return "Premium";
+    // Add complexity points for branding + content needs
+    if (formData.brandContentStatus === "need-branding-content") {
+      complexity_points += 1;
+    }
 
-    // Core Build conditions
-    const isCore = 
-      formData.featuresNeeded.some(f => ["booking", "email-capture", "payments", "automations"].includes(f)) ||
-      formData.timeline === "4-7-days";
+    // Add complexity points for tight timeline with multiple features
+    if (formData.timeline === "2-3-days" && feature_count >= 3) {
+      complexity_points += 1;
+    }
 
-    if (isCore) return "Core";
+    // Determine plan tier based on complexity points
+    if (complexity_points >= 2) {
+      plan_tier = "Premium";
+    } else {
+      // Check for Core tier conditions
+      const isLeadsOrConversion = 
+        formData.mainOutcome === "leads" || 
+        formData.mainOutcome === "convert-better";
+      
+      const needsFinishing = formData.brandContentStatus === "need-help-finishing";
 
-    // Essential Build (default)
-    return "Essential";
+      if (isLeadsOrConversion || feature_count >= 3 || needsFinishing) {
+        plan_tier = "Core";
+      }
+    }
+
+    return plan_tier;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,7 +180,7 @@ const Survey = () => {
       case "Premium":
         return {
           title: "You qualify for the Premium Build",
-          description: "Your answers show you're building something bigger—advanced features, higher volume, or a faster rollout—so you qualify for Premium.",
+          description: "Based on your answers, you qualify for our Premium Build — best for complex projects with multiple features, deeper branding/content support, or faster timelines.",
           includes: [
             "7+ pages or complex flows",
             "Online store or ordering, payments, advanced automations, or custom experiences",
@@ -166,7 +194,7 @@ const Survey = () => {
       case "Core":
         return {
           title: "You qualify for the Core Build",
-          description: "Your project needs more than a basic landing page—and your answers clearly qualify you for Core.",
+          description: "Based on your answers, you qualify for our Core Build — great for growing businesses that want more features and stronger lead generation without a super heavy setup.",
           includes: [
             "4–6 pages with a guided user journey",
             "Features like booking, lead capture, forms, basic automations, or simple integrations",
@@ -179,7 +207,7 @@ const Survey = () => {
       default:
         return {
           title: "You qualify for the Essential Build",
-          description: "Based on your answers, you're a perfect fit for our Essential Build — a clean, high-trust site without unnecessary complexity.",
+          description: "Based on your answers, you qualify for our Essential Build — ideal for a clean, professional site with a few key features and a straightforward setup.",
           includes: [
             "1–3 core pages (Home, About, Services, Contact)",
             "Modern, conversion-focused layout",
