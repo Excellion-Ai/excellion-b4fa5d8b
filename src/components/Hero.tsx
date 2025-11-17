@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Send, Paperclip } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import excellionCityVideo from "@/assets/excellion-city-realistic.mp4";
 
 const Hero = () => {
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const inputValue = "";
   const setInputValue = (_: string) => {};
 
@@ -18,6 +21,9 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
+        {!videoLoaded && (
+          <Skeleton className="absolute inset-0 w-full h-full" />
+        )}
         <div className="absolute inset-0 flex items-center justify-end flex-col">
           <video
             ref={(el) => {
@@ -34,6 +40,7 @@ const Hero = () => {
             muted
             playsInline
             preload="auto"
+            onLoadedData={() => setVideoLoaded(true)}
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
