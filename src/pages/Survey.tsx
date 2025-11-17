@@ -38,7 +38,8 @@ const Survey = () => {
     featuresNeeded: [] as string[],
     brandContentStatus: "",
     timeline: "",
-    additionalNotes: ""
+    additionalNotes: "",
+    otherFeatureDetails: ""
   });
 
   const qualifyPlan = () => {
@@ -113,6 +114,11 @@ const Survey = () => {
     const { data: { session } } = await supabase.auth.getSession();
 
     // Insert into database
+    const additionalNotesText = formData.additionalNotes || "";
+    const otherFeaturesText = formData.featuresNeeded.includes("other") && formData.otherFeatureDetails 
+      ? `\n\nOther Features Needed: ${formData.otherFeatureDetails}` 
+      : "";
+    
     const { error } = await supabase
       .from('quote_requests')
       .insert({
@@ -125,7 +131,7 @@ const Survey = () => {
         features_needed: formData.featuresNeeded,
         brand_content_status: formData.brandContentStatus,
         timeline: formData.timeline,
-        additional_notes: formData.additionalNotes || null,
+        additional_notes: (additionalNotesText + otherFeaturesText) || null,
         qualified_plan: plan,
         user_id: session?.user?.id || null
       });
@@ -380,6 +386,22 @@ const Survey = () => {
                       <Label htmlFor="need-branding" className="cursor-pointer flex-1 text-base font-medium text-foreground">Need branding</Label>
                     </div>
                   </RadioGroup>
+                  
+                  {/* Conditional text box - unlocked when "Other" is selected in Features needed */}
+                  <div className="space-y-1.5 pt-2">
+                    <Label htmlFor="otherFeatureDetails" className={`text-base font-semibold ${formData.featuresNeeded.includes("other") ? "text-accent" : "text-muted-foreground"}`}>
+                      What other features do you need?
+                    </Label>
+                    <Textarea
+                      id="otherFeatureDetails"
+                      value={formData.otherFeatureDetails}
+                      onChange={(e) => setFormData({ ...formData, otherFeatureDetails: e.target.value })}
+                      placeholder={formData.featuresNeeded.includes("other") ? "Describe the other features you need..." : "Select 'Other' in Features needed to unlock this field"}
+                      disabled={!formData.featuresNeeded.includes("other")}
+                      rows={3}
+                      className={`text-sm transition-all ${formData.featuresNeeded.includes("other") ? "bg-background/50" : "bg-background/20 cursor-not-allowed opacity-50"}`}
+                    />
+                  </div>
                 </div>
               </div>
 
