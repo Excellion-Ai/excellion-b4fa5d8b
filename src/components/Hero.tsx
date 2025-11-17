@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Paperclip } from "lucide-react";
 import { Link } from "react-router-dom";
-import excellionCityVideo from "@/assets/excellion-city-realistic.mp4";
+import excellionCityVideo from "@/assets/exc-city.mp4";
 
 const Hero = () => {
   const inputValue = "";
