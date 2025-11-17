@@ -18,7 +18,7 @@ const Navigation = () => {
           
           <div className="hidden md:flex items-center gap-8">
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              DFY
+              Done for you
             </Link>
             {/* HIDDEN - Uncomment to restore DIY link:
             <Link to="/diy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -67,7 +67,7 @@ const Navigation = () => {
                     to="/dfy" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
-                    DFY
+                    Done for you
                   </Link>
                   {/* HIDDEN - Uncomment to restore DIY link:
                   <Link 
