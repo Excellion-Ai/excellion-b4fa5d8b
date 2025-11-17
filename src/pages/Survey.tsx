@@ -398,8 +398,8 @@ const Survey = () => {
                       onChange={(e) => setFormData({ ...formData, otherFeatureDetails: e.target.value })}
                       placeholder={formData.featuresNeeded.includes("other") ? "Describe the other features you need..." : "Select 'Other' in Features needed to unlock this field"}
                       disabled={!formData.featuresNeeded.includes("other")}
-                      rows={3}
-                      className={`text-sm transition-all ${formData.featuresNeeded.includes("other") ? "bg-background/50" : "bg-background/20 cursor-not-allowed opacity-50"}`}
+                      rows={6}
+                      className={`text-sm transition-all min-h-[160px] ${formData.featuresNeeded.includes("other") ? "bg-background/50" : "bg-background/20 cursor-not-allowed opacity-50"}`}
                     />
                   </div>
                 </div>
