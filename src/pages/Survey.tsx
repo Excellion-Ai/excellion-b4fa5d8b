@@ -388,7 +388,7 @@ const Survey = () => {
                 </div>
               </div>
 
-              {/* Conditional text box for "Other" features - appears below the grid */}
+              {/* Conditional text box for "Other" features - appears after the grid */}
               {formData.featuresNeeded.includes("other") && (
                 <div className="space-y-1.5">
                   <Label htmlFor="otherFeatureDetails" className="text-accent text-base font-semibold">
