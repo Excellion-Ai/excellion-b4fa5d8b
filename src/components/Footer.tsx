@@ -86,12 +86,9 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="pt-8 border-t border-border/50 flex flex-col md:flex-row justify-center items-center">
           <p className="text-sm text-muted-foreground">
             © 2025 Excellion. All rights reserved.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Built by John & Kohen
           </p>
         </div>
       </div>
