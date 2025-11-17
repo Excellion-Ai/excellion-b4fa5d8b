@@ -388,20 +388,21 @@ const Survey = () => {
                   </RadioGroup>
                   
                   {/* Conditional text box - unlocked when "Other" is selected in Features needed */}
-                  <div className="space-y-1.5 pt-2">
-                    <Label htmlFor="otherFeatureDetails" className={`text-base font-semibold ${formData.featuresNeeded.includes("other") ? "text-accent" : "text-muted-foreground"}`}>
-                      What other features do you need?
-                    </Label>
-                    <Textarea
-                      id="otherFeatureDetails"
-                      value={formData.otherFeatureDetails}
-                      onChange={(e) => setFormData({ ...formData, otherFeatureDetails: e.target.value })}
-                      placeholder={formData.featuresNeeded.includes("other") ? "Describe the other features you need..." : "Select 'Other' in Features needed to unlock this field"}
-                      disabled={!formData.featuresNeeded.includes("other")}
-                      rows={3}
-                      className={`text-sm transition-all ${formData.featuresNeeded.includes("other") ? "bg-background/50" : "bg-background/20 cursor-not-allowed opacity-50"}`}
-                    />
-                  </div>
+                  {formData.featuresNeeded.includes("other") && (
+                    <div className="space-y-1.5 pt-2">
+                      <Label htmlFor="otherFeatureDetails" className="text-accent text-base font-semibold">
+                        What other features do you need?
+                      </Label>
+                      <Textarea
+                        id="otherFeatureDetails"
+                        value={formData.otherFeatureDetails}
+                        onChange={(e) => setFormData({ ...formData, otherFeatureDetails: e.target.value })}
+                        placeholder="Describe the other features you need..."
+                        rows={5}
+                        className="bg-background/50 text-sm"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
