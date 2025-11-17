@@ -18,10 +18,10 @@ const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
   phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 characters"),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
-  mainOutcome: z.enum(["professional", "leads", "sell-online", "convert-better"]),
+  mainOutcome: z.string().min(1, "Please select your main outcome").refine((val) => ["professional", "leads", "sell-online", "convert-better"].includes(val), "Please select a valid option"),
   featuresNeeded: z.array(z.string()).min(1, "Please select at least one feature"),
-  brandContentStatus: z.enum(["have-ready", "need-branding"]),
-  timeline: z.enum(["2-3-days", "4-7-days"]),
+  brandContentStatus: z.string().min(1, "Please select your branding status").refine((val) => ["have-ready", "need-branding"].includes(val), "Please select a valid option"),
+  timeline: z.string().min(1, "Please select your launch timeline").refine((val) => ["2-3-days", "4-7-days"].includes(val), "Please select a valid option"),
   additionalNotes: z.string().max(1000, "Additional notes must be less than 1000 characters").optional()
 });
 
