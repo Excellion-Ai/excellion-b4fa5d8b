@@ -56,7 +56,7 @@ export type Database = {
           company: string | null
           created_at: string
           description: string | null
-          email: string
+          email: string | null
           features_needed: string[] | null
           id: string
           main_outcome: string | null
@@ -76,7 +76,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           description?: string | null
-          email: string
+          email?: string | null
           features_needed?: string[] | null
           id?: string
           main_outcome?: string | null
@@ -96,7 +96,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           description?: string | null
-          email?: string
+          email?: string | null
           features_needed?: string[] | null
           id?: string
           main_outcome?: string | null
