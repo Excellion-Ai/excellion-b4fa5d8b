@@ -36,10 +36,10 @@ const Hero = () => {
             style={{ 
               backfaceVisibility: 'hidden', 
               objectPosition: 'center 20%', 
-              transform: 'translateZ(0) scale(2.5)', 
+              transform: 'translateZ(0) scale(1.2)', 
               minWidth: '100%', 
               minHeight: '100%',
-              WebkitTransform: 'translateZ(0) scale(2.5)'
+              WebkitTransform: 'translateZ(0) scale(1.2)'
             }}
           >
             <source src={excellionCityVideo} type="video/mp4" />
