@@ -21,7 +21,6 @@ const Hero = () => {
               if (el) {
                 el.playbackRate = 0.75;
                 el.style.willChange = 'transform';
-                // Optimize for quality
                 el.setAttribute('playsinline', '');
                 el.setAttribute('webkit-playsinline', '');
               }
@@ -39,8 +38,9 @@ const Hero = () => {
               transform: 'translateZ(0) scale(1.0)', 
               minWidth: '100%', 
               minHeight: '100%',
-              WebkitTransform: 'translateZ(0) scale(1.0)'
-            }}
+              WebkitTransform: 'translateZ(0) scale(1.0)',
+              filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
+            } as React.CSSProperties}
           >
             <source src={excellionCityVideo} type="video/mp4" />
           </video>
