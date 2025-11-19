@@ -59,20 +59,13 @@ const Hero = () => {
           <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
               <TypingEffect 
-                text="The Most Convenient Way To Build Your " 
+                text="The Most Convenient Way To Build Your" 
                 speed={80}
                 delay={300}
               />
-              <span className="text-accent">
-                <TypingEffect 
-                  text="Website" 
-                  speed={80}
-                  delay={3500}
-                />
-              </span>
             </h1>
 
-            <p className="text-xl text-white max-w-2xl mx-auto mt-6" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000' }}>
+            <p className="text-xl text-accent max-w-2xl mx-auto mt-6 font-semibold">
               Let us build your site—done right, done fast.
             </p>
           </div>
