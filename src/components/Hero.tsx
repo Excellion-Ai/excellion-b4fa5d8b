@@ -59,7 +59,7 @@ const Hero = () => {
           <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
               <TypingEffect 
-                text="The Most Convenient Way To Build Your" 
+                text="The Most Convenient Way To Build Your Website" 
                 speed={80}
                 delay={300}
               />
