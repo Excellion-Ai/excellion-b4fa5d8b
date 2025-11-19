@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import excellionCityVideo from "@/assets/excellion-city-realistic.mp4";
+import excellionCityVideo from "@/assets/EXC_CITY-2.mp4";
 import TypingEffect from "./TypingEffect";
 
 const Hero = () => {
