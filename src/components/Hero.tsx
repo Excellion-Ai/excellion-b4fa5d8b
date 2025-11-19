@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, Paperclip } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import excellionCityVideo from "@/assets/excellion-city-realistic.mp4";
@@ -9,14 +7,6 @@ import TypingEffect from "./TypingEffect";
 
 const Hero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const inputValue = "";
-  const setInputValue = (_: string) => {};
-
-  const suggestions = [
-    "Restaurant website with menu",
-    "Add authentication",
-    "Use Supabase database"
-  ];
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
