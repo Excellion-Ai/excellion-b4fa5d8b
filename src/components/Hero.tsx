@@ -60,38 +60,43 @@ const Hero = () => {
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
               <TypingEffect 
                 text="The Most " 
-                speed={60}
+                speed={50}
                 delay={300}
+                hideCursor={true}
               />
               <span className="text-accent">
                 <TypingEffect 
                   text="Convenient " 
-                  speed={60}
-                  delay={1100}
+                  speed={50}
+                  delay={900}
+                  hideCursor={true}
                 />
               </span>
               <TypingEffect 
                 text="Way To " 
-                speed={60}
-                delay={1900}
+                speed={50}
+                delay={1500}
+                hideCursor={true}
               />
               <span className="text-accent">
                 <TypingEffect 
                   text="Build " 
-                  speed={60}
-                  delay={2500}
+                  speed={50}
+                  delay={1950}
+                  hideCursor={true}
                 />
               </span>
               <TypingEffect 
                 text="Your " 
-                speed={60}
-                delay={2900}
+                speed={50}
+                delay={2300}
+                hideCursor={true}
               />
               <span className="text-accent">
                 <TypingEffect 
                   text="Website" 
-                  speed={60}
-                  delay={3300}
+                  speed={50}
+                  delay={2600}
                 />
               </span>
             </h1>
