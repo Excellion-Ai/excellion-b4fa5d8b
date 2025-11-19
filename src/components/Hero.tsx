@@ -69,12 +69,10 @@ const Hero = () => {
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
               The Most Convenient{" "}
               <span className="text-accent">Website Builder</span>
-              <br />
-              <span className="text-muted-foreground text-3xl md:text-4xl">Coming Soon...</span>
             </h1>
 
             <p className="text-xl text-white max-w-2xl mx-auto mt-6" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000' }}>
-              In the meantime, let us build your site—done right, done fast.
+              Let us build your site—done right, done fast.
             </p>
           </div>
 
