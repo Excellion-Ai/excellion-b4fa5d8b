@@ -46,7 +46,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/dfy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  DFY Service
+                  Done for you
                 </Link>
               </li>
               <li>
