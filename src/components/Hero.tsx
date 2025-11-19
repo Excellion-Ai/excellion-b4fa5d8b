@@ -23,14 +23,20 @@ const Hero = () => {
                 el.style.willChange = 'transform';
                 el.setAttribute('playsinline', '');
                 el.setAttribute('webkit-playsinline', '');
+                // Enable hardware acceleration
+                el.setAttribute('disablePictureInPicture', '');
+                // Optimize buffering
+                if ('requestVideoFrameCallback' in el) {
+                  el.style.contentVisibility = 'auto';
+                }
               }
             }}
             autoPlay
             loop
             muted
             playsInline
-            preload="auto"
-            onLoadedData={() => setVideoLoaded(true)}
+            preload="metadata"
+            onCanPlayThrough={() => setVideoLoaded(true)}
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
@@ -40,6 +46,7 @@ const Hero = () => {
               minHeight: '100%',
               WebkitTransform: 'translateZ(0) scale(1.0)',
               filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
+              contain: 'paint',
             } as React.CSSProperties}
           >
             <source src={excellionCityVideo} type="video/mp4" />
