@@ -5,6 +5,7 @@ import { Send, Paperclip } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import excellionCityVideo from "@/assets/excellion-city-realistic.mp4";
+import TypingEffect from "./TypingEffect";
 
 const Hero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
@@ -67,8 +68,18 @@ const Hero = () => {
           {/* Headline and Subheadline */}
           <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-              The Most Convenient{" "}
-              <span className="text-accent">Website Builder</span>
+              <TypingEffect 
+                text="The Most Convenient " 
+                speed={80}
+                delay={300}
+              />
+              <span className="text-accent">
+                <TypingEffect 
+                  text="Website Builder" 
+                  speed={80}
+                  delay={2000}
+                />
+              </span>
             </h1>
 
             <p className="text-xl text-white max-w-2xl mx-auto mt-6" style={{ textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000' }}>
