@@ -58,47 +58,7 @@ const Hero = () => {
           {/* Headline and Subheadline */}
           <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-              <TypingEffect 
-                text="The Most " 
-                speed={50}
-                delay={300}
-                hideCursor={true}
-              />
-              <span className="text-accent">
-                <TypingEffect 
-                  text="Convenient " 
-                  speed={50}
-                  delay={900}
-                  hideCursor={true}
-                />
-              </span>
-              <TypingEffect 
-                text="Way To " 
-                speed={50}
-                delay={1500}
-                hideCursor={true}
-              />
-              <span className="text-accent">
-                <TypingEffect 
-                  text="Build " 
-                  speed={50}
-                  delay={1950}
-                  hideCursor={true}
-                />
-              </span>
-              <TypingEffect 
-                text="Your " 
-                speed={50}
-                delay={2300}
-                hideCursor={true}
-              />
-              <span className="text-accent">
-                <TypingEffect 
-                  text="Website" 
-                  speed={50}
-                  delay={2600}
-                />
-              </span>
+              The Most <span className="text-accent">Convenient</span> Way To <span className="text-accent">Build</span> Your <span className="text-accent">Website</span>
             </h1>
 
             <p className="text-xl text-accent max-w-2xl mx-auto mt-6 font-semibold">
