@@ -29,8 +29,8 @@ const SurveyNew = () => {
     name: "",
     email: "",
     businessName: "",
-    mainGoal: "",
-    timeline: "",
+    mainGoal: undefined as string | undefined,
+    timeline: undefined as string | undefined,
     features: [] as string[]
   });
 
@@ -258,19 +258,19 @@ const SurveyNew = () => {
                     onValueChange={(value) => setFormData({ ...formData, mainGoal: value })}
                     className="space-y-3"
                   >
-                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors cursor-pointer">
+                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors">
                       <RadioGroupItem value="professional" id="goal-professional" />
                       <Label htmlFor="goal-professional" className="flex-1 cursor-pointer">
                         Look professional online
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors cursor-pointer">
+                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors">
                       <RadioGroupItem value="leads" id="goal-leads" />
                       <Label htmlFor="goal-leads" className="flex-1 cursor-pointer">
                         Get more leads
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors cursor-pointer">
+                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors">
                       <RadioGroupItem value="sell-online" id="goal-sell" />
                       <Label htmlFor="goal-sell" className="flex-1 cursor-pointer">
                         Sell products/services online
@@ -287,13 +287,13 @@ const SurveyNew = () => {
                     onValueChange={(value) => setFormData({ ...formData, timeline: value })}
                     className="space-y-3"
                   >
-                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors cursor-pointer">
+                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors">
                       <RadioGroupItem value="2-3-days" id="timeline-fast" />
                       <Label htmlFor="timeline-fast" className="flex-1 cursor-pointer">
                         2-3 days
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors cursor-pointer">
+                    <div className="flex items-center space-x-3 border border-border rounded-lg p-4 hover:border-accent transition-colors">
                       <RadioGroupItem value="4-7-days" id="timeline-normal" />
                       <Label htmlFor="timeline-normal" className="flex-1 cursor-pointer">
                         4-7 days
