@@ -80,8 +80,8 @@ const handler = async (req: Request): Promise<Response> => {
     const result = await twilioResponse.json();
     console.log("SMS sent successfully:", result.sid);
 
-    // Send confirmation SMS to the user
-    const confirmationMessage = `Thank you for submitting your website project request! We've received your information and will send your estimate plus a link to book a call shortly. - Excellion`;
+    // Send confirmation SMS to business number
+    const confirmationMessage = `Survey confirmation: ${surveyData.name} (${surveyData.phone}) submitted. Qualified for ${surveyData.qualifiedPlan} plan.`;
     
     const confirmationResponse = await fetch(
       `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
@@ -92,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
-          To: surveyData.phone,
+          To: TO_PHONE_NUMBER,
           From: TWILIO_PHONE_NUMBER,
           Body: confirmationMessage,
         }),
