@@ -80,6 +80,32 @@ const handler = async (req: Request): Promise<Response> => {
     const result = await twilioResponse.json();
     console.log("SMS sent successfully:", result.sid);
 
+    // Send confirmation SMS to the user
+    const confirmationMessage = `Thank you for submitting your website project request! We've received your information and will send your estimate plus a link to book a call shortly. - Excellion`;
+    
+    const confirmationResponse = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Basic ${auth}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          To: surveyData.phone,
+          From: TWILIO_PHONE_NUMBER,
+          Body: confirmationMessage,
+        }),
+      }
+    );
+
+    if (confirmationResponse.ok) {
+      const confirmationResult = await confirmationResponse.json();
+      console.log("Confirmation SMS sent to user:", confirmationResult.sid);
+    } else {
+      console.error("Failed to send confirmation SMS to user");
+    }
+
     return new Response(
       JSON.stringify({ success: true, messageSid: result.sid }),
       {
