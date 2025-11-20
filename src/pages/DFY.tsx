@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Rocket, Code, Zap, Shield, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 
 const DFY = () => {
@@ -13,36 +14,44 @@ const DFY = () => {
   const processSteps = [
     {
       number: "01",
-      title: "Discovery",
+      title: "Discovery & Strategy",
       points: [
         "Share your vision in a quick intake (or survey): goals, pages, features, style. No tech talk.",
-        "We map you to Essential, Core, or Premium and give you a clear estimate upfront.",
+        "We map you to Essential, Core, or Premium plans and give you a clear estimate upfront.",
         "On our call, you see an initial layout already started. We adjust it live to match your brand, pages, and timeline.",
         "You leave with a locked plan: what we're building, how it works, and how fast it ships."
       ]
     },
     {
       number: "02",
-      title: "Development",
+      title: "Professional Development",
       points: [
         "We lock in a clean visual system so everything feels sharp and consistent.",
-        "Real engineers + AI tools deliver fast, reliable, maintainable builds.",
+        "Real engineers use modern tools (React + AI) to deliver fast, secure, and maintainable websites.",
         "We set up what you actually need: forms, menus, bookings, quote flows, portals, automations, and integrations."
       ]
     },
     {
       number: "03",
-      title: "Launch",
+      title: "Launch & Growth",
       points: [
-        "We handle deployment end-to-end: domain, hosting, SSL, and final checks.",
+        "We handle full deployment: domain, hosting, SSL, and final SEO checks.",
         "Forms, bookings, checkouts, and mobile/desktop views are tested before launch.",
-        "Need tweaks or new features later? Excellion stays available as your long-term build partner."
+        "Excellion stays available as your long-term partner for ongoing support and growth."
       ]
     }
   ];
 
   return (
     <div className="min-h-screen bg-background relative">
+      <Helmet>
+        <title>Done-For-You Custom Website Builds | Excellion</title>
+        <meta 
+          name="description" 
+          content="Skip the DIY builders. Our expert team designs, builds, and launches high-converting, professional websites for you. Fast turnaround and clean code." 
+        />
+      </Helmet>
+
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
@@ -89,11 +98,11 @@ const DFY = () => {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-            We Build It <span className="text-accent">For You</span>
+            Done-For-You <span className="text-accent">Custom Website Builds</span>
           </h1>
           
           <p className="text-xl text-foreground max-w-2xl mx-auto bg-background/80 backdrop-blur-sm px-6 py-4 rounded-lg border border-border/50">
-            Sit back and relax while our expert team creates your perfect website.
+            Sit back while our expert team creates your perfect website. Professional design, SEO-ready code, and zero DIY headaches.
           </p>
 
           <Button 
@@ -101,7 +110,7 @@ const DFY = () => {
             onClick={() => setShowProcessModal(true)}
             className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
           >
-            Get quote
+            Start My Custom Build
           </Button>
         </div>
       </section>
@@ -109,7 +118,7 @@ const DFY = () => {
       {/* Process Grid */}
       <section className="container mx-auto px-6 pt-4 pb-16">
         <h2 className="text-4xl font-bold text-center text-foreground mb-12">
-          <span className="text-accent">3-step</span> process
+          Our <span className="text-accent">3-Step</span> Process
         </h2>
         <div className="space-y-8 max-w-6xl mx-auto">
           {processSteps.map((step, index) => (
