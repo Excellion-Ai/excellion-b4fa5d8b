@@ -27,7 +27,9 @@ const Legal = () => {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover"
+          preload="auto"
+          className="w-full h-full object-cover will-change-transform"
+          style={{ transform: 'translateZ(0)' }}
         >
           <source src={legalBackground} type="video/mp4" />
         </video>
