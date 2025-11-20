@@ -39,12 +39,12 @@ const MaintenanceRequest = () => {
         {/* Request Options */}
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
           {/* Discord Card */}
-          <div className="bg-card border border-border rounded-2xl p-8 hover:border-accent transition-colors">
-            <div className="flex flex-col items-center text-center space-y-6">
+          <div className="bg-card border border-border rounded-2xl p-8 hover:border-accent transition-colors h-full">
+            <div className="flex flex-col items-center text-center space-y-6 h-full">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
                 <MessageSquare className="w-8 h-8 text-accent" />
               </div>
-              <div>
+              <div className="flex-grow">
                 <h2 className="text-2xl font-bold text-foreground mb-2">
                   Discord Support
                 </h2>
@@ -69,12 +69,12 @@ const MaintenanceRequest = () => {
           </div>
 
           {/* Direct Request Card */}
-          <div className="bg-card border border-border rounded-2xl p-8 hover:border-accent transition-colors">
-            <div className="flex flex-col items-center text-center space-y-6">
+          <div className="bg-card border border-border rounded-2xl p-8 hover:border-accent transition-colors h-full">
+            <div className="flex flex-col items-center text-center space-y-6 h-full">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
                 <Wrench className="w-8 h-8 text-accent" />
               </div>
-              <div>
+              <div className="flex-grow">
                 <h2 className="text-2xl font-bold text-foreground mb-2">
                   Email Request
                 </h2>
