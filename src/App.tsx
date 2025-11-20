@@ -3,16 +3,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import LandingPage from "./pages/LandingPage";
+import Index from "./pages/Index";
 
 // Lazy load all non-critical routes for faster initial load
 const Pricing = lazy(() => import("./pages/Pricing"));
 const DFY = lazy(() => import("./pages/DFY"));
 const Operations = lazy(() => import("./pages/Operations"));
 const Survey = lazy(() => import("./pages/Survey"));
-const SurveyNew = lazy(() => import("./pages/SurveyNew"));
-const Results = lazy(() => import("./pages/Results"));
-const Booking = lazy(() => import("./pages/Booking"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Legal = lazy(() => import("./pages/Legal"));
@@ -36,14 +33,11 @@ const App = () => (
     <Sonner />
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<Index />} />
         {/* HIDDEN - Uncomment to restore DIY page: <Route path="/diy" element={<Pricing />} /> */}
         <Route path="/dfy" element={<DFY />} />
         <Route path="/operations" element={<Operations />} />
-        <Route path="/survey-old" element={<Survey />} />
-        <Route path="/survey" element={<SurveyNew />} />
-        <Route path="/results" element={<Results />} />
-        <Route path="/booking" element={<Booking />} />
+        <Route path="/survey" element={<Survey />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/legal" element={<Legal />} />
