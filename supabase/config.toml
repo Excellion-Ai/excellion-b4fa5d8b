@@ -1,1 +1,4 @@
 project_id = "twaljzxgbbkhhjjocilf"
+
+[functions.send-survey-sms]
+verify_jwt = false

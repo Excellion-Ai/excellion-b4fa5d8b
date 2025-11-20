@@ -148,6 +148,28 @@ const Survey = () => {
       return;
     }
 
+    // Send SMS notification
+    try {
+      await supabase.functions.invoke('send-survey-sms', {
+        body: {
+          name: formData.name,
+          phone: formData.phone,
+          brandName: formData.brandName,
+          mainOutcome: formData.mainOutcome,
+          featuresNeeded: formData.featuresNeeded,
+          brandContentStatus: formData.brandContentStatus,
+          timeline: formData.timeline,
+          qualifiedPlan: plan,
+          additionalNotes: formData.additionalNotes,
+          otherFeatureDetails: formData.otherFeatureDetails
+        }
+      });
+      console.log("SMS notification sent successfully");
+    } catch (smsError) {
+      // Log error but don't block the user flow
+      console.error("Error sending SMS notification:", smsError);
+    }
+
     // Show result modal
     setShowResult(true);
   };
