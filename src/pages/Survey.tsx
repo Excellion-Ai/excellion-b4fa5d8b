@@ -187,43 +187,42 @@ const Survey = () => {
     switch (qualifiedPlan) {
       case "Premium":
         return {
-          title: "You qualify for the Premium Build",
-          description: "Based on your answers, you qualify for our Premium Build — best for complex projects with multiple features, deeper branding/content support, or faster timelines.",
+          title: "Premium Build",
+          description: "For businesses ready to scale with complex needs. Includes Full Strategy, Online Store/Payments, & Advanced Automations.",
           includes: [
-            "7+ pages or complex flows",
-            "Online store or ordering, payments, advanced automations, or custom experiences",
-            "Optional full brand + content support",
-            "Priority handling and white-glove launch"
+            "6+ pages with advanced features and workflows",
+            "Complex integrations, payment processing, booking systems, or custom automations",
+            "Built to scale with aggressive marketing, high traffic, or complex user journeys"
           ],
-          pricing: "$3,000 – $10,000",
-          footerLine: "You qualify for Premium. We've received your details and will email a detailed Premium estimate and link to book a call.",
-          buttonText: "Talk with Excellion About Your Premium Build"
+          pricing: "$3,000 – $10,000+ Estimated",
+          footerLine: "We have a concept in mind for your homepage. Let's hop on a 30-minute call to walk through the mockup and finalize your exact quote.",
+          buttonText: "Book Your Mockup Reveal Call"
         };
       case "Core":
         return {
-          title: "You qualify for the Core Build",
-          description: "Based on your answers, you qualify for our Core Build — great for growing businesses that want more features and stronger lead generation without a super heavy setup.",
+          title: "Core Build - Recommended",
+          description: "Our most popular build. Designed to capture leads and convert visitors. Includes up to 6 Pages, Booking/Lead Forms, & SEO Setup.",
           includes: [
             "4–6 pages with a guided user journey",
             "Features like booking, lead capture, forms, basic automations, or simple integrations",
             "Built to support active leads, clients, and campaigns"
           ],
-          pricing: "$1,200 – $2,800",
-          footerLine: "You qualify for Core. We've received your details and will email a detailed Core estimate and link to book a call.",
-          buttonText: "Book a Core Build Call"
+          pricing: "$1,200 – $2,800 Estimated",
+          footerLine: "We have a concept in mind for your homepage. Let's hop on a 30-minute call to walk through the mockup and finalize your exact quote.",
+          buttonText: "Book Your Mockup Reveal Call"
         };
       default:
         return {
-          title: "You qualify for the Essential Build",
-          description: "Based on your answers, you qualify for our Essential Build — ideal for a clean, professional site with a few key features and a straightforward setup.",
+          title: "Essential Build",
+          description: "Perfect for businesses that need a professional 'digital business card'. Includes Home, About, Contact pages & Fast 3-Day Launch.",
           includes: [
             "1–3 core pages (Home, About, Services, Contact)",
             "Modern, conversion-focused layout",
             "Contact or quote form so people can reach you fast"
           ],
-          pricing: "$600 – $1,000",
-          footerLine: "You qualify for Essential. We've received your details and will email a detailed Essential estimate and link to book a call.",
-          buttonText: "Book an Essential Call"
+          pricing: "$600 – $1,000 Estimated",
+          footerLine: "We have a concept in mind for your homepage. Let's hop on a 30-minute call to walk through the mockup and finalize your exact quote.",
+          buttonText: "Book Your Mockup Reveal Call"
         };
     }
   };
@@ -254,8 +253,11 @@ const Survey = () => {
             {/* Header */}
             <div className="text-center mb-12 bg-black/80 backdrop-blur-md rounded-2xl p-8 border border-accent/20">
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Fill out a quick survey, and we'll send your <span className="text-accent">estimate</span> plus a link to book a call by email or text.
+                Let's Build Your <span className="text-accent">Plan</span>
               </h1>
+              <p className="text-lg text-accent/90 mt-2">
+                Step 1 of 2 • Takes less than 60 seconds
+              </p>
             </div>
 
             {/* Survey Form */}
@@ -263,6 +265,9 @@ const Survey = () => {
               {/* Contact Info - Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-accent text-base font-semibold">
+                  First, where should we send your estimate?
+                </Label>
+                <Label htmlFor="name" className="text-foreground text-sm font-medium mt-1">
                   Your name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                 </Label>
                 <Input
@@ -309,9 +314,9 @@ const Survey = () => {
 
               {/* Main Outcome */}
               <div className="space-y-2">
-                  <Label className="text-accent text-base font-semibold">
-                    Main outcome <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
+                <Label className="text-accent text-base font-semibold">
+                  What is the #1 thing this website needs to do? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                </Label>
                   <RadioGroup
                     value={formData.mainOutcome}
                     onValueChange={(value) => setFormData({ ...formData, mainOutcome: value })}
@@ -339,9 +344,9 @@ const Survey = () => {
 
               {/* Timeline */}
               <div className="space-y-2">
-                  <Label className="text-accent text-base font-semibold">
-                    Launch timeline <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
+                <Label className="text-accent text-base font-semibold">
+                  How soon do you need this live? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                </Label>
                   <RadioGroup
                     value={formData.timeline}
                     onValueChange={(value) => setFormData({ ...formData, timeline: value })}
@@ -363,7 +368,7 @@ const Survey = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label className="text-accent text-base font-semibold">
-                    Features needed <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span> <span className="text-foreground text-sm font-medium">(select all that apply)</span>
+                    What features does your business need? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span> <span className="text-foreground text-sm font-medium">(select all that apply)</span>
                   </Label>
                   <div className="space-y-2">
                     {[
@@ -467,10 +472,15 @@ const Survey = () => {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl text-accent mb-4">
-              {getPlanContent().title}
+              We've Generated Your Build Plan!
             </DialogTitle>
             <DialogDescription className="text-base space-y-4">
-              <p className="text-foreground">{getPlanContent().description}</p>
+              <p className="text-foreground font-semibold">Based on your answers, here is the Excellion tier that fits your goals.</p>
+              
+              <div className="bg-accent/10 border border-accent/20 rounded-lg p-4">
+                <p className="text-accent font-bold text-2xl mb-2">{getPlanContent().title}</p>
+                <p className="text-foreground">{getPlanContent().description}</p>
+              </div>
               
               <div>
                 <p className="text-foreground font-semibold mb-2">What this usually includes:</p>

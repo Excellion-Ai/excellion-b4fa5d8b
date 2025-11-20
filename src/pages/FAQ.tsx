@@ -11,16 +11,16 @@ import faqBackgroundVideo from "@/assets/faq-background.mp4";
 const FAQ = () => {
   const faqs = [
     {
-      question: "What's the difference between DIY and DFY?",
-      answer: "DIY (Do It Yourself) gives you access to our templates and tools to build your own website. DFY (Done For You) means our expert team builds everything for you based on your requirements."
+      question: "How fast can you launch my website?",
+      answer: "Our streamlined process allows us to launch most Core Builds in just 4–7 days."
     },
     {
-      question: "How long does it take to get my website?",
-      answer: "DIY templates are available instantly. For DFY services, typical turnaround is 7-14 days depending on complexity and current workload."
+      question: "Do I own the website?",
+      answer: "Yes. Once the final payment is made, you own 100% of your website, design, and content."
     },
     {
-      question: "Can I switch from DIY to DFY later?",
-      answer: "Absolutely! Many clients start with DIY and upgrade to DFY when they need professional help. We can take over any project at any stage."
+      question: "What if I don't have branding?",
+      answer: "No problem. Our Premium Build includes basic branding assistance to get you started."
     },
     {
       question: "What platforms do you build on?",
