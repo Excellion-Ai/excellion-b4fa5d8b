@@ -1,20 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 import excellionCityVideo from "@/assets/EXC_CITY-2.mp4";
 import TypingEffect from "./TypingEffect";
 
 const Hero = () => {
-  const [videoLoaded, setVideoLoaded] = useState(false);
-
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
-        {!videoLoaded && (
-          <Skeleton className="absolute inset-0 w-full h-full" />
-        )}
         <div className="absolute inset-0 flex items-center justify-end flex-col">
           <video
             ref={(el) => {
@@ -23,9 +16,7 @@ const Hero = () => {
                 el.style.willChange = 'transform';
                 el.setAttribute('playsinline', '');
                 el.setAttribute('webkit-playsinline', '');
-                // Enable hardware acceleration
                 el.setAttribute('disablePictureInPicture', '');
-                // Optimize buffering
                 if ('requestVideoFrameCallback' in el) {
                   el.style.contentVisibility = 'auto';
                 }
@@ -35,8 +26,7 @@ const Hero = () => {
             loop
             muted
             playsInline
-            preload="metadata"
-            onCanPlayThrough={() => setVideoLoaded(true)}
+            preload="auto"
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
