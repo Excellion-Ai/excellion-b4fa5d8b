@@ -57,32 +57,30 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-6 py-24 animate-fade-in">
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-accent/50 will-change-transform">
-            <span className="text-sm font-bold text-black">✨ Launch your website fast</span>
-          </div>
-
           {/* Headline and Subheadline */}
           <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-              The Most <span className="text-accent">Convenient</span> Way To <span className="text-accent">Build</span> Your <span className="text-accent">Website</span>
+              Get a Free Website Estimate + <span className="text-accent">Custom Mockup</span>
             </h1>
 
             <p className="text-xl text-accent max-w-2xl mx-auto mt-6 font-semibold">
-              Let us build your site—done right, done fast.
+              Stop guessing what a professional website costs. Answer 5 quick questions to get your personalized build plan, price range, and launch timeline instantly.
             </p>
           </div>
 
           {/* CTA Button */}
-          <div className="mt-8">
-            <Link to="/dfy">
+          <div className="mt-8 space-y-2">
+            <Link to="/survey">
               <Button 
                 size="lg" 
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
               >
-                Request Expert Build
+                Start My Free Estimate
               </Button>
             </Link>
+            <p className="text-sm text-foreground/70">
+              No credit card required. No spam. 100% free.
+            </p>
           </div>
         </div>
       </div>
