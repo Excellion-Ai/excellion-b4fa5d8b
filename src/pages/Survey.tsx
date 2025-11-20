@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -228,7 +229,12 @@ const Survey = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <>
+      <Helmet>
+        <title>Build Your Website Plan | Excellion</title>
+        <meta name="description" content="Take our 60-second assessment to qualify for a custom website build and pricing plan." />
+      </Helmet>
+      <div className="min-h-screen bg-background relative">
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
@@ -517,6 +523,7 @@ const Survey = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 };
 
