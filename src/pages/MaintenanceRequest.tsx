@@ -10,13 +10,33 @@ const MaintenanceRequest = () => {
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
+          ref={(el) => {
+            if (el) {
+              el.playbackRate = 0.75;
+              el.style.willChange = 'transform';
+              el.setAttribute('playsinline', '');
+              el.setAttribute('webkit-playsinline', '');
+              el.setAttribute('disablePictureInPicture', '');
+              if ('requestVideoFrameCallback' in el) {
+                el.style.contentVisibility = 'auto';
+              }
+            }
+          }}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 w-full h-full object-cover will-change-transform"
-          style={{ transform: 'translateZ(0)' }}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ 
+            backfaceVisibility: 'hidden', 
+            transform: 'translateZ(0) scale(1.0)', 
+            minWidth: '100%', 
+            minHeight: '100%',
+            WebkitTransform: 'translateZ(0) scale(1.0)',
+            filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
+            contain: 'paint',
+          } as React.CSSProperties}
         >
           <source src={contactBackgroundVideo} type="video/mp4" />
         </video>
