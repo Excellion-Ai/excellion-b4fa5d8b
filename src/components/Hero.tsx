@@ -57,10 +57,14 @@ const Hero = () => {
             <p className="text-xl text-accent max-w-2xl mx-auto mt-6 font-semibold">
               Stop guessing what a professional website costs. Answer 5 quick questions to get your personalized build plan, price range, and launch timeline instantly.
             </p>
+
+            <p className="text-xs text-foreground/60 mt-6 font-light">
+              No credit card required. No spam. 100% free.
+            </p>
           </div>
 
           {/* CTA Button */}
-          <div className="mt-8 space-y-2">
+          <div className="mt-8">
             <Link to="/survey">
               <Button 
                 size="lg" 
@@ -69,9 +73,6 @@ const Hero = () => {
                 Start My Free Estimate
               </Button>
             </Link>
-            <p className="text-sm text-foreground/70 bg-background/30 backdrop-blur-sm px-4 py-2 rounded-md border border-border/30 inline-block">
-              No credit card required. No spam. 100% free.
-            </p>
           </div>
         </div>
       </div>
