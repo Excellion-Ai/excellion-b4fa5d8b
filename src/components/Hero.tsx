@@ -17,6 +17,7 @@ const Hero = () => {
                 el.setAttribute('playsinline', '');
                 el.setAttribute('webkit-playsinline', '');
                 el.setAttribute('disablePictureInPicture', '');
+                el.setAttribute('preload', 'metadata');
                 if ('requestVideoFrameCallback' in el) {
                   el.style.contentVisibility = 'auto';
                 }
@@ -26,7 +27,7 @@ const Hero = () => {
             loop
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
@@ -68,7 +69,7 @@ const Hero = () => {
                 Start My Free Estimate
               </Button>
             </Link>
-            <p className="text-sm text-foreground/70">
+            <p className="text-sm text-foreground/70 bg-background/30 backdrop-blur-sm px-4 py-2 rounded-md border border-border/30 inline-block">
               No credit card required. No spam. 100% free.
             </p>
           </div>
