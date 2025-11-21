@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Sparkles, BookOpen, Egg, Users, Wrench } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import operationsBackgroundVideo from "@/assets/operations-background-new.mp4";
 
 const Operations = () => {
@@ -56,6 +57,14 @@ const Operations = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
+      <Helmet>
+        <title>Operations Hub - Creator Community & Support | Excellion</title>
+        <meta 
+          name="description" 
+          content="Join Excellion's creator hub. Access expert support, AI tools, templates, and a thriving community. Get help building faster with real-time assistance and resources." 
+        />
+      </Helmet>
+
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
@@ -108,15 +117,15 @@ const Operations = () => {
         <div className="max-w-4xl mx-auto text-center space-y-6 mb-16">
           <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 md:p-12 border border-white/10">
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-              Operations
+              Creator Operations Hub
             </h1>
             
             <p className="text-xl text-accent italic mt-4">
-              Command center of Excellion's digital realm
+              Your central hub for expert support, community, and AI-powered tools
             </p>
 
             <p className="text-lg text-white font-semibold max-w-3xl mx-auto leading-relaxed mt-6">
-              Welcome to Operations — Excellion's connected hub for creators. Chat with the community, explore app templates, use our AI prompt builder, and track your orders. Talk directly with Excellion experts through our Discord server, get instant customer service for our DIY bot, or reach real founder support — all in one powerful space built for you.
+              Welcome to Operations — Excellion's connected hub for creators, founders, and agencies. Access expert support, explore app templates, use our AI prompt builder, and track your custom builds. Connect with Excellion experts through Discord, get instant DIY support, or reach our team directly — all in one powerful space built for serious creators.
             </p>
 
             <a href="https://discord.gg/tmDTkwVY9u" target="_blank" rel="noopener noreferrer">
@@ -124,7 +133,7 @@ const Operations = () => {
                 size="lg"
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
               >
-                Enter the Server
+                Join the Community
               </Button>
             </a>
           </div>
