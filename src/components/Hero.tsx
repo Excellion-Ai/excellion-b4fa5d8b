@@ -26,7 +26,7 @@ const Hero = () => {
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
@@ -59,7 +59,7 @@ const Hero = () => {
           </div>
 
           {/* CTA Button */}
-          <div className="mt-8 space-y-3">
+          <div className="mt-8 space-y-2">
             <Link to="/survey">
               <Button 
                 size="lg" 
@@ -68,11 +68,9 @@ const Hero = () => {
                 Start My Free Estimate
               </Button>
             </Link>
-            <div className="bg-background/60 backdrop-blur-sm px-6 py-3 rounded-full border border-accent/30 inline-block">
-              <p className="text-base text-foreground font-semibold">
-                ✓ No credit card required · No spam · 100% free
-              </p>
-            </div>
+            <p className="text-sm text-foreground/70">
+              No credit card required. No spam. 100% free.
+            </p>
           </div>
         </div>
       </div>
