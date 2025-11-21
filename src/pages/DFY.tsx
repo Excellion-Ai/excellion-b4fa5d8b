@@ -50,6 +50,81 @@ const DFY = () => {
           name="description" 
           content="Skip the DIY builders. Our expert team designs, builds, and launches high-converting, professional websites for you. Fast turnaround and clean code." 
         />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "name": "Excellion",
+                "url": "https://excellion.ai",
+                "logo": "https://excellion.ai/logo.png",
+                "description": "Expert custom website builds for businesses. Professional design, SEO-ready code, and fast turnaround.",
+                "contactPoint": {
+                  "@type": "ContactPoint",
+                  "contactType": "Sales",
+                  "availableLanguage": "English"
+                }
+              },
+              {
+                "@type": "Service",
+                "serviceType": "Custom Website Development",
+                "provider": {
+                  "@type": "Organization",
+                  "name": "Excellion"
+                },
+                "areaServed": "Worldwide",
+                "hasOfferCatalog": {
+                  "@type": "OfferCatalog",
+                  "name": "Website Build Services",
+                  "itemListElement": [
+                    {
+                      "@type": "Offer",
+                      "itemOffered": {
+                        "@type": "Service",
+                        "name": "Essential Website Build",
+                        "description": "Professional digital business card with Home, About, Contact pages. 3-day launch."
+                      }
+                    },
+                    {
+                      "@type": "Offer",
+                      "itemOffered": {
+                        "@type": "Service",
+                        "name": "Core Website Build",
+                        "description": "Lead generation website with up to 6 pages, booking forms, and SEO setup."
+                      }
+                    },
+                    {
+                      "@type": "Offer",
+                      "itemOffered": {
+                        "@type": "Service",
+                        "name": "Premium Website Build",
+                        "description": "Full-scale website with strategy, e-commerce, and advanced automations."
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://excellion.ai"
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Done For You",
+                    "item": "https://excellion.ai/dfy"
+                  }
+                ]
+              }
+            ]
+          })}
+        </script>
       </Helmet>
 
       {/* Video Background */}
