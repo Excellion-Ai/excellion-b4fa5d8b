@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import excellionCityVideo from "@/assets/EXC_CITY-2.mp4";
+import homeBackgroundVideo from "@/assets/home-background.mp4";
 import TypingEffect from "./TypingEffect";
 
 const Hero = () => {
@@ -39,7 +39,7 @@ const Hero = () => {
               contain: 'paint',
             } as React.CSSProperties}
           >
-            <source src={excellionCityVideo} type="video/mp4" />
+            <source src={homeBackgroundVideo} type="video/mp4" />
           </video>
         </div>
       </div>
