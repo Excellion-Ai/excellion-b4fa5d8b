@@ -171,6 +171,27 @@ const Survey = () => {
       console.error("Error sending SMS notification:", smsError);
     }
 
+    // Send email notifications
+    try {
+      await supabase.functions.invoke('send-survey-email', {
+        body: {
+          name: formData.name,
+          phone: formData.phone,
+          email: null, // No email field in current form
+          brandName: formData.brandName,
+          mainOutcome: formData.mainOutcome,
+          featuresNeeded: formData.featuresNeeded,
+          brandContentStatus: formData.brandContentStatus,
+          timeline: formData.timeline,
+          qualifiedPlan: plan
+        }
+      });
+      console.log("Email notifications sent successfully");
+    } catch (emailError) {
+      // Log error but don't block the user flow
+      console.error("Error sending email notifications:", emailError);
+    }
+
     // Show result modal
     setShowResult(true);
   };
