@@ -63,6 +63,61 @@ const Operations = () => {
           name="description" 
           content="Join Excellion's creator hub. Access expert support, AI tools, templates, and a thriving community. Get help building faster with real-time assistance and resources." 
         />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "name": "Excellion",
+                "url": "https://excellion.ai",
+                "logo": "https://excellion.ai/logo.png",
+                "description": "Creator operations hub with expert support, AI tools, and community resources.",
+                "sameAs": [
+                  "https://discord.gg/tmDTkwVY9u"
+                ]
+              },
+              {
+                "@type": "WebPage",
+                "name": "Creator Operations Hub",
+                "description": "Central hub for creators, founders, and agencies. Access expert support, AI tools, templates, and community.",
+                "url": "https://excellion.ai/operations",
+                "breadcrumb": {
+                  "@type": "BreadcrumbList",
+                  "itemListElement": [
+                    {
+                      "@type": "ListItem",
+                      "position": 1,
+                      "name": "Home",
+                      "item": "https://excellion.ai"
+                    },
+                    {
+                      "@type": "ListItem",
+                      "position": 2,
+                      "name": "Operations Hub",
+                      "item": "https://excellion.ai/operations"
+                    }
+                  ]
+                }
+              },
+              {
+                "@type": "Product",
+                "name": "Excellion Operations Hub",
+                "description": "Complete creator support platform with live expert help, templates library, AI prompt builder, and order tracking.",
+                "brand": {
+                  "@type": "Brand",
+                  "name": "Excellion"
+                },
+                "offers": {
+                  "@type": "Offer",
+                  "availability": "https://schema.org/InStock",
+                  "price": "0",
+                  "priceCurrency": "USD"
+                }
+              }
+            ]
+          })}
+        </script>
       </Helmet>
 
       {/* Video Background */}
