@@ -18,7 +18,31 @@ const Hero = () => {
                 el.setAttribute('webkit-playsinline', '');
                 el.setAttribute('disablePictureInPicture', '');
                 el.setAttribute('preload', 'auto');
-                el.load(); // Force immediate loading
+                el.load();
+                
+                // Force play on mobile and handle pause events
+                const forcePlay = () => {
+                  if (el.paused) {
+                    el.play().catch(() => {
+                      // Retry on error
+                      setTimeout(() => el.play().catch(() => {}), 100);
+                    });
+                  }
+                };
+                
+                // Listen for pause events and restart
+                el.addEventListener('pause', forcePlay);
+                
+                // Handle visibility changes
+                document.addEventListener('visibilitychange', () => {
+                  if (!document.hidden) {
+                    forcePlay();
+                  }
+                });
+                
+                // Ensure playing when scrolling
+                window.addEventListener('scroll', forcePlay, { passive: true });
+                
                 if ('requestVideoFrameCallback' in el) {
                   el.style.contentVisibility = 'auto';
                 }
