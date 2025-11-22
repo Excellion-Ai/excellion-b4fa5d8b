@@ -17,7 +17,8 @@ const Hero = () => {
                 el.setAttribute('playsinline', '');
                 el.setAttribute('webkit-playsinline', '');
                 el.setAttribute('disablePictureInPicture', '');
-                el.setAttribute('preload', 'metadata');
+                el.setAttribute('preload', 'auto');
+                el.load(); // Force immediate loading
                 if ('requestVideoFrameCallback' in el) {
                   el.style.contentVisibility = 'auto';
                 }
@@ -27,7 +28,7 @@ const Hero = () => {
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
