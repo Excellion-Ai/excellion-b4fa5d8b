@@ -177,7 +177,7 @@ const DFY = () => {
           </h1>
           
           <p className="text-xl text-foreground max-w-2xl mx-auto bg-background/80 backdrop-blur-sm px-6 py-4 rounded-lg border border-border/50">
-            Sit back while our expert team creates your perfect website. Professional design, SEO-ready code, and zero DIY headaches.
+            Sit back and let Excellion bring your vision to life. We create fully AI-engineered websites with professional design and zero hassle
           </p>
 
           <Button 
