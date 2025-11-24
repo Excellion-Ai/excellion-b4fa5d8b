@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 import { z } from "zod";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -41,6 +42,7 @@ const Survey = () => {
   const navigate = useNavigate();
   const [showResult, setShowResult] = useState(false);
   const [qualifiedPlan, setQualifiedPlan] = useState("");
+  const [phoneValid, setPhoneValid] = useState<boolean | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -221,9 +223,16 @@ const Survey = () => {
     }
   };
 
+  const validatePhoneNumber = (value: string) => {
+    if (!value) return null;
+    const digitsOnly = value.replace(/[\s\-\(\)\.\+]/g, '');
+    return /^\d{10,15}$/.test(digitsOnly);
+  };
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     setFormData({ ...formData, phone: formatted });
+    setPhoneValid(validatePhoneNumber(formatted));
   };
 
   const toggleFeature = (feature: string) => {
@@ -358,16 +367,24 @@ const Survey = () => {
                   <Label htmlFor="phone" className="text-accent text-base font-semibold">
                     Phone number <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                   </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={handlePhoneChange}
-                    placeholder="(555) 123-4567"
-                    required
-                    maxLength={14}
-                    className="bg-background/50 h-9"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handlePhoneChange}
+                      placeholder="(555) 123-4567"
+                      required
+                      maxLength={14}
+                      className="bg-background/50 h-9 pr-10"
+                    />
+                    {phoneValid === true && (
+                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                    )}
+                    {phoneValid === false && (
+                      <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
