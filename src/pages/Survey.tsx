@@ -17,6 +17,7 @@ import { z } from "zod";
 
 const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters").optional(),
   phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 characters"),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
   mainOutcome: z.string().min(1, "Please select your main outcome").refine((val) => ["professional", "leads", "sell-online", "convert-better"].includes(val), "Please select a valid option"),
@@ -33,6 +34,7 @@ const Survey = () => {
   const [qualifiedPlan, setQualifiedPlan] = useState("");
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     phone: "",
     brandName: "",
     mainOutcome: "",
@@ -124,7 +126,7 @@ const Survey = () => {
       .from('quote_requests')
       .insert({
         name: formData.name,
-        email: null,
+        email: formData.email || null,
         phone: formData.phone,
         brand_name: formData.brandName,
         project_type: "survey-submission",
@@ -177,7 +179,7 @@ const Survey = () => {
         body: {
           name: formData.name,
           phone: formData.phone,
-          email: null, // No email field in current form
+          email: formData.email || null,
           brandName: formData.brandName,
           mainOutcome: formData.mainOutcome,
           featuresNeeded: formData.featuresNeeded,
@@ -303,6 +305,21 @@ const Survey = () => {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="John Doe"
                   required
+                  className="bg-background/50 h-9"
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-foreground text-sm font-medium">
+                  Email address (optional)
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="john@example.com"
                   className="bg-background/50 h-9"
                 />
               </div>
