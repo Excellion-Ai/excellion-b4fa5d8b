@@ -512,7 +512,10 @@ const Survey = () => {
       </div>
 
       {/* Result Dialog */}
-      <Dialog open={showResult} onOpenChange={setShowResult}>
+      <Dialog open={showResult} onOpenChange={(open) => {
+        setShowResult(open);
+        if (!open) navigate("/");
+      }}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl text-accent mb-4">
