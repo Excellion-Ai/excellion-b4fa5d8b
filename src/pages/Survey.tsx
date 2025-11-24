@@ -20,7 +20,14 @@ const surveySchema = z.object({
   email: z.string().trim().optional().refine((val) => !val || z.string().email().safeParse(val).success, {
     message: "Invalid email address"
   }),
-  phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 characters"),
+  phone: z.string().trim().min(1, "Phone number is required").refine((val) => {
+    // Strip out common formatting characters
+    const digitsOnly = val.replace(/[\s\-\(\)\.\+]/g, '');
+    // Check if it contains only digits and is between 10-15 digits
+    return /^\d{10,15}$/.test(digitsOnly);
+  }, {
+    message: "Please enter a valid phone number (10-15 digits)"
+  }),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
   mainOutcome: z.string().min(1, "Please select your main outcome").refine((val) => ["professional", "leads", "sell-online", "convert-better"].includes(val), "Please select a valid option"),
   featuresNeeded: z.array(z.string()).min(1, "Please select at least one feature"),
