@@ -43,6 +43,7 @@ const Survey = () => {
   const [showResult, setShowResult] = useState(false);
   const [qualifiedPlan, setQualifiedPlan] = useState("");
   const [phoneValid, setPhoneValid] = useState<boolean | null>(null);
+  const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -229,10 +230,21 @@ const Survey = () => {
     return /^\d{10,15}$/.test(digitsOnly);
   };
 
+  const validateEmail = (value: string) => {
+    if (!value) return null;
+    return z.string().email().safeParse(value).success;
+  };
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     setFormData({ ...formData, phone: formatted });
     setPhoneValid(validatePhoneNumber(formatted));
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, email: value });
+    setEmailValid(validateEmail(value));
   };
 
   const toggleFeature = (feature: string) => {
@@ -351,14 +363,22 @@ const Survey = () => {
                 <Label htmlFor="email" className="text-foreground text-sm font-medium">
                   Email address (optional)
                 </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@example.com"
-                  className="bg-background/50 h-9"
-                />
+                <div className="relative">
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleEmailChange}
+                    placeholder="john@example.com"
+                    className="bg-background/50 h-9 pr-10"
+                  />
+                  {emailValid === true && (
+                    <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
+                  {emailValid === false && (
+                    <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                  )}
+                </div>
               </div>
 
               {/* Contact Info */}
