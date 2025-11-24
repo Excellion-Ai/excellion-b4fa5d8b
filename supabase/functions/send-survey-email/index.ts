@@ -82,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Excellion <onboarding@resend.dev>",
+          from: "Excellion <noreply@excellionwebsites.com>",
           to: [email],
           subject: "Your Free Website Estimate - Excellion",
           html: userEmailHtml,
@@ -132,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Excellion Notifications <onboarding@resend.dev>",
+        from: "Excellion Notifications <noreply@excellionwebsites.com>",
         to: ["excellionai@gmail.com"],
         subject: `New Website Estimate Request - ${qualifiedPlan}`,
         html: businessEmailHtml,
