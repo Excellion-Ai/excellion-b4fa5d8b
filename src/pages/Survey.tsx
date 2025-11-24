@@ -207,6 +207,25 @@ const Survey = () => {
     setShowResult(true);
   };
 
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digit characters
+    const digitsOnly = value.replace(/\D/g, '');
+    
+    // Apply formatting based on length
+    if (digitsOnly.length <= 3) {
+      return digitsOnly;
+    } else if (digitsOnly.length <= 6) {
+      return `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3)}`;
+    } else {
+      return `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6, 10)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+  };
+
   const toggleFeature = (feature: string) => {
     setFormData(prev => ({
       ...prev,
@@ -343,9 +362,10 @@ const Survey = () => {
                     id="phone"
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={handlePhoneChange}
                     placeholder="(555) 123-4567"
                     required
+                    maxLength={14}
                     className="bg-background/50 h-9"
                   />
                 </div>
