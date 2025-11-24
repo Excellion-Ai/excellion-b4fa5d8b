@@ -280,7 +280,7 @@ const Survey = () => {
         <section className="container mx-auto px-6 py-16">
           <div className="max-w-3xl mx-auto">
             {/* Header */}
-            <div className="text-center mb-12 bg-black/80 backdrop-blur-md rounded-2xl p-8 border border-accent/20">
+            <div className="text-center mb-12 bg-black/40 backdrop-blur-md rounded-2xl p-8 border border-accent/20">
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                 Let's Build Your <span className="text-accent">Plan</span>
               </h1>
