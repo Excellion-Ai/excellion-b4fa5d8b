@@ -11,6 +11,7 @@ interface MaintenanceRequest {
   websiteUrl?: string;
   description: string;
   priority: string;
+  imageUrls?: string[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -20,9 +21,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, websiteUrl, description, priority }: MaintenanceRequest = await req.json();
+    const { name, email, websiteUrl, description, priority, imageUrls }: MaintenanceRequest = await req.json();
 
-    console.log("Processing maintenance request from:", email);
+    console.log("Processing maintenance request from:", email, "with", imageUrls?.length || 0, "images");
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -39,6 +40,25 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     const priorityLabel = priorityLabels[priority] || priority;
+
+    // Format images HTML
+    const imagesHtml = imageUrls && imageUrls.length > 0 
+      ? `
+        <div style="margin-top: 20px;">
+          <h3 style="color: #333; margin-bottom: 10px;">📸 Attached Screenshots (${imageUrls.length})</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+            ${imageUrls.map((url, index) => `
+              <div>
+                <a href="${url}" target="_blank" style="text-decoration: none;">
+                  <img src="${url}" alt="Screenshot ${index + 1}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 2px solid #d4af37;" />
+                </a>
+              </div>
+            `).join('')}
+          </div>
+          <p style="font-size: 12px; color: #666; margin-top: 10px;">Click images to view full size</p>
+        </div>
+      `
+      : '';
 
     // Send email to Excellion team
     const teamEmailHtml = `
@@ -59,6 +79,8 @@ const handler = async (req: Request): Promise<Response> => {
           <h3 style="color: #333; margin-top: 0;">Description</h3>
           <p style="white-space: pre-wrap; line-height: 1.6;">${description}</p>
         </div>
+
+        ${imagesHtml}
 
         <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #581c87; border-radius: 4px;">
           <p style="margin: 0; color: #666; font-size: 14px;">
@@ -112,6 +134,7 @@ const handler = async (req: Request): Promise<Response> => {
           ${websiteUrl ? `<p><strong>Website/Project:</strong> ${websiteUrl}</p>` : ''}
           <p><strong>Description:</strong></p>
           <p style="white-space: pre-wrap; line-height: 1.6; color: #555;">${description}</p>
+          ${imageUrls && imageUrls.length > 0 ? `<p style="margin-top: 10px;"><strong>Attachments:</strong> ${imageUrls.length} image(s)</p>` : ''}
         </div>
 
         <div style="background-color: #fff; padding: 20px; border: 1px solid #d4af37; border-radius: 8px; margin: 20px 0;">
