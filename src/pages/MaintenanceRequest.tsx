@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, XCircle, Wrench } from "lucide-react";
+import { CheckCircle2, XCircle, Wrench, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import contactBackgroundVideo from "@/assets/contact-background.mp4";
@@ -22,6 +22,7 @@ const MaintenanceRequest = () => {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
+  const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateEmail = (email: string): boolean => {
@@ -44,6 +45,25 @@ const MaintenanceRequest = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => {
+      const isValidType = file.type.startsWith('image/');
+      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+      if (!isValidType) {
+        toast.error(`${file.name} is not an image file`);
+      } else if (!isValidSize) {
+        toast.error(`${file.name} exceeds 5MB limit`);
+      }
+      return isValidType && isValidSize;
+    });
+    setImages(prev => [...prev, ...validFiles].slice(0, 5)); // Max 5 images
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -60,6 +80,31 @@ const MaintenanceRequest = () => {
     setIsSubmitting(true);
 
     try {
+      // Upload images to storage if any
+      const imageUrls: string[] = [];
+      if (images.length > 0) {
+        for (const image of images) {
+          const fileExt = image.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+          const filePath = `${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('maintenance-images')
+            .upload(filePath, image);
+
+          if (uploadError) {
+            console.error("Error uploading image:", uploadError);
+            throw uploadError;
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('maintenance-images')
+            .getPublicUrl(filePath);
+
+          imageUrls.push(publicUrl);
+        }
+      }
+
       // Send email notification via edge function
       const { error: emailError } = await supabase.functions.invoke('send-maintenance-request', {
         body: {
@@ -67,7 +112,8 @@ const MaintenanceRequest = () => {
           email,
           websiteUrl,
           description,
-          priority
+          priority,
+          imageUrls
         }
       });
 
@@ -82,6 +128,7 @@ const MaintenanceRequest = () => {
       setWebsiteUrl("");
       setDescription("");
       setPriority("");
+      setImages([]);
     } catch (error) {
       console.error("Error submitting maintenance request:", error);
       toast.error("Failed to submit request. Please try again or contact us directly.");
@@ -248,6 +295,63 @@ const MaintenanceRequest = () => {
                   <p className="text-sm text-muted-foreground">
                     Tip: Include screenshots, error messages, and specific page URLs if applicable
                   </p>
+                </div>
+
+                {/* Image Upload Section */}
+                <div className="space-y-2">
+                  <Label htmlFor="images" className="text-foreground font-semibold">
+                    Add Screenshots or Images (Optional)
+                  </Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="images"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('images')?.click()}
+                        disabled={images.length >= 5}
+                        className="bg-background border-border text-foreground hover:bg-accent/10"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload Images
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        {images.length}/5 images (max 5MB each)
+                      </span>
+                    </div>
+                    
+                    {images.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {images.map((image, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Upload ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg border border-border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                            <p className="text-xs text-muted-foreground mt-1 truncate">
+                              {image.name}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Submit Button */}
