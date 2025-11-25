@@ -57,7 +57,7 @@ const MaintenanceRequest = () => {
       }
       return isValidType && isValidSize;
     });
-    setImages(prev => [...prev, ...validFiles].slice(0, 5)); // Max 5 images
+    setImages(prev => [...prev, ...validFiles].slice(0, 20)); // Max 20 images
   };
 
   const removeImage = (index: number) => {
@@ -317,14 +317,14 @@ const MaintenanceRequest = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => document.getElementById('images')?.click()}
-                        disabled={images.length >= 5}
+                        disabled={images.length >= 20}
                         className="bg-background border-border text-foreground hover:bg-accent/10"
                       >
                         <Upload className="w-4 h-4 mr-2" />
                         Upload Images
                       </Button>
                       <span className="text-sm text-muted-foreground">
-                        {images.length}/5 images (max 20MB each)
+                        {images.length}/20 images (max 20MB each)
                       </span>
                     </div>
                     
