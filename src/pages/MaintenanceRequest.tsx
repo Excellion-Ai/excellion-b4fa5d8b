@@ -49,11 +49,11 @@ const MaintenanceRequest = () => {
     const files = Array.from(e.target.files || []);
     const validFiles = files.filter(file => {
       const isValidType = file.type.startsWith('image/');
-      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+      const isValidSize = file.size <= 20 * 1024 * 1024; // 20MB
       if (!isValidType) {
         toast.error(`${file.name} is not an image file`);
       } else if (!isValidSize) {
-        toast.error(`${file.name} exceeds 5MB limit`);
+        toast.error(`${file.name} exceeds 20MB limit`);
       }
       return isValidType && isValidSize;
     });
@@ -324,7 +324,7 @@ const MaintenanceRequest = () => {
                         Upload Images
                       </Button>
                       <span className="text-sm text-muted-foreground">
-                        {images.length}/5 images (max 5MB each)
+                        {images.length}/5 images (max 20MB each)
                       </span>
                     </div>
                     
