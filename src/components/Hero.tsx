@@ -1,58 +1,63 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import TypingEffect from "./TypingEffect";
 
 const Hero = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Set playback rate
+    video.playbackRate = 0.75;
+
+    // Attempt to play with proper error handling
+    const playVideo = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        // Silently handle autoplay restrictions
+        console.log("Video autoplay prevented:", error);
+      }
+    };
+
+    // Play when ready
+    if (video.readyState >= 3) {
+      playVideo();
+    } else {
+      video.addEventListener('loadeddata', playVideo, { once: true });
+    }
+
+    // Handle visibility changes to resume playback
+    const handleVisibilityChange = () => {
+      if (!document.hidden && video.paused) {
+        playVideo();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-end flex-col">
           <video
-            ref={(el) => {
-              if (el) {
-                el.playbackRate = 0.75;
-                el.style.willChange = 'transform';
-                el.setAttribute('playsinline', '');
-                el.setAttribute('webkit-playsinline', '');
-                el.setAttribute('disablePictureInPicture', '');
-                el.setAttribute('preload', 'auto');
-                el.load();
-                
-                // Force play on mobile and handle pause events
-                const forcePlay = () => {
-                  if (el.paused) {
-                    el.play().catch(() => {
-                      // Retry on error
-                      setTimeout(() => el.play().catch(() => {}), 100);
-                    });
-                  }
-                };
-                
-                // Listen for pause events and restart
-                el.addEventListener('pause', forcePlay);
-                
-                // Handle visibility changes
-                document.addEventListener('visibilitychange', () => {
-                  if (!document.hidden) {
-                    forcePlay();
-                  }
-                });
-                
-                // Ensure playing when scrolling
-                window.addEventListener('scroll', forcePlay, { passive: true });
-                
-                if ('requestVideoFrameCallback' in el) {
-                  el.style.contentVisibility = 'auto';
-                }
-              }
-            }}
+            ref={videoRef}
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
+            disablePictureInPicture
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
@@ -63,6 +68,7 @@ const Hero = () => {
               WebkitTransform: 'translateZ(0) scale(1.0)',
               filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
               contain: 'paint',
+              willChange: 'transform',
             } as React.CSSProperties}
           >
             <source src={homeBackgroundVideo} type="video/mp4" />
