@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,41 @@ import { Helmet } from "react-helmet-async";
 import operationsBackgroundVideo from "@/assets/operations-background-new.mp4";
 
 const Operations = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.playbackRate = 0.75;
+
+    const playVideo = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        console.log("Video autoplay prevented:", error);
+      }
+    };
+
+    if (video.readyState >= 3) {
+      playVideo();
+    } else {
+      video.addEventListener('loadeddata', playVideo, { once: true });
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && video.paused) {
+        playVideo();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   const sections = [
     {
       title: "What's Inside",
@@ -123,23 +159,13 @@ const Operations = () => {
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
-          ref={(el) => {
-            if (el) {
-              el.playbackRate = 0.75;
-              el.style.willChange = 'transform';
-              el.setAttribute('playsinline', '');
-              el.setAttribute('webkit-playsinline', '');
-              el.setAttribute('disablePictureInPicture', '');
-              if ('requestVideoFrameCallback' in el) {
-                el.style.contentVisibility = 'auto';
-              }
-            }
-          }}
+          ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
+          disablePictureInPicture
           className="absolute inset-0 w-full h-full object-cover"
           style={{ 
             backfaceVisibility: 'hidden', 
@@ -149,6 +175,7 @@ const Operations = () => {
             WebkitTransform: 'translateZ(0) scale(1.0)',
             filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
             contain: 'paint',
+            willChange: 'transform',
           } as React.CSSProperties}
         >
           <source src={operationsBackgroundVideo} type="video/mp4" />

@@ -3,13 +3,47 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Rocket, Code, Zap, Shield, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 
 const DFY = () => {
   const navigate = useNavigate();
   const [showProcessModal, setShowProcessModal] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.playbackRate = 0.75;
+
+    const playVideo = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        console.log("Video autoplay prevented:", error);
+      }
+    };
+
+    if (video.readyState >= 3) {
+      playVideo();
+    } else {
+      video.addEventListener('loadeddata', playVideo, { once: true });
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && video.paused) {
+        playVideo();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
   
   const processSteps = [
     {
@@ -130,23 +164,13 @@ const DFY = () => {
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
-          ref={(el) => {
-            if (el) {
-              el.playbackRate = 0.75;
-              el.style.willChange = 'transform';
-              el.setAttribute('playsinline', '');
-              el.setAttribute('webkit-playsinline', '');
-              el.setAttribute('disablePictureInPicture', '');
-              if ('requestVideoFrameCallback' in el) {
-                el.style.contentVisibility = 'auto';
-              }
-            }
-          }}
+          ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
+          disablePictureInPicture
           className="absolute inset-0 w-full h-full object-cover"
           style={{ 
             backfaceVisibility: 'hidden', 
@@ -156,6 +180,7 @@ const DFY = () => {
             WebkitTransform: 'translateZ(0) scale(1.0)',
             filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
             contain: 'paint',
+            willChange: 'transform',
           } as React.CSSProperties}
         >
           <source src={dfyBackgroundVideo} type="video/mp4" />
