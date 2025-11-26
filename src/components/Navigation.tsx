@@ -34,7 +34,7 @@ const Navigation = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
               {isAdmin && (
                 <Link to="/admin">
                   <Button variant="ghost" size="sm" className="gap-2">
@@ -43,11 +43,6 @@ const Navigation = () => {
                   </Button>
                 </Link>
               )}
-              <Link to="/auth">
-                <Button variant="ghost" size="sm">
-                  Sign In
-                </Button>
-              </Link>
               <Link to="/">
                 <Button variant="secondary" size="sm">
                   Home
@@ -98,11 +93,6 @@ const Navigation = () => {
                         </Button>
                       </Link>
                     )}
-                    <Link to="/auth">
-                      <Button variant="ghost" size="sm" className="w-full">
-                        Sign In
-                      </Button>
-                    </Link>
                     <Link to="/">
                       <Button variant="secondary" size="sm" className="w-full">
                         Home
