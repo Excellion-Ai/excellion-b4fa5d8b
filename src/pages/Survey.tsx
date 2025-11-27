@@ -209,7 +209,7 @@ const Survey = () => {
     // Fire Google Ads conversion event
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'conversion', {
-        'send_to': 'AW-17764146565/YOUR_CONVERSION_LABEL'
+        'send_to': 'AW-17764146565/9pH3CP6OgcgbEIW7zZZC'
       });
     }
 
