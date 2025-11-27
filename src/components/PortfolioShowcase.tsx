@@ -51,12 +51,16 @@ const PortfolioShowcase = () => {
               className="group"
             >
               <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20">
-                <div className="aspect-video overflow-hidden bg-muted">
+                <div className="aspect-video overflow-hidden bg-muted relative">
                   <img
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-full object-cover object-left group-hover:scale-110 transition-transform duration-500"
-                    style={{ marginRight: '-1px' }}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    style={{ 
+                      objectPosition: 'left center',
+                      transform: 'scale(1.02)',
+                      marginLeft: '-1%'
+                    }}
                   />
                 </div>
                 <div className="p-6">
