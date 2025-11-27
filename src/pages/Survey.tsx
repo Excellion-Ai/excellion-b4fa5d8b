@@ -206,6 +206,13 @@ const Survey = () => {
       console.error("Error sending email notifications:", emailError);
     }
 
+    // Fire Google Ads conversion event
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'conversion', {
+        'send_to': 'AW-17764146565/YOUR_CONVERSION_LABEL'
+      });
+    }
+
     // Show result modal
     setShowResult(true);
   };
