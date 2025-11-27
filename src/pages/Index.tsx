@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
+import PortfolioShowcase from "@/components/PortfolioShowcase";
 import LazyFooter from "@/components/LazyFooter";
 
 const Index = () => {
@@ -13,6 +14,7 @@ const Index = () => {
       <div className="min-h-screen bg-background">
         <Navigation />
         <Hero />
+        <PortfolioShowcase />
         <LazyFooter />
       </div>
     </>
