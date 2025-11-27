@@ -1,14 +1,15 @@
 import { Card } from "@/components/ui/card";
 import { ExternalLink } from "lucide-react";
+import portfolioLakeReflections from "@/assets/portfolio-lake-reflections.png";
 
 const PortfolioShowcase = () => {
   const projects = [
     {
       id: 1,
-      title: "Project 1",
-      description: "Professional website showcasing our custom build capabilities",
-      url: "#",
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop"
+      title: "Lake Reflections Detailing",
+      description: "",
+      url: "https://lakereflectionsdetailing.com/",
+      image: portfolioLakeReflections
     },
     {
       id: 2,
@@ -62,9 +63,11 @@ const PortfolioShowcase = () => {
                     </h3>
                     <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
-                  <p className="text-muted-foreground text-sm">
-                    {project.description}
-                  </p>
+                  {project.description && (
+                    <p className="text-muted-foreground text-sm">
+                      {project.description}
+                    </p>
+                  )}
                 </div>
               </Card>
             </a>
