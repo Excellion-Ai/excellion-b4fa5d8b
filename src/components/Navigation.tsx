@@ -25,11 +25,11 @@ const Navigation = () => {
               DIY
             </Link>
             */}
-            <Link to="/operations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Operations
-            </Link>
             <Link to="/maintenance-request" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Maintenance Request
+            </Link>
+            <Link to="/operations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Operations
             </Link>
           </div>
 
@@ -73,16 +73,16 @@ const Navigation = () => {
                   </Link>
                   */}
                   <Link 
-                    to="/operations" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    Operations
-                  </Link>
-                  <Link 
                     to="/maintenance-request" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
                     Maintenance Request
+                  </Link>
+                  <Link 
+                    to="/operations" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                  >
+                    Operations
                   </Link>
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
                     {isAdmin && (
