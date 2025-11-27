@@ -55,7 +55,8 @@ const PortfolioShowcase = () => {
                   <img
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover object-left group-hover:scale-110 transition-transform duration-500"
+                    style={{ marginRight: '-1px' }}
                   />
                 </div>
                 <div className="p-6">
