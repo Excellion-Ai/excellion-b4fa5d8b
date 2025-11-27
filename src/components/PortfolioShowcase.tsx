@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { ExternalLink } from "lucide-react";
 import portfolioLakeReflections from "@/assets/portfolio-lake-reflections.png";
 import portfolioRightTimeAuto from "@/assets/portfolio-right-time-auto.png";
+import portfolioCsCollection from "@/assets/portfolio-cs-collection.png";
 
 const PortfolioShowcase = () => {
   const projects = [
@@ -21,10 +22,10 @@ const PortfolioShowcase = () => {
     },
     {
       id: 3,
-      title: "Project 3",
-      description: "Elegant solution built for business growth",
-      url: "#",
-      image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop"
+      title: "C's Fast Cash Collection Buyouts",
+      description: "",
+      url: "https://cscollectionbuyouts.com/",
+      image: portfolioCsCollection
     }
   ];
 
