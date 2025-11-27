@@ -8,10 +8,10 @@ const PortfolioShowcase = () => {
   const projects = [
     {
       id: 1,
-      title: "Lake Reflections Detailing",
+      title: "C's Fast Cash Collection Buyouts",
       description: "",
-      url: "https://lakereflectionsdetailing.com/",
-      image: portfolioLakeReflections
+      url: "https://cscollectionbuyouts.com/",
+      image: portfolioCsCollection
     },
     {
       id: 2,
@@ -22,10 +22,10 @@ const PortfolioShowcase = () => {
     },
     {
       id: 3,
-      title: "C's Fast Cash Collection Buyouts",
+      title: "Lake Reflections Detailing",
       description: "",
-      url: "https://cscollectionbuyouts.com/",
-      image: portfolioCsCollection
+      url: "https://lakereflectionsdetailing.com/",
+      image: portfolioLakeReflections
     }
   ];
 
