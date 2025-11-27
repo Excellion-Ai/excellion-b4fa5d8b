@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { ExternalLink } from "lucide-react";
 import portfolioLakeReflections from "@/assets/portfolio-lake-reflections.png";
+import portfolioRightTimeAuto from "@/assets/portfolio-right-time-auto.png";
 
 const PortfolioShowcase = () => {
   const projects = [
@@ -13,10 +14,10 @@ const PortfolioShowcase = () => {
     },
     {
       id: 2,
-      title: "Project 2",
-      description: "Modern design with advanced features and functionality",
-      url: "#",
-      image: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=800&h=600&fit=crop"
+      title: "Right Time Auto",
+      description: "",
+      url: "https://righttimeauto.com/",
+      image: portfolioRightTimeAuto
     },
     {
       id: 3,
