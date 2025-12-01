@@ -27,6 +27,33 @@ const checkRateLimit = (identifier: string): boolean => {
   return true;
 };
 
+// Verify hCaptcha token
+const verifyCaptcha = async (token: string): Promise<boolean> => {
+  const HCAPTCHA_SECRET_KEY = Deno.env.get("HCAPTCHA_SECRET_KEY");
+  
+  if (!HCAPTCHA_SECRET_KEY) {
+    console.error("hCaptcha secret key not configured");
+    return false;
+  }
+
+  try {
+    const response = await fetch("https://hcaptcha.com/siteverify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `response=${token}&secret=${HCAPTCHA_SECRET_KEY}`,
+    });
+
+    const data = await response.json();
+    console.log("hCaptcha verification result:", data);
+    return data.success === true;
+  } catch (error) {
+    console.error("Error verifying hCaptcha:", error);
+    return false;
+  }
+};
+
 interface SurveyEmailRequest {
   name: string;
   phone: string;
@@ -37,6 +64,7 @@ interface SurveyEmailRequest {
   brandContentStatus?: string;
   timeline?: string;
   qualifiedPlan: string;
+  captchaToken?: string;
 }
 
 // Helper function to get first name
@@ -120,6 +148,30 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const data: SurveyEmailRequest = await req.json();
     console.log("Received survey data for email:", data);
+
+    // Verify hCaptcha token
+    if (!data.captchaToken) {
+      console.log("Missing captcha token");
+      return new Response(
+        JSON.stringify({ error: "Captcha verification required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const captchaValid = await verifyCaptcha(data.captchaToken);
+    if (!captchaValid) {
+      console.log("Invalid captcha token");
+      return new Response(
+        JSON.stringify({ error: "Captcha verification failed. Please try again." }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     // Rate limiting check
     if (!checkRateLimit(data.phone)) {
