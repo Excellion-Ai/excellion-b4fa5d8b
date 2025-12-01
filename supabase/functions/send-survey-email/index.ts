@@ -83,7 +83,7 @@ const formatTimeline = (timeline: string): string => {
 // Helper function to get price line based on qualified plan
 const getPriceLine = (qualifiedPlan: string): string => {
   if (qualifiedPlan === "Essential") {
-    return "Most Essential builds land in the $750–$1,200 range depending on pages and features, and I'll narrow that in once I have a bit more detail from you.";
+    return "Most Essential builds land in the $600–$1,000 range depending on pages and features, and I'll narrow that in once I have a bit more detail from you.";
   }
   
   return "Once I have a bit more detail from you, I'll narrow in an exact range for your build.";
