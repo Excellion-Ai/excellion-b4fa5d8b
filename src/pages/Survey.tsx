@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 import { z } from "zod";
 import { CheckCircle2, XCircle } from "lucide-react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -44,6 +45,9 @@ const Survey = () => {
   const [qualifiedPlan, setQualifiedPlan] = useState("");
   const [phoneValid, setPhoneValid] = useState<boolean | null>(null);
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
+  const hcaptchaSiteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -105,6 +109,16 @@ const Survey = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate captcha token
+    if (!captchaToken) {
+      toast({
+        title: "Verification Required",
+        description: "Please complete the captcha verification.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Validate form data with zod
     try {
@@ -197,7 +211,8 @@ const Survey = () => {
           featuresNeeded: formData.featuresNeeded,
           brandContentStatus: formData.brandContentStatus,
           timeline: formData.timeline,
-          qualifiedPlan: plan
+          qualifiedPlan: plan,
+          captchaToken: captchaToken
         }
       });
       console.log("Email notifications sent successfully");
@@ -205,6 +220,9 @@ const Survey = () => {
       // Log error but don't block the user flow
       console.error("Error sending email notifications:", emailError);
     }
+    
+    // Reset captcha for potential resubmission
+    captchaRef.current?.resetCaptcha();
 
     // Fire Google Ads conversion event
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -569,6 +587,20 @@ const Survey = () => {
                   rows={3}
                   className="bg-background/50 text-sm"
                 />
+              </div>
+
+              {/* hCaptcha Verification */}
+              <div className="flex justify-center py-4">
+                {hcaptchaSiteKey && (
+                  <HCaptcha
+                    ref={captchaRef}
+                    sitekey={hcaptchaSiteKey}
+                    onVerify={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                    theme="dark"
+                  />
+                )}
               </div>
 
               {/* Submit Button */}
