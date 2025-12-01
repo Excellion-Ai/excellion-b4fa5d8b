@@ -5,6 +5,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiter
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 3; // 3 requests per minute per phone
+
+const checkRateLimit = (identifier: string): boolean => {
+  const now = Date.now();
+  const record = rateLimitMap.get(identifier);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+};
+
 interface SurveyEmailRequest {
   name: string;
   phone: string;
@@ -98,6 +120,18 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const data: SurveyEmailRequest = await req.json();
     console.log("Received survey data for email:", data);
+
+    // Rate limiting check
+    if (!checkRateLimit(data.phone)) {
+      console.log("Rate limit exceeded for phone:", data.phone);
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
