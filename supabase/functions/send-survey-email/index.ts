@@ -149,30 +149,6 @@ const handler = async (req: Request): Promise<Response> => {
     const data: SurveyEmailRequest = await req.json();
     console.log("Received survey data for email:", data);
 
-    // Verify hCaptcha token
-    if (!data.captchaToken) {
-      console.log("Missing captcha token");
-      return new Response(
-        JSON.stringify({ error: "Captcha verification required" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
-    const captchaValid = await verifyCaptcha(data.captchaToken);
-    if (!captchaValid) {
-      console.log("Invalid captcha token");
-      return new Response(
-        JSON.stringify({ error: "Captcha verification failed. Please try again." }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
-
     // Rate limiting check
     if (!checkRateLimit(data.phone)) {
       console.log("Rate limit exceeded for phone:", data.phone);
