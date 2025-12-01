@@ -16,6 +16,7 @@ const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
   const [showCaptcha, setShowCaptcha] = useState(false);
+  const [captchaError, setCaptchaError] = useState(false);
   const hcaptchaSiteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY;
 
   useEffect(() => {
@@ -58,7 +59,16 @@ const Hero = () => {
 
   const handleCaptchaVerify = () => {
     setShowCaptcha(false);
+    setCaptchaError(false);
     navigate("/survey");
+  };
+
+  const handleCaptchaError = () => {
+    setCaptchaError(true);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaError(true);
   };
 
   return (
@@ -125,20 +135,34 @@ const Hero = () => {
 
       {/* hCaptcha Verification Modal */}
       <Dialog open={showCaptcha} onOpenChange={setShowCaptcha}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>Verify You're Human</DialogTitle>
             <DialogDescription>
               Please complete the verification to continue to your free estimate.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-center py-6">
-            {hcaptchaSiteKey && (
-              <HCaptcha
-                sitekey={hcaptchaSiteKey}
-                onVerify={handleCaptchaVerify}
-                theme="dark"
-              />
+          <div className="flex flex-col items-center justify-center py-6 min-h-[200px]">
+            {hcaptchaSiteKey ? (
+              <>
+                <HCaptcha
+                  sitekey={hcaptchaSiteKey}
+                  onVerify={handleCaptchaVerify}
+                  onError={handleCaptchaError}
+                  onExpire={handleCaptchaExpire}
+                  theme="dark"
+                  size="normal"
+                />
+                {captchaError && (
+                  <p className="text-destructive text-sm mt-4">
+                    Verification failed. Please try again.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                Captcha not configured. Please contact support.
+              </p>
             )}
           </div>
         </DialogContent>
