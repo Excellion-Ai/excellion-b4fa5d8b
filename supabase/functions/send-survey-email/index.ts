@@ -17,6 +17,78 @@ interface SurveyEmailRequest {
   qualifiedPlan: string;
 }
 
+// Helper function to get first name
+const getFirstName = (name: string): string => {
+  if (!name || name.trim() === "") return "there";
+  const parts = name.trim().split(/\s+/);
+  return parts[0];
+};
+
+// Helper function to format main outcome
+const formatMainOutcome = (mainOutcome: string): string => {
+  const outcomeMap: { [key: string]: string } = {
+    "sell-online": "selling online",
+    "professional": "looking more professional",
+    "leads": "getting more leads",
+    "convert-better": "getting better conversions",
+    "bookings": "getting more bookings"
+  };
+  
+  return outcomeMap[mainOutcome] || mainOutcome || "achieving your goals";
+};
+
+// Helper function to format features
+const formatFeatures = (featuresNeeded: string[]): string => {
+  if (!featuresNeeded || featuresNeeded.length === 0) {
+    return "the features we discussed";
+  }
+  
+  // Map feature codes to readable names
+  const featureMap: { [key: string]: string } = {
+    "contact": "contact form",
+    "booking": "booking",
+    "payments": "payments",
+    "online-ordering": "online ordering",
+    "automations": "automations",
+    "other": "custom features"
+  };
+  
+  const readableFeatures = featuresNeeded.map(f => featureMap[f] || f);
+  
+  if (readableFeatures.length === 1) {
+    return readableFeatures[0];
+  }
+  
+  if (readableFeatures.length === 2) {
+    return `${readableFeatures[0]} and ${readableFeatures[1]}`;
+  }
+  
+  // Three or more features
+  const allButLast = readableFeatures.slice(0, -1).join(", ");
+  const last = readableFeatures[readableFeatures.length - 1];
+  return `${allButLast}, and ${last}`;
+};
+
+// Helper function to format timeline
+const formatTimeline = (timeline: string): string => {
+  const timelineMap: { [key: string]: string } = {
+    "2-3-days": "2–3 days",
+    "4-7-days": "4–7 days",
+    "exploring": "flexible timing"
+  };
+  
+  return timelineMap[timeline] || timeline || "your preferred timeline";
+};
+
+// Helper function to get price line based on qualified plan
+const getPriceLine = (qualifiedPlan: string): string => {
+  if (qualifiedPlan === "Essential") {
+    return "Most Essential builds land in the $750–$1,200 range depending on pages and features, and I'll narrow that in once I have a bit more detail from you.";
+  }
+  
+  return "Once I have a bit more detail from you, I'll narrow in an exact range for your build.";
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -48,32 +120,40 @@ const handler = async (req: Request): Promise<Response> => {
     // Prepare email content
     const featuresList = featuresNeeded?.join(", ") || "None specified";
     
+    // Generate personalized content using helper functions
+    const firstName = getFirstName(name);
+    const outcomeText = formatMainOutcome(mainOutcome || "");
+    const featuresText = formatFeatures(featuresNeeded || []);
+    const priceLine = getPriceLine(qualifiedPlan);
+    const timelineText = formatTimeline(timeline || "");
+    const brand = brandName || "your business";
+    
+    // Build personalized email body
+    const personalizedEmailBody = `Hi ${firstName}, this is John from Excellion Websites.
+
+Thanks for filling out the estimate form for ${brand}. I see you're looking at a ${qualifiedPlan} build focused on ${outcomeText} with ${featuresText}. ${priceLine}
+
+You mentioned a turnaround of about ${timelineText}, so I'm putting together your mockup and exact estimate now and just need a few quick details so I can nail the layout:
+
+1) What do you sell, and how do people currently buy or book with you?
+2) Do you have any existing logo/colors, or should I propose a fresh look?
+3) Roughly how many services or packages should be listed on the site?
+4) Any must-have pages (e.g. Home, Services, Pricing, Contact, FAQs)?
+
+You can reply directly to this email with your answers. Once I have them, I'll send over your first homepage draft and a tighter price estimate to review.`;
+    
     // Send confirmation email to user (if email provided)
     let userEmailSent = false;
     if (email) {
       const userEmailHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #581c87;">Thank You for Your Estimate Request!</h1>
-          <p>Hi ${name},</p>
-          <p>We've received your website estimate request and are excited to help bring your vision to life!</p>
-          
-          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #581c87; margin-top: 0;">Your Qualified Plan: ${qualifiedPlan}</h2>
-            <p><strong>Brand Name:</strong> ${brandName || "Not specified"}</p>
-            <p><strong>Main Goal:</strong> ${mainOutcome || "Not specified"}</p>
-            <p><strong>Timeline:</strong> ${timeline || "Not specified"}</p>
-            <p><strong>Features Needed:</strong> ${featuresList}</p>
-          </div>
-
-          <p>Our team will review your requirements and get back to you shortly to discuss next steps.</p>
-          
-          <p style="margin-top: 30px;">Best regards,<br><strong>The Excellion Team</strong></p>
-          
-          <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: #666; font-size: 12px;">
-            <p>This is an automated confirmation email. Please do not reply to this message.</p>
-          </div>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+          <div style="white-space: pre-wrap;">${personalizedEmailBody}</div>
         </div>
       `;
+
+      const emailSubject = brandName 
+        ? `Quick details for your ${brandName} website estimate`
+        : `Quick details for your website estimate`;
 
       const userEmailResponse = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -82,9 +162,9 @@ const handler = async (req: Request): Promise<Response> => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Excellion <noreply@excellionwebsites.com>",
+          from: "John at Excellion Websites <noreply@excellionwebsites.com>",
           to: [email],
-          subject: "Your Free Website Estimate - Excellion",
+          subject: emailSubject,
           html: userEmailHtml,
         }),
       });
