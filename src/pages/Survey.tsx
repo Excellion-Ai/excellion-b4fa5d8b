@@ -274,7 +274,7 @@ const Survey = () => {
             "Complex integrations, payment processing, booking systems, or custom automations",
             "Built to scale with aggressive marketing, high traffic, or complex user journeys"
           ],
-          pricing: "$3,000 – $10,000+ Estimated",
+          pricing: "$1,800 – $3,500 Estimated",
           footerLine: "We have a concept in mind for your homepage. Let's hop on a 30-minute call to walk through the mockup and finalize your exact quote.",
           buttonText: "Book Your Mockup Reveal Call"
         };
@@ -287,7 +287,7 @@ const Survey = () => {
             "Features like booking, lead capture, forms, basic automations, or simple integrations",
             "Built to support active leads, clients, and campaigns"
           ],
-          pricing: "$1,200 – $2,800 Estimated",
+          pricing: "$1,000 – $1,800 Estimated",
           footerLine: "We have a concept in mind for your homepage. Let's hop on a 30-minute call to walk through the mockup and finalize your exact quote.",
           buttonText: "Book Your Mockup Reveal Call"
         };
