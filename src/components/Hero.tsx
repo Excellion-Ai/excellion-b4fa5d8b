@@ -1,11 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import TypingEffect from "./TypingEffect";
 
 const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const navigate = useNavigate();
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const hcaptchaSiteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -44,6 +55,11 @@ const Hero = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
+
+  const handleCaptchaVerify = () => {
+    setShowCaptcha(false);
+    navigate("/survey");
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -96,17 +112,37 @@ const Hero = () => {
 
           {/* CTA Button */}
           <div className="mt-8">
-            <Link to="/survey">
-              <Button 
-                size="lg" 
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
-              >
-                Start My Free Mockup & Estimate
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              onClick={() => setShowCaptcha(true)}
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
+            >
+              Start My Free Mockup & Estimate
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* hCaptcha Verification Modal */}
+      <Dialog open={showCaptcha} onOpenChange={setShowCaptcha}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Verify You're Human</DialogTitle>
+            <DialogDescription>
+              Please complete the verification to continue to your free estimate.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-6">
+            {hcaptchaSiteKey && (
+              <HCaptcha
+                sitekey={hcaptchaSiteKey}
+                onVerify={handleCaptchaVerify}
+                theme="dark"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
