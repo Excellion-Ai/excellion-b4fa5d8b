@@ -37,7 +37,7 @@ const PortfolioShowcase = () => {
             Websites We've Built
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            See how we've helped businesses establish their digital presence with custom-built websites
+            Take a look at real websites we've designed and launched for small businesses. Each build is tailored to the brand, goals, and budget.
           </p>
         </div>
 
