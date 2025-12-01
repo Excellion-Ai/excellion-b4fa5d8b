@@ -30,10 +30,10 @@ const surveySchema = z.object({
     message: "Please enter a valid phone number (10-15 digits)"
   }),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
-  mainOutcome: z.string().min(1, "Please select your main outcome").refine((val) => ["professional", "leads", "sell-online", "convert-better"].includes(val), "Please select a valid option"),
+  mainOutcome: z.string().min(1, "Please select your main outcome").refine((val) => ["professional", "leads", "sell-online", "bookings", "convert-better"].includes(val), "Please select a valid option"),
   featuresNeeded: z.array(z.string()).min(1, "Please select at least one feature"),
   brandContentStatus: z.string().min(1, "Please select your branding status").refine((val) => ["have-ready", "need-branding"].includes(val), "Please select a valid option"),
-  timeline: z.string().min(1, "Please select your launch timeline").refine((val) => ["2-3-days", "4-7-days"].includes(val), "Please select a valid option"),
+  timeline: z.string().min(1, "Please select your launch timeline").refine((val) => ["2-3-days", "4-7-days", "exploring"].includes(val), "Please select a valid option"),
   additionalNotes: z.string().max(1000, "Additional notes must be less than 1000 characters").optional()
 });
 
@@ -350,7 +350,7 @@ const Survey = () => {
               {/* Contact Info - Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-accent text-base font-semibold">
-                  First, where should we send your estimate?
+                  First, where should we send your mockup and estimate?
                 </Label>
                 <Label htmlFor="name" className="text-foreground text-sm font-medium mt-1">
                   Your name <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
@@ -453,6 +453,10 @@ const Survey = () => {
                       <Label htmlFor="sell-online" className="cursor-pointer flex-1 text-base font-medium text-foreground">Sell online</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="bookings" id="bookings" />
+                      <Label htmlFor="bookings" className="cursor-pointer flex-1 text-base font-medium text-foreground">Get more bookings</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="convert-better" id="convert-better" />
                       <Label htmlFor="convert-better" className="cursor-pointer flex-1 text-base font-medium text-foreground">Better conversions</Label>
                     </div>
@@ -462,7 +466,7 @@ const Survey = () => {
               {/* Timeline */}
               <div className="space-y-2">
                 <Label className="text-accent text-base font-semibold">
-                  How soon do you need this live? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                  How soon are you hoping to launch? <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
                 </Label>
                   <RadioGroup
                     value={formData.timeline}
@@ -478,6 +482,10 @@ const Survey = () => {
                       <RadioGroupItem value="4-7-days" id="4-7-days" />
                       <Label htmlFor="4-7-days" className="cursor-pointer flex-1 text-base font-medium text-foreground">4–7 days</Label>
                     </div>
+                    <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
+                      <RadioGroupItem value="exploring" id="exploring" />
+                      <Label htmlFor="exploring" className="cursor-pointer flex-1 text-base font-medium text-foreground">Just exploring for now</Label>
+                    </div>
                   </RadioGroup>
                 </div>
 
@@ -490,7 +498,7 @@ const Survey = () => {
                   <div className="space-y-2">
                     {[
                       { id: "contact-form", label: "Contact form" },
-                      { id: "booking", label: "Booking" },
+                      { id: "booking", label: "Booking / appointments" },
                       { id: "payments", label: "Payments" },
                       { id: "online-ordering", label: "Online ordering" },
                       { id: "automations", label: "Automations" },
@@ -522,11 +530,11 @@ const Survey = () => {
                   >
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="have-ready" id="have-ready" />
-                      <Label htmlFor="have-ready" className="cursor-pointer flex-1 text-base font-medium text-foreground">Have ready</Label>
+                      <Label htmlFor="have-ready" className="cursor-pointer flex-1 text-base font-medium text-foreground">Have branding ready</Label>
                     </div>
                     <div className="flex items-center space-x-2 bg-background/50 p-2.5 rounded-lg border border-border hover:border-accent/50 transition-colors">
                       <RadioGroupItem value="need-branding" id="need-branding" />
-                      <Label htmlFor="need-branding" className="cursor-pointer flex-1 text-base font-medium text-foreground">Need branding</Label>
+                      <Label htmlFor="need-branding" className="cursor-pointer flex-1 text-base font-medium text-foreground">Need help with branding</Label>
                     </div>
                   </RadioGroup>
                   
@@ -557,7 +565,7 @@ const Survey = () => {
                   id="additionalNotes"
                   value={formData.additionalNotes}
                   onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
-                  placeholder="Share any additional details..."
+                  placeholder="Share any additional details, links, or ideas…"
                   rows={3}
                   className="bg-background/50 text-sm"
                 />
@@ -570,12 +578,12 @@ const Survey = () => {
                   size="lg"
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
                 >
-                  Done, get my estimate.
+                  Done — Get My Free Mockup & Estimate
                 </Button>
               </div>
 
               <p className="text-xs text-muted-foreground text-center">
-                We respect your privacy. Your information will never be shared with third parties.
+                We respect your privacy. Your information will only be used to contact you about your website.
               </p>
             </form>
           </div>
