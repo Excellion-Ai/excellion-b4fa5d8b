@@ -16,23 +16,20 @@ import dfyBackgroundVideo from "@/assets/dfy-background-new.mp4";
 import { z } from "zod";
 import { CheckCircle2, XCircle } from "lucide-react";
 
-// Validation schema for international WhatsApp numbers
+// Validation schema for phone numbers (any format, at least 7 digits)
 const surveySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
   email: z.string().trim().optional().refine((val) => !val || z.string().email().safeParse(val).success, {
     message: "Invalid email address"
   }),
-  country: z.string().trim().min(1, "Country is required").max(100, "Country must be less than 100 characters"),
-  whatsApp: z.string().trim().min(1, "WhatsApp number is required").refine((val) => {
-    // Must start with +
-    if (!val.startsWith('+')) return false;
-    // Strip spaces and count digits only
+  phone: z.string().trim().min(1, "Phone number is required").refine((val) => {
+    // Strip spaces, dashes, parentheses, and count digits only
     const digitsOnly = val.replace(/[\s\-\(\)\.]/g, '');
     const digitCount = (digitsOnly.match(/\d/g) || []).length;
-    // Must have 8-15 digits
-    return digitCount >= 8 && digitCount <= 15;
+    // Must have at least 7 digits
+    return digitCount >= 7;
   }, {
-    message: "Please enter a valid WhatsApp number with country code, e.g. +91 98765 43210"
+    message: "Please enter a phone number with at least 7 digits."
   }),
   brandName: z.string().trim().min(1, "Brand name is required").max(100, "Brand name must be less than 100 characters"),
   mainOutcome: z.string().min(1, "Please select your main outcome").refine((val) => ["professional", "leads", "sell-online", "bookings", "convert-better"].includes(val), "Please select a valid option"),
@@ -47,13 +44,12 @@ const Survey = () => {
   const navigate = useNavigate();
   const [showResult, setShowResult] = useState(false);
   const [qualifiedPlan, setQualifiedPlan] = useState("");
-  const [whatsAppValid, setWhatsAppValid] = useState<boolean | null>(null);
+  const [phoneValid, setPhoneValid] = useState<boolean | null>(null);
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    country: "",
-    whatsApp: "",
+    phone: "",
     brandName: "",
     mainOutcome: "",
     featuresNeeded: [] as string[],
@@ -134,10 +130,12 @@ const Survey = () => {
     // Get current user session
     const { data: { session } } = await supabase.auth.getSession();
 
-    // Normalize WhatsApp number to E.164 format (remove spaces, keep only + and digits)
-    const whatsAppE164 = formData.whatsApp.replace(/[\s\-\(\)\.]/g, '');
+    // Normalize phone number: trim, remove spaces/dashes/parens, keep + if present
+    const phoneNormalized = formData.phone
+      .trim()
+      .replace(/[\s\-\(\)\.]/g, '');
 
-    // Insert into database with new international WhatsApp fields
+    // Insert into database with phone and phoneNormalized fields
     const additionalNotesText = formData.additionalNotes || "";
     const otherFeaturesText = formData.featuresNeeded.includes("other") && formData.otherFeatureDetails 
       ? `\n\nOther Features Needed: ${formData.otherFeatureDetails}` 
@@ -148,12 +146,13 @@ const Survey = () => {
       .insert({
         name: formData.name,
         email: formData.email || null,
-        // New international WhatsApp fields
-        country: formData.country,
-        whatsapp_raw: formData.whatsApp,
-        whatsapp_e164: whatsAppE164,
-        // Legacy phone field kept as null for new submissions
-        phone: null,
+        // Phone fields: raw input + normalized version
+        phone: formData.phone.trim(),
+        phone_normalized: phoneNormalized,
+        // Clear legacy WhatsApp fields for new submissions
+        country: null,
+        whatsapp_raw: null,
+        whatsapp_e164: null,
         brand_name: formData.brandName,
         project_type: "survey-submission",
         main_outcome: formData.mainOutcome,
@@ -177,12 +176,12 @@ const Survey = () => {
       return;
     }
 
-    // Send SMS notification (using E.164 formatted number)
+    // Send SMS notification (using normalized phone number)
     try {
       await supabase.functions.invoke('send-survey-sms', {
         body: {
           name: formData.name,
-          phone: whatsAppE164,
+          phone: phoneNormalized,
           brandName: formData.brandName,
           mainOutcome: formData.mainOutcome,
           featuresNeeded: formData.featuresNeeded,
@@ -199,12 +198,12 @@ const Survey = () => {
       console.error("Error sending SMS notification:", smsError);
     }
 
-    // Send email notifications (using E.164 formatted number)
+    // Send email notifications (using normalized phone number)
     try {
       await supabase.functions.invoke('send-survey-email', {
         body: {
           name: formData.name,
-          phone: whatsAppE164,
+          phone: phoneNormalized,
           email: formData.email || null,
           brandName: formData.brandName,
           mainOutcome: formData.mainOutcome,
@@ -231,16 +230,14 @@ const Survey = () => {
     setShowResult(true);
   };
 
-  // Validation for international WhatsApp numbers (no US formatting)
-  const validateWhatsApp = (value: string) => {
+  // Validation for phone numbers (at least 7 digits, any format)
+  const validatePhone = (value: string) => {
     if (!value) return null;
-    // Must start with +
-    if (!value.startsWith('+')) return false;
-    // Strip spaces and count digits
+    // Strip spaces, dashes, parens and count digits
     const digitsOnly = value.replace(/[\s\-\(\)\.]/g, '');
     const digitCount = (digitsOnly.match(/\d/g) || []).length;
-    // Must have 8-15 digits
-    return digitCount >= 8 && digitCount <= 15;
+    // Must have at least 7 digits
+    return digitCount >= 7;
   };
 
   const validateEmail = (value: string) => {
@@ -248,10 +245,10 @@ const Survey = () => {
     return z.string().email().safeParse(value).success;
   };
 
-  const handleWhatsAppChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setFormData({ ...formData, whatsApp: value });
-    setWhatsAppValid(validateWhatsApp(value));
+    setFormData({ ...formData, phone: value });
+    setPhoneValid(validatePhone(value));
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -394,47 +391,31 @@ const Survey = () => {
                 </div>
               </div>
 
-              {/* Country and WhatsApp Number Fields */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="country" className="text-accent text-base font-semibold">
-                    Country <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
+              {/* Phone Number Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-accent text-base font-semibold">
+                  Phone number <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
+                </Label>
+                <div className="relative">
                   <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    placeholder="India, South Africa, Nigeria, etc."
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handlePhoneChange}
+                    placeholder="e.g. +91 99826 53784 or 708 993 5170"
                     required
-                    className="bg-background/50 h-9"
+                    className="bg-background/50 h-9 pr-10"
                   />
+                  {phoneValid === true && (
+                    <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
+                  {phoneValid === false && (
+                    <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                  )}
                 </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="whatsApp" className="text-accent text-base font-semibold">
-                    WhatsApp number (with country code) <span className="text-accent text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ textShadow: '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000' }}>*</span>
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="whatsApp"
-                      type="tel"
-                      value={formData.whatsApp}
-                      onChange={handleWhatsAppChange}
-                      placeholder="+91 98765 43210"
-                      required
-                      className="bg-background/50 h-9 pr-10"
-                    />
-                    {whatsAppValid === true && (
-                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                    )}
-                    {whatsAppValid === false && (
-                      <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Include the + and country code. Example: +91..., +27..., +234..., +1...
-                  </p>
-                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Include your full number so we can call or text you. Any format is fine.
+                </p>
               </div>
 
               {/* Brand Name */}
