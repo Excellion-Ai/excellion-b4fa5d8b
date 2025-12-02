@@ -41,13 +41,20 @@
   <meta name="twitter:description" content="Describe your dream website and/or web app, and launch fast with Excellion&#39;s convenient website and app builder platform.">
   <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/ViJNibNqf3RrjmrhXO3W5aL39vS2/uploads/1762590396947-Excellion Logo.png">
   
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17764146565"></script>
+  <!-- Google tag (gtag.js) - Deferred for performance -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'AW-17764146565');
+    
+    // Defer Google Analytics loading
+    window.addEventListener('load', function() {
+      var script = document.createElement('script');
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17764146565';
+      script.async = true;
+      document.head.appendChild(script);
+    });
   </script>
 </head>
 
