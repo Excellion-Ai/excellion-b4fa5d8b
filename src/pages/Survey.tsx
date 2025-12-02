@@ -123,111 +123,102 @@ const Survey = () => {
       return;
     }
 
-    // Determine qualified plan
+    // Determine qualified plan and show result immediately
     const plan = qualifyPlan();
     setQualifiedPlan(plan);
+    setShowResult(true);
 
-    // Get current user session
-    const { data: { session } } = await supabase.auth.getSession();
+    // Process backend tasks in the background
+    (async () => {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
 
-    // Normalize phone number: trim, remove spaces/dashes/parens, keep + if present
-    const phoneNormalized = formData.phone
-      .trim()
-      .replace(/[\s\-\(\)\.]/g, '');
+      // Normalize phone number: trim, remove spaces/dashes/parens, keep + if present
+      const phoneNormalized = formData.phone
+        .trim()
+        .replace(/[\s\-\(\)\.]/g, '');
 
-    // Insert into database with phone and phoneNormalized fields
-    const additionalNotesText = formData.additionalNotes || "";
-    const otherFeaturesText = formData.featuresNeeded.includes("other") && formData.otherFeatureDetails 
-      ? `\n\nOther Features Needed: ${formData.otherFeatureDetails}` 
-      : "";
-    
-    const { error } = await supabase
-      .from('quote_requests')
-      .insert({
-        name: formData.name,
-        email: formData.email || null,
-        // Phone fields: raw input + normalized version
-        phone: formData.phone.trim(),
-        phone_normalized: phoneNormalized,
-        // Clear legacy WhatsApp fields for new submissions
-        country: null,
-        whatsapp_raw: null,
-        whatsapp_e164: null,
-        brand_name: formData.brandName,
-        project_type: "survey-submission",
-        main_outcome: formData.mainOutcome,
-        features_needed: formData.featuresNeeded,
-        brand_content_status: formData.brandContentStatus,
-        timeline: formData.timeline,
-        additional_notes: (additionalNotesText + otherFeaturesText) || null,
-        qualified_plan: plan,
-        user_id: session?.user?.id || null
-      });
+      // Insert into database with phone and phoneNormalized fields
+      const additionalNotesText = formData.additionalNotes || "";
+      const otherFeaturesText = formData.featuresNeeded.includes("other") && formData.otherFeatureDetails 
+        ? `\n\nOther Features Needed: ${formData.otherFeatureDetails}` 
+        : "";
+      
+      const { error } = await supabase
+        .from('quote_requests')
+        .insert({
+          name: formData.name,
+          email: formData.email || null,
+          // Phone fields: raw input + normalized version
+          phone: formData.phone.trim(),
+          phone_normalized: phoneNormalized,
+          // Clear legacy WhatsApp fields for new submissions
+          country: null,
+          whatsapp_raw: null,
+          whatsapp_e164: null,
+          brand_name: formData.brandName,
+          project_type: "survey-submission",
+          main_outcome: formData.mainOutcome,
+          features_needed: formData.featuresNeeded,
+          brand_content_status: formData.brandContentStatus,
+          timeline: formData.timeline,
+          additional_notes: (additionalNotesText + otherFeaturesText) || null,
+          qualified_plan: plan,
+          user_id: session?.user?.id || null
+        });
 
-    if (error) {
-      if (import.meta.env.DEV) {
+      if (error) {
         console.error("Error submitting quote request:", error);
       }
-      toast({
-        title: "Error",
-        description: "Failed to submit your request. Please try again.",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    // Send SMS notification (using normalized phone number)
-    try {
-      await supabase.functions.invoke('send-survey-sms', {
-        body: {
-          name: formData.name,
-          phone: phoneNormalized,
-          brandName: formData.brandName,
-          mainOutcome: formData.mainOutcome,
-          featuresNeeded: formData.featuresNeeded,
-          brandContentStatus: formData.brandContentStatus,
-          timeline: formData.timeline,
-          qualifiedPlan: plan,
-          additionalNotes: formData.additionalNotes,
-          otherFeatureDetails: formData.otherFeatureDetails
-        }
-      });
-      console.log("SMS notification sent successfully");
-    } catch (smsError) {
-      // Log error but don't block the user flow
-      console.error("Error sending SMS notification:", smsError);
-    }
+      // Send SMS notification (using normalized phone number)
+      try {
+        await supabase.functions.invoke('send-survey-sms', {
+          body: {
+            name: formData.name,
+            phone: phoneNormalized,
+            brandName: formData.brandName,
+            mainOutcome: formData.mainOutcome,
+            featuresNeeded: formData.featuresNeeded,
+            brandContentStatus: formData.brandContentStatus,
+            timeline: formData.timeline,
+            qualifiedPlan: plan,
+            additionalNotes: formData.additionalNotes,
+            otherFeatureDetails: formData.otherFeatureDetails
+          }
+        });
+        console.log("SMS notification sent successfully");
+      } catch (smsError) {
+        console.error("Error sending SMS notification:", smsError);
+      }
 
-    // Send email notifications (using normalized phone number)
-    try {
-      await supabase.functions.invoke('send-survey-email', {
-        body: {
-          name: formData.name,
-          phone: phoneNormalized,
-          email: formData.email || null,
-          brandName: formData.brandName,
-          mainOutcome: formData.mainOutcome,
-          featuresNeeded: formData.featuresNeeded,
-          brandContentStatus: formData.brandContentStatus,
-          timeline: formData.timeline,
-          qualifiedPlan: plan
-        }
-      });
-      console.log("Email notifications sent successfully");
-    } catch (emailError) {
-      // Log error but don't block the user flow
-      console.error("Error sending email notifications:", emailError);
-    }
+      // Send email notifications (using normalized phone number)
+      try {
+        await supabase.functions.invoke('send-survey-email', {
+          body: {
+            name: formData.name,
+            phone: phoneNormalized,
+            email: formData.email || null,
+            brandName: formData.brandName,
+            mainOutcome: formData.mainOutcome,
+            featuresNeeded: formData.featuresNeeded,
+            brandContentStatus: formData.brandContentStatus,
+            timeline: formData.timeline,
+            qualifiedPlan: plan
+          }
+        });
+        console.log("Email notifications sent successfully");
+      } catch (emailError) {
+        console.error("Error sending email notifications:", emailError);
+      }
 
-    // Fire Google Ads conversion event
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'conversion', {
-        'send_to': 'AW-17764146565/9pH3CP6OgcgbEIW7zZZC'
-      });
-    }
-
-    // Show result modal
-    setShowResult(true);
+      // Fire Google Ads conversion event
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'conversion', {
+          'send_to': 'AW-17764146565/9pH3CP6OgcgbEIW7zZZC'
+        });
+      }
+    })();
   };
 
   // Validation for phone numbers (at least 7 digits, any format)
