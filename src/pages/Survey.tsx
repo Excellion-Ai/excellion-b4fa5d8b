@@ -349,16 +349,7 @@ const Survey = () => {
             </div>
 
             {/* Survey Form */}
-            <form 
-              onSubmit={handleSubmit}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-                  e.preventDefault();
-                  handleSubmit(e as any);
-                }
-              }}
-              className="bg-black/80 backdrop-blur-md border border-accent/30 rounded-2xl p-6 md:p-8 space-y-5 shadow-xl"
-            >
+            <form onSubmit={handleSubmit} className="bg-black/80 backdrop-blur-md border border-accent/30 rounded-2xl p-6 md:p-8 space-y-5 shadow-xl">
               {/* Contact Info - Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-accent text-base font-semibold">
