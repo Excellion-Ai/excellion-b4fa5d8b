@@ -54,6 +54,7 @@ export type Database = {
           brand_name: string | null
           budget: string | null
           company: string | null
+          country: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -67,6 +68,8 @@ export type Database = {
           qualified_plan: string | null
           timeline: string | null
           user_id: string | null
+          whatsapp_e164: string | null
+          whatsapp_raw: string | null
         }
         Insert: {
           additional_notes?: string | null
@@ -74,6 +77,7 @@ export type Database = {
           brand_name?: string | null
           budget?: string | null
           company?: string | null
+          country?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -87,6 +91,8 @@ export type Database = {
           qualified_plan?: string | null
           timeline?: string | null
           user_id?: string | null
+          whatsapp_e164?: string | null
+          whatsapp_raw?: string | null
         }
         Update: {
           additional_notes?: string | null
@@ -94,6 +100,7 @@ export type Database = {
           brand_name?: string | null
           budget?: string | null
           company?: string | null
+          country?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -107,6 +114,8 @@ export type Database = {
           qualified_plan?: string | null
           timeline?: string | null
           user_id?: string | null
+          whatsapp_e164?: string | null
+          whatsapp_raw?: string | null
         }
         Relationships: []
       }

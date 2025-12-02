@@ -22,6 +22,17 @@ interface QuoteRequest {
   budget: string;
   created_at: string;
   user_id: string | null;
+  // International WhatsApp fields
+  country: string | null;
+  whatsapp_raw: string | null;
+  whatsapp_e164: string | null;
+  // Legacy phone field
+  phone: string | null;
+  // Additional survey fields
+  brand_name: string | null;
+  main_outcome: string | null;
+  features_needed: string[] | null;
+  qualified_plan: string | null;
 }
 
 interface AuthActivity {
@@ -184,10 +195,12 @@ const Admin = () => {
                           <TableHead>Date</TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
-                          <TableHead>Company</TableHead>
-                          <TableHead>Project Type</TableHead>
-                          <TableHead>Budget</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead>Country</TableHead>
+                          <TableHead>WhatsApp</TableHead>
+                          <TableHead>Business</TableHead>
+                          <TableHead>Goal</TableHead>
+                          <TableHead>Features</TableHead>
+                          <TableHead>Plan</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -197,17 +210,60 @@ const Admin = () => {
                               {format(new Date(quote.created_at), "MMM d, yyyy")}
                             </TableCell>
                             <TableCell className="font-medium">{quote.name}</TableCell>
-                            <TableCell>{quote.email}</TableCell>
-                            <TableCell>{quote.company || "—"}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{quote.project_type}</Badge>
-                            </TableCell>
-                            <TableCell>{quote.budget || "—"}</TableCell>
-                            <TableCell>
-                              {quote.user_id ? (
-                                <Badge variant="default">Authenticated</Badge>
+                            <TableCell>{quote.email || "—"}</TableCell>
+                            <TableCell>{quote.country || "—"}</TableCell>
+                            <TableCell className="font-mono text-sm">
+                              {quote.whatsapp_e164 ? (
+                                <span>{quote.whatsapp_e164}</span>
+                              ) : quote.phone ? (
+                                <span className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="text-xs">legacy</Badge>
+                                  {quote.phone}
+                                </span>
                               ) : (
-                                <Badge variant="secondary">Anonymous</Badge>
+                                "—"
+                              )}
+                            </TableCell>
+                            <TableCell>{quote.brand_name || quote.company || "—"}</TableCell>
+                            <TableCell>
+                              {quote.main_outcome ? (
+                                <Badge variant="outline" className="capitalize">
+                                  {quote.main_outcome.replace(/-/g, ' ')}
+                                </Badge>
+                              ) : (
+                                "—"
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {quote.features_needed && quote.features_needed.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {quote.features_needed.slice(0, 3).map((feature, idx) => (
+                                    <Badge key={idx} variant="secondary" className="text-xs">
+                                      {feature}
+                                    </Badge>
+                                  ))}
+                                  {quote.features_needed.length > 3 && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      +{quote.features_needed.length - 3}
+                                    </Badge>
+                                  )}
+                                </div>
+                              ) : (
+                                "—"
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {quote.qualified_plan ? (
+                                <Badge 
+                                  variant={
+                                    quote.qualified_plan === "Premium" ? "default" :
+                                    quote.qualified_plan === "Core" ? "secondary" : "outline"
+                                  }
+                                >
+                                  {quote.qualified_plan}
+                                </Badge>
+                              ) : (
+                                "—"
                               )}
                             </TableCell>
                           </TableRow>
