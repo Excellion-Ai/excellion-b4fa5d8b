@@ -103,32 +103,32 @@ const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-6 py-24 animate-fade-in">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+      <div className="relative z-10 container mx-auto px-4 md:px-6 py-8 md:py-24 animate-fade-in">
+        <div className="max-w-4xl mx-auto text-center space-y-4 md:space-y-8">
           {/* Headline and Subheadline */}
-          <div className="bg-background/50 backdrop-blur-sm px-8 py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
+          <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-5 md:py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
+            <h1 className="text-3xl md:text-7xl font-bold text-foreground leading-tight">
               Get a Free Mockup + <span className="text-accent">Website Estimate</span>
             </h1>
 
-            <p className="text-xl text-accent max-w-2xl mx-auto mt-6 font-semibold">
+            <p className="text-base md:text-xl text-accent max-w-2xl mx-auto mt-3 md:mt-6 font-semibold">
               Stop guessing what a professional website costs. Answer a few quick questions and we'll send a custom mockup, clear price range, and launch timeline.
             </p>
 
-            <p className="text-xs text-foreground/60 mt-6 font-light">
+            <p className="text-xs text-foreground/60 mt-3 md:mt-6 font-light">
               No credit card. No obligation. 100% free preview.
             </p>
-          </div>
 
-          {/* CTA Button */}
-          <div className="mt-8">
-            <Button 
-              size="lg" 
-              onClick={() => setShowCaptcha(true)}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
-            >
-              Start My Free Mockup & Estimate
-            </Button>
+            {/* CTA Button - moved inside the box on mobile */}
+            <div className="mt-4 md:mt-6">
+              <Button 
+                size="lg" 
+                onClick={() => setShowCaptcha(true)}
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
+              >
+                Start My Free Mockup & Estimate
+              </Button>
+            </div>
           </div>
         </div>
       </div>
