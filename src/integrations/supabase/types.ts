@@ -64,6 +64,7 @@ export type Database = {
           name: string
           pages_needed: string | null
           phone: string | null
+          phone_normalized: string | null
           project_type: string
           qualified_plan: string | null
           timeline: string | null
@@ -87,6 +88,7 @@ export type Database = {
           name: string
           pages_needed?: string | null
           phone?: string | null
+          phone_normalized?: string | null
           project_type: string
           qualified_plan?: string | null
           timeline?: string | null
@@ -110,6 +112,7 @@ export type Database = {
           name?: string
           pages_needed?: string | null
           phone?: string | null
+          phone_normalized?: string | null
           project_type?: string
           qualified_plan?: string | null
           timeline?: string | null
