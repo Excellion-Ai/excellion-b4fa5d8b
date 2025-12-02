@@ -36,5 +36,9 @@ export default defineConfig(({ mode }) => ({
     },
     // Optimize chunk size
     chunkSizeWarningLimit: 1000,
+    // Enable modulePreload for faster loading
+    modulePreload: {
+      polyfill: true,
+    },
   },
 }));
