@@ -37,7 +37,7 @@ const App = () => (
         <Route path="/" element={<Index />} />
         {/* HIDDEN - Uncomment to restore DIY page: <Route path="/diy" element={<Pricing />} /> */}
         <Route path="/dfy" element={<DFY />} />
-        <Route path="/operations" element={<Operations />} />
+        {/* HIDDEN - Uncomment to restore Operations page: <Route path="/operations" element={<Operations />} /> */}
         <Route path="/survey" element={<Survey />} />
         <Route path="/book-call" element={<BookCall />} />
         <Route path="/faq" element={<FAQ />} />
