@@ -53,6 +53,7 @@ export type Database = {
           brand_content_status: string | null
           brand_name: string | null
           budget: string | null
+          city: string | null
           company: string | null
           country: string | null
           created_at: string
@@ -67,6 +68,7 @@ export type Database = {
           phone_normalized: string | null
           project_type: string
           qualified_plan: string | null
+          source: string | null
           timeline: string | null
           user_id: string | null
           whatsapp_e164: string | null
@@ -77,6 +79,7 @@ export type Database = {
           brand_content_status?: string | null
           brand_name?: string | null
           budget?: string | null
+          city?: string | null
           company?: string | null
           country?: string | null
           created_at?: string
@@ -91,6 +94,7 @@ export type Database = {
           phone_normalized?: string | null
           project_type: string
           qualified_plan?: string | null
+          source?: string | null
           timeline?: string | null
           user_id?: string | null
           whatsapp_e164?: string | null
@@ -101,6 +105,7 @@ export type Database = {
           brand_content_status?: string | null
           brand_name?: string | null
           budget?: string | null
+          city?: string | null
           company?: string | null
           country?: string | null
           created_at?: string
@@ -115,6 +120,7 @@ export type Database = {
           phone_normalized?: string | null
           project_type?: string
           qualified_plan?: string | null
+          source?: string | null
           timeline?: string | null
           user_id?: string | null
           whatsapp_e164?: string | null

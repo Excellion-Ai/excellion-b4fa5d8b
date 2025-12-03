@@ -30,7 +30,7 @@ const PortfolioShowcase = () => {
   ];
 
   return (
-    <section className="py-24 px-4 bg-background relative">
+    <section id="portfolio-showcase" className="py-24 px-4 bg-background relative">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">

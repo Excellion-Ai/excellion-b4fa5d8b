@@ -8,8 +8,8 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Excellion Websites | Free Website Estimate & Custom Mockup</title>
-        <meta name="description" content="Excellion Websites provides professional custom web builds and AI-assisted design. Get a free estimate and personalized launch plan today." />
+        <title>Excellion Websites | Professional Web Builds in Days, Not Months</title>
+        <meta name="description" content="Excellion Websites builds fast, professional websites for your business. Book a free 15-minute call to get a clear build plan and price." />
       </Helmet>
       <div className="min-h-screen bg-background">
         <Navigation />
