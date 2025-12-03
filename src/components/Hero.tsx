@@ -89,7 +89,7 @@ const Hero = () => {
           {/* Headline and Subheadline */}
           <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-5 md:py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-3xl md:text-7xl font-bold text-foreground leading-tight">
-              Book a Free Website Call + <span className="text-accent">Custom Mockup</span>
+              Review Your Website Design <span className="text-accent">Before You Pay</span>
             </h1>
 
             <p className="text-base md:text-xl text-accent max-w-2xl mx-auto mt-3 md:mt-6 font-semibold">
