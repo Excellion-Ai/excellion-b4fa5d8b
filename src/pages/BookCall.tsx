@@ -18,7 +18,7 @@ import { CheckCircle2, ExternalLink } from "lucide-react";
 import operationsBackgroundVideo from "@/assets/operations-background-new.mp4";
 
 // Easy to change Calendly URL
-const CALENDLY_URL = "https://calendly.com/YOUR_USERNAME_HERE";
+const CALENDLY_URL = "https://calendly.com/excellionai/30min";
 
 const BookCall = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -154,7 +154,7 @@ const BookCall = () => {
               
               {/* Transparent box around description and benefits */}
               <div className="bg-background/50 backdrop-blur-sm px-6 md:px-10 py-6 md:py-8 rounded-lg border border-border/50 max-w-3xl mx-auto">
-                <p className="text-muted-foreground text-base md:text-lg mb-6">
+                <p className="text-foreground text-base md:text-lg mb-6">
                   Pick a time that works for you. On this 15-minute call, we'll map your
                   business to Essential, Core, or Premium, walk through a simple build
                   plan, and give you a clear price range before we start building.
@@ -162,15 +162,15 @@ const BookCall = () => {
                 
                 {/* Benefits */}
                 <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-6 text-sm md:text-base">
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
                     <span>100% free, no pressure</span>
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
                     <span>Fast turnaround (sites in days, not months)</span>
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
                     <span>Clear pricing: $600–$3,500</span>
                   </div>
