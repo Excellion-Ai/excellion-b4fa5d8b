@@ -197,7 +197,7 @@ const BookCall = () => {
                     </div>
                     <div className="flex items-center gap-2 text-foreground">
                       <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0" />
-                      <span>Fast turnaround (~48 hours after approval)</span>
+                      <span>Site goes live within 24 hours of approval</span>
                     </div>
                     <div className="flex items-center gap-2 text-foreground">
                       <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0" />
