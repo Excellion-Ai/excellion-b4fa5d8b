@@ -96,24 +96,22 @@ const BookCall = () => {
               {/* Transparent box around description and benefits */}
               <div className="bg-background/50 backdrop-blur-sm px-6 md:px-10 py-6 md:py-8 rounded-lg border border-border/50 max-w-3xl mx-auto">
                 <p className="text-foreground text-base md:text-lg mb-6">
-                  Pick a time that works for you. On this 15-minute call, we'll map your
-                  business to Essential, Core, or Premium, walk through a simple build
-                  plan, and give you a clear price range before we start building.
+                  Book a 15-minute mockup call. We'll map your business to Essential, Core, or Premium and start your custom homepage mockup. You'll see the mockup and a clear price range before you decide to move forward.
                 </p>
                 
                 {/* Benefits */}
                 <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-6 text-sm md:text-base">
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>100% free, no pressure</span>
+                    <span>See your mockup before you pay</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>Fast turnaround (sites in days, not months)</span>
+                    <span>Fast turnaround (days, not months)</span>
                   </div>
                   <div className="flex items-center gap-2 text-foreground">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>Clear pricing: $600–$3,500</span>
+                    <span>Typical builds: $600–$3,500</span>
                   </div>
                 </div>
               </div>
