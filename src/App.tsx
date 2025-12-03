@@ -10,6 +10,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const DFY = lazy(() => import("./pages/DFY"));
 const Operations = lazy(() => import("./pages/Operations"));
 const Survey = lazy(() => import("./pages/Survey"));
+const BookCall = lazy(() => import("./pages/BookCall"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Legal = lazy(() => import("./pages/Legal"));
@@ -38,6 +39,7 @@ const App = () => (
         <Route path="/dfy" element={<DFY />} />
         <Route path="/operations" element={<Operations />} />
         <Route path="/survey" element={<Survey />} />
+        <Route path="/book-call" element={<BookCall />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/legal" element={<Legal />} />

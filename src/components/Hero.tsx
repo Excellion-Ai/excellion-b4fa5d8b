@@ -1,23 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useEffect, useRef } from "react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
-import TypingEffect from "./TypingEffect";
 
 const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
-  const [showCaptcha, setShowCaptcha] = useState(false);
-  const [captchaError, setCaptchaError] = useState(false);
-  const hcaptchaSiteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -57,18 +45,11 @@ const Hero = () => {
     };
   }, []);
 
-  const handleCaptchaVerify = () => {
-    setShowCaptcha(false);
-    setCaptchaError(false);
-    navigate("/survey");
-  };
-
-  const handleCaptchaError = () => {
-    setCaptchaError(true);
-  };
-
-  const handleCaptchaExpire = () => {
-    setCaptchaError(true);
+  const scrollToPortfolio = () => {
+    const portfolioSection = document.getElementById('portfolio-showcase');
+    if (portfolioSection) {
+      portfolioSection.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -108,65 +89,38 @@ const Hero = () => {
           {/* Headline and Subheadline */}
           <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-5 md:py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-3xl md:text-7xl font-bold text-foreground leading-tight">
-              Get a Free Mockup + <span className="text-accent">Website Estimate</span>
+              We build your website in <span className="text-accent">days, not months.</span>
             </h1>
 
             <p className="text-base md:text-xl text-accent max-w-2xl mx-auto mt-3 md:mt-6 font-semibold">
-              Stop guessing what a professional website costs. Answer a few quick questions and we'll send a custom mockup, clear price range, and launch timeline.
+              Book a free 15-minute call and get a fast, clear build plan and price for your business. No DIY, no long contracts.
             </p>
 
             <p className="text-xs text-foreground/60 mt-3 md:mt-6 font-light">
-              No credit card. No obligation. 100% free preview.
+              No credit card. No obligation. 100% free consultation.
             </p>
 
-            {/* CTA Button - moved inside the box on mobile */}
-            <div className="mt-4 md:mt-6">
+            {/* CTA Buttons */}
+            <div className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 size="lg" 
-                onClick={() => setShowCaptcha(true)}
+                onClick={() => navigate("/book-call")}
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
               >
-                Start My Free Mockup & Estimate
+                Book a Free Website Call
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={scrollToPortfolio}
+                className="font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg border-border/50 hover:bg-background/50"
+              >
+                View Example Builds
               </Button>
             </div>
           </div>
         </div>
       </div>
-
-      {/* hCaptcha Verification Modal */}
-      <Dialog open={showCaptcha} onOpenChange={setShowCaptcha}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle>Verify You're Human</DialogTitle>
-            <DialogDescription>
-              Please complete the verification to continue to your free estimate.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 min-h-[200px]">
-            {hcaptchaSiteKey ? (
-              <>
-                <HCaptcha
-                  sitekey={hcaptchaSiteKey}
-                  onVerify={handleCaptchaVerify}
-                  onError={handleCaptchaError}
-                  onExpire={handleCaptchaExpire}
-                  theme="dark"
-                  size="normal"
-                />
-                {captchaError && (
-                  <p className="text-destructive text-sm mt-4">
-                    Verification failed. Please try again.
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-muted-foreground text-sm">
-                Captcha not configured. Please contact support.
-              </p>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 };

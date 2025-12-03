@@ -17,6 +17,9 @@ const Navigation = () => {
         </Link>
           
           <div className="hidden md:flex items-center gap-8">
+            <Link to="/book-call" className="text-sm font-medium text-accent hover:text-accent/80 transition-colors">
+              Book a Call
+            </Link>
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Done for you
             </Link>
@@ -58,6 +61,12 @@ const Navigation = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px]">
                 <div className="flex flex-col gap-6 mt-8">
+                  <Link 
+                    to="/book-call" 
+                    className="text-lg font-medium text-accent hover:text-accent/80 transition-colors"
+                  >
+                    Book a Call
+                  </Link>
                   <Link 
                     to="/dfy" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
