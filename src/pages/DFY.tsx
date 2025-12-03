@@ -57,12 +57,12 @@ const DFY = () => {
     },
     {
       number: "02",
-      title: "Build & Review",
+      title: "Build, Review Call & Payment",
       points: [
         "We lock in a clean visual system so everything feels sharp and consistent on desktop and mobile.",
-        "Our team uses modern tools (React + AI-assisted workflows) to build a fast, secure, and maintainable website for you.",
-        "We set up what you actually need: forms, menus, bookings, online ordering, quote flows, and automations.",
-        "You review the mockup and early build, send feedback, and we refine it until it feels right for your brand."
+        "Our team uses modern tools (React + AI-assisted workflows) to build a fast, secure, and maintainable website tailored to your business.",
+        "Once the first version is ready, we hop on a build review call where you walk us through any final changes you want.",
+        "At the end of that call, we lock in the final scope and you complete payment for the build so we can move straight into launch."
       ]
     },
     {
