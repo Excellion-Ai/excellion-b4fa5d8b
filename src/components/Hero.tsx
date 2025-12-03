@@ -89,11 +89,11 @@ const Hero = () => {
           {/* Headline and Subheadline */}
           <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-5 md:py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
             <h1 className="text-3xl md:text-7xl font-bold text-foreground leading-tight">
-              We build your website in <span className="text-accent">days, not months.</span>
+              Book a Free Website Call + <span className="text-accent">Custom Mockup</span>
             </h1>
 
             <p className="text-base md:text-xl text-accent max-w-2xl mx-auto mt-3 md:mt-6 font-semibold">
-              Book a free 15-minute call and get a fast, clear build plan and price for your business. No DIY, no long contracts.
+              Stop guessing what a professional website costs. Book a quick call and we'll map out your build, then send a custom mockup, clear price range, and launch timeline.
             </p>
 
             <p className="text-xs text-foreground/60 mt-3 md:mt-6 font-light">
