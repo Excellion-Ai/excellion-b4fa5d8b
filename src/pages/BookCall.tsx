@@ -186,7 +186,7 @@ const BookCall = () => {
                 {/* Transparent box around description and benefits */}
                 <div className="bg-background/50 backdrop-blur-sm px-6 md:px-10 py-6 md:py-8 rounded-lg border border-border/50 max-w-3xl mx-auto">
                   <p className="text-foreground text-base md:text-lg mb-6">
-                    We'll map your business to Essential, Core, or Premium, outline a simple build plan, and start your custom mockup. You'll see the mockup and a clear price range before you decide to move forward.
+                    We'll outline a simple plan for your site and start your custom mockup. You'll see the mockup and a clear price range before you make any decisions.
                   </p>
                   
                   {/* Benefits */}
