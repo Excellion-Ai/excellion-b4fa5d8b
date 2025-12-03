@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,11 +15,13 @@ import { toast } from "sonner";
 import Navigation from "@/components/Navigation";
 import LazyFooter from "@/components/LazyFooter";
 import { CheckCircle2, ExternalLink } from "lucide-react";
+import operationsBackgroundVideo from "@/assets/operations-background-new.mp4";
 
 // Easy to change Calendly URL
 const CALENDLY_URL = "https://calendly.com/YOUR_USERNAME_HERE";
 
 const BookCall = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -29,6 +31,39 @@ const BookCall = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.playbackRate = 0.75;
+
+    const playVideo = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        console.log("Video autoplay prevented:", error);
+      }
+    };
+
+    if (video.readyState >= 3) {
+      playVideo();
+    } else {
+      video.addEventListener('loadeddata', playVideo, { once: true });
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && video.paused) {
+        playVideo();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,10 +114,37 @@ const BookCall = () => {
         />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <Navigation />
+      <div className="min-h-screen bg-background relative">
+        {/* Video Background */}
+        <div className="fixed inset-0 z-0">
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ 
+              backfaceVisibility: 'hidden', 
+              transform: 'translateZ(0) scale(1.0)', 
+              minWidth: '100%', 
+              minHeight: '100%',
+              WebkitTransform: 'translateZ(0) scale(1.0)',
+              filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
+              contain: 'paint',
+              willChange: 'transform',
+            } as React.CSSProperties}
+          >
+            <source src={operationsBackgroundVideo} type="video/mp4" />
+          </video>
+        </div>
 
-        <main className="pt-24 pb-16 px-4">
+        <div className="relative z-10">
+          <Navigation />
+
+          <main className="pt-24 pb-16 px-4">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="text-center mb-10">
@@ -259,7 +321,8 @@ const BookCall = () => {
           </div>
         </main>
 
-        <LazyFooter />
+          <LazyFooter />
+        </div>
       </div>
     </>
   );
