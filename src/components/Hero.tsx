@@ -107,7 +107,7 @@ const Hero = () => {
                 onClick={() => navigate("/book-call")}
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
               >
-                Book a Free Website Call
+                Book My Mockup Call
               </Button>
               <Button 
                 size="lg" 
