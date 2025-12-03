@@ -3,13 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import Navigation from "@/components/Navigation";
 import LazyFooter from "@/components/LazyFooter";
 import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
@@ -19,19 +13,11 @@ import operationsBackgroundVideo from "@/assets/operations-background-new.mp4";
 // Easy to change Calendly URL
 const CALENDLY_URL = "https://calendly.com/excellionai/30min";
 
-const HELP_OPTIONS = [
-  { value: "new-website", label: "New website" },
-  { value: "redesign", label: "Redesign" },
-  { value: "sell-online", label: "Sell online / online ordering" },
-  { value: "bookings", label: "Bookings & appointments" },
-  { value: "not-sure", label: "Not sure / need guidance" },
-];
-
 interface FormErrors {
   name?: string;
   businessName?: string;
-  city?: string;
-  helpWith?: string;
+  location?: string;
+  helpText?: string;
 }
 
 const BookCall = () => {
@@ -41,13 +27,15 @@ const BookCall = () => {
   const [hasPassedPrecheck, setHasPassedPrecheck] = useState(false);
   const [isSpam, setIsSpam] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   
   // Form fields
   const [name, setName] = useState("");
   const [businessName, setBusinessName] = useState("");
-  const [city, setCity] = useState("");
-  const [helpWith, setHelpWith] = useState("");
+  const [location, setLocation] = useState("");
+  const [helpText, setHelpText] = useState("");
+  const [currentWebsite, setCurrentWebsite] = useState("");
   const [honeypot, setHoneypot] = useState("");
 
   useEffect(() => {
@@ -86,17 +74,17 @@ const BookCall = () => {
   const validateForm = (): boolean => {
     const errors: FormErrors = {};
     
-    if (!name || name.trim().length < 2) {
-      errors.name = "Name must be at least 2 characters";
+    if (!name || name.trim().length < 3) {
+      errors.name = "Please enter at least 3 characters.";
     }
-    if (!businessName || businessName.trim().length < 2) {
-      errors.businessName = "Business name must be at least 2 characters";
+    if (!businessName || businessName.trim().length < 3) {
+      errors.businessName = "Please enter at least 3 characters.";
     }
-    if (!city || city.trim().length < 2) {
-      errors.city = "City must be at least 2 characters";
+    if (!location || location.trim().length < 3) {
+      errors.location = "Please enter at least 3 characters.";
     }
-    if (!helpWith) {
-      errors.helpWith = "Please select what you need help with";
+    if (!helpText || helpText.trim().length < 20) {
+      errors.helpText = "Please add a bit more detail so we can prep for your call.";
     }
     
     setFormErrors(errors);
@@ -105,6 +93,7 @@ const BookCall = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
     
     // Check honeypot first
     if (honeypot) {
@@ -124,21 +113,23 @@ const BookCall = () => {
       const { error } = await supabase.from("quote_requests").insert({
         name: name.trim(),
         company: businessName.trim(),
-        city: city.trim(),
-        project_type: helpWith,
+        city: location.trim(),
+        description: helpText.trim(),
+        additional_notes: currentWebsite.trim() || null,
+        project_type: "book-call",
         source: "book-call-precheck",
       });
       
       if (error) {
         console.error("Error saving precheck data:", error);
+        setSubmitError("Something went wrong saving your details. Please try again in a moment.");
+        return;
       }
       
-      // Even if DB save fails, let them proceed (better UX)
       setHasPassedPrecheck(true);
     } catch (err) {
       console.error("Error during precheck submission:", err);
-      // Still let them proceed
-      setHasPassedPrecheck(true);
+      setSubmitError("Something went wrong saving your details. Please try again in a moment.");
     } finally {
       setIsSubmitting(false);
     }
@@ -236,14 +227,20 @@ const BookCall = () => {
                     Tell us a bit about your project
                   </h2>
                   
+                  {submitError && (
+                    <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-md p-3 mb-5">
+                      {submitError}
+                    </div>
+                  )}
+                  
                   <form onSubmit={handleSubmit} className="space-y-5">
                     {/* Honeypot field - hidden from users */}
                     <input
                       type="text"
-                      name="website_url"
+                      name="website_url_hidden"
                       value={honeypot}
                       onChange={(e) => setHoneypot(e.target.value)}
-                      style={{ display: 'none' }}
+                      className="hidden"
                       tabIndex={-1}
                       autoComplete="off"
                     />
@@ -282,45 +279,47 @@ const BookCall = () => {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      {/* City */}
-                      <div className="space-y-2">
-                        <Label htmlFor="city">City *</Label>
-                        <Input
-                          id="city"
-                          type="text"
-                          placeholder="Your city"
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          className={formErrors.city ? "border-destructive" : ""}
-                        />
-                        {formErrors.city && (
-                          <p className="text-sm text-destructive">{formErrors.city}</p>
-                        )}
-                      </div>
-                      
-                      {/* What do you need help with */}
-                      <div className="space-y-2">
-                        <Label htmlFor="helpWith">What do you need help with? *</Label>
-                        <Select value={helpWith} onValueChange={setHelpWith}>
-                          <SelectTrigger 
-                            id="helpWith"
-                            className={formErrors.helpWith ? "border-destructive" : ""}
-                          >
-                            <SelectValue placeholder="Select an option" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card border-border">
-                            {HELP_OPTIONS.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {formErrors.helpWith && (
-                          <p className="text-sm text-destructive">{formErrors.helpWith}</p>
-                        )}
-                      </div>
+                    {/* Location */}
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Where is your business located? *</Label>
+                      <Input
+                        id="location"
+                        type="text"
+                        placeholder="City, Country"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        className={formErrors.location ? "border-destructive" : ""}
+                      />
+                      {formErrors.location && (
+                        <p className="text-sm text-destructive">{formErrors.location}</p>
+                      )}
+                    </div>
+                    
+                    {/* What do you need help with */}
+                    <div className="space-y-2">
+                      <Label htmlFor="helpText">What do you need help with? *</Label>
+                      <Textarea
+                        id="helpText"
+                        placeholder="Example: New website for my restaurant, want online ordering and more bookings."
+                        value={helpText}
+                        onChange={(e) => setHelpText(e.target.value)}
+                        className={`min-h-[100px] ${formErrors.helpText ? "border-destructive" : ""}`}
+                      />
+                      {formErrors.helpText && (
+                        <p className="text-sm text-destructive">{formErrors.helpText}</p>
+                      )}
+                    </div>
+                    
+                    {/* Current website (optional) */}
+                    <div className="space-y-2">
+                      <Label htmlFor="currentWebsite">Current website (optional)</Label>
+                      <Input
+                        id="currentWebsite"
+                        type="text"
+                        placeholder="https://yourwebsite.com"
+                        value={currentWebsite}
+                        onChange={(e) => setCurrentWebsite(e.target.value)}
+                      />
                     </div>
                     
                     <Button
@@ -334,7 +333,7 @@ const BookCall = () => {
                           Submitting...
                         </>
                       ) : (
-                        "Continue to Book Call"
+                        "Continue to Booking"
                       )}
                     </Button>
                   </form>
@@ -346,7 +345,7 @@ const BookCall = () => {
                 <div className="bg-card/50 border border-accent/30 rounded-lg p-4 mb-6 text-center">
                   <p className="text-foreground flex items-center justify-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-accent" />
-                    Great, thanks! Now pick a time for your mockup call below.
+                    Thanks — now pick a time for your 15-minute mockup call.
                   </p>
                 </div>
               )}
