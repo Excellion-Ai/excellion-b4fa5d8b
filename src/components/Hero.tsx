@@ -93,7 +93,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-base md:text-xl text-accent max-w-2xl mx-auto mt-3 md:mt-6 font-semibold">
-              Tell us about your business on a short call. We'll design a mockup and send you clear pricing before you commit—and once you approve the mockup, most sites go live within 24 hours.
+              Tell us about your business on a short call. We'll design a mockup and send you clear pricing before you commit—and once you approve the mockup, sites go live within 24 hours.
             </p>
 
             <p className="text-xs text-foreground/60 mt-3 md:mt-6 font-light">
