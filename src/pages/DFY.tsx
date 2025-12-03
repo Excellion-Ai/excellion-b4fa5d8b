@@ -48,30 +48,30 @@ const DFY = () => {
   const processSteps = [
     {
       number: "01",
-      title: "Discovery & Strategy",
+      title: "Discovery Call & Strategy",
       points: [
-        "Share your vision in a quick intake (or survey): goals, pages, features, style. No tech talk.",
-        "We map you to Essential, Core, or Premium plans and give you a clear estimate upfront.",
-        "On our call, you see an initial layout already started. We adjust it live to match your brand, pages, and timeline.",
-        "You leave with a locked plan: what we're building, how it works, and how fast it ships."
+        "Book a free 15-minute website call so we can understand your business, goals, and timeline in plain language—no tech talk.",
+        "On the call, we map you to Essential ($600–$1,000), Core ($1,000–$1,800), or Premium ($1,800–$3,500), and give you a clear starting price range.",
+        "After the call, we start a custom mockup and send you a preview with your build plan and launch timeline."
       ]
     },
     {
       number: "02",
-      title: "Professional Development",
+      title: "Build & Review",
       points: [
-        "We lock in a clean visual system so everything feels sharp and consistent.",
-        "Real engineers use modern tools (React + AI) to deliver fast, secure, and maintainable websites.",
-        "We set up what you actually need: forms, menus, bookings, quote flows, portals, automations, and integrations."
+        "We lock in a clean visual system so everything feels sharp and consistent on desktop and mobile.",
+        "Our team uses modern tools (React + AI-assisted workflows) to build a fast, secure, and maintainable website for you.",
+        "We set up what you actually need: forms, menus, bookings, online ordering, quote flows, and automations.",
+        "You review the mockup and early build, send feedback, and we refine it until it feels right for your brand."
       ]
     },
     {
       number: "03",
-      title: "Launch & Growth",
+      title: "Launch & Support",
       points: [
-        "We handle full deployment: domain, hosting, SSL, and final SEO checks.",
-        "Forms, bookings, checkouts, and mobile/desktop views are tested before launch.",
-        "Excellion stays available as your long-term partner for ongoing support and growth."
+        "We handle the launch details for you: domain, hosting, SSL, and core SEO setup so you're ready to be found online.",
+        "Forms, bookings, checkouts, and mobile/desktop views are tested before going live.",
+        "After launch, Excellion stays available as your ongoing partner for updates, improvements, and future growth as your business evolves."
       ]
     }
   ];
