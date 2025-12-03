@@ -1,17 +1,6 @@
 import { Helmet } from "react-helmet-async";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import Navigation from "@/components/Navigation";
 import LazyFooter from "@/components/LazyFooter";
 import { CheckCircle2, ExternalLink } from "lucide-react";
@@ -22,15 +11,6 @@ const CALENDLY_URL = "https://calendly.com/excellionai/30min";
 
 const BookCall = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    company: "",
-    city: "",
-    helpNeeded: "",
-    honeypot: "", // Hidden honeypot field
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -64,45 +44,6 @@ const BookCall = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Honeypot check - if filled, silently reject
-    if (formData.honeypot) {
-      console.log("Spam submission detected");
-      setIsSubmitted(true); // Pretend success to not alert bots
-      return;
-    }
-
-    // Basic validation
-    if (!formData.name.trim() || !formData.company.trim() || !formData.city.trim()) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await supabase.from("quote_requests").insert({
-        name: formData.name.trim().substring(0, 100),
-        company: formData.company.trim().substring(0, 100),
-        city: formData.city.trim().substring(0, 100),
-        project_type: formData.helpNeeded || "Not specified",
-        source: "book-call-mini-form",
-      });
-
-      if (error) throw error;
-
-      setIsSubmitted(true);
-      toast.success("Thanks! Your info has been saved.");
-    } catch (error) {
-      console.error("Error saving form:", error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <>
@@ -178,116 +119,8 @@ const BookCall = () => {
               </div>
             </div>
 
-            {/* Main content grid */}
-            <div className="grid md:grid-cols-5 gap-8">
-              {/* Mini Form - Optional */}
-              <div className="md:col-span-2">
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <h2 className="text-lg font-semibold text-foreground mb-4">
-                    Tell us a bit about yourself
-                    <span className="text-muted-foreground font-normal text-sm ml-2">(optional)</span>
-                  </h2>
-
-                  {isSubmitted ? (
-                    <div className="text-center py-8">
-                      <CheckCircle2 className="h-12 w-12 text-accent mx-auto mb-3" />
-                      <p className="text-foreground font-medium">Thanks!</p>
-                      <p className="text-muted-foreground text-sm">
-                        Now pick a time that works for you.
-                      </p>
-                    </div>
-                  ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      {/* Honeypot field - hidden from users */}
-                      <input
-                        type="text"
-                        name="website_url_hidden"
-                        value={formData.honeypot}
-                        onChange={(e) =>
-                          setFormData({ ...formData, honeypot: e.target.value })
-                        }
-                        className="hidden"
-                        tabIndex={-1}
-                        autoComplete="off"
-                      />
-
-                      <div>
-                        <Label htmlFor="name">Name *</Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
-                          placeholder="Your name"
-                          maxLength={100}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="company">Business name *</Label>
-                        <Input
-                          id="company"
-                          value={formData.company}
-                          onChange={(e) =>
-                            setFormData({ ...formData, company: e.target.value })
-                          }
-                          placeholder="Your business name"
-                          maxLength={100}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="city">City *</Label>
-                        <Input
-                          id="city"
-                          value={formData.city}
-                          onChange={(e) =>
-                            setFormData({ ...formData, city: e.target.value })
-                          }
-                          placeholder="Your city"
-                          maxLength={100}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="helpNeeded">What do you need help with?</Label>
-                        <Select
-                          value={formData.helpNeeded}
-                          onValueChange={(value) =>
-                            setFormData({ ...formData, helpNeeded: value })
-                          }
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select an option" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="New website">New website</SelectItem>
-                            <SelectItem value="Redesign">Redesign</SelectItem>
-                            <SelectItem value="Sell online">Sell online</SelectItem>
-                            <SelectItem value="Bookings">Bookings</SelectItem>
-                            <SelectItem value="Not sure">Not sure</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? "Saving..." : "Save & Continue to Booking"}
-                      </Button>
-                    </form>
-                  )}
-                </div>
-              </div>
-
-              {/* Calendly Embed */}
-              <div className="md:col-span-3">
+            {/* Calendly Embed */}
+            <div className="max-w-4xl mx-auto">
                 <div className="bg-card border border-border rounded-lg p-4 md:p-6">
                   <h2 className="text-lg font-semibold text-foreground mb-4">
                     Pick a time for your call
@@ -322,8 +155,7 @@ const BookCall = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </main>
+          </main>
 
           <LazyFooter />
         </div>
