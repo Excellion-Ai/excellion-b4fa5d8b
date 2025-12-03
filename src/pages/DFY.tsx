@@ -207,10 +207,10 @@ const DFY = () => {
 
           <Button 
             size="lg"
-            onClick={() => setShowProcessModal(true)}
+            onClick={() => navigate("/book-call")}
             className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg mt-8"
           >
-            Start My Custom Build
+            Book My Mockup Call
           </Button>
         </div>
       </section>
@@ -239,6 +239,17 @@ const DFY = () => {
               </div>
             </div>
           ))}
+        </div>
+        
+        {/* CTA Button at bottom of process section */}
+        <div className="text-center mt-12">
+          <Button 
+            size="lg"
+            onClick={() => navigate("/book-call")}
+            className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg"
+          >
+            Book My Mockup Call
+          </Button>
         </div>
       </section>
 
