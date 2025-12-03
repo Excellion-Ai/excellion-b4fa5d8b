@@ -31,9 +31,11 @@ const Navigation = () => {
             <Link to="/maintenance-request" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Maintenance Request
             </Link>
+            {/* HIDDEN - Uncomment to restore Operations link:
             <Link to="/operations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Operations
             </Link>
+            */}
           </div>
 
           <div className="flex items-center gap-4">
@@ -87,12 +89,14 @@ const Navigation = () => {
                   >
                     Maintenance Request
                   </Link>
+                  {/* HIDDEN - Uncomment to restore Operations link:
                   <Link 
                     to="/operations" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
                     Operations
                   </Link>
+                  */}
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
                     {isAdmin && (
                       <Link to="/admin">
