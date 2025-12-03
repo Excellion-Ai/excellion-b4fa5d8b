@@ -1,16 +1,54 @@
 import { Helmet } from "react-helmet-async";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Navigation from "@/components/Navigation";
 import LazyFooter from "@/components/LazyFooter";
-import { CheckCircle2, ExternalLink } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import operationsBackgroundVideo from "@/assets/operations-background-new.mp4";
 
 // Easy to change Calendly URL
 const CALENDLY_URL = "https://calendly.com/excellionai/30min";
 
+const HELP_OPTIONS = [
+  { value: "new-website", label: "New website" },
+  { value: "redesign", label: "Redesign" },
+  { value: "sell-online", label: "Sell online / online ordering" },
+  { value: "bookings", label: "Bookings & appointments" },
+  { value: "not-sure", label: "Not sure / need guidance" },
+];
+
+interface FormErrors {
+  name?: string;
+  businessName?: string;
+  city?: string;
+  helpWith?: string;
+}
+
 const BookCall = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  
+  // Pre-check form state
+  const [hasPassedPrecheck, setHasPassedPrecheck] = useState(false);
+  const [isSpam, setIsSpam] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  
+  // Form fields
+  const [name, setName] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [city, setCity] = useState("");
+  const [helpWith, setHelpWith] = useState("");
+  const [honeypot, setHoneypot] = useState("");
 
   useEffect(() => {
     const video = videoRef.current;
@@ -44,6 +82,67 @@ const BookCall = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
+
+  const validateForm = (): boolean => {
+    const errors: FormErrors = {};
+    
+    if (!name || name.trim().length < 2) {
+      errors.name = "Name must be at least 2 characters";
+    }
+    if (!businessName || businessName.trim().length < 2) {
+      errors.businessName = "Business name must be at least 2 characters";
+    }
+    if (!city || city.trim().length < 2) {
+      errors.city = "City must be at least 2 characters";
+    }
+    if (!helpWith) {
+      errors.helpWith = "Please select what you need help with";
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check honeypot first
+    if (honeypot) {
+      setIsSpam(true);
+      return;
+    }
+    
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Save to database
+      const { error } = await supabase.from("quote_requests").insert({
+        name: name.trim(),
+        company: businessName.trim(),
+        city: city.trim(),
+        project_type: helpWith,
+        source: "book-call-precheck",
+      });
+      
+      if (error) {
+        console.error("Error saving precheck data:", error);
+      }
+      
+      // Even if DB save fails, let them proceed (better UX)
+      setHasPassedPrecheck(true);
+    } catch (err) {
+      console.error("Error during precheck submission:", err);
+      // Still let them proceed
+      setHasPassedPrecheck(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -86,39 +185,174 @@ const BookCall = () => {
           <Navigation />
 
           <main className="pt-24 pb-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-10">
-              <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                Book Your Free Website Planning Call
-              </h1>
-              
-              {/* Transparent box around description and benefits */}
-              <div className="bg-background/50 backdrop-blur-sm px-6 md:px-10 py-6 md:py-8 rounded-lg border border-border/50 max-w-3xl mx-auto">
-                <p className="text-foreground text-base md:text-lg mb-6">
-                  Book a 15-minute mockup call. We'll map your business to Essential, Core, or Premium and start your custom homepage mockup. You'll see the mockup and a clear price range before you decide to move forward.
-                </p>
+            <div className="max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+                  Book Your 15-Minute Mockup Call
+                </h1>
                 
-                {/* Benefits */}
-                <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-6 text-sm md:text-base">
-                  <div className="flex items-center gap-2 text-foreground">
-                    <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>See your mockup before you pay</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-foreground">
-                    <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>Fast turnaround (days, not months)</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-foreground">
-                    <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span>Typical builds: $600–$3,500</span>
+                {/* Transparent box around description and benefits */}
+                <div className="bg-background/50 backdrop-blur-sm px-6 md:px-10 py-6 md:py-8 rounded-lg border border-border/50 max-w-3xl mx-auto">
+                  <p className="text-foreground text-base md:text-lg mb-6">
+                    We'll map your business to Essential, Core, or Premium, outline a simple build plan, and start your custom homepage mockup. You'll see the mockup and a clear price range before you decide to move forward.
+                  </p>
+                  
+                  {/* Benefits */}
+                  <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-6 text-sm md:text-base">
+                    <div className="flex items-center gap-2 text-foreground">
+                      <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0" />
+                      <span>See your mockup before you pay</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground">
+                      <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0" />
+                      <span>Fast turnaround (~48 hours after approval)</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground">
+                      <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0" />
+                      <span>Typical builds: $600–$3,500</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Calendly Embed */}
-            <div className="max-w-4xl mx-auto">
+              {/* Spam message (shown if honeypot triggered) */}
+              {isSpam && (
+                <div className="bg-card border border-border rounded-lg p-6 text-center mb-8">
+                  <CheckCircle2 className="h-12 w-12 text-accent mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-foreground mb-2">
+                    Thanks, we've received your info
+                  </h2>
+                  <p className="text-muted-foreground">
+                    If it's a fit, we'll reach out.
+                  </p>
+                </div>
+              )}
+
+              {/* Pre-check Form (shown if not passed and not spam) */}
+              {!hasPassedPrecheck && !isSpam && (
+                <div className="bg-card border border-border rounded-lg p-6 md:p-8 mb-8">
+                  <h2 className="text-lg font-semibold text-foreground mb-6">
+                    Tell us a bit about your project
+                  </h2>
+                  
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Honeypot field - hidden from users */}
+                    <input
+                      type="text"
+                      name="website_url"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                      style={{ display: 'none' }}
+                      tabIndex={-1}
+                      autoComplete="off"
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {/* Name */}
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Name *</Label>
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Your name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className={formErrors.name ? "border-destructive" : ""}
+                        />
+                        {formErrors.name && (
+                          <p className="text-sm text-destructive">{formErrors.name}</p>
+                        )}
+                      </div>
+                      
+                      {/* Business Name */}
+                      <div className="space-y-2">
+                        <Label htmlFor="businessName">Business name *</Label>
+                        <Input
+                          id="businessName"
+                          type="text"
+                          placeholder="Your business name"
+                          value={businessName}
+                          onChange={(e) => setBusinessName(e.target.value)}
+                          className={formErrors.businessName ? "border-destructive" : ""}
+                        />
+                        {formErrors.businessName && (
+                          <p className="text-sm text-destructive">{formErrors.businessName}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {/* City */}
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City *</Label>
+                        <Input
+                          id="city"
+                          type="text"
+                          placeholder="Your city"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className={formErrors.city ? "border-destructive" : ""}
+                        />
+                        {formErrors.city && (
+                          <p className="text-sm text-destructive">{formErrors.city}</p>
+                        )}
+                      </div>
+                      
+                      {/* What do you need help with */}
+                      <div className="space-y-2">
+                        <Label htmlFor="helpWith">What do you need help with? *</Label>
+                        <Select value={helpWith} onValueChange={setHelpWith}>
+                          <SelectTrigger 
+                            id="helpWith"
+                            className={formErrors.helpWith ? "border-destructive" : ""}
+                          >
+                            <SelectValue placeholder="Select an option" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border">
+                            {HELP_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {formErrors.helpWith && (
+                          <p className="text-sm text-destructive">{formErrors.helpWith}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <Button
+                      type="submit"
+                      className="w-full md:w-auto"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Continue to Book Call"
+                      )}
+                    </Button>
+                  </form>
+                </div>
+              )}
+
+              {/* Success message after passing precheck */}
+              {hasPassedPrecheck && (
+                <div className="bg-card/50 border border-accent/30 rounded-lg p-4 mb-6 text-center">
+                  <p className="text-foreground flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-accent" />
+                    Great, thanks! Now pick a time for your mockup call below.
+                  </p>
+                </div>
+              )}
+
+              {/* Calendly Embed - Only shown after passing precheck */}
+              {hasPassedPrecheck && (
                 <div className="bg-card border border-border rounded-lg p-4 md:p-6">
                   <h2 className="text-lg font-semibold text-foreground mb-4">
                     Pick a time for your call
@@ -151,7 +385,7 @@ const BookCall = () => {
                     </Button>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </main>
 
