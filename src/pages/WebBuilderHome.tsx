@@ -12,6 +12,7 @@ import {
   Heart,
   ChevronRight
 } from "lucide-react";
+import excellionLogo from "@/assets/excellion-logo.png";
 
 const templates = [
   { name: "Business Website", desc: "Professional company site", color: "from-blue-500/20 to-purple-500/20" },
@@ -63,10 +64,8 @@ const WebBuilderHome = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-lg text-foreground">BuilderAI</span>
+              <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
+              <span className="font-bold text-lg text-foreground">Excellion AI</span>
             </div>
 
             {/* Nav Links */}
@@ -123,7 +122,7 @@ const WebBuilderHome = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask BuilderAI to create a website for..."
+                placeholder="Ask Excellion AI to create a website for..."
                 className="border-0 bg-transparent text-base h-12 px-4 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
               <div className="flex items-center justify-between mt-2 px-2">
@@ -239,10 +238,8 @@ const WebBuilderHome = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <span className="font-bold text-lg text-foreground">BuilderAI</span>
+                <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
+                <span className="font-bold text-lg text-foreground">Excellion AI</span>
               </div>
               <p className="text-sm text-muted-foreground max-w-xs">
                 Build beautiful websites with AI. No coding required.
@@ -286,7 +283,7 @@ const WebBuilderHome = () => {
           </div>
 
           <div className="mt-12 pt-8 border-t border-border/50 text-center text-sm text-muted-foreground">
-            © 2024 BuilderAI. All rights reserved.
+            © 2024 Excellion AI. All rights reserved.
           </div>
         </div>
       </footer>
