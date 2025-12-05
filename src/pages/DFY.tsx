@@ -161,6 +161,14 @@ const DFY = () => {
         </script>
       </Helmet>
 
+      {/* Secret invisible button for bot experiment */}
+      <button
+        onClick={() => navigate("/bot-experiment")}
+        className="fixed top-20 left-4 w-8 h-8 z-50 opacity-0 cursor-default"
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
