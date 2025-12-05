@@ -161,9 +161,9 @@ const DFY = () => {
         </script>
       </Helmet>
 
-      {/* Secret invisible button for bot experiment */}
+      {/* Secret invisible button for web builder */}
       <button
-        onClick={() => navigate("/bot-experiment")}
+        onClick={() => navigate("/web-builder")}
         className="fixed top-20 left-4 w-8 h-8 z-50 opacity-0 cursor-default"
         aria-hidden="true"
         tabIndex={-1}
