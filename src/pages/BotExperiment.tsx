@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Send, Bot, User, Loader2, Settings, MessageSquare, Sparkles } from "lucide-react";
+import { Send, Bot, User, Loader2, Settings, MessageSquare, Sparkles, Monitor, Code, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import excellionLogo from "@/assets/excellion-logo.png";
 
 type Message = {
   role: "user" | "assistant";
@@ -16,6 +18,10 @@ type Message = {
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`;
 
 const BotExperiment = () => {
+  const location = useLocation();
+  const initialPrompt = (location.state as { initialPrompt?: string; template?: string })?.initialPrompt || "";
+  const template = (location.state as { template?: string })?.template || "";
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -27,7 +33,10 @@ const BotExperiment = () => {
   const [businessName, setBusinessName] = useState("");
   const [industry, setIndustry] = useState("");
   const [goals, setGoals] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hasAutoSent = useRef(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -35,6 +44,35 @@ const BotExperiment = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Auto-send initial prompt if passed from WebBuilderHome
+  useEffect(() => {
+    if (hasAutoSent.current) return;
+    
+    const promptToSend = initialPrompt || (template ? `I want to create a ${template} website` : "");
+    
+    if (promptToSend) {
+      hasAutoSent.current = true;
+      // Small delay to show the page first
+      setTimeout(() => {
+        sendMessage(promptToSend);
+      }, 500);
+    }
+  }, [initialPrompt, template]);
+
+  // Extract HTML code from AI response
+  const extractCodeFromResponse = (content: string) => {
+    const htmlMatch = content.match(/```html\n([\s\S]*?)```/);
+    if (htmlMatch) {
+      return htmlMatch[1];
+    }
+    // Also check for generic code blocks that look like HTML
+    const codeMatch = content.match(/```\n?(<!DOCTYPE|<html|<div|<body)([\s\S]*?)```/i);
+    if (codeMatch) {
+      return codeMatch[1] + codeMatch[2];
+    }
+    return null;
+  };
 
   const streamChat = async (userMessages: Message[]) => {
     const resp = await fetch(CHAT_URL, {
@@ -77,7 +115,15 @@ const BotExperiment = () => {
         if (!line.startsWith("data: ")) continue;
 
         const jsonStr = line.slice(6).trim();
-        if (jsonStr === "[DONE]") break;
+        if (jsonStr === "[DONE]") {
+          // Check for code in final response
+          const code = extractCodeFromResponse(assistantContent);
+          if (code) {
+            setGeneratedCode(code);
+            setShowPreview(true);
+          }
+          break;
+        }
 
         try {
           const parsed = JSON.parse(jsonStr);
@@ -102,10 +148,10 @@ const BotExperiment = () => {
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (messageText: string) => {
+    if (!messageText.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    const userMessage: Message = { role: "user", content: messageText.trim() };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput("");
@@ -125,6 +171,10 @@ const BotExperiment = () => {
     }
   };
 
+  const handleSend = async () => {
+    await sendMessage(input);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -139,25 +189,34 @@ const BotExperiment = () => {
         content: "Hey! I'm your website builder assistant. Tell me about the website you want to build - what's it for and what do you need it to do?",
       },
     ]);
+    setGeneratedCode("");
+    setShowPreview(false);
+  };
+
+  const refreshPreview = () => {
+    // Force iframe refresh
+    const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
+    if (iframe && generatedCode) {
+      iframe.srcdoc = generatedCode;
+    }
   };
 
   return (
     <div className="min-h-screen bg-background flex">
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
+        <title>Excellion AI Website Builder</title>
       </Helmet>
 
       {/* Left Sidebar - Configuration */}
-      <aside className="w-80 border-r border-border bg-muted/30 flex flex-col">
+      <aside className="w-72 border-r border-border bg-muted/30 flex flex-col flex-shrink-0">
         {/* Sidebar Header */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary" />
-            </div>
+            <img src={excellionLogo} alt="Excellion AI" className="w-10 h-10 object-contain" />
             <div>
-              <h1 className="font-semibold text-foreground">Website Builder</h1>
-              <p className="text-xs text-muted-foreground">AI Assistant</p>
+              <h1 className="font-semibold text-foreground">Excellion AI</h1>
+              <p className="text-xs text-muted-foreground">Website Builder</p>
             </div>
           </div>
         </div>
@@ -235,7 +294,7 @@ const BotExperiment = () => {
       </aside>
 
       {/* Main Chat Area */}
-      <main className="flex-1 flex flex-col">
+      <main className={`flex-1 flex flex-col min-w-0 ${showPreview ? 'max-w-[50%]' : ''}`}>
         {/* Chat Header */}
         <header className="border-b border-border p-4 bg-background/50">
           <div className="flex items-center gap-3">
@@ -310,6 +369,52 @@ const BotExperiment = () => {
           </div>
         </div>
       </main>
+
+      {/* Preview Panel - Shows when code is generated */}
+      {showPreview && (
+        <aside className="w-1/2 border-l border-border flex flex-col bg-background">
+          {/* Preview Header */}
+          <header className="border-b border-border p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <Monitor className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-medium text-foreground text-sm">Website Preview</h2>
+                <p className="text-xs text-muted-foreground">Live preview of your site</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={refreshPreview}>
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowPreview(false)}>
+                <Code className="w-4 h-4" />
+              </Button>
+            </div>
+          </header>
+
+          {/* Preview Content */}
+          <div className="flex-1 bg-white">
+            {generatedCode ? (
+              <iframe
+                id="preview-iframe"
+                srcDoc={generatedCode}
+                className="w-full h-full border-0"
+                title="Website Preview"
+                sandbox="allow-scripts"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                <div className="text-center">
+                  <Monitor className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-sm">Your website preview will appear here</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
+      )}
     </div>
   );
 };
