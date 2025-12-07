@@ -24,7 +24,7 @@ const BotExperiment = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hey! I'm here to help you build a website. Tell me about your business or project — what do you do, and what do you need this site to accomplish?",
+      content: "What are we building today? Give me the idea and I'll draft a v1 plan.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -175,7 +175,7 @@ const BotExperiment = () => {
     setMessages([
       {
         role: "assistant",
-        content: "Hey! I'm here to help you build a website. Tell me about your business or project — what do you do, and what do you need this site to accomplish?",
+        content: "What are we building today? Give me the idea and I'll draft a v1 plan.",
       },
     ]);
     setGeneratedCode("");
