@@ -12,7 +12,30 @@ interface MaintenanceRequest {
   description: string;
   priority: string;
   imageUrls?: string[];
+  captchaToken?: string;
 }
+
+// Verify hCaptcha token server-side
+const verifyCaptcha = async (token: string): Promise<boolean> => {
+  const HCAPTCHA_SECRET_KEY = Deno.env.get("HCAPTCHA_SECRET_KEY");
+  if (!HCAPTCHA_SECRET_KEY) {
+    console.error("HCAPTCHA_SECRET_KEY not configured");
+    return false;
+  }
+
+  try {
+    const response = await fetch("https://hcaptcha.com/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `response=${token}&secret=${HCAPTCHA_SECRET_KEY}`,
+    });
+    const data = await response.json();
+    return data.success === true;
+  } catch (error) {
+    console.error("hCaptcha verification error:", error);
+    return false;
+  }
+};
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -21,7 +44,31 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, websiteUrl, description, priority, imageUrls }: MaintenanceRequest = await req.json();
+    const { name, email, websiteUrl, description, priority, imageUrls, captchaToken }: MaintenanceRequest = await req.json();
+
+    // Verify hCaptcha token
+    if (!captchaToken) {
+      console.log("Missing captcha token");
+      return new Response(
+        JSON.stringify({ error: "Captcha verification required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const isValidCaptcha = await verifyCaptcha(captchaToken);
+    if (!isValidCaptcha) {
+      console.log("Invalid captcha token");
+      return new Response(
+        JSON.stringify({ error: "Invalid captcha verification" }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     console.log("Processing maintenance request from:", email, "with", imageUrls?.length || 0, "images");
 

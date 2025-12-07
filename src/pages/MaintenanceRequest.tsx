@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import contactBackgroundVideo from "@/assets/contact-background.mp4";
 import { z } from "zod";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 const emailSchema = z.string().email();
 
@@ -24,7 +25,11 @@ const MaintenanceRequest = () => {
   const [priority, setPriority] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const captchaRef = useRef<HCaptcha>(null);
+
+  const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY || "10000000-ffff-ffff-ffff-000000000001";
 
   useEffect(() => {
     const video = videoRef.current;
@@ -111,6 +116,11 @@ const MaintenanceRequest = () => {
       return;
     }
 
+    if (!captchaToken) {
+      toast.error("Please complete the captcha verification");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -147,7 +157,8 @@ const MaintenanceRequest = () => {
           websiteUrl,
           description,
           priority,
-          imageUrls
+          imageUrls,
+          captchaToken
         }
       });
 
@@ -163,6 +174,8 @@ const MaintenanceRequest = () => {
       setDescription("");
       setPriority("");
       setImages([]);
+      setCaptchaToken(null);
+      captchaRef.current?.resetCaptcha();
     } catch (error) {
       console.error("Error submitting maintenance request:", error);
       toast.error("Failed to submit request. Please try again or contact us directly.");
@@ -379,12 +392,23 @@ const MaintenanceRequest = () => {
                   </div>
                 </div>
 
+                {/* hCaptcha */}
+                <div className="flex justify-center">
+                  <HCaptcha
+                    ref={captchaRef}
+                    sitekey={HCAPTCHA_SITE_KEY}
+                    onVerify={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    theme="dark"
+                  />
+                </div>
+
                 {/* Submit Button */}
                 <Button 
                   type="submit" 
                   size="lg" 
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !captchaToken}
                 >
                   {isSubmitting ? "Submitting..." : "Submit Maintenance Request"}
                 </Button>
