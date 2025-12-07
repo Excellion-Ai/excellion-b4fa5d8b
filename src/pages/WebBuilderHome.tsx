@@ -264,7 +264,7 @@ const WebBuilderHome = () => {
                 You launch – it's that simple
               </h3>
               <p className="text-muted-foreground text-sm">
-                Publish your site with one click, or hand it to our team to connect your domain and go live.
+                Publish your site with one click. Connect your domain and go live whenever you're ready.
               </p>
             </div>
           </div>
