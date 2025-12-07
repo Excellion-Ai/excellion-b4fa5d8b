@@ -1,12 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Send, Bot, User, Loader2, Settings, MessageSquare, Sparkles, Monitor, Code, RefreshCw } from "lucide-react";
+import { Send, Bot, User, Loader2, MessageSquare, Monitor, Code, RefreshCw, ArrowLeft, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import excellionLogo from "@/assets/excellion-logo.png";
 
@@ -19,22 +17,21 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`;
 
 const BotExperiment = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const initialPrompt = (location.state as { initialPrompt?: string; template?: string })?.initialPrompt || "";
   const template = (location.state as { template?: string })?.template || "";
   
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hey! I'm your website builder assistant. Tell me about the website you want to build - what's it for and what do you need it to do?",
+      content: "What kind of website do you want to build?",
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [businessName, setBusinessName] = useState("");
-  const [industry, setIndustry] = useState("");
-  const [goals, setGoals] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [viewMode, setViewMode] = useState<"preview" | "code">("preview");
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasAutoSent = useRef(false);
   const { toast } = useToast();
@@ -45,28 +42,24 @@ const BotExperiment = () => {
     }
   }, [messages]);
 
-  // Auto-send initial prompt if passed from WebBuilderHome
   useEffect(() => {
     if (hasAutoSent.current) return;
     
-    const promptToSend = initialPrompt || (template ? `I want to create a ${template} website` : "");
+    const promptToSend = initialPrompt || (template ? `Build me a ${template} website` : "");
     
     if (promptToSend) {
       hasAutoSent.current = true;
-      // Small delay to show the page first
       setTimeout(() => {
         sendMessage(promptToSend);
       }, 500);
     }
   }, [initialPrompt, template]);
 
-  // Extract HTML code from AI response
   const extractCodeFromResponse = (content: string) => {
-    const htmlMatch = content.match(/```html\n([\s\S]*?)```/);
+    const htmlMatch = content.match(/```html\n?([\s\S]*?)```/);
     if (htmlMatch) {
       return htmlMatch[1];
     }
-    // Also check for generic code blocks that look like HTML
     const codeMatch = content.match(/```\n?(<!DOCTYPE|<html|<div|<body)([\s\S]*?)```/i);
     if (codeMatch) {
       return codeMatch[1] + codeMatch[2];
@@ -81,10 +74,7 @@ const BotExperiment = () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ 
-        messages: userMessages,
-        context: { businessName, industry, goals }
-      }),
+      body: JSON.stringify({ messages: userMessages }),
     });
 
     if (!resp.ok) {
@@ -116,7 +106,6 @@ const BotExperiment = () => {
 
         const jsonStr = line.slice(6).trim();
         if (jsonStr === "[DONE]") {
-          // Check for code in final response
           const code = extractCodeFromResponse(assistantContent);
           if (code) {
             setGeneratedCode(code);
@@ -186,234 +175,175 @@ const BotExperiment = () => {
     setMessages([
       {
         role: "assistant",
-        content: "Hey! I'm your website builder assistant. Tell me about the website you want to build - what's it for and what do you need it to do?",
+        content: "What kind of website do you want to build?",
       },
     ]);
     setGeneratedCode("");
     setShowPreview(false);
   };
 
-  const refreshPreview = () => {
-    // Force iframe refresh
-    const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement;
-    if (iframe && generatedCode) {
-      iframe.srcdoc = generatedCode;
+  // Format message content - hide code blocks in chat
+  const formatMessageContent = (content: string) => {
+    if (content.includes("```html")) {
+      const parts = content.split(/```html[\s\S]*?```/);
+      const textPart = parts.join("").trim();
+      return textPart || "Here's your website! Check the preview →";
     }
+    return content;
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen bg-background flex overflow-hidden">
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
         <title>Excellion AI Website Builder</title>
       </Helmet>
 
-      {/* Left Sidebar - Configuration */}
-      <aside className="w-72 border-r border-border bg-muted/30 flex flex-col flex-shrink-0">
-        {/* Sidebar Header */}
-        <div className="p-4 border-b border-border">
+      {/* Chat Panel */}
+      <div className={`flex flex-col ${showPreview ? "w-[400px]" : "flex-1 max-w-3xl mx-auto"} border-r border-border transition-all duration-300`}>
+        {/* Header */}
+        <header className="h-14 border-b border-border px-4 flex items-center justify-between bg-background/80 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center gap-3">
-            <img src={excellionLogo} alt="Excellion AI" className="w-10 h-10 object-contain" />
-            <div>
-              <h1 className="font-semibold text-foreground">Excellion AI</h1>
-              <p className="text-xs text-muted-foreground">Website Builder</p>
-            </div>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/web-builder")} className="h-8 w-8">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <img src={excellionLogo} alt="Excellion" className="w-7 h-7" />
+            <span className="font-semibold text-sm">Excellion AI</span>
           </div>
-        </div>
-
-        {/* Configuration Section */}
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Settings className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">Project Config</span>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="businessName" className="text-xs text-muted-foreground">
-                    Business Name
-                  </Label>
-                  <Input
-                    id="businessName"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    placeholder="e.g. Acme Corp"
-                    className="bg-background/50"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="industry" className="text-xs text-muted-foreground">
-                    Industry
-                  </Label>
-                  <Input
-                    id="industry"
-                    value={industry}
-                    onChange={(e) => setIndustry(e.target.value)}
-                    placeholder="e.g. E-commerce, SaaS"
-                    className="bg-background/50"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="goals" className="text-xs text-muted-foreground">
-                    Website Goals
-                  </Label>
-                  <Textarea
-                    id="goals"
-                    value={goals}
-                    onChange={(e) => setGoals(e.target.value)}
-                    placeholder="What do you want to achieve with this website?"
-                    className="bg-background/50 min-h-[80px] resize-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-border">
-              <Button 
-                variant="outline" 
-                className="w-full" 
-                onClick={clearChat}
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                New Chat
-              </Button>
-            </div>
-          </div>
-        </ScrollArea>
-
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-border">
-          <p className="text-xs text-muted-foreground text-center">
-            Powered by Excellion AI
-          </p>
-        </div>
-      </aside>
-
-      {/* Main Chat Area */}
-      <main className={`flex-1 flex flex-col min-w-0 ${showPreview ? 'max-w-[50%]' : ''}`}>
-        {/* Chat Header */}
-        <header className="border-b border-border p-4 bg-background/50">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-accent" />
-            </div>
-            <div>
-              <h2 className="font-medium text-foreground text-sm">Chat with Builder Bot</h2>
-              <p className="text-xs text-muted-foreground">
-                {businessName ? `Working on: ${businessName}` : "Describe your website project"}
-              </p>
-            </div>
-          </div>
+          <Button variant="ghost" size="sm" onClick={clearChat} className="text-xs">
+            <MessageSquare className="w-3 h-3 mr-1" />
+            New
+          </Button>
         </header>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-          <div className="max-w-3xl mx-auto space-y-4">
+        <ScrollArea className="flex-1" ref={scrollRef}>
+          <div className="p-4 space-y-4">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {message.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-accent" />
+                  <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
+                      : "bg-muted"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">
+                    {formatMessageContent(message.content)}
+                  </p>
                 </div>
                 {message.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-foreground/10 flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-foreground" />
+                  <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <User className="w-3.5 h-3.5" />
                   </div>
                 )}
               </div>
             ))}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-4 h-4 text-accent" />
+              <div className="flex gap-2 justify-start">
+                <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
                 </div>
-                <div className="bg-muted rounded-2xl px-4 py-3">
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                <div className="bg-muted rounded-2xl px-3 py-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 </div>
               </div>
             )}
           </div>
         </ScrollArea>
 
-        {/* Input Area */}
-        <div className="border-t border-border p-4 bg-background/50">
-          <div className="max-w-3xl mx-auto flex gap-2">
+        {/* Input */}
+        <div className="p-3 border-t border-border bg-background flex-shrink-0">
+          <div className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Describe what you want to build..."
-              className="flex-1"
+              placeholder="Describe your website..."
+              className="text-sm h-10"
               disabled={isLoading}
             />
-            <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+            <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon" className="h-10 w-10 flex-shrink-0">
               <Send className="w-4 h-4" />
             </Button>
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* Preview Panel - Shows when code is generated */}
+      {/* Preview Panel */}
       {showPreview && (
-        <aside className="w-1/2 border-l border-border flex flex-col bg-background">
+        <div className="flex-1 flex flex-col bg-muted/30">
           {/* Preview Header */}
-          <header className="border-b border-border p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <Monitor className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <h2 className="font-medium text-foreground text-sm">Website Preview</h2>
-                <p className="text-xs text-muted-foreground">Live preview of your site</p>
-              </div>
-            </div>
+          <header className="h-14 border-b border-border px-4 flex items-center justify-between bg-background/80 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={refreshPreview}>
-                <RefreshCw className="w-4 h-4" />
+              <Monitor className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Preview</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant={viewMode === "preview" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("preview")}
+                className="h-7 text-xs"
+              >
+                <Monitor className="w-3 h-3 mr-1" />
+                Preview
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setShowPreview(false)}>
-                <Code className="w-4 h-4" />
+              <Button
+                variant={viewMode === "code" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("code")}
+                className="h-7 text-xs"
+              >
+                <Code className="w-3 h-3 mr-1" />
+                Code
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                const iframe = document.getElementById("preview-iframe") as HTMLIFrameElement;
+                if (iframe) iframe.srcdoc = generatedCode;
+              }}>
+                <RefreshCw className="w-3 h-3" />
               </Button>
             </div>
           </header>
 
           {/* Preview Content */}
-          <div className="flex-1 bg-white">
-            {generatedCode ? (
+          <div className="flex-1 overflow-hidden">
+            {viewMode === "preview" ? (
               <iframe
                 id="preview-iframe"
                 srcDoc={generatedCode}
-                className="w-full h-full border-0"
+                className="w-full h-full border-0 bg-white"
                 title="Website Preview"
                 sandbox="allow-scripts"
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                <div className="text-center">
-                  <Monitor className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-sm">Your website preview will appear here</p>
-                </div>
-              </div>
+              <ScrollArea className="h-full">
+                <pre className="p-4 text-xs font-mono text-muted-foreground whitespace-pre-wrap">
+                  {generatedCode}
+                </pre>
+              </ScrollArea>
             )}
           </div>
-        </aside>
+        </div>
+      )}
+
+      {/* Empty state when no preview */}
+      {!showPreview && (
+        <div className="hidden lg:flex flex-1 items-center justify-center bg-muted/20">
+          <div className="text-center text-muted-foreground">
+            <Monitor className="w-16 h-16 mx-auto mb-4 opacity-30" />
+            <p className="text-sm">Your website preview will appear here</p>
+          </div>
+        </div>
       )}
     </div>
   );
