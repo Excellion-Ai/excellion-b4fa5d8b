@@ -188,9 +188,8 @@ const WebBuilderHome = () => {
                 className="border-0 bg-transparent text-base h-12 px-4 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
               <div className="flex items-center justify-end mt-3">
-                <Button onClick={handleStart} className="h-10">
-                  Start with a free draft site
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                <Button onClick={handleStart} size="icon" className="h-10 w-10">
+                  <ArrowRight className="w-5 h-5" />
                 </Button>
               </div>
             </div>
