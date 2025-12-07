@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import {
   Mail
 } from "lucide-react";
 import excellionLogo from "@/assets/excellion-logo.png";
+import homeBackgroundVideo from "@/assets/home-background.mp4";
 
 const suggestionChips = [
   "Restaurant taking online orders",
@@ -100,6 +101,40 @@ const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.playbackRate = 0.75;
+
+    const playVideo = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        console.log("Video autoplay prevented:", error);
+      }
+    };
+
+    if (video.readyState >= 3) {
+      playVideo();
+    } else {
+      video.addEventListener('loadeddata', playVideo, { once: true });
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && video.paused) {
+        playVideo();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const handleStart = () => {
     if (prompt.trim()) {
@@ -162,54 +197,83 @@ const WebBuilderHome = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-8">
-            <Sparkles className="w-4 h-4" />
-            <span>AI-Powered Website Builder</span>
-          </div>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+            className="w-full h-full object-cover"
+            style={{ 
+              backfaceVisibility: 'hidden', 
+              objectPosition: 'center 20%', 
+              transform: 'translateZ(0) scale(1.0)', 
+              minWidth: '100%', 
+              minHeight: '100%',
+              WebkitTransform: 'translateZ(0) scale(1.0)',
+              filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
+              contain: 'paint',
+              willChange: 'transform',
+            } as React.CSSProperties}
+          >
+            <source src={homeBackgroundVideo} type="video/mp4" />
+          </video>
+        </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-            Describe your business.{" "}
-            <span className="text-primary">Get a working website in minutes.</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-            Excellion AI turns a short conversation into a real website with pages, copy, forms, and a clear launch plan – no coding or templates required.
-          </p>
-
-          {/* Prompt Input */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative bg-card rounded-2xl border border-border p-3">
-              <Input
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask Excellion AI to create a website for… (e.g. local restaurant, roofing contractor, fitness coach)"
-                className="border-0 bg-transparent text-base h-12 px-4 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-              <div className="flex items-center justify-end mt-3">
-                <Button onClick={handleStart} size="icon" className="h-10 w-10">
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
-              </div>
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
+          <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-6 md:py-10 rounded-lg border border-border/50">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-6">
+              <Sparkles className="w-4 h-4" />
+              <span>AI-Powered Website Builder</span>
             </div>
 
-            {/* Suggestion Chips */}
-            <div className="flex flex-wrap justify-center gap-2 mt-4">
-              {suggestionChips.map((chip, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleChipClick(chip)}
-                  className="px-3 py-1.5 rounded-full text-sm bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border/50 transition-colors"
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-
-            <p className="text-sm text-muted-foreground mt-4">
-              No credit card required to start. You'll see your draft before you decide anything.
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+              Describe your business.{" "}
+              <span className="text-accent">Get a working website in minutes.</span>
+            </h1>
+            <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold">
+              Excellion AI turns a short conversation into a real website with pages, copy, forms, and a clear launch plan – no coding or templates required.
             </p>
+
+            {/* Prompt Input */}
+            <div className="max-w-2xl mx-auto">
+              <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-3">
+                <Input
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask Excellion AI to create a website for… (e.g. local restaurant, roofing contractor, fitness coach)"
+                  className="border-0 bg-transparent text-base h-12 px-4 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                <div className="flex items-center justify-end mt-3">
+                  <Button onClick={handleStart} size="icon" className="h-10 w-10">
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Suggestion Chips */}
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {suggestionChips.map((chip, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleChipClick(chip)}
+                    className="px-3 py-1.5 rounded-full text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-xs text-foreground/60 mt-4 font-light">
+                No credit card required to start. You'll see your draft before you decide anything.
+              </p>
+            </div>
           </div>
         </div>
       </section>
