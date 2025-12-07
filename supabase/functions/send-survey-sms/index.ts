@@ -38,7 +38,30 @@ interface SurveyData {
   qualifiedPlan: string;
   additionalNotes?: string;
   otherFeatureDetails?: string;
+  captchaToken?: string;
 }
+
+// Verify hCaptcha token server-side
+const verifyCaptcha = async (token: string): Promise<boolean> => {
+  const HCAPTCHA_SECRET_KEY = Deno.env.get("HCAPTCHA_SECRET_KEY");
+  if (!HCAPTCHA_SECRET_KEY) {
+    console.error("HCAPTCHA_SECRET_KEY not configured");
+    return false;
+  }
+
+  try {
+    const response = await fetch("https://hcaptcha.com/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `response=${token}&secret=${HCAPTCHA_SECRET_KEY}`,
+    });
+    const data = await response.json();
+    return data.success === true;
+  } catch (error) {
+    console.error("hCaptcha verification error:", error);
+    return false;
+  }
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -47,6 +70,21 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const surveyData: SurveyData = await req.json();
+    
+    // Verify hCaptcha token if provided
+    if (surveyData.captchaToken) {
+      const isValidCaptcha = await verifyCaptcha(surveyData.captchaToken);
+      if (!isValidCaptcha) {
+        console.log("Invalid captcha token");
+        return new Response(
+          JSON.stringify({ error: "Invalid captcha verification" }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+    }
     
     // Rate limiting check
     if (!checkRateLimit(surveyData.phone)) {
