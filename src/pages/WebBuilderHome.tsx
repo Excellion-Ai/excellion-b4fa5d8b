@@ -261,10 +261,10 @@ const WebBuilderHome = () => {
               </div>
               <span className="text-xs font-medium text-primary uppercase tracking-wide">03</span>
               <h3 className="text-xl font-semibold text-foreground mt-1 mb-2">
-                You launch or hand off
+                You launch – it's that simple
               </h3>
               <p className="text-muted-foreground text-sm">
-                Tweak the draft yourself, or hand it to our team to connect your domain, polish the design, and launch.
+                Publish your site with one click, or hand it to our team to connect your domain and go live.
               </p>
             </div>
           </div>
