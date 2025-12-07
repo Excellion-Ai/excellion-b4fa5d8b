@@ -5,6 +5,41 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per minute per IP
+
+// In-memory rate limiting store
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitStore.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    const retryAfter = Math.ceil((record.resetTime - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+  
+  record.count++;
+  return { allowed: true };
+}
+
+// Clean up old rate limit entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of rateLimitStore.entries()) {
+    if (now > record.resetTime) {
+      rateLimitStore.delete(ip);
+    }
+  }
+}, 60000);
+
 const SYSTEM_PROMPT = `You are a website builder assistant. Your job is to BOTH talk to the user in the chat AND build/update websites in the preview.
 
 **Hard rules:**
@@ -174,6 +209,28 @@ serve(async (req) => {
   }
 
   try {
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                     req.headers.get("cf-connecting-ip") || 
+                     "unknown";
+    
+    // Check rate limit
+    const rateLimitResult = checkRateLimit(clientIP);
+    if (!rateLimitResult.allowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
+        {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": String(rateLimitResult.retryAfter || 60)
+          },
+        }
+      );
+    }
+
     const { messages, context } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
@@ -189,7 +246,7 @@ serve(async (req) => {
       if (context.goals) enhancedPrompt += `\n- Goals: ${context.goals}`;
     }
 
-    console.log("Processing chat request with", messages.length, "messages");
+    console.log("Processing chat request with", messages.length, "messages from IP:", clientIP);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
