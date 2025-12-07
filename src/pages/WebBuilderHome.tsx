@@ -233,7 +233,7 @@ const WebBuilderHome = () => {
               </div>
               <span className="text-xs font-medium text-primary uppercase tracking-wide">01</span>
               <h3 className="text-xl font-semibold text-foreground mt-1 mb-2">
-                You chat in plain English
+                You chat in plain language
               </h3>
               <p className="text-muted-foreground text-sm">
                 Tell Excellion what you do, what you sell, and what your site needs to accomplish – more leads, bookings, or online orders.
