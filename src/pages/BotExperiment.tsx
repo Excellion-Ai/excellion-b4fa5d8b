@@ -24,7 +24,7 @@ const BotExperiment = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "What kind of website do you want to build?",
+      content: "Hey! I'm here to help you build a website. Tell me about your business or project — what do you do, and what do you need this site to accomplish?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -175,21 +175,27 @@ const BotExperiment = () => {
     setMessages([
       {
         role: "assistant",
-        content: "What kind of website do you want to build?",
+        content: "Hey! I'm here to help you build a website. Tell me about your business or project — what do you do, and what do you need this site to accomplish?",
       },
     ]);
     setGeneratedCode("");
     setShowPreview(false);
   };
 
-  // Format message content - hide code blocks in chat
+  // Format message content - hide ALL code blocks from chat
   const formatMessageContent = (content: string) => {
-    if (content.includes("```html")) {
-      const parts = content.split(/```html[\s\S]*?```/);
-      const textPart = parts.join("").trim();
-      return textPart || "Here's your website! Check the preview →";
+    // Remove any code blocks (html, jsx, json, or unmarked)
+    let cleanContent = content
+      .replace(/```(?:html|jsx|json|javascript|typescript|css)?\n?[\s\S]*?```/g, "")
+      .replace(/<[^>]+>/g, "") // Remove any stray HTML tags
+      .trim();
+    
+    // If the message was mostly code, show a friendly message
+    if (!cleanContent || cleanContent.length < 10) {
+      return "Your website draft is ready! Check the preview on the right →";
     }
-    return content;
+    
+    return cleanContent;
   };
 
   return (
