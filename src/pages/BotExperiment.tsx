@@ -197,12 +197,7 @@ const BotExperiment = () => {
     try {
       await streamChat(updatedMessages);
       
-      // Show auth modal after first user message if not logged in
-      const userMessageCount = updatedMessages.filter(m => m.role === 'user').length;
-      if (userMessageCount === 1 && !user && !hasShownAuthPrompt.current) {
-        hasShownAuthPrompt.current = true;
-        setTimeout(() => setShowAuthModal(true), 2000);
-      }
+      // Auth modal disabled for now
     } catch (error) {
       console.error("Chat error:", error);
       toast({
