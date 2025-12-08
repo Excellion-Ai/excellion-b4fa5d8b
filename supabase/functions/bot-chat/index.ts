@@ -215,11 +215,54 @@ Structure order:
 - Secondary CTA: Exploration (See More, View Classes)
 - Trust line: One concise reassurance ("Fast shipping • Easy returns")
 
-**4) ICON & VISUAL LANGUAGE**
-- Match icons to brand vibe AND actual card idea
-- Keep icon style consistent in section (all solid OR all outline)
-- Serious brands (finance, legal): avoid playful emojis
-- Hype/streetwear brands: bolder emojis, stronger contrast OK
+**4) ICON / VISUAL MARKER SYSTEM (NO-CORNINESS MODE)**
+
+GOAL: Don't assume every card needs a colorful emoji. Pick appropriate markers for the brand.
+
+CLASSIFY BRAND FIRST:
+- STREET/HYPE/ENTERTAINMENT
+- FRIENDLY SMALL BUSINESS
+- PROFESSIONAL/CLINICAL/FINANCIAL/LEGAL
+- PREMIUM/LUXURY/MINIMAL
+
+AVAILABLE MARKER STYLES:
+
+A) EMOJI/PLAYFUL (ONLY for playful brands: streetwear, gaming, creator merch)
+   - Use sparingly, one style per section
+   - NEVER for medical, legal, finance, or luxury
+
+B) FLAT COLOR ICONS (SaaS, agencies, local services, gyms)
+   - Simple SVG glyphs (Lucide/Heroicons style)
+   - Single accent color, no gradients
+   - Use recognizable metaphors (calendar=booking, shield=security)
+
+C) MONO OUTLINE ICONS (professional, clinic, finance)
+   - Thin-line icons in neutral color
+   - No cartoon style, keep them small
+   - Let copy do the talking
+
+D) BADGES & SYMBOLS (pricing, product grids)
+   - "New", "Most Popular", "Save 20%"
+   - Function over illustration
+
+E) NUMERIC MARKERS (minimal/serious brands)
+   - "01, 02, 03" for process steps
+   - Very safe when no good icon metaphor exists
+
+F) TEXT-ONLY (when icons hurt more than help)
+   - Bold title + short body + subtle border
+   - BETTER than a bad emoji 100% of the time
+
+BRAND → MARKER MAPPING:
+- STREET/HYPE: Emojis OK, bold flat icons, badges
+- FRIENDLY SMALL BIZ: Flat color OR mono outline icons (max 1-2 emojis site-wide)
+- PROFESSIONAL/CLINICAL/FINANCE: Mono outline, numeric, or text-only. NO EMOJIS.
+- PREMIUM/LUXURY: Minimal markers, tiny subtle line icons or NONE
+
+CARD-LEVEL RULES:
+- ONE marker style per grid section
+- Max 1 marker per card
+- If icon feels like clipart → REMOVE IT
 
 **5) TYPOGRAPHY & HIERARCHY**
 - Maximum 2 font families per site
@@ -227,17 +270,12 @@ Structure order:
 - Text outline/shadow ONLY for contrast against busy backgrounds
 - Never combine multiple heavy effects (outline + shadow + gradient)
 
-**6) BRAND VIBE MODES** - Infer and apply consistently:
-- STREETWEAR/HYPE: Strong headings, all-caps OK, punchy language, high contrast
-- PROFESSIONAL (agency, clinic, law): Calm tone, minimal emojis, clarity + trust
-- PREMIUM/LUXURY: Fewer words, breathing room, understated icons, refined CTAs
-- TECH/SAAS: Direct benefit headlines, light icons, clean grids
-
-**7) FINAL SECTION CHECK**
+**6) FINAL SECTION CHECK**
 Before finalizing, verify:
 - Heading clearly explains what section is about
 - Body reads as coherent explanation, not slogan wall
 - Layout follows clean pattern
+- Icons match brand vibe (or removed if no good fit)
 - "Would a real brand screenshot and share this?" = YES
 
 ====================================
