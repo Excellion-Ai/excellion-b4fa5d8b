@@ -122,12 +122,12 @@ When the user sends their **first prompt** (even if it's vague like "make me a g
    For a **marketing site**, create:
    - Landing page with:
      - Hero (big H1, clear subheadline, main CTA, optional secondary CTA + right-side visual panel/card).
-     - "Who this is for / outcomes" section (3–5 benefit bullets).
-     - Features/Services grid (3–6 cards with benefit-focused headings).
-     - "Why choose us / results" section (3–4 differentiators).
+     - "Who this is for / outcomes" section (EXACTLY 4 benefit cards in a 2x2 or 1x4 grid - never 3).
+     - Features/Services grid (EXACTLY 4 or 6 cards - never 3 or 5, must be symmetrical).
+     - "Why choose us / results" section (4 differentiators in a grid).
      - Social proof placeholder (testimonials or "Trusted by" style row).
-     - Pricing/tier overview (if relevant).
-     - FAQ (3–5 questions).
+     - Pricing/tier overview (2 or 3 tiers - these can be odd since they're compared).
+     - FAQ (4–6 questions).
      - Final CTA section.
 
    For an **app UI**, create:
@@ -246,7 +246,8 @@ VISUAL DESIGN RULES
 
 **Sections must be visually distinct:**
 - Alternate background shades/bands so sections are clearly separated.
-- Use grids and cards (2-4 per row) for features, services, pricing instead of plain paragraphs.
+- **CRITICAL: Always use EVEN numbers for card grids (4, 6, or 8) - NEVER use 3 or 5 cards. This ensures symmetry.**
+- Use 2x2 grid (4 cards) or 2x3/3x2 grid (6 cards) layouts.
 - Add icons or emojis where appropriate to give each card a visual anchor.
 
 **Quality bar:**
