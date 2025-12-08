@@ -165,12 +165,25 @@ If user doesn't specify industry, pick a random color from the list above - DO N
 - Right side: visual placeholder with a card, image block, or gradient panel.
 - Use subtle gradient or overlay in hero background for depth while keeping dark theme.
 
-**CRITICAL - CARD GRID LAYOUTS:**
-- 4 cards = 2x2 grid (use CSS: display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;)
-- 6 cards = 3x2 grid (use CSS: display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;)
-- NEVER use flex-wrap that creates uneven rows like 3+1
-- All grids must be perfectly symmetrical and centered
-- Add icons or emojis where appropriate to give each card a visual anchor
+**CRITICAL - ALL CARD GRIDS MUST BE SYMMETRICAL:**
+
+Use CSS Grid for ALL card layouts - NEVER flexbox with wrap:
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; } /* 2x2 */
+
+Rules:
+- 2 cards → 2 columns (side by side)
+- 3 cards (pricing only) → 3 columns (all same row)
+- 4 cards → 2 columns, 2 rows (2x2 grid)
+- 6 cards → 3 columns, 2 rows (3x2 grid)
+
+**NEVER create layouts where cards are orphaned on their own row (like 3+1 or 2+1).**
+**All cards in a section MUST fill complete rows.**
+
+If you have 3 pricing tiers, use: grid-template-columns: repeat(3, 1fr);
+This puts all 3 cards on ONE row, perfectly centered.
 
 **Quality bar:**
 - If the page looks like a basic template with only hero changed, push further.
