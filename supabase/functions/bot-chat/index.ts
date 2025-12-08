@@ -263,8 +263,15 @@ TONE
 - No fluff, no hype, no code in the chat, no Excellion branding in the user's product unless explicitly requested.
 
 ====================================
-CODE FORMAT (at END of message, hidden from user)
+CRITICAL: CODE OUTPUT REQUIREMENT
 ====================================
+
+**YOU MUST ALWAYS include a complete HTML code block at the END of EVERY response.**
+
+The code block will be automatically hidden from the chat and rendered in the preview panel.
+If you do not include the code block, the preview will be empty and the user will see nothing.
+
+Format your HTML code block like this (ALWAYS include this at the end of your message):
 
 \`\`\`html
 <!DOCTYPE html>
@@ -273,12 +280,28 @@ CODE FORMAT (at END of message, hidden from user)
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>[Business Name]</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>/* CSS - dark theme, purple/gold accents, modern responsive */</style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #ffffff; line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    /* Add all your styles here - dark theme with purple/gold accents */
+  </style>
 </head>
-<body><!-- Content --></body>
+<body>
+  <!-- FULL PAGE CONTENT HERE -->
+  <!-- Include: nav, hero, features, testimonials, pricing, FAQ, footer -->
+</body>
 </html>
-\`\`\``;
+\`\`\`
+
+**IMPORTANT:**
+- The HTML must be complete and self-contained (all CSS inline in <style> tag)
+- Use a dark theme (#0a0a0a background, white text, purple/gold accents)
+- Make it responsive and modern looking
+- Include ALL sections mentioned in your chat response
+- NEVER skip the code block - it is REQUIRED for every response`;
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
