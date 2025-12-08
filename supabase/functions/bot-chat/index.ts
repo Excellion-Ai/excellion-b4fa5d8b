@@ -186,48 +186,59 @@ If you have 3 pricing tiers, use: grid-template-columns: repeat(3, 1fr);
 This puts all 3 cards on ONE row, perfectly centered.
 
 ====================================
-STYLE QUALITY CHECK + CORNINESS FILTER
+STYLE, BRAND VIBE & TEXT QUALITY SYSTEM
 ====================================
 
-On EVERY section, run this internal review:
+GOAL: Every section should look intentional and premium, not like a loud template.
 
-**1) CORNINESS FILTER - Assume first idea is too generic**
-Scan for clichés like:
-- "High-quality gear" / "Exclusive designs" / "Premium experience"
-- "Innovative solutions" / "Cutting-edge technology"
-- Any line that could appear on 1,000 random template sites
+**1) CORNINESS + GENERIC COPY FILTER**
+- Scan all headings and body text
+- Remove/rewrite stock template copy ("High-quality gear", "Exclusive designs", etc.)
+- Replace with specific, concrete language fitting brand/audience/offer
+- RULE: If this line could be used by 1,000 random sites unchanged, rewrite it
 
-When detected, REWRITE with:
-- Specific brand/audience language
-- Concrete details (what actually happens/feels different)
-- One sharp twist per line
+**2) ORGANIZED TEXT STRUCTURE**
+For each section:
+- ONE clear heading: Full phrase/sentence, avoid weird breaks like "Unleash / Your / Edge"
+- BODY TEXT: 1-3 full sentences as cohesive thought (not breaking every 2-3 words)
+- Use bullets ONLY for listing items/steps
+- Keep paragraphs under 4-5 lines on desktop
+- SUPPORTING LINES: Short trust tags (shipping, security) on 1-2 neat lines
 
-Examples:
-- "High-Quality Gear" → "Built-To-Get-Ruined Gear"
-- "Exclusive Designs" → "Drops You Won't See in a Mall, Ever"
-- "Premium Experience" → "The Only Gym Where Staff Knows Your PR"
+**3) HERO / FEATURE CARD PATTERN**
+Structure order:
+[Heading] → [Short body 2-4 lines] → [Primary + Secondary CTA] → [Trust line]
 
-For professional brands: still avoid clichés, keep tone clean and trustworthy.
+- Heading: 1-3 words OR short phrase capturing main benefit
+- Body: What they get, what's special, the outcome (no hype filler)
+- Primary CTA: Action that drives revenue (Shop, Book, Get Draft)
+- Secondary CTA: Exploration (See More, View Classes)
+- Trust line: One concise reassurance ("Fast shipping • Easy returns")
 
-**2) ICON & VISUAL CONSISTENCY**
-- Match icons to brand energy (streetwear=bold, luxury=minimal, legal=serious)
-- Keep icon style consistent within section (all filled OR all outline)
-- Avoid childish mismatches
-- If nothing fits, use simple geometric icon
+**4) ICON & VISUAL LANGUAGE**
+- Match icons to brand vibe AND actual card idea
+- Keep icon style consistent in section (all solid OR all outline)
+- Serious brands (finance, legal): avoid playful emojis
+- Hype/streetwear brands: bolder emojis, stronger contrast OK
 
-**3) TYPOGRAPHY BY BRAND**
-- SaaS/services: Clean sans-serif, big H1, lots of whitespace
-- Streetwear/hype: Bolder headings, tight letter-spacing, punchy all-caps
-- Premium/luxury: Lighter weight, more breathing room, restrained caps
-- Never use more than 2 font families
-- Never combine outline + heavy shadow + gradient text
+**5) TYPOGRAPHY & HIERARCHY**
+- Maximum 2 font families per site
+- Clear hierarchy: H1 > H2/H3 > Body > Captions
+- Text outline/shadow ONLY for contrast against busy backgrounds
+- Never combine multiple heavy effects (outline + shadow + gradient)
 
-**4) "WOULD I SHARE THIS?" TEST**
-Before finalizing any section, ask:
-- "Would a legit brand screenshot and post this?"
-- "Does this feel designed on purpose, or like a cheap template?"
+**6) BRAND VIBE MODES** - Infer and apply consistently:
+- STREETWEAR/HYPE: Strong headings, all-caps OK, punchy language, high contrast
+- PROFESSIONAL (agency, clinic, law): Calm tone, minimal emojis, clarity + trust
+- PREMIUM/LUXURY: Fewer words, breathing room, understated icons, refined CTAs
+- TECH/SAAS: Direct benefit headlines, light icons, clean grids
 
-If template-like: tighten copy, improve spacing, upgrade icons until answer is "yes".
+**7) FINAL SECTION CHECK**
+Before finalizing, verify:
+- Heading clearly explains what section is about
+- Body reads as coherent explanation, not slogan wall
+- Layout follows clean pattern
+- "Would a real brand screenshot and share this?" = YES
 
 ====================================
 CRITICAL: CODE OUTPUT REQUIREMENT
