@@ -234,6 +234,21 @@ NICHE-SPECIFIC LAYOUT TWEAKS
 VISUAL DESIGN RULES
 ====================================
 
+**COLOR SCHEME - VARY BY NICHE (do NOT always use purple):**
+
+Pick a fitting color scheme based on the business type:
+- **Gym/Fitness:** Red/orange (#e63946), energetic, high contrast
+- **Tech/SaaS:** Blue (#3b82f6) or teal (#14b8a6), clean and modern
+- **Luxury/Premium:** Gold (#d4af37) with deep purple (#581c87) or black
+- **Health/Wellness:** Green (#22c55e) or soft teal, calming
+- **Restaurant/Food:** Warm orange (#f97316) or red, appetizing
+- **Finance/Legal:** Navy blue (#1e3a5a) or dark green, trustworthy
+- **Creative/Agency:** Bold pink (#ec4899) or electric blue (#3b82f6)
+- **Local Services:** Friendly blue (#0ea5e9) or green (#22c55e)
+- **E-commerce/Retail:** Coral (#f43f5e) or vibrant orange
+
+If user doesn't specify industry, pick a random color from the list above - DO NOT default to purple every time.
+
 **Hero layout:**
 - Use a strong split or layered hero, not just centered text on flat background.
 - Left side: clear H1, subheadline, main CTA + optional secondary CTA.
@@ -294,7 +309,8 @@ Format your HTML code block like this (ALWAYS include this at the end of your me
 
 **IMPORTANT:**
 - The HTML must be complete and self-contained (all CSS inline in <style> tag)
-- Use a dark theme (#0a0a0a background, white text, purple/gold accents)
+- Use a dark theme (#0a0a0a background, white text)
+- Use the COLOR SCHEME that matches the business niche (see color rules above) - NOT always purple
 - Make it responsive and modern looking
 - Include ALL sections mentioned in your chat response
 - NEVER skip the code block - it is REQUIRED for every response`;
