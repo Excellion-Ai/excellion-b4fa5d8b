@@ -9,13 +9,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { 
   Sparkles, 
   ArrowRight, 
@@ -32,8 +25,6 @@ import {
   ShoppingBag,
   Mail
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import excellionLogo from "@/assets/excellion-logo.png";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 
@@ -109,52 +100,8 @@ const faqItems = [
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [pendingPrompt, setPendingPrompt] = useState("");
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { toast } = useToast();
-
-  // Check for existing session
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (event === 'SIGNED_IN' && pendingPrompt) {
-        setShowAuthModal(false);
-        navigate("/bot-experiment", { state: { initialPrompt: pendingPrompt } });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [pendingPrompt, navigate]);
-
-  const handleOAuthLogin = async (provider: 'google' | 'github') => {
-    setIsAuthLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/bot-experiment`,
-        },
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('OAuth error:', error);
-      toast({
-        title: "Sign in failed",
-        description: error instanceof Error ? error.message : "Could not sign in",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAuthLoading(false);
-    }
-  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -191,21 +138,10 @@ const WebBuilderHome = () => {
 
   const handleStart = () => {
     if (prompt.trim()) {
-      // If user is not logged in, show auth modal
-      if (!user) {
-        setPendingPrompt(prompt.trim());
-        setShowAuthModal(true);
-        return;
-      }
       navigate("/bot-experiment", { state: { initialPrompt: prompt } });
     } else {
       navigate("/bot-experiment");
     }
-  };
-
-  const handleSkipAuth = () => {
-    setShowAuthModal(false);
-    navigate("/bot-experiment", { state: { initialPrompt: pendingPrompt } });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -643,23 +579,6 @@ const WebBuilderHome = () => {
         </div>
       </footer>
 
-      {/* Auth Modal */}
-      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Sign in to continue</DialogTitle>
-            <DialogDescription>
-              Create an account to save your website, export code, and continue editing later.
-            </DialogDescription>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground text-center mt-4">
-            Sign-in is currently disabled. You can continue building your website.
-          </p>
-          <Button variant="default" onClick={handleSkipAuth} className="w-full mt-4">
-            Continue Building
-          </Button>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
