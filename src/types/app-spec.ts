@@ -1,3 +1,4 @@
+// === App Spec Types (Planner Output) ===
 export type AppSpec = {
   summary: string[];
   appType: string;
@@ -25,6 +26,55 @@ export type AgentStep = {
   status: 'pending' | 'active' | 'complete' | 'error';
 };
 
+// === Site Definition Types (Code Generator Output) ===
+export type SectionType = 
+  | 'hero' 
+  | 'features' 
+  | 'pricing' 
+  | 'testimonials' 
+  | 'faq' 
+  | 'contact' 
+  | 'cta' 
+  | 'stats' 
+  | 'team' 
+  | 'gallery'
+  | 'custom';
+
+export type SiteSection = {
+  id: string;
+  type: SectionType;
+  label: string;
+  description: string;
+  props?: Record<string, unknown>;
+};
+
+export type SiteTheme = {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  fontHeading: string;
+  fontBody: string;
+  darkMode: boolean;
+};
+
+export type SiteDefinition = {
+  name: string;
+  description: string;
+  sections: SiteSection[];
+  theme: SiteTheme;
+  navigation: { label: string; href: string }[];
+};
+
+export type GeneratedCode = {
+  siteDefinition: SiteDefinition;
+  reactCode: string;
+  cssCode?: string;
+  error?: string;
+};
+
+export type CodeGenerationStatus = 'idle' | 'generating' | 'success' | 'error' | 'healing';
+
+// === Presets & Constants ===
 export const PRESETS = [
   { id: 'local-service', label: 'Local service website', icon: 'Building2' },
   { id: 'course', label: 'Course + checkout', icon: 'GraduationCap' },
