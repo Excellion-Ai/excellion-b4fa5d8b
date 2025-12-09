@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SiteSection, SiteTheme } from '@/types/app-spec';
+import { SiteSection, SiteTheme, FAQContent, FAQItem } from '@/types/app-spec';
 import { ChevronDown } from 'lucide-react';
 
 interface FAQSectionProps {
@@ -7,10 +7,10 @@ interface FAQSectionProps {
   theme: SiteTheme;
 }
 
-const defaultFAQs = [
+const defaultFAQs: FAQItem[] = [
   { 
     question: 'How do I get started?', 
-    answer: 'Simply sign up for an account and follow our quick onboarding process. You\'ll be up and running in minutes.'
+    answer: "Simply sign up for an account and follow our quick onboarding process. You'll be up and running in minutes."
   },
   { 
     question: 'What payment methods do you accept?', 
@@ -28,13 +28,19 @@ const defaultFAQs = [
 
 export function FAQSection({ section, theme }: FAQSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const content = section.content as FAQContent | undefined;
+  const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
+  
+  const title = content?.title || section.label || 'Frequently Asked Questions';
+  const subtitle = content?.subtitle || section.description || 'Find answers to common questions';
+  const items = content?.items || defaultFAQs;
 
   return (
     <section 
       id={section.id}
       className="py-20 px-6"
       style={{ 
-        backgroundColor: theme.darkMode ? '#111111' : '#ffffff'
+        backgroundColor: isDark ? '#111111' : '#ffffff'
       }}
     >
       <div className="max-w-3xl mx-auto">
@@ -42,30 +48,30 @@ export function FAQSection({ section, theme }: FAQSectionProps) {
           <h2 
             className="text-3xl md:text-4xl font-bold mb-4"
             style={{ 
-              fontFamily: theme.fontHeading,
-              color: theme.darkMode ? '#ffffff' : '#111827'
+              fontFamily: theme.fontHeading || 'system-ui',
+              color: isDark ? '#ffffff' : '#111827'
             }}
           >
-            {section.label || 'Frequently Asked Questions'}
+            {title}
           </h2>
           <p 
             className="text-lg"
             style={{ 
-              fontFamily: theme.fontBody,
-              color: theme.darkMode ? '#9ca3af' : '#6b7280'
+              fontFamily: theme.fontBody || 'system-ui',
+              color: isDark ? '#9ca3af' : '#6b7280'
             }}
           >
-            {section.description || 'Find answers to common questions'}
+            {subtitle}
           </p>
         </div>
         
         <div className="space-y-4">
-          {defaultFAQs.map((faq, index) => (
+          {items.slice(0, 8).map((faq, index) => (
             <div 
               key={index}
               className="rounded-xl overflow-hidden"
               style={{ 
-                backgroundColor: theme.darkMode ? '#1f1f1f' : '#f9fafb',
+                backgroundColor: isDark ? '#1f1f1f' : '#f9fafb',
               }}
             >
               <button
@@ -75,8 +81,8 @@ export function FAQSection({ section, theme }: FAQSectionProps) {
                 <span 
                   className="font-semibold"
                   style={{ 
-                    fontFamily: theme.fontHeading,
-                    color: theme.darkMode ? '#ffffff' : '#111827'
+                    fontFamily: theme.fontHeading || 'system-ui',
+                    color: isDark ? '#ffffff' : '#111827'
                   }}
                 >
                   {faq.question}
@@ -90,8 +96,8 @@ export function FAQSection({ section, theme }: FAQSectionProps) {
                 <div 
                   className="px-6 pb-4"
                   style={{ 
-                    fontFamily: theme.fontBody,
-                    color: theme.darkMode ? '#d1d5db' : '#4b5563'
+                    fontFamily: theme.fontBody || 'system-ui',
+                    color: isDark ? '#d1d5db' : '#4b5563'
                   }}
                 >
                   {faq.answer}

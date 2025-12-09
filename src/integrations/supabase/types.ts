@@ -47,6 +47,78 @@ export type Database = {
         }
         Relationships: []
       }
+      inquiries: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_name: string | null
+          details: Json | null
+          id: string
+          status: string | null
+          total_amount: number | null
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_name?: string | null
+          details?: Json | null
+          id?: string
+          status?: string | null
+          total_amount?: number | null
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_name?: string | null
+          details?: Json | null
+          id?: string
+          status?: string | null
+          total_amount?: number | null
+        }
+        Relationships: []
+      }
+      items: {
+        Row: {
+          business_id: string | null
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean | null
+          metadata: Json | null
+          price: number | null
+          title: string
+          type: string
+        }
+        Insert: {
+          business_id?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          metadata?: Json | null
+          price?: number | null
+          title: string
+          type: string
+        }
+        Update: {
+          business_id?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          metadata?: Json | null
+          price?: number | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       quote_requests: {
         Row: {
           additional_notes: string | null
