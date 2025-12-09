@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Send, User, Loader2, MessageSquare, ArrowLeft, Sparkles, Copy, Check, FileText, Code, Lightbulb, Play, Monitor, Bug } from "lucide-react";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { Send, User, Loader2, MessageSquare, ArrowLeft, Sparkles, Copy, Check, FileText, Code, Lightbulb, Play, Monitor, Bug, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import excellionLogo from "@/assets/excellion-logo.png";
@@ -258,14 +259,15 @@ const BotExperiment = () => {
   };
 
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
+    <div className="h-screen bg-background overflow-hidden">
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
         <title>Excellion Secret Builder</title>
       </Helmet>
 
-      {/* Chat Panel */}
-      <div className="w-[380px] flex flex-col border-r border-border/50 bg-card/30">
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        {/* Chat Panel */}
+        <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="flex flex-col border-r border-border/50 bg-card/30">
         <header className="h-14 border-b border-border/50 px-4 flex items-center justify-between bg-background/80 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/web-builder")} className="h-8 w-8">
@@ -338,10 +340,13 @@ const BotExperiment = () => {
             </Button>
           </div>
         </div>
-      </div>
+        </ResizablePanel>
 
-      {/* Right Panel - Preview, Spec, Code */}
-      <div className="flex-1 flex flex-col bg-background/50">
+        {/* Resize Handle */}
+        <ResizableHandle withHandle className="w-2 bg-border/30 hover:bg-border/60 transition-colors" />
+
+        {/* Right Panel - Preview, Spec, Code */}
+        <ResizablePanel defaultSize={70} minSize={40} className="flex flex-col bg-background/50">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
           <div className="h-14 border-b border-border/50 px-4 flex items-center justify-between bg-background/80 backdrop-blur-sm">
             <TabsList className="h-9">
@@ -609,7 +614,8 @@ const BotExperiment = () => {
             </ScrollArea>
           </TabsContent>
         </Tabs>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
