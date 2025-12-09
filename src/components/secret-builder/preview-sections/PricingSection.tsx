@@ -1,4 +1,4 @@
-import { SiteSection, SiteTheme } from '@/types/app-spec';
+import { SiteSection, SiteTheme, PricingContent, PricingTier } from '@/types/app-spec';
 import { Check } from 'lucide-react';
 
 interface PricingSectionProps {
@@ -6,7 +6,7 @@ interface PricingSectionProps {
   theme: SiteTheme;
 }
 
-const defaultPlans = [
+const defaultPlans: PricingTier[] = [
   { 
     name: 'Starter', 
     price: '$9', 
@@ -31,12 +31,19 @@ const defaultPlans = [
 ];
 
 export function PricingSection({ section, theme }: PricingSectionProps) {
+  const content = section.content as PricingContent | undefined;
+  const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
+  
+  const title = content?.title || section.label || 'Pricing';
+  const subtitle = content?.subtitle || section.description || 'Choose the plan that works for you';
+  const items = content?.items || defaultPlans;
+
   return (
     <section 
       id={section.id}
       className="py-20 px-6"
       style={{ 
-        backgroundColor: theme.darkMode ? '#111111' : '#ffffff'
+        backgroundColor: isDark ? '#111111' : '#ffffff'
       }}
     >
       <div className="max-w-6xl mx-auto">
@@ -44,38 +51,38 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
           <h2 
             className="text-3xl md:text-4xl font-bold mb-4"
             style={{ 
-              fontFamily: theme.fontHeading,
-              color: theme.darkMode ? '#ffffff' : '#111827'
+              fontFamily: theme.fontHeading || 'system-ui',
+              color: isDark ? '#ffffff' : '#111827'
             }}
           >
-            {section.label || 'Pricing'}
+            {title}
           </h2>
           <p 
             className="text-lg max-w-2xl mx-auto"
             style={{ 
-              fontFamily: theme.fontBody,
-              color: theme.darkMode ? '#9ca3af' : '#6b7280'
+              fontFamily: theme.fontBody || 'system-ui',
+              color: isDark ? '#9ca3af' : '#6b7280'
             }}
           >
-            {section.description || 'Choose the plan that works for you'}
+            {subtitle}
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {defaultPlans.map((plan, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+          {items.slice(0, 4).map((plan, index) => (
             <div 
               key={index}
               className="p-8 rounded-2xl transition-all hover:scale-105"
               style={{ 
-                backgroundColor: plan.highlighted ? theme.primaryColor : (theme.darkMode ? '#1f1f1f' : '#f9fafb'),
+                backgroundColor: plan.highlighted ? theme.primaryColor : (isDark ? '#1f1f1f' : '#f9fafb'),
                 boxShadow: plan.highlighted ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
             >
               <h3 
                 className="text-xl font-semibold mb-2"
                 style={{ 
-                  fontFamily: theme.fontHeading,
-                  color: plan.highlighted ? '#ffffff' : (theme.darkMode ? '#ffffff' : '#111827')
+                  fontFamily: theme.fontHeading || 'system-ui',
+                  color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
                 }}
               >
                 {plan.name}
@@ -84,14 +91,14 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
                 <span 
                   className="text-4xl font-bold"
                   style={{ 
-                    color: plan.highlighted ? '#ffffff' : (theme.darkMode ? '#ffffff' : '#111827')
+                    color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
                   }}
                 >
                   {plan.price}
                 </span>
                 <span 
                   style={{ 
-                    color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (theme.darkMode ? '#9ca3af' : '#6b7280')
+                    color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (isDark ? '#9ca3af' : '#6b7280')
                   }}
                 >
                   {plan.period}
@@ -107,8 +114,8 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
                     <span 
                       className="text-sm"
                       style={{ 
-                        fontFamily: theme.fontBody,
-                        color: plan.highlighted ? 'rgba(255,255,255,0.9)' : (theme.darkMode ? '#d1d5db' : '#4b5563')
+                        fontFamily: theme.fontBody || 'system-ui',
+                        color: plan.highlighted ? 'rgba(255,255,255,0.9)' : (isDark ? '#d1d5db' : '#4b5563')
                       }}
                     >
                       {feature}
@@ -123,7 +130,7 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
                   color: plan.highlighted ? theme.primaryColor : '#ffffff'
                 }}
               >
-                Get Started
+                {plan.ctaText || 'Get Started'}
               </button>
             </div>
           ))}

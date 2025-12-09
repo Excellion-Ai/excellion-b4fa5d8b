@@ -1,4 +1,4 @@
-import { SiteSection, SiteTheme } from '@/types/app-spec';
+import { SiteSection, SiteTheme, ContactContent } from '@/types/app-spec';
 import { Mail, MapPin, Phone } from 'lucide-react';
 
 interface ContactSectionProps {
@@ -7,12 +7,21 @@ interface ContactSectionProps {
 }
 
 export function ContactSection({ section, theme }: ContactSectionProps) {
+  const content = section.content as ContactContent | undefined;
+  const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
+  
+  const title = content?.title || section.label || 'Contact Us';
+  const subtitle = content?.subtitle || section.description || 'Get in touch with our team';
+  const email = content?.email || 'hello@example.com';
+  const phone = content?.phone || '+1 (555) 123-4567';
+  const address = content?.address || '123 Main Street, City, ST 12345';
+
   return (
     <section 
       id={section.id}
       className="py-20 px-6"
       style={{ 
-        backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb'
+        backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
       }}
     >
       <div className="max-w-6xl mx-auto">
@@ -20,20 +29,20 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
           <h2 
             className="text-3xl md:text-4xl font-bold mb-4"
             style={{ 
-              fontFamily: theme.fontHeading,
-              color: theme.darkMode ? '#ffffff' : '#111827'
+              fontFamily: theme.fontHeading || 'system-ui',
+              color: isDark ? '#ffffff' : '#111827'
             }}
           >
-            {section.label || 'Contact Us'}
+            {title}
           </h2>
           <p 
             className="text-lg max-w-2xl mx-auto"
             style={{ 
-              fontFamily: theme.fontBody,
-              color: theme.darkMode ? '#9ca3af' : '#6b7280'
+              fontFamily: theme.fontBody || 'system-ui',
+              color: isDark ? '#9ca3af' : '#6b7280'
             }}
           >
-            {section.description || 'Get in touch with our team'}
+            {subtitle}
           </p>
         </div>
         
@@ -51,19 +60,19 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
                 <h3 
                   className="font-semibold mb-1"
                   style={{ 
-                    fontFamily: theme.fontHeading,
-                    color: theme.darkMode ? '#ffffff' : '#111827'
+                    fontFamily: theme.fontHeading || 'system-ui',
+                    color: isDark ? '#ffffff' : '#111827'
                   }}
                 >
                   Email
                 </h3>
                 <p 
                   style={{ 
-                    fontFamily: theme.fontBody,
-                    color: theme.darkMode ? '#9ca3af' : '#6b7280'
+                    fontFamily: theme.fontBody || 'system-ui',
+                    color: isDark ? '#9ca3af' : '#6b7280'
                   }}
                 >
-                  hello@example.com
+                  {email}
                 </p>
               </div>
             </div>
@@ -79,19 +88,19 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
                 <h3 
                   className="font-semibold mb-1"
                   style={{ 
-                    fontFamily: theme.fontHeading,
-                    color: theme.darkMode ? '#ffffff' : '#111827'
+                    fontFamily: theme.fontHeading || 'system-ui',
+                    color: isDark ? '#ffffff' : '#111827'
                   }}
                 >
                   Phone
                 </h3>
                 <p 
                   style={{ 
-                    fontFamily: theme.fontBody,
-                    color: theme.darkMode ? '#9ca3af' : '#6b7280'
+                    fontFamily: theme.fontBody || 'system-ui',
+                    color: isDark ? '#9ca3af' : '#6b7280'
                   }}
                 >
-                  +1 (555) 123-4567
+                  {phone}
                 </p>
               </div>
             </div>
@@ -107,19 +116,19 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
                 <h3 
                   className="font-semibold mb-1"
                   style={{ 
-                    fontFamily: theme.fontHeading,
-                    color: theme.darkMode ? '#ffffff' : '#111827'
+                    fontFamily: theme.fontHeading || 'system-ui',
+                    color: isDark ? '#ffffff' : '#111827'
                   }}
                 >
                   Address
                 </h3>
                 <p 
                   style={{ 
-                    fontFamily: theme.fontBody,
-                    color: theme.darkMode ? '#9ca3af' : '#6b7280'
+                    fontFamily: theme.fontBody || 'system-ui',
+                    color: isDark ? '#9ca3af' : '#6b7280'
                   }}
                 >
-                  123 Main Street, City, ST 12345
+                  {address}
                 </p>
               </div>
             </div>
@@ -129,7 +138,7 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
           <div 
             className="p-8 rounded-2xl"
             style={{ 
-              backgroundColor: theme.darkMode ? '#1f1f1f' : '#ffffff',
+              backgroundColor: isDark ? '#1f1f1f' : '#ffffff',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
             }}
           >
@@ -137,7 +146,7 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
               <div>
                 <label 
                   className="block text-sm font-medium mb-2"
-                  style={{ color: theme.darkMode ? '#d1d5db' : '#374151' }}
+                  style={{ color: isDark ? '#d1d5db' : '#374151' }}
                 >
                   Name
                 </label>
@@ -145,9 +154,9 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
                   type="text"
                   className="w-full px-4 py-3 rounded-lg border outline-none transition-all"
                   style={{ 
-                    backgroundColor: theme.darkMode ? '#2d2d2d' : '#f9fafb',
-                    borderColor: theme.darkMode ? '#404040' : '#e5e7eb',
-                    color: theme.darkMode ? '#ffffff' : '#111827'
+                    backgroundColor: isDark ? '#2d2d2d' : '#f9fafb',
+                    borderColor: isDark ? '#404040' : '#e5e7eb',
+                    color: isDark ? '#ffffff' : '#111827'
                   }}
                   placeholder="Your name"
                 />
@@ -155,7 +164,7 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
               <div>
                 <label 
                   className="block text-sm font-medium mb-2"
-                  style={{ color: theme.darkMode ? '#d1d5db' : '#374151' }}
+                  style={{ color: isDark ? '#d1d5db' : '#374151' }}
                 >
                   Email
                 </label>
@@ -163,9 +172,9 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
                   type="email"
                   className="w-full px-4 py-3 rounded-lg border outline-none transition-all"
                   style={{ 
-                    backgroundColor: theme.darkMode ? '#2d2d2d' : '#f9fafb',
-                    borderColor: theme.darkMode ? '#404040' : '#e5e7eb',
-                    color: theme.darkMode ? '#ffffff' : '#111827'
+                    backgroundColor: isDark ? '#2d2d2d' : '#f9fafb',
+                    borderColor: isDark ? '#404040' : '#e5e7eb',
+                    color: isDark ? '#ffffff' : '#111827'
                   }}
                   placeholder="your@email.com"
                 />
@@ -173,7 +182,7 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
               <div>
                 <label 
                   className="block text-sm font-medium mb-2"
-                  style={{ color: theme.darkMode ? '#d1d5db' : '#374151' }}
+                  style={{ color: isDark ? '#d1d5db' : '#374151' }}
                 >
                   Message
                 </label>
@@ -181,9 +190,9 @@ export function ContactSection({ section, theme }: ContactSectionProps) {
                   className="w-full px-4 py-3 rounded-lg border outline-none transition-all resize-none"
                   rows={4}
                   style={{ 
-                    backgroundColor: theme.darkMode ? '#2d2d2d' : '#f9fafb',
-                    borderColor: theme.darkMode ? '#404040' : '#e5e7eb',
-                    color: theme.darkMode ? '#ffffff' : '#111827'
+                    backgroundColor: isDark ? '#2d2d2d' : '#f9fafb',
+                    borderColor: isDark ? '#404040' : '#e5e7eb',
+                    color: isDark ? '#ffffff' : '#111827'
                   }}
                   placeholder="Your message..."
                 />
