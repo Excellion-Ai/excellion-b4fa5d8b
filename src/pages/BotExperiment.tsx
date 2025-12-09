@@ -365,6 +365,10 @@ const BotExperiment = () => {
                 <Lightbulb className="w-3.5 h-3.5" />
                 Questions
               </TabsTrigger>
+              <TabsTrigger value="debug" className="text-xs gap-1.5">
+                <Bug className="w-3.5 h-3.5" />
+                Debug
+              </TabsTrigger>
             </TabsList>
             
             {spec && (
@@ -548,6 +552,63 @@ const BotExperiment = () => {
                 <p className="text-sm">No questions yet</p>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="debug" className="flex-1 m-0 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-6 space-y-6">
+                <section>
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Bug className="w-4 h-4 text-orange-500" />
+                    Debug Info
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <div className="text-xs text-muted-foreground mb-1">Code Status</div>
+                      <div className="text-sm font-mono">{codeStatus}</div>
+                    </div>
+
+                    {codeError && (
+                      <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+                        <div className="text-xs text-destructive mb-1">Error</div>
+                        <div className="text-sm font-mono text-destructive">{codeError}</div>
+                      </div>
+                    )}
+
+                    <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <div className="text-xs text-muted-foreground mb-1">Heal Attempts</div>
+                      <div className="text-sm font-mono">{healAttempts} / {MAX_HEAL_ATTEMPTS}</div>
+                    </div>
+
+                    {generatedCode?.siteDefinition && (
+                      <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                        <div className="text-xs text-muted-foreground mb-2">Site Definition (JSON)</div>
+                        <pre className="text-xs font-mono text-foreground/80 whitespace-pre-wrap overflow-x-auto max-h-48 overflow-y-auto">
+                          {JSON.stringify(generatedCode.siteDefinition, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+
+                    {generatedCode?.reactCode && (
+                      <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                        <div className="text-xs text-muted-foreground mb-2">Raw React Code (first 2000 chars)</div>
+                        <pre className="text-xs font-mono text-foreground/80 whitespace-pre-wrap overflow-x-auto max-h-64 overflow-y-auto">
+                          {generatedCode.reactCode.slice(0, 2000)}
+                          {generatedCode.reactCode.length > 2000 && '...\n[truncated]'}
+                        </pre>
+                      </div>
+                    )}
+
+                    {!generatedCode && !codeError && (
+                      <div className="text-sm text-muted-foreground">
+                        No generated code yet. Enter an idea to generate.
+                      </div>
+                    )}
+                  </div>
+                </section>
+              </div>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       </div>
