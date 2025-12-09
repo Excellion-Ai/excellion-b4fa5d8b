@@ -155,7 +155,48 @@ Generate a complete, self-contained React component. Return ONLY valid JSON.`;
       jsonContent = content.split('```')[1].split('```')[0].trim();
     }
 
-    const result = JSON.parse(jsonContent);
+    let result;
+    try {
+      result = JSON.parse(jsonContent);
+    } catch (parseError) {
+      console.error('JSON parse error, attempting to fix:', parseError);
+      
+      // Try to extract reactCode and siteDefinition separately using regex
+      const reactCodeMatch = jsonContent.match(/"reactCode"\s*:\s*"([\s\S]*?)"\s*[,}]/);
+      const siteDefMatch = jsonContent.match(/"siteDefinition"\s*:\s*(\{[\s\S]*?\})\s*,\s*"reactCode"/);
+      
+      if (reactCodeMatch || siteDefMatch) {
+        // Build a minimal valid response
+        const fallbackCode = `const GeneratedSite = () => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700">
+      <div className="container mx-auto px-4 py-16">
+        <div className="text-center text-white">
+          <h1 className="text-5xl font-bold mb-6">Your Website</h1>
+          <p className="text-xl mb-8 opacity-90">We generated your site but encountered a formatting issue. Click Rebuild to try again.</p>
+          <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition">Get Started</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+export default GeneratedSite;`;
+
+        result = {
+          siteDefinition: {
+            name: "Generated Site",
+            description: "Site generated with fallback due to parsing issue",
+            sections: [{ id: "hero", type: "hero", label: "Hero", description: "Main hero section" }],
+            theme: { primaryColor: "#3b82f6", secondaryColor: "#8b5cf6", accentColor: "#f59e0b", fontHeading: "Inter", fontBody: "Inter", darkMode: false },
+            navigation: [{ label: "Home", href: "#" }]
+          },
+          reactCode: fallbackCode
+        };
+        console.log('Used fallback response due to parse error');
+      } else {
+        throw parseError;
+      }
+    }
 
     console.log('Code generated successfully');
 
