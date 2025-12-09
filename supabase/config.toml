@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.send-survey-email]
 verify_jwt = false
+
+[functions.send-maintenance-request]
+verify_jwt = false
+
+[functions.bot-chat]
+verify_jwt = false
+
+[functions.builder-agent]
+verify_jwt = false
