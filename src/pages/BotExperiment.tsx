@@ -4,18 +4,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Send, Bot, User, Loader2, MessageSquare, Monitor, Code, RefreshCw, ArrowLeft, Sparkles } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Send, User, Loader2, MessageSquare, ArrowLeft, Sparkles, Copy, Check, FileText, Code, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import excellionLogo from "@/assets/excellion-logo.png";
+import { AppSpec } from "@/types/app-spec";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
 };
-
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`;
 
 const BotExperiment = () => {
   const location = useLocation();
@@ -26,63 +25,17 @@ const BotExperiment = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "What are we building today? Give me the idea and I'll draft a v1 plan.",
+      content: "What app are we building today? Describe your idea and I'll generate a complete blueprint with spec, build prompt, and critical questions.",
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
-  const [viewMode, setViewMode] = useState<"preview" | "code">("preview");
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [spec, setSpec] = useState<AppSpec | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState("spec");
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasAutoSent = useRef(false);
-  const hasShownAuthPrompt = useRef(false);
   const { toast } = useToast();
-
-  // Check for existing session
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (event === 'SIGNED_IN') {
-        setShowAuthModal(false);
-        toast({
-          title: "Signed in!",
-          description: "You can now save and export your website.",
-        });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleOAuthLogin = async (provider: 'google' | 'github') => {
-    setIsAuthLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/bot-experiment`,
-        },
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('OAuth error:', error);
-      toast({
-        title: "Sign in failed",
-        description: error instanceof Error ? error.message : "Could not sign in",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAuthLoading(false);
-    }
-  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -103,106 +56,53 @@ const BotExperiment = () => {
     }
   }, [initialPrompt, template]);
 
-  const extractCodeFromResponse = (content: string) => {
-    const htmlMatch = content.match(/```html\n?([\s\S]*?)```/);
-    if (htmlMatch) {
-      return htmlMatch[1];
-    }
-    const codeMatch = content.match(/```\n?(<!DOCTYPE|<html|<div|<body)([\s\S]*?)```/i);
-    if (codeMatch) {
-      return codeMatch[1] + codeMatch[2];
-    }
-    return null;
-  };
-
-  const streamChat = async (userMessages: Message[]) => {
-    const resp = await fetch(CHAT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({ messages: userMessages }),
-    });
-
-    if (!resp.ok) {
-      const error = await resp.json();
-      throw new Error(error.error || "Failed to get response");
-    }
-
-    if (!resp.body) throw new Error("No response body");
-
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let textBuffer = "";
-    let assistantContent = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      textBuffer += decoder.decode(value, { stream: true });
-
-      let newlineIndex: number;
-      while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-        let line = textBuffer.slice(0, newlineIndex);
-        textBuffer = textBuffer.slice(newlineIndex + 1);
-
-        if (line.endsWith("\r")) line = line.slice(0, -1);
-        if (line.startsWith(":") || line.trim() === "") continue;
-        if (!line.startsWith("data: ")) continue;
-
-        const jsonStr = line.slice(6).trim();
-        if (jsonStr === "[DONE]") {
-          const code = extractCodeFromResponse(assistantContent);
-          if (code) {
-            setGeneratedCode(code);
-            setShowPreview(true);
-          }
-          break;
-        }
-
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-          if (content) {
-            assistantContent += content;
-            setMessages((prev) => {
-              const last = prev[prev.length - 1];
-              if (last?.role === "assistant" && prev.length > 1) {
-                return prev.map((m, i) =>
-                  i === prev.length - 1 ? { ...m, content: assistantContent } : m
-                );
-              }
-              return [...prev, { role: "assistant", content: assistantContent }];
-            });
-          }
-        } catch {
-          textBuffer = line + "\n" + textBuffer;
-          break;
-        }
-      }
-    }
-  };
-
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
 
     const userMessage: Message = { role: "user", content: messageText.trim() };
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
+    setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      await streamChat(updatedMessages);
+      // Add thinking message
+      setMessages(prev => [...prev, { role: "assistant", content: "Analyzing your idea and generating blueprint..." }]);
+
+      const { data, error } = await supabase.functions.invoke('builder-agent', {
+        body: {
+          idea: messageText.trim(),
+          target: 'lovable',
+          complexity: 'standard',
+        },
+      });
+
+      if (error) throw error;
+
+      const appSpec = data as AppSpec;
+      setSpec(appSpec);
+
+      // Update the assistant message with summary
+      const summaryMessage = `Blueprint ready!\n\n**Summary:**\n${appSpec.summary.map(s => `• ${s}`).join('\n')}\n\n**App Type:** ${appSpec.appType}\n**Stack:** ${appSpec.targetStack}\n\nCheck the panels on the right for full spec, build prompt, and critical questions.`;
       
-      // Auth modal disabled for now
+      setMessages(prev => {
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1] = { role: "assistant", content: summaryMessage };
+        return newMessages;
+      });
+
     } catch (error) {
-      console.error("Chat error:", error);
+      console.error("Generation error:", error);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1] = { 
+          role: "assistant", 
+          content: "Failed to generate blueprint. Please try again." 
+        };
+        return newMessages;
+      });
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message",
+        description: error instanceof Error ? error.message : "Failed to generate blueprint",
         variant: "destructive",
       });
     } finally {
@@ -225,46 +125,49 @@ const BotExperiment = () => {
     setMessages([
       {
         role: "assistant",
-        content: "What are we building today? Give me the idea and I'll draft a v1 plan.",
+        content: "What app are we building today? Describe your idea and I'll generate a complete blueprint with spec, build prompt, and critical questions.",
       },
     ]);
-    setGeneratedCode("");
-    setShowPreview(false);
+    setSpec(null);
   };
 
-  // Format message content - hide ALL code blocks from chat
+  const copyPrompt = async () => {
+    if (!spec?.buildPrompt) return;
+    await navigator.clipboard.writeText(spec.buildPrompt);
+    setCopied(true);
+    toast({ title: "Copied!", description: "Build prompt copied to clipboard" });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const formatMessageContent = (content: string) => {
-    // Remove any code blocks (html, jsx, json, or unmarked)
-    let cleanContent = content
-      .replace(/```(?:html|jsx|json|javascript|typescript|css)?\n?[\s\S]*?```/g, "")
-      .replace(/<[^>]+>/g, "") // Remove any stray HTML tags
-      .trim();
-    
-    // If the message was mostly code, show a friendly message
-    if (!cleanContent || cleanContent.length < 10) {
-      return "Your website draft is ready! Check the preview on the right →";
-    }
-    
-    return cleanContent;
+    return content.split('\n').map((line, i) => {
+      if (line.startsWith('**') && line.endsWith('**')) {
+        return <strong key={i} className="block mt-2">{line.replace(/\*\*/g, '')}</strong>;
+      }
+      if (line.startsWith('• ')) {
+        return <span key={i} className="block ml-2">{line}</span>;
+      }
+      return <span key={i} className="block">{line}</span>;
+    });
   };
 
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
-        <title>Excellion AI Website Builder</title>
+        <title>Excellion Secret Builder</title>
       </Helmet>
 
       {/* Chat Panel */}
-      <div className={`flex flex-col ${showPreview ? "w-[400px]" : "flex-1 max-w-3xl mx-auto"} border-r border-border transition-all duration-300`}>
+      <div className="w-[380px] flex flex-col border-r border-border/50 bg-card/30">
         {/* Header */}
-        <header className="h-14 border-b border-border px-4 flex items-center justify-between bg-background/80 backdrop-blur-sm flex-shrink-0">
+        <header className="h-14 border-b border-border/50 px-4 flex items-center justify-between bg-background/80 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/web-builder")} className="h-8 w-8">
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <img src={excellionLogo} alt="Excellion" className="w-7 h-7" />
-            <span className="font-semibold text-sm">Excellion AI</span>
+            <span className="font-semibold text-sm">Secret Builder</span>
           </div>
           <Button variant="ghost" size="sm" onClick={clearChat} className="text-xs">
             <MessageSquare className="w-3 h-3 mr-1" />
@@ -292,9 +195,9 @@ const BotExperiment = () => {
                       : "bg-muted"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap leading-relaxed">
+                  <div className="whitespace-pre-wrap leading-relaxed">
                     {formatMessageContent(message.content)}
-                  </p>
+                  </div>
                 </div>
                 {message.role === "user" && (
                   <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -317,13 +220,13 @@ const BotExperiment = () => {
         </ScrollArea>
 
         {/* Input */}
-        <div className="p-3 border-t border-border bg-background flex-shrink-0">
+        <div className="p-3 border-t border-border/50 bg-background flex-shrink-0">
           <div className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Describe your website..."
+              placeholder="Describe your app idea..."
               className="text-sm h-10"
               disabled={isLoading}
             />
@@ -334,91 +237,179 @@ const BotExperiment = () => {
         </div>
       </div>
 
-      {/* Preview Panel */}
-      {showPreview && (
-        <div className="flex-1 flex flex-col bg-muted/30">
-          {/* Preview Header */}
-          <header className="h-14 border-b border-border px-4 flex items-center justify-between bg-background/80 backdrop-blur-sm flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Monitor className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Preview</span>
+      {/* Right Panel - Spec & Prompt */}
+      <div className="flex-1 flex flex-col bg-background/50">
+        {spec ? (
+          <>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+              <div className="h-14 border-b border-border/50 px-4 flex items-center bg-background/80 backdrop-blur-sm">
+                <TabsList className="h-9">
+                  <TabsTrigger value="spec" className="text-xs gap-1.5">
+                    <FileText className="w-3.5 h-3.5" />
+                    Spec
+                  </TabsTrigger>
+                  <TabsTrigger value="prompt" className="text-xs gap-1.5">
+                    <Code className="w-3.5 h-3.5" />
+                    Build Prompt
+                  </TabsTrigger>
+                  <TabsTrigger value="questions" className="text-xs gap-1.5">
+                    <Lightbulb className="w-3.5 h-3.5" />
+                    Questions
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="spec" className="flex-1 m-0 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="p-6 space-y-6">
+                    {/* Summary */}
+                    <section>
+                      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        Summary
+                      </h3>
+                      <ul className="space-y-1.5">
+                        {spec.summary.map((item, i) => (
+                          <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+
+                    {/* App Type & Stack */}
+                    <section>
+                      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        App Type & Stack
+                      </h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">Type:</span>
+                          <span className="text-sm text-foreground">{spec.appType}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">Stack:</span>
+                          <span className="text-sm text-foreground">{spec.targetStack}</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* Pages */}
+                    <section>
+                      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        Pages / Screens
+                      </h3>
+                      <div className="space-y-2">
+                        {spec.pages.map((page, i) => (
+                          <div key={i} className="p-2 rounded-lg bg-muted/50 border border-border/50">
+                            <div className="text-sm font-medium text-foreground">{page.name}</div>
+                            <div className="text-xs text-muted-foreground">{page.description}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Core Features */}
+                    <section>
+                      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        Core Features
+                      </h3>
+                      <ul className="space-y-1.5">
+                        {spec.coreFeatures.map((feature, i) => (
+                          <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+
+                    {/* Data Model */}
+                    <section>
+                      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        Data Model
+                      </h3>
+                      <div className="space-y-2">
+                        {spec.dataModel.map((entity, i) => (
+                          <div key={i} className="p-2 rounded-lg bg-muted/50 border border-border/50">
+                            <div className="text-sm font-medium text-foreground">{entity.entity}</div>
+                            <div className="text-xs text-muted-foreground">{entity.fields.join(', ')}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Integrations */}
+                    <section>
+                      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        Integrations
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {spec.integrations.map((integration, i) => (
+                          <span key={i} className="px-2 py-1 rounded-md text-xs bg-primary/10 text-primary border border-primary/20">
+                            {integration}
+                          </span>
+                        ))}
+                      </div>
+                    </section>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="prompt" className="flex-1 m-0 overflow-hidden flex flex-col">
+                <div className="p-4 border-b border-border/50 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Copy this prompt into Lovable, v0, or Bolt</span>
+                  <Button variant="outline" size="sm" onClick={copyPrompt} className="gap-1.5">
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+                <ScrollArea className="flex-1">
+                  <pre className="p-4 text-sm text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed">
+                    {spec.buildPrompt}
+                  </pre>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="questions" className="flex-1 m-0 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="p-6">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Answer these to refine your spec:
+                    </p>
+                    <div className="space-y-3">
+                      {spec.criticalQuestions.map((question, i) => (
+                        <div key={i} className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                          <div className="flex items-start gap-2">
+                            <span className="text-primary font-medium text-sm">{i + 1}.</span>
+                            <span className="text-sm text-foreground">{question}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center text-muted-foreground max-w-md px-8">
+              <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <h3 className="text-lg font-medium text-foreground mb-2">Secret Builder</h3>
+              <p className="text-sm">
+                Describe your app idea and I'll generate a complete blueprint: structured spec, optimized build prompt, and critical questions.
+              </p>
             </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant={viewMode === "preview" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("preview")}
-                className="h-7 text-xs"
-              >
-                <Monitor className="w-3 h-3 mr-1" />
-                Preview
-              </Button>
-              <Button
-                variant={viewMode === "code" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("code")}
-                className="h-7 text-xs"
-              >
-                <Code className="w-3 h-3 mr-1" />
-                Code
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
-                const iframe = document.getElementById("preview-iframe") as HTMLIFrameElement;
-                if (iframe) iframe.srcdoc = generatedCode;
-              }}>
-                <RefreshCw className="w-3 h-3" />
-              </Button>
-            </div>
-          </header>
-
-          {/* Preview Content */}
-          <div className="flex-1 overflow-hidden">
-            {viewMode === "preview" ? (
-              <iframe
-                id="preview-iframe"
-                srcDoc={generatedCode}
-                className="w-full h-full border-0 bg-white"
-                title="Website Preview"
-                sandbox="allow-scripts"
-              />
-            ) : (
-              <ScrollArea className="h-full">
-                <pre className="p-4 text-xs font-mono text-muted-foreground whitespace-pre-wrap">
-                  {generatedCode}
-                </pre>
-              </ScrollArea>
-            )}
           </div>
-        </div>
-      )}
-
-      {/* Empty state when no preview */}
-      {!showPreview && (
-        <div className="hidden lg:flex flex-1 items-center justify-center bg-muted/20">
-          <div className="text-center text-muted-foreground">
-            <Monitor className="w-16 h-16 mx-auto mb-4 opacity-30" />
-            <p className="text-sm">Your website preview will appear here</p>
-          </div>
-        </div>
-      )}
-
-      {/* Auth Modal */}
-      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Save your progress</DialogTitle>
-            <DialogDescription>
-              Sign in to save your website, export code, and continue editing later.
-            </DialogDescription>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground text-center mt-4">
-            Sign-in is currently disabled. You can continue building your website.
-          </p>
-          <Button variant="default" size="sm" onClick={() => setShowAuthModal(false)} className="mt-4 w-full">
-            Continue Building
-          </Button>
-        </DialogContent>
-      </Dialog>
+        )}
+      </div>
     </div>
   );
 };
