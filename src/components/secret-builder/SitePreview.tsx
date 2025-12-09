@@ -15,6 +15,7 @@ interface SitePreviewProps {
 export function SitePreview({ generatedCode, isLoading, error, onRetry }: SitePreviewProps) {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
   const [iframeError, setIframeError] = useState<string | null>(null);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   const previewWidth = {
     desktop: 'w-full',
@@ -22,35 +23,77 @@ export function SitePreview({ generatedCode, isLoading, error, onRetry }: SitePr
     mobile: 'w-[375px]',
   };
 
-  // Generate the preview HTML
+  // Generate the preview HTML with better error handling
   const previewHtml = useMemo(() => {
     if (!generatedCode?.reactCode) return null;
 
-    // Create a self-contained HTML document with the React component
-    return `
-<!DOCTYPE html>
+    // Clean up the code - handle potential issues with the AI-generated code
+    let cleanCode = generatedCode.reactCode;
+    
+    // If the code doesn't include GeneratedSite, wrap it
+    if (!cleanCode.includes('GeneratedSite')) {
+      cleanCode = `const GeneratedSite = () => { 
+        return (
+          <div className="p-8 text-center">
+            <p className="text-gray-600">Preview rendering...</p>
+          </div>
+        );
+      };`;
+    }
+
+    // Create a self-contained HTML document
+    return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { 
+      margin: 0; 
+      font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+      background: white;
+    }
+    .font-inter { font-family: 'Inter', sans-serif; }
+    .font-roboto { font-family: 'Roboto', sans-serif; }
     #root { min-height: 100vh; }
+    #error-display {
+      padding: 20px;
+      background: #fee2e2;
+      color: #dc2626;
+      font-family: monospace;
+      white-space: pre-wrap;
+      display: none;
+    }
   </style>
 </head>
 <body>
+  <div id="error-display"></div>
   <div id="root"></div>
-  <script type="text/babel">
-    ${generatedCode.reactCode}
-    
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<GeneratedSite />);
+  <script type="text/babel" data-presets="react">
+    try {
+      ${cleanCode}
+      
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(GeneratedSite));
+    } catch (err) {
+      document.getElementById('error-display').style.display = 'block';
+      document.getElementById('error-display').textContent = 'Render Error: ' + err.message;
+      console.error('Preview error:', err);
+    }
+  </script>
+  <script>
+    window.onerror = function(msg, url, line, col, error) {
+      document.getElementById('error-display').style.display = 'block';
+      document.getElementById('error-display').textContent = 'Error: ' + msg;
+      return true;
+    };
   </script>
 </body>
 </html>`;
@@ -58,6 +101,7 @@ export function SitePreview({ generatedCode, isLoading, error, onRetry }: SitePr
 
   useEffect(() => {
     setIframeError(null);
+    setIframeLoaded(false);
   }, [generatedCode]);
 
   if (isLoading) {
@@ -97,7 +141,7 @@ export function SitePreview({ generatedCode, isLoading, error, onRetry }: SitePr
         <div className="text-center text-muted-foreground max-w-xs">
           <Monitor className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">
-            Generate a blueprint first, then click "Build Site" to see a live preview.
+            Describe your app idea and I'll generate a live preview.
           </p>
         </div>
       </div>
@@ -147,7 +191,8 @@ export function SitePreview({ generatedCode, isLoading, error, onRetry }: SitePr
               srcDoc={previewHtml}
               className="w-full h-full border-0"
               title="Site Preview"
-              sandbox="allow-scripts"
+              sandbox="allow-scripts allow-same-origin"
+              onLoad={() => setIframeLoaded(true)}
               onError={() => setIframeError('Failed to render preview')}
             />
           )}
