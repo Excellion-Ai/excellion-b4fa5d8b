@@ -391,10 +391,8 @@ const BotExperiment = () => {
 
           <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
             <SitePreview 
-              generatedCode={generatedCode}
+              siteDefinition={generatedCode?.siteDefinition || null}
               isLoading={codeStatus === 'generating' || codeStatus === 'healing'}
-              error={codeError || undefined}
-              onRetry={rebuildSite}
             />
           </TabsContent>
 
