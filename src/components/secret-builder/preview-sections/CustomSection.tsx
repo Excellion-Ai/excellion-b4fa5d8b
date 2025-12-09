@@ -1,0 +1,39 @@
+import { SiteSection, SiteTheme } from '@/types/app-spec';
+
+interface CustomSectionProps {
+  section: SiteSection;
+  theme: SiteTheme;
+}
+
+export function CustomSection({ section, theme }: CustomSectionProps) {
+  return (
+    <section 
+      id={section.id}
+      className="py-16 px-6"
+      style={{ 
+        backgroundColor: theme.darkMode ? '#0a0a0a' : '#ffffff'
+      }}
+    >
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 
+          className="text-2xl md:text-3xl font-bold mb-4"
+          style={{ 
+            fontFamily: theme.fontHeading,
+            color: theme.darkMode ? '#ffffff' : '#111827'
+          }}
+        >
+          {section.label}
+        </h2>
+        <p 
+          className="text-base"
+          style={{ 
+            fontFamily: theme.fontBody,
+            color: theme.darkMode ? '#9ca3af' : '#6b7280'
+          }}
+        >
+          {section.description || 'Custom section content goes here.'}
+        </p>
+      </div>
+    </section>
+  );
+}

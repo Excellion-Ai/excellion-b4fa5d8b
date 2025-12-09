@@ -1,21 +1,37 @@
-import { useState, useEffect, useMemo } from 'react';
-import { AlertCircle, Loader2, RefreshCw, Monitor, Smartphone, Tablet } from 'lucide-react';
+import { useState } from 'react';
+import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { GeneratedCode } from '@/types/app-spec';
+import { SiteDefinition, SiteTheme } from '@/types/app-spec';
+import {
+  HeroSection,
+  FeaturesSection,
+  PricingSection,
+  TestimonialsSection,
+  FAQSection,
+  ContactSection,
+  CTASection,
+  CustomSection,
+} from './preview-sections';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
 interface SitePreviewProps {
-  generatedCode: GeneratedCode | null;
+  siteDefinition: SiteDefinition | null;
   isLoading: boolean;
-  error?: string;
-  onRetry?: () => void;
 }
 
-export function SitePreview({ generatedCode, isLoading, error, onRetry }: SitePreviewProps) {
+// Default theme fallback
+const defaultTheme: SiteTheme = {
+  primaryColor: '#3b82f6',
+  secondaryColor: '#8b5cf6',
+  accentColor: '#f59e0b',
+  fontHeading: 'Inter, sans-serif',
+  fontBody: 'Inter, sans-serif',
+  darkMode: false,
+};
+
+export function SitePreview({ siteDefinition, isLoading }: SitePreviewProps) {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
-  const [iframeError, setIframeError] = useState<string | null>(null);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   const previewWidth = {
     desktop: 'w-full',
@@ -23,137 +39,67 @@ export function SitePreview({ generatedCode, isLoading, error, onRetry }: SitePr
     mobile: 'w-[375px]',
   };
 
-  // Generate the preview HTML with better error handling
-  const previewHtml = useMemo(() => {
-    if (!generatedCode?.reactCode) return null;
-
-    // Clean up the code - handle potential issues with the AI-generated code
-    let cleanCode = generatedCode.reactCode;
-    
-    // If the code doesn't include GeneratedSite, wrap it
-    if (!cleanCode.includes('GeneratedSite')) {
-      cleanCode = `const GeneratedSite = () => { 
-        return (
-          <div className="p-8 text-center">
-            <p className="text-gray-600">Preview rendering...</p>
-          </div>
-        );
-      };`;
-    }
-
-    // Create a self-contained HTML document
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Preview</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; }
-    body { 
-      margin: 0; 
-      font-family: 'Roboto', system-ui, -apple-system, sans-serif;
-      background: white;
-    }
-    .font-inter { font-family: 'Inter', sans-serif; }
-    .font-roboto { font-family: 'Roboto', sans-serif; }
-    #root { min-height: 100vh; }
-    #error-display {
-      padding: 20px;
-      background: #fee2e2;
-      color: #dc2626;
-      font-family: monospace;
-      white-space: pre-wrap;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-  <div id="error-display"></div>
-  <div id="root"></div>
-  <script type="text/babel" data-presets="react">
-    try {
-      ${cleanCode}
-      
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(React.createElement(GeneratedSite));
-    } catch (err) {
-      document.getElementById('error-display').style.display = 'block';
-      document.getElementById('error-display').textContent = 'Render Error: ' + err.message;
-      console.error('Preview error:', err);
-    }
-  </script>
-  <script>
-    window.onerror = function(msg, url, line, col, error) {
-      document.getElementById('error-display').style.display = 'block';
-      document.getElementById('error-display').textContent = 'Error: ' + msg;
-      return true;
-    };
-  </script>
-</body>
-</html>`;
-  }, [generatedCode?.reactCode]);
-
-  useEffect(() => {
-    setIframeError(null);
-    setIframeLoaded(false);
-  }, [generatedCode]);
-
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/20">
         <div className="text-center space-y-3">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground">Generating site code...</p>
+          <p className="text-sm text-muted-foreground">Generating site...</p>
         </div>
       </div>
     );
   }
 
-  if (error || iframeError) {
-    return (
-      <div className="h-full flex items-center justify-center bg-muted/20 p-6">
-        <div className="text-center space-y-4 max-w-md">
-          <AlertCircle className="w-10 h-10 mx-auto text-destructive" />
-          <div>
-            <h3 className="text-sm font-medium text-foreground mb-1">Preview Error</h3>
-            <p className="text-xs text-muted-foreground">{error || iframeError}</p>
-          </div>
-          {onRetry && (
-            <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
-              <RefreshCw className="w-3.5 h-3.5" />
-              Retry
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (!generatedCode) {
+  if (!siteDefinition) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/20">
         <div className="text-center text-muted-foreground max-w-xs">
           <Monitor className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">
-            Describe your app idea and I'll generate a live preview.
+            No site generated yet. Enter an idea to see a live preview.
           </p>
         </div>
       </div>
     );
   }
 
+  const theme = siteDefinition.theme || defaultTheme;
+
+  // Render a section based on its type
+  const renderSection = (section: SiteDefinition['sections'][0]) => {
+    const key = section.id;
+    const commonProps = { section, theme };
+
+    switch (section.type) {
+      case 'hero':
+        return <HeroSection key={key} {...commonProps} siteName={siteDefinition.name} />;
+      case 'features':
+        return <FeaturesSection key={key} {...commonProps} />;
+      case 'pricing':
+        return <PricingSection key={key} {...commonProps} />;
+      case 'testimonials':
+        return <TestimonialsSection key={key} {...commonProps} />;
+      case 'faq':
+        return <FAQSection key={key} {...commonProps} />;
+      case 'contact':
+        return <ContactSection key={key} {...commonProps} />;
+      case 'cta':
+        return <CTASection key={key} {...commonProps} />;
+      case 'stats':
+      case 'team':
+      case 'gallery':
+      case 'custom':
+      default:
+        return <CustomSection key={key} {...commonProps} />;
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Preview controls */}
       <div className="h-10 border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
         <span className="text-xs text-muted-foreground">
-          {generatedCode.siteDefinition?.name || 'Generated Site'}
+          {siteDefinition.name || 'Generated Site'}
         </span>
         <div className="flex items-center gap-1">
           <Button
@@ -183,19 +129,74 @@ export function SitePreview({ generatedCode, isLoading, error, onRetry }: SitePr
         </div>
       </div>
 
-      {/* Preview iframe */}
+      {/* Preview content - pure React rendering, no iframe */}
       <div className="flex-1 overflow-auto bg-[#1a1a1a] flex justify-center p-4">
-        <div className={`${previewWidth[previewMode]} h-full bg-white rounded-lg overflow-hidden shadow-2xl transition-all duration-300`}>
-          {previewHtml && (
-            <iframe
-              srcDoc={previewHtml}
-              className="w-full h-full border-0"
-              title="Site Preview"
-              sandbox="allow-scripts allow-same-origin"
-              onLoad={() => setIframeLoaded(true)}
-              onError={() => setIframeError('Failed to render preview')}
-            />
-          )}
+        <div 
+          className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300`}
+          style={{ 
+            backgroundColor: theme.darkMode ? '#0a0a0a' : '#ffffff',
+            fontFamily: theme.fontBody
+          }}
+        >
+          {/* Navigation bar */}
+          <nav 
+            className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between"
+            style={{ 
+              backgroundColor: theme.darkMode ? '#111111' : '#ffffff',
+              borderBottom: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
+            }}
+          >
+            <span 
+              className="font-bold text-lg"
+              style={{ 
+                fontFamily: theme.fontHeading,
+                color: theme.primaryColor
+              }}
+            >
+              {siteDefinition.name}
+            </span>
+            <div className="flex items-center gap-6">
+              {siteDefinition.navigation?.map((item, index) => (
+                <a
+                  key={index}
+                  href={item.href}
+                  className="text-sm font-medium transition-colors hover:opacity-80"
+                  style={{ 
+                    color: theme.darkMode ? '#d1d5db' : '#4b5563'
+                  }}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </nav>
+
+          {/* Render all sections */}
+          <main>
+            {siteDefinition.sections?.length > 0 ? (
+              siteDefinition.sections.map(renderSection)
+            ) : (
+              <div className="py-20 text-center text-gray-500">
+                No sections defined
+              </div>
+            )}
+          </main>
+
+          {/* Footer */}
+          <footer 
+            className="py-8 px-6 text-center"
+            style={{ 
+              backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
+              borderTop: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
+            }}
+          >
+            <p 
+              className="text-sm"
+              style={{ color: theme.darkMode ? '#6b7280' : '#9ca3af' }}
+            >
+              © {new Date().getFullYear()} {siteDefinition.name}. All rights reserved.
+            </p>
+          </footer>
         </div>
       </div>
     </div>

@@ -1,0 +1,59 @@
+import { SiteSection, SiteTheme } from '@/types/app-spec';
+
+interface HeroSectionProps {
+  section: SiteSection;
+  theme: SiteTheme;
+  siteName: string;
+}
+
+export function HeroSection({ section, theme, siteName }: HeroSectionProps) {
+  return (
+    <section 
+      id={section.id}
+      className="min-h-[70vh] flex items-center justify-center px-6 py-16"
+      style={{ 
+        background: theme.darkMode 
+          ? `linear-gradient(135deg, ${theme.primaryColor}20, ${theme.secondaryColor}20)` 
+          : `linear-gradient(135deg, ${theme.primaryColor}10, ${theme.secondaryColor}10)`
+      }}
+    >
+      <div className="max-w-4xl mx-auto text-center">
+        <h1 
+          className="text-4xl md:text-6xl font-bold mb-6"
+          style={{ 
+            fontFamily: theme.fontHeading,
+            color: theme.darkMode ? '#ffffff' : theme.primaryColor 
+          }}
+        >
+          {siteName}
+        </h1>
+        <p 
+          className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
+          style={{ 
+            fontFamily: theme.fontBody,
+            color: theme.darkMode ? '#e5e5e5' : '#4b5563'
+          }}
+        >
+          {section.description || 'Welcome to our website. Discover what we have to offer.'}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            className="px-8 py-3 rounded-lg font-semibold text-white transition-all hover:scale-105"
+            style={{ backgroundColor: theme.primaryColor }}
+          >
+            Get Started
+          </button>
+          <button
+            className="px-8 py-3 rounded-lg font-semibold border-2 transition-all hover:scale-105"
+            style={{ 
+              borderColor: theme.primaryColor,
+              color: theme.primaryColor
+            }}
+          >
+            Learn More
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
