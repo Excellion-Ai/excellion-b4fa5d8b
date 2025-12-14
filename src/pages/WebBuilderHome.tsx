@@ -188,6 +188,9 @@ const WebBuilderHome = () => {
               </a>
             </div>
             <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => navigate("/secret-builder-hub")}>
+                My Hub
+              </Button>
               <Button size="sm" onClick={() => navigate("/bot-experiment")}>
                 Start building
               </Button>
