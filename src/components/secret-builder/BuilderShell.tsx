@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Code, HelpCircle, Bug, Send, Loader2, Monitor } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone } from 'lucide-react';
 import { SiteSpec } from '@/types/site-spec';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
@@ -17,6 +17,14 @@ type GenerationStep = {
   label: string;
   status: 'pending' | 'active' | 'complete' | 'error';
 };
+
+type Message = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
 const INITIAL_STEPS: GenerationStep[] = [
   { id: 1, label: 'Analyzing idea', status: 'pending' },
@@ -30,15 +38,18 @@ export function BuilderShell() {
   const navigate = useNavigate();
   const initialIdea = (location.state as { initialIdea?: string })?.initialIdea || '';
 
-  const [idea, setIdea] = useState(initialIdea);
+  const [idea, setIdea] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
   const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
 
   // Auto-generate if we have an initial idea from the hub
   useEffect(() => {
-    if (initialIdea && !siteSpec && !isGenerating) {
-      handleGenerate();
+    if (initialIdea && !siteSpec && !isGenerating && messages.length === 0) {
+      setIdea(initialIdea);
+      handleGenerate(initialIdea);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -48,8 +59,18 @@ export function BuilderShell() {
     );
   };
 
-  const handleGenerate = async () => {
-    if (!idea.trim()) return;
+  const handleGenerate = async (inputIdea?: string) => {
+    const ideaToUse = inputIdea || idea;
+    if (!ideaToUse.trim()) return;
+
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: ideaToUse,
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setIdea('');
 
     setIsGenerating(true);
     setSiteSpec(null);
@@ -68,7 +89,7 @@ export function BuilderShell() {
 
       // Step 3: Generating structure
       updateStep(3, 'active');
-      const generatedSpec = specFromChat(idea);
+      const generatedSpec = specFromChat(ideaToUse);
       await new Promise((r) => setTimeout(r, 300));
       updateStep(3, 'complete');
 
@@ -78,13 +99,21 @@ export function BuilderShell() {
       setSiteSpec(generatedSpec);
       updateStep(4, 'complete');
 
+      // Add assistant message
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `I've created a ${generatedSpec.businessModel.replace('_', ' ')} website for "${generatedSpec.name}". Check the preview on the right!`,
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+
       // Save project to database
-      const projectName = generatedSpec.name || idea.slice(0, 50);
+      const projectName = generatedSpec.name || ideaToUse.slice(0, 50);
       const { error: saveError } = await supabase
         .from('builder_projects')
         .insert({
           name: projectName,
-          idea: idea,
+          idea: ideaToUse,
           spec: generatedSpec as unknown as Json,
         });
 
@@ -111,176 +140,158 @@ export function BuilderShell() {
     }
   };
 
-  return (
-    <div className="h-screen flex overflow-hidden" style={{ backgroundColor: '#1a1a1a' }}>
-      {/* Left Column - Site Preview + Chat Input */}
-      <div className="flex-1 flex flex-col p-4 gap-4">
-        {/* Site Preview Area */}
-        <div 
-          className="flex-1 rounded-xl overflow-hidden flex items-center justify-center"
-          style={{ backgroundColor: '#f5f0e8' }}
-        >
-          {siteSpec ? (
-            <SiteRenderer siteSpec={siteSpec} isLoading={isGenerating} />
-          ) : (
-            <div className="text-center p-8">
-              <Monitor className="h-12 w-12 mx-auto mb-4" style={{ color: '#888' }} />
-              <p style={{ color: '#666' }}>
-                No site generated yet. Enter an idea to see a live preview.
-              </p>
-            </div>
-          )}
-        </div>
+  const getPreviewWidth = () => {
+    switch (previewMode) {
+      case 'tablet': return 'max-w-[768px]';
+      case 'mobile': return 'max-w-[375px]';
+      default: return 'w-full';
+    }
+  };
 
-        {/* Chat Input at Bottom */}
-        <div 
-          className="rounded-xl p-3 flex items-center gap-3"
-          style={{ backgroundColor: '#2a2a2a' }}
-        >
-          <Input
-            value={idea}
-            onChange={(e) => setIdea(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Describe your app idea..."
-            className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-white placeholder:text-gray-500"
-            disabled={isGenerating}
-          />
-          <Button
-            size="icon"
-            onClick={handleGenerate}
-            disabled={!idea.trim() || isGenerating}
-            className="h-10 w-10 rounded-full"
-            style={{ backgroundColor: '#b8964c' }}
-          >
-            {isGenerating ? (
-              <Loader2 className="h-4 w-4 animate-spin text-white" />
-            ) : (
-              <Send className="h-4 w-4 text-white" />
+  return (
+    <div className="h-screen flex overflow-hidden bg-background">
+      {/* Left Column - Chat */}
+      <div className="w-[400px] border-r border-border flex flex-col bg-card/30">
+        {/* Chat Messages */}
+        <ScrollArea className="flex-1 p-4">
+          <div className="space-y-4">
+            {messages.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-sm">
+                  Describe your business idea to get started
+                </p>
+              </div>
             )}
-          </Button>
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-xl px-4 py-2 text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-foreground'
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {isGenerating && (
+              <div className="flex justify-start">
+                <div className="bg-muted rounded-xl px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating...
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Chat Input */}
+        <div className="border-t border-border p-4">
+          <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-2">
+            <Input
+              value={idea}
+              onChange={(e) => setIdea(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Describe your app idea..."
+              className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+              disabled={isGenerating}
+            />
+            <Button
+              size="icon"
+              onClick={() => handleGenerate()}
+              disabled={!idea.trim() || isGenerating}
+              className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
+            >
+              {isGenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Right Column - Tabbed Panels */}
-      <div 
-        className="w-[380px] flex flex-col m-4 ml-0 rounded-xl overflow-hidden"
-        style={{ backgroundColor: '#2a2a2a' }}
-      >
-        <Tabs defaultValue="code" className="h-full flex flex-col">
-          <TabsList 
-            className="w-full justify-start rounded-none bg-transparent h-12 px-2 flex-shrink-0 border-b"
-            style={{ borderColor: '#444' }}
-          >
-            <TabsTrigger 
-              value="code" 
-              className="text-sm gap-2 data-[state=active]:bg-transparent data-[state=active]:text-white text-gray-400"
+      {/* Right Column - Preview + Tabs */}
+      <div className="flex-1 flex flex-col">
+        {/* Header with project name, device toggles, and tabs */}
+        <div className="h-12 border-b border-border flex items-center justify-between px-4 bg-card/30">
+          <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+            {siteSpec?.name || 'New Project'}
+          </span>
+
+          {/* Device Mode Toggle */}
+          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-7 ${previewMode === 'desktop' ? 'bg-background shadow-sm' : ''}`}
+              onClick={() => setPreviewMode('desktop')}
             >
-              <Code className="h-4 w-4" />
-              Code
-            </TabsTrigger>
-            <TabsTrigger 
-              value="questions" 
-              className="text-sm gap-2 data-[state=active]:bg-transparent data-[state=active]:text-white text-gray-400"
+              <Monitor className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-7 ${previewMode === 'tablet' ? 'bg-background shadow-sm' : ''}`}
+              onClick={() => setPreviewMode('tablet')}
             >
-              <HelpCircle className="h-4 w-4" />
-              Questions
-            </TabsTrigger>
-            <TabsTrigger 
-              value="debug" 
-              className="text-sm gap-2 data-[state=active]:bg-transparent data-[state=active]:text-white text-gray-400"
+              <Tablet className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-7 ${previewMode === 'mobile' ? 'bg-background shadow-sm' : ''}`}
+              onClick={() => setPreviewMode('mobile')}
             >
-              <Bug className="h-4 w-4" />
-              Debug
-            </TabsTrigger>
-          </TabsList>
+              <Smartphone className="h-4 w-4" />
+            </Button>
+          </div>
 
-          {/* Code Tab */}
-          <TabsContent value="code" className="flex-1 overflow-hidden m-0">
-            <ScrollArea className="h-full">
-              <div className="p-4">
-                {siteSpec ? (
-                  <pre className="text-xs p-3 rounded-lg overflow-auto" style={{ backgroundColor: '#1a1a1a', color: '#aaa' }}>
-                    {JSON.stringify(siteSpec, null, 2)}
-                  </pre>
-                ) : (
-                  <p className="text-sm" style={{ color: '#888' }}>
-                    No site generated yet. Enter an idea to see the SiteSpec.
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
-          </TabsContent>
+          {/* Right Tabs */}
+          <div className="flex items-center gap-4">
+            <Tabs defaultValue="code" className="h-full">
+              <TabsList className="bg-transparent h-full gap-2">
+                <TabsTrigger value="code" className="text-xs gap-1.5 data-[state=active]:bg-muted">
+                  <Code className="h-3.5 w-3.5" />
+                  Code
+                </TabsTrigger>
+                <TabsTrigger value="questions" className="text-xs gap-1.5 data-[state=active]:bg-muted">
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  Questions
+                </TabsTrigger>
+                <TabsTrigger value="debug" className="text-xs gap-1.5 data-[state=active]:bg-muted">
+                  <Settings className="h-3.5 w-3.5" />
+                  Debug
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
 
-          {/* Questions Tab */}
-          <TabsContent value="questions" className="flex-1 overflow-hidden m-0">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-4">
-                <h3 className="text-sm font-medium text-white">Clarifying Questions</h3>
-                {siteSpec ? (
-                  <ul className="space-y-3">
-                    <li className="flex gap-3">
-                      <span className="text-xs font-medium mt-0.5" style={{ color: '#b8964c' }}>1.</span>
-                      <p className="text-sm" style={{ color: '#aaa' }}>What services do you offer?</p>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="text-xs font-medium mt-0.5" style={{ color: '#b8964c' }}>2.</span>
-                      <p className="text-sm" style={{ color: '#aaa' }}>What's your primary call-to-action?</p>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="text-xs font-medium mt-0.5" style={{ color: '#b8964c' }}>3.</span>
-                      <p className="text-sm" style={{ color: '#aaa' }}>Do you have existing branding/colors?</p>
-                    </li>
-                  </ul>
-                ) : (
-                  <p className="text-sm" style={{ color: '#888' }}>
-                    Enter an idea to see clarifying questions.
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
-          </TabsContent>
-
-          {/* Debug Tab */}
-          <TabsContent value="debug" className="flex-1 overflow-hidden m-0">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-4">
-                <h3 className="text-sm font-medium text-white">Generation Steps</h3>
-                {steps.length > 0 ? (
-                  <ul className="space-y-2">
-                    {steps.map((step) => (
-                      <li key={step.id} className="flex items-center gap-2 text-sm">
-                        <span className={`h-2 w-2 rounded-full ${
-                          step.status === 'complete' ? 'bg-green-500' :
-                          step.status === 'active' ? 'bg-yellow-500 animate-pulse' :
-                          step.status === 'error' ? 'bg-red-500' :
-                          'bg-gray-600'
-                        }`} />
-                        <span style={{ color: step.status === 'complete' ? '#fff' : '#888' }}>
-                          {step.label}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm" style={{ color: '#888' }}>
-                    No generation in progress
-                  </p>
-                )}
-
-                {siteSpec && (
-                  <div className="mt-6">
-                    <h3 className="text-sm font-medium text-white mb-2">Detected</h3>
-                    <div className="space-y-1 text-xs" style={{ color: '#888' }}>
-                      <p>Business Model: <span className="text-white">{siteSpec.businessModel}</span></p>
-                      <p>Theme: <span className="text-white">{siteSpec.theme.darkMode ? 'Dark' : 'Light'}</span></p>
-                      <p>Sections: <span className="text-white">{siteSpec.pages[0]?.sections?.length || 0}</span></p>
-                    </div>
+        {/* Preview Area */}
+        <div className="flex-1 bg-muted/30 p-4 overflow-hidden">
+          <div className={`h-full mx-auto ${getPreviewWidth()} transition-all duration-300`}>
+            <div className="h-full bg-background rounded-xl shadow-lg overflow-hidden border border-border">
+              {siteSpec ? (
+                <SiteRenderer siteSpec={siteSpec} isLoading={isGenerating} />
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center p-8">
+                    <Monitor className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">
+                      No site generated yet. Enter an idea to see a live preview.
+                    </p>
                   </div>
-                )}
-              </div>
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
