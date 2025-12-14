@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IdeaInputPanel } from '@/components/secret-builder/IdeaInputPanel';
 import { StepsTimeline } from '@/components/secret-builder/StepsTimeline';
-import { SpecPanel } from '@/components/secret-builder/SpecPanel';
+import { SitePreview } from '@/components/secret-builder/SitePreview';
 import { BuildPromptPanel } from '@/components/secret-builder/BuildPromptPanel';
 import { AppSpec, AgentStep, BuilderConfig } from '@/types/app-spec';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Home } from 'lucide-react';
+import { Home, Code, Eye } from 'lucide-react';
 import type { Json } from '@/integrations/supabase/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const INITIAL_STEPS: AgentStep[] = [
   { id: 1, label: 'Understand idea', status: 'pending' },
@@ -139,28 +140,29 @@ export default function SecretBuilder() {
         <StepsTimeline steps={steps} />
       </div>
 
-      {/* Center Column - Structured Spec */}
-      <div className="flex-1 border-r border-border/50 bg-background/50">
+      {/* Center Column - Site Preview */}
+      <div className="flex-1 bg-background/50">
         <div className="h-full flex flex-col">
-          <div className="p-4 border-b border-border/50">
-            <h2 className="text-sm font-medium text-foreground/80">Structured App Spec</h2>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <SpecPanel spec={spec} isLoading={isGenerating} />
-          </div>
+          <SitePreview 
+            siteDefinition={spec?.siteDefinition || null} 
+            isLoading={isGenerating} 
+          />
         </div>
       </div>
 
-      {/* Right Column - Build Prompt */}
-      <div className="w-[420px] bg-card/20">
-        <div className="h-full flex flex-col">
-          <div className="p-4 border-b border-border/50">
-            <h2 className="text-sm font-medium text-foreground/80">Build Prompt & Plan</h2>
-          </div>
-          <div className="flex-1 overflow-hidden">
+      {/* Right Column - Build Prompt (collapsible) */}
+      <div className="w-[380px] border-l border-border/50 bg-card/20">
+        <Tabs defaultValue="prompt" className="h-full flex flex-col">
+          <TabsList className="w-full justify-start rounded-none border-b border-border/50 bg-transparent h-10 px-2">
+            <TabsTrigger value="prompt" className="text-xs gap-1.5">
+              <Code className="h-3.5 w-3.5" />
+              Build Prompt
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="prompt" className="flex-1 overflow-hidden m-0">
             <BuildPromptPanel spec={spec} isLoading={isGenerating} />
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
