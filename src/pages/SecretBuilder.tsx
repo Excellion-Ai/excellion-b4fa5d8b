@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { IdeaInputPanel } from '@/components/secret-builder/IdeaInputPanel';
 import { StepsTimeline } from '@/components/secret-builder/StepsTimeline';
 import { SpecPanel } from '@/components/secret-builder/SpecPanel';
@@ -6,6 +7,8 @@ import { BuildPromptPanel } from '@/components/secret-builder/BuildPromptPanel';
 import { AppSpec, AgentStep, BuilderConfig } from '@/types/app-spec';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Home } from 'lucide-react';
 
 const INITIAL_STEPS: AgentStep[] = [
   { id: 1, label: 'Understand idea', status: 'pending' },
@@ -15,7 +18,11 @@ const INITIAL_STEPS: AgentStep[] = [
 ];
 
 export default function SecretBuilder() {
-  const [idea, setIdea] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const initialIdea = (location.state as { initialIdea?: string })?.initialIdea || '';
+  
+  const [idea, setIdea] = useState(initialIdea);
   const [config, setConfig] = useState<BuilderConfig>({
     target: 'lovable',
     complexity: 'standard',
@@ -23,6 +30,13 @@ export default function SecretBuilder() {
   const [steps, setSteps] = useState<AgentStep[]>([]);
   const [spec, setSpec] = useState<AppSpec | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Auto-generate if we have an initial idea from the hub
+  useEffect(() => {
+    if (initialIdea && !spec && !isGenerating) {
+      handleGenerate();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateStep = (stepId: number, status: AgentStep['status']) => {
     setSteps((prev) =>
@@ -84,6 +98,18 @@ export default function SecretBuilder() {
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Left Column - Idea Input */}
       <div className="w-[380px] border-r border-border/50 flex flex-col bg-card/30">
+        {/* Hub Button */}
+        <div className="p-3 border-b border-border/50">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/secret-builder-hub')}
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <Home className="h-4 w-4" />
+            Back to Hub
+          </Button>
+        </div>
         <IdeaInputPanel
           idea={idea}
           onIdeaChange={setIdea}
