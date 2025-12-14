@@ -21,6 +21,7 @@ const MaintenanceRequest = lazy(() => import("./pages/MaintenanceRequest"));
 const BotExperiment = lazy(() => import("./pages/BotExperiment"));
 const WebBuilderHome = lazy(() => import("./pages/WebBuilderHome"));
 const SecretBuilder = lazy(() => import("./pages/SecretBuilder"));
+const SecretBuilderHub = lazy(() => import("./pages/SecretBuilderHub"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => (
         <Route path="/maintenance-request" element={<MaintenanceRequest />} />
         <Route path="/bot-experiment" element={<BotExperiment />} />
         <Route path="/web-builder" element={<WebBuilderHome />} />
+        <Route path="/secret-builder-hub" element={<SecretBuilderHub />} />
         <Route path="/secret-builder" element={<SecretBuilder />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
