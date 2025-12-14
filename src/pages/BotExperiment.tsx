@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { Send, User, Loader2, MessageSquare, ArrowLeft, Sparkles, Copy, Check, FileText, Code, Lightbulb, Play, Monitor, Bug, GripVertical } from "lucide-react";
+import { Send, User, Loader2, MessageSquare, ArrowLeft, Sparkles, Copy, Check, FileText, Code, Lightbulb, Play, Monitor, Bug, GripVertical, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import excellionLogo from "@/assets/excellion-logo.png";
@@ -276,10 +276,16 @@ const BotExperiment = () => {
             <img src={excellionLogo} alt="Excellion" className="w-7 h-7" />
             <span className="font-semibold text-sm">Secret Builder</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={clearChat} className="text-xs">
-            <MessageSquare className="w-3 h-3 mr-1" />
-            New
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate("/secret-builder-hub")} className="text-xs gap-1.5">
+              <Home className="w-3 h-3" />
+              My Hub
+            </Button>
+            <Button variant="ghost" size="sm" onClick={clearChat} className="text-xs">
+              <MessageSquare className="w-3 h-3 mr-1" />
+              New
+            </Button>
+          </div>
         </header>
 
         <ScrollArea className="flex-1" ref={scrollRef}>
