@@ -9,6 +9,36 @@ const corsHeaders = {
 // URL detection regex
 const URL_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi;
 
+// Color extraction regex patterns
+const HEX_COLOR_REGEX = /#([0-9A-Fa-f]{3,8})\b/g;
+const RGB_COLOR_REGEX = /rgba?\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/g;
+const HSL_COLOR_REGEX = /hsla?\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})%?\s*,\s*(\d{1,3})%?/g;
+
+// Extract base URL for resolving relative paths
+function getBaseUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return url;
+  }
+}
+
+// Resolve relative URL to absolute
+function resolveUrl(relativeUrl: string, baseUrl: string): string {
+  if (!relativeUrl) return "";
+  if (relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://")) {
+    return relativeUrl;
+  }
+  if (relativeUrl.startsWith("//")) {
+    return `https:${relativeUrl}`;
+  }
+  if (relativeUrl.startsWith("/")) {
+    return `${baseUrl}${relativeUrl}`;
+  }
+  return `${baseUrl}/${relativeUrl}`;
+}
+
 // Fetch and extract content from a URL
 async function fetchUrlContent(url: string): Promise<string | null> {
   try {
@@ -29,11 +59,15 @@ async function fetchUrlContent(url: string): Promise<string | null> {
     const doc = new DOMParser().parseFromString(html, "text/html");
     if (!doc) return null;
     
+    const baseUrl = getBaseUrl(url);
+    
     // Extract useful content
     const title = doc.querySelector("title")?.textContent || "";
     const description = doc.querySelector('meta[name="description"]')?.getAttribute("content") || "";
     const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute("content") || "";
     const ogDescription = doc.querySelector('meta[property="og:description"]')?.getAttribute("content") || "";
+    const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute("content") || "";
+    const themeColor = doc.querySelector('meta[name="theme-color"]')?.getAttribute("content") || "";
     
     // Extract headings
     const h1s = Array.from(doc.querySelectorAll("h1")).map((el) => el.textContent).filter(Boolean).slice(0, 3);
@@ -44,6 +78,116 @@ async function fetchUrlContent(url: string): Promise<string | null> {
     
     // Extract main text content (paragraphs)
     const paragraphs = Array.from(doc.querySelectorAll("p")).map((el) => el.textContent).filter((t) => t && t.length > 30).slice(0, 5);
+    
+    // Extract images (hero images, logo, key visuals)
+    const images: string[] = [];
+    
+    // Logo
+    const logoSelectors = ['img[alt*="logo" i]', 'img[src*="logo" i]', 'img[class*="logo" i]', 'header img', '.logo img'];
+    for (const selector of logoSelectors) {
+      const logoEl = doc.querySelector(selector);
+      if (logoEl) {
+        const src = logoEl.getAttribute("src");
+        if (src) {
+          images.push(`Logo: ${resolveUrl(src, baseUrl)}`);
+          break;
+        }
+      }
+    }
+    
+    // Hero/banner images
+    const heroSelectors = ['img[class*="hero" i]', 'img[class*="banner" i]', 'section:first-of-type img', '.hero img', '#hero img'];
+    for (const selector of heroSelectors) {
+      const heroEl = doc.querySelector(selector);
+      if (heroEl) {
+        const src = heroEl.getAttribute("src");
+        if (src && !images.some(i => i.includes(src))) {
+          images.push(`Hero/Banner: ${resolveUrl(src, baseUrl)}`);
+          break;
+        }
+      }
+    }
+    
+    // Featured/product images (first few)
+    const allImages = Array.from(doc.querySelectorAll("img")).slice(0, 10);
+    for (const img of allImages) {
+      const imgEl = img as unknown as { getAttribute: (name: string) => string | null };
+      const src = imgEl.getAttribute("src");
+      const alt = imgEl.getAttribute("alt") || "";
+      if (src && !src.includes("icon") && !src.includes("placeholder") && !images.some(i => i.includes(src))) {
+        if (images.length < 6) {
+          images.push(`Image (${alt || "untitled"}): ${resolveUrl(src, baseUrl)}`);
+        }
+      }
+    }
+    
+    // OG image as fallback
+    if (ogImage && !images.some(i => i.includes(ogImage))) {
+      images.push(`OG Image: ${resolveUrl(ogImage, baseUrl)}`);
+    }
+    
+    // Extract colors from CSS and inline styles
+    const colors = new Set<string>();
+    
+    // Theme color
+    if (themeColor) colors.add(themeColor);
+    
+    // Extract from style tags
+    const styleTags = Array.from(doc.querySelectorAll("style"));
+    for (const styleTag of styleTags) {
+      const cssText = (styleTag as unknown as { textContent: string | null }).textContent || "";
+      
+      // Find hex colors
+      const hexMatches = cssText.match(HEX_COLOR_REGEX) || [];
+      hexMatches.forEach((c: string) => {
+        if (c.toLowerCase() !== "#fff" && c.toLowerCase() !== "#ffffff" && 
+            c.toLowerCase() !== "#000" && c.toLowerCase() !== "#000000") {
+          colors.add(c);
+        }
+      });
+      
+      // Find rgb colors
+      const rgbMatches = cssText.match(RGB_COLOR_REGEX) || [];
+      rgbMatches.forEach((c: string) => colors.add(c));
+    }
+    
+    // Extract from inline styles on key elements
+    const styledElements = Array.from(doc.querySelectorAll("[style]")).slice(0, 20);
+    for (const el of styledElements) {
+      const elWithAttr = el as unknown as { getAttribute: (name: string) => string | null };
+      const style = elWithAttr.getAttribute("style") || "";
+      const hexMatches = style.match(HEX_COLOR_REGEX) || [];
+      hexMatches.forEach((c: string) => {
+        if (c.toLowerCase() !== "#fff" && c.toLowerCase() !== "#ffffff" && 
+            c.toLowerCase() !== "#000" && c.toLowerCase() !== "#000000") {
+          colors.add(c);
+        }
+      });
+    }
+    
+    // Extract from CSS variables in :root
+    const rootStyleTag = doc.querySelector("style");
+    const rootStyle = rootStyleTag ? (rootStyleTag as unknown as { textContent: string | null }).textContent || "" : "";
+    const cssVarMatch = rootStyle.match(/:root\s*\{([^}]+)\}/);
+    if (cssVarMatch) {
+      const varContent = cssVarMatch[1];
+      const colorVars = varContent.match(/--[\w-]+:\s*#[0-9A-Fa-f]{3,8}/g) || [];
+      colorVars.forEach((v: string) => {
+        const colorMatch = v.match(/#[0-9A-Fa-f]{3,8}/);
+        if (colorMatch) colors.add(colorMatch[0]);
+      });
+    }
+    
+    // Get background colors from common elements
+    const bgElements = doc.querySelectorAll("header, nav, footer, .hero, #hero, section");
+    for (const el of Array.from(bgElements).slice(0, 5)) {
+      const elWithAttr = el as unknown as { getAttribute: (name: string) => string | null };
+      const style = elWithAttr.getAttribute("style") || "";
+      const bgMatch = style.match(/background(?:-color)?:\s*(#[0-9A-Fa-f]{3,8}|rgb[^;)]+\))/i);
+      if (bgMatch) colors.add(bgMatch[1]);
+    }
+    
+    const colorArray = Array.from(colors).slice(0, 8);
     
     // Build summary
     const content = `
@@ -63,11 +207,20 @@ ${navItems.map((n) => `- ${n}`).join("\n")}
 
 Key Content:
 ${paragraphs.join("\n\n")}
+
+BRAND COLORS DETECTED:
+${colorArray.length > 0 ? colorArray.map(c => `- ${c}`).join("\n") : "- No specific brand colors detected, infer from business type"}
+${themeColor ? `\nTheme Color: ${themeColor}` : ""}
+
+IMAGES FOUND:
+${images.length > 0 ? images.map(i => `- ${i}`).join("\n") : "- No key images found"}
+
 =================================
-Use this information to make the generated website match this existing site's content, services, and branding.
+IMPORTANT: Use the detected brand colors in your design. If images are available, reference them in the generated site using the exact URLs provided.
+Match this existing site's content, services, branding, and color scheme.
 `;
     
-    console.log("Successfully scraped URL content");
+    console.log("Successfully scraped URL content with colors and images");
     return content;
   } catch (error) {
     console.error("Error fetching URL:", error);
