@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Home } from 'lucide-react';
+import type { Json } from '@/integrations/supabase/types';
 
 const INITIAL_STEPS: AgentStep[] = [
   { id: 1, label: 'Understand idea', status: 'pending' },
@@ -82,7 +83,24 @@ export default function SecretBuilder() {
       await new Promise((r) => setTimeout(r, 200));
       updateStep(4, 'complete');
 
-      setSpec(data as AppSpec);
+      const generatedSpec = data as AppSpec;
+      setSpec(generatedSpec);
+
+      // Save project to database
+      const projectName = generatedSpec.summary?.[0]?.split('.')[0] || idea.slice(0, 50);
+      const { error: saveError } = await supabase
+        .from('builder_projects')
+        .insert({
+          name: projectName,
+          idea: idea,
+          spec: generatedSpec as unknown as Json,
+        });
+
+      if (saveError) {
+        console.error('Failed to save project:', saveError);
+      } else {
+        toast.success('Project saved to your hub!');
+      }
     } catch (error) {
       console.error('Generation error:', error);
       toast.error('Failed to generate blueprint. Please try again.');

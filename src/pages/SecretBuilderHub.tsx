@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   ArrowRight, 
   Sparkles, 
@@ -23,9 +23,18 @@ import {
   Gift,
   Zap,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Clock,
+  FileCode
 } from 'lucide-react';
 import excellionLogo from '@/assets/excellion-logo.png';
+
+interface BuilderProject {
+  id: string;
+  name: string;
+  idea: string;
+  created_at: string;
+}
 
 const TEMPLATES = [
   {
@@ -61,7 +70,26 @@ const TEMPLATES = [
 export default function SecretBuilderHub() {
   const [idea, setIdea] = useState('');
   const [chatMode, setChatMode] = useState(true);
+  const [projects, setProjects] = useState<BuilderProject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const { data, error } = await supabase
+        .from('builder_projects')
+        .select('id, name, idea, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error && data) {
+        setProjects(data);
+      }
+      setIsLoading(false);
+    };
+
+    fetchProjects();
+  }, []);
 
   const handleSubmit = (prompt?: string) => {
     const ideaToUse = prompt || idea;
@@ -104,18 +132,22 @@ export default function SecretBuilderHub() {
           <div className="pt-4">
             <span className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Projects</span>
             <div className="mt-2 space-y-1">
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                <FolderOpen className="h-4 w-4" />
-                <span className="text-sm">All projects</span>
-              </a>
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                <Star className="h-4 w-4" />
-                <span className="text-sm">Starred</span>
-              </a>
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                <Users className="h-4 w-4" />
-                <span className="text-sm">Shared with me</span>
-              </a>
+              {projects.length > 0 ? (
+                projects.slice(0, 5).map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => navigate('/secret-builder', { state: { initialIdea: project.idea } })}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors w-full text-left"
+                  >
+                    <FileCode className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm truncate">{project.name}</span>
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-xs text-gray-400">
+                  {isLoading ? 'Loading...' : 'No projects yet'}
+                </div>
+              )}
             </div>
           </div>
 
