@@ -153,7 +153,7 @@ export default function SecretBuilderHub() {
                     className="group flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors w-full"
                   >
                     <button
-                      onClick={() => navigate('/secret-builder', { state: { initialIdea: project.idea } })}
+                      onClick={() => navigate('/secret-builder', { state: { projectId: project.id } })}
                       className="flex items-center gap-3 flex-1 text-left min-w-0"
                     >
                       <FileCode className="h-4 w-4 flex-shrink-0" />
