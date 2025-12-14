@@ -1,9 +1,79 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// URL detection regex
+const URL_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi;
+
+// Fetch and extract content from a URL
+async function fetchUrlContent(url: string): Promise<string | null> {
+  try {
+    console.log("Fetching URL:", url);
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; SecretBuilder/1.0)",
+        "Accept": "text/html,application/xhtml+xml",
+      },
+    });
+    
+    if (!response.ok) {
+      console.log("Failed to fetch URL:", response.status);
+      return null;
+    }
+    
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    if (!doc) return null;
+    
+    // Extract useful content
+    const title = doc.querySelector("title")?.textContent || "";
+    const description = doc.querySelector('meta[name="description"]')?.getAttribute("content") || "";
+    const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute("content") || "";
+    const ogDescription = doc.querySelector('meta[property="og:description"]')?.getAttribute("content") || "";
+    
+    // Extract headings
+    const h1s = Array.from(doc.querySelectorAll("h1")).map((el) => el.textContent).filter(Boolean).slice(0, 3);
+    const h2s = Array.from(doc.querySelectorAll("h2")).map((el) => el.textContent).filter(Boolean).slice(0, 5);
+    
+    // Extract nav/menu items
+    const navItems = Array.from(doc.querySelectorAll("nav a, header a")).map((el) => el.textContent).filter(Boolean).slice(0, 10);
+    
+    // Extract main text content (paragraphs)
+    const paragraphs = Array.from(doc.querySelectorAll("p")).map((el) => el.textContent).filter((t) => t && t.length > 30).slice(0, 5);
+    
+    // Build summary
+    const content = `
+SCRAPED WEBSITE INFO FROM: ${url}
+=================================
+Title: ${title || ogTitle}
+Description: ${description || ogDescription}
+
+Main Headings:
+${h1s.map((h) => `- ${h}`).join("\n")}
+
+Section Headings:
+${h2s.map((h) => `- ${h}`).join("\n")}
+
+Navigation Items:
+${navItems.map((n) => `- ${n}`).join("\n")}
+
+Key Content:
+${paragraphs.join("\n\n")}
+=================================
+Use this information to make the generated website match this existing site's content, services, and branding.
+`;
+    
+    console.log("Successfully scraped URL content");
+    return content;
+  } catch (error) {
+    console.error("Error fetching URL:", error);
+    return null;
+  }
+}
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
@@ -355,7 +425,40 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Check for URLs in the most recent user message and fetch their content
+    const lastUserMessage = [...messages].reverse().find((m: any) => m.role === "user");
+    let urlContext = "";
+    
+    if (lastUserMessage?.content) {
+      const urls = lastUserMessage.content.match(URL_REGEX);
+      if (urls && urls.length > 0) {
+        console.log("Found URLs in message:", urls);
+        // Fetch content from the first URL
+        const scrapedContent = await fetchUrlContent(urls[0]);
+        if (scrapedContent) {
+          urlContext = scrapedContent;
+        }
+      }
+    }
+
     let enhancedPrompt = SYSTEM_PROMPT;
+    
+    // Add scraped URL content to the prompt
+    if (urlContext) {
+      enhancedPrompt += `\n\n====================================
+IMPORTANT: USER PROVIDED A REFERENCE WEBSITE
+====================================
+${urlContext}
+
+USE THIS INFORMATION TO:
+1. Match the business name, services, and offerings from the scraped site
+2. Use similar section structure and navigation
+3. Incorporate the actual content (headings, descriptions) into the generated site
+4. Keep the same service categories and features
+5. Make it look like an upgraded version of their current site
+`;
+    }
+    
     if (context?.businessName || context?.industry || context?.goals) {
       enhancedPrompt += `\n\nProject Context:`;
       if (context.businessName) enhancedPrompt += `\n- Business Name: ${context.businessName}`;
@@ -364,6 +467,9 @@ serve(async (req) => {
     }
 
     console.log("Processing chat request with", messages.length, "messages from IP:", clientIP);
+    if (urlContext) {
+      console.log("Including scraped URL content in context");
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
