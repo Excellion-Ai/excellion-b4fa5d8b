@@ -278,7 +278,7 @@ export function BuilderShell() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/hub')}
+              onClick={() => navigate('/secret-builder-hub')}
               className="gap-1.5 text-xs"
             >
               <LayoutGrid className="h-3.5 w-3.5" />
