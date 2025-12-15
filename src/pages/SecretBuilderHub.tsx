@@ -133,11 +133,11 @@ export default function SecretBuilderHub() {
 
         {/* Navigation Menu */}
         <nav className="flex-1 p-3 space-y-1">
-          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors" style={{ color: 'rgba(255,255,255,0.8)', background: 'rgba(88, 28, 135, 0.15)' }}>
+          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors" style={{ color: 'rgba(255,255,255,0.8)', background: 'rgba(147, 51, 234, 0.2)' }}>
             <Home className="h-4 w-4" style={{ color: '#d4af37' }} />
             <span className="text-sm font-medium">Home</span>
           </a>
-          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-purple-900/20 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-violet-500/15 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
             <Search className="h-4 w-4" style={{ color: '#d4af37' }} />
             <span className="text-sm font-medium">Search</span>
           </a>
@@ -180,7 +180,7 @@ export default function SecretBuilderHub() {
           <div className="pt-4">
             <span className="px-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(212, 175, 55, 0.5)' }}>Resources</span>
             <div className="mt-2 space-y-1">
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-purple-900/20 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-violet-500/15 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 <Compass className="h-4 w-4" style={{ color: '#d4af37' }} />
                 <span className="text-sm">Discover</span>
               </a>
@@ -191,7 +191,7 @@ export default function SecretBuilderHub() {
         {/* Bottom Section */}
         <div className="p-3 space-y-3 border-t" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
           {/* Share Promo Card */}
-          <div className="p-3 rounded-xl border" style={{ background: 'linear-gradient(135deg, rgba(88, 28, 135, 0.15) 0%, rgba(212, 175, 55, 0.08) 100%)', borderColor: 'rgba(88, 28, 135, 0.3)' }}>
+          <div className="p-3 rounded-xl border" style={{ background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.18) 0%, rgba(212, 175, 55, 0.08) 100%)', borderColor: 'rgba(147, 51, 234, 0.35)' }}>
             <div className="flex items-center gap-2 mb-1">
               <Gift className="h-4 w-4" style={{ color: '#d4af37' }} />
               <span className="text-sm font-medium" style={{ color: '#d4af37' }}>Share Excellion</span>
@@ -200,7 +200,7 @@ export default function SecretBuilderHub() {
           </div>
 
           {/* Upgrade Promo Card */}
-          <div className="p-3 rounded-xl border" style={{ background: 'linear-gradient(135deg, rgba(88, 28, 135, 0.12) 0%, rgba(212, 175, 55, 0.05) 100%)', borderColor: 'rgba(88, 28, 135, 0.25)' }}>
+          <div className="p-3 rounded-xl border" style={{ background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)', borderColor: 'rgba(147, 51, 234, 0.3)' }}>
             <div className="flex items-center gap-2 mb-1">
               <Zap className="h-4 w-4" style={{ color: '#d4af37' }} />
               <span className="text-sm font-medium" style={{ color: '#d4af37' }}>Upgrade to Pro</span>
@@ -229,8 +229,8 @@ export default function SecretBuilderHub() {
           style={{
             background: `
               radial-gradient(ellipse at 20% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 30%, rgba(88, 28, 135, 0.12) 0%, transparent 45%),
-              radial-gradient(ellipse at 10% 80%, rgba(88, 28, 135, 0.08) 0%, transparent 40%),
+              radial-gradient(ellipse at 80% 30%, rgba(147, 51, 234, 0.15) 0%, transparent 45%),
+              radial-gradient(ellipse at 10% 80%, rgba(147, 51, 234, 0.1) 0%, transparent 40%),
               radial-gradient(ellipse at 80% 80%, rgba(139, 114, 39, 0.06) 0%, transparent 50%),
               radial-gradient(ellipse at 50% 50%, rgba(10, 10, 10, 0.95) 0%, transparent 80%),
               linear-gradient(135deg, #0a0a0a 0%, #0d0a10 50%, #0a0a0a 100%)
@@ -252,7 +252,7 @@ export default function SecretBuilderHub() {
 
           {/* Input Container Card */}
           <div className="w-full max-w-2xl">
-            <div className="rounded-2xl border overflow-hidden" style={{ background: 'rgba(15, 15, 15, 0.9)', borderColor: 'rgba(212, 175, 55, 0.2)', boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 60px rgba(212, 175, 55, 0.05), 0 0 80px rgba(88, 28, 135, 0.08)' }}>
+            <div className="rounded-2xl border overflow-hidden" style={{ background: 'rgba(15, 15, 15, 0.9)', borderColor: 'rgba(212, 175, 55, 0.2)', boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 60px rgba(212, 175, 55, 0.05), 0 0 80px rgba(147, 51, 234, 0.1)' }}>
               {/* Text Input Area */}
               <div className="p-4">
                 <Input
@@ -315,7 +315,7 @@ export default function SecretBuilderHub() {
 
         {/* Bottom Templates Sheet */}
         <div className="fixed bottom-0 left-64 right-0 z-20">
-          <div className="rounded-t-3xl border-t" style={{ background: 'linear-gradient(180deg, rgba(15, 15, 15, 0.98) 0%, rgba(12, 10, 18, 0.98) 100%)', borderColor: 'rgba(212, 175, 55, 0.15)', boxShadow: '0 -10px 40px rgba(0,0,0,0.5), 0 -5px 30px rgba(88, 28, 135, 0.05)' }}>
+          <div className="rounded-t-3xl border-t" style={{ background: 'linear-gradient(180deg, rgba(15, 15, 15, 0.98) 0%, rgba(12, 10, 18, 0.98) 100%)', borderColor: 'rgba(212, 175, 55, 0.15)', boxShadow: '0 -10px 40px rgba(0,0,0,0.5), 0 -5px 30px rgba(147, 51, 234, 0.08)' }}>
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
               <div className="flex items-center gap-2">
@@ -337,20 +337,20 @@ export default function SecretBuilderHub() {
                     onClick={() => handleSubmit(template.prompt)}
                     className="group p-4 rounded-xl border transition-all text-left hover:scale-[1.02]"
                     style={{ 
-                      background: 'linear-gradient(135deg, rgba(88, 28, 135, 0.08) 0%, rgba(212, 175, 55, 0.03) 100%)', 
-                      borderColor: 'rgba(88, 28, 135, 0.2)'
+                      background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(212, 175, 55, 0.03) 100%)', 
+                      borderColor: 'rgba(147, 51, 234, 0.25)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(88, 28, 135, 0.18) 0%, rgba(212, 175, 55, 0.08) 100%)';
-                      e.currentTarget.style.borderColor = 'rgba(88, 28, 135, 0.4)';
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(147, 51, 234, 0.22) 0%, rgba(212, 175, 55, 0.08) 100%)';
+                      e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.45)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(88, 28, 135, 0.08) 0%, rgba(212, 175, 55, 0.03) 100%)';
-                      e.currentTarget.style.borderColor = 'rgba(88, 28, 135, 0.2)';
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(212, 175, 55, 0.03) 100%)';
+                      e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.25)';
                     }}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 rounded-lg border flex items-center justify-center transition-colors" style={{ background: 'rgba(88, 28, 135, 0.15)', borderColor: 'rgba(88, 28, 135, 0.3)' }}>
+                      <div className="h-10 w-10 rounded-lg border flex items-center justify-center transition-colors" style={{ background: 'rgba(147, 51, 234, 0.18)', borderColor: 'rgba(147, 51, 234, 0.35)' }}>
                         <template.icon className="h-5 w-5 transition-colors" style={{ color: '#d4af37' }} />
                       </div>
                     </div>
