@@ -180,10 +180,10 @@ const TEMPLATES = [
 ];
 
 const NAV_ITEMS = [
-  { icon: Home, label: 'Home', active: true },
-  { icon: FolderKanban, label: 'Projects', active: false },
-  { icon: BookOpen, label: 'Resources', active: false },
-];
+  { icon: Home, label: 'Home', action: 'home' },
+  { icon: FolderKanban, label: 'Projects', action: 'projects' },
+  { icon: BookOpen, label: 'Resources', action: 'resources' },
+] as const;
 
 // localStorage keys
 const LS_LAST_PROJECT_ID = 'excellion_last_project_id';
@@ -519,20 +519,32 @@ export default function SecretBuilderHub() {
 
         {/* Navigation */}
         <nav className="px-3 py-2 space-y-1">
-          {NAV_ITEMS.map((item) => (
-            <Button
-              key={item.label}
-              variant="ghost"
-              className={`w-full justify-start gap-2 h-9 ${
-                item.active 
-                  ? 'bg-secondary text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              <span className="text-sm">{item.label}</span>
-            </Button>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.action === 'home';
+            return (
+              <Button
+                key={item.label}
+                variant="ghost"
+                className={`w-full justify-start gap-2 h-9 ${
+                  isActive 
+                    ? 'bg-secondary text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                }`}
+                onClick={() => {
+                  if (item.action === 'home') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else if (item.action === 'projects') {
+                    document.getElementById('projects-section')?.scrollIntoView({ behavior: 'smooth' });
+                  } else if (item.action === 'resources') {
+                    window.open('https://docs.lovable.dev', '_blank');
+                  }
+                }}
+              >
+                <item.icon className="w-4 h-4" />
+                <span className="text-sm">{item.label}</span>
+              </Button>
+            );
+          })}
         </nav>
 
         {/* Projects Section */}
@@ -787,7 +799,7 @@ export default function SecretBuilderHub() {
           </section>
 
           {/* Continue Section */}
-          <section className="mb-10">
+          <section id="projects-section" className="mb-10">
             <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
               Continue
             </h2>
