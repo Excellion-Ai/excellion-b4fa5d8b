@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -10,21 +13,30 @@ import {
   ShoppingBag, 
   Calendar, 
   Briefcase,
-  Plus,
   Paperclip,
   Palette,
-  MessageSquare,
-  Waves,
   Home,
   Search,
-  Compass,
-  Gift,
-  Zap,
+  FolderKanban,
+  BookOpen,
   ChevronDown,
-  ChevronRight,
-  FileCode,
-  Trash2
+  Trash2,
+  MoreHorizontal,
+  Loader2,
+  Clock,
+  Send,
+  Store,
+  Users,
+  Rocket,
+  Command,
+  ExternalLink
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import excellionLogo from '@/assets/excellion-logo.png';
 
 interface BuilderProject {
@@ -32,44 +44,86 @@ interface BuilderProject {
   name: string;
   idea: string;
   created_at: string;
+  updated_at: string;
 }
+
+const QUICK_PROMPTS = [
+  { label: 'Restaurant with online ordering', icon: Store },
+  { label: 'Service business lead-gen', icon: Briefcase },
+  { label: 'Booking / appointments', icon: Calendar },
+  { label: 'Portfolio', icon: Users },
+  { label: 'Agency site', icon: Rocket },
+];
 
 const TEMPLATES = [
   {
+    id: 'saas',
+    title: 'SaaS Landing Page',
+    description: 'Modern product landing with pricing & features',
+    tags: ['Marketing', 'Tech'],
+    bestFor: 'Software products, apps, digital services',
+    icon: Layout,
+    prompt: 'A modern SaaS landing page with hero, features grid, pricing tiers, testimonials, and CTA sections',
+  },
+  {
     id: 'restaurant',
-    title: 'Restaurant',
-    description: 'Online ordering & menu',
+    title: 'Restaurant & Menu',
+    description: 'Online ordering, menu display, reservations',
+    tags: ['Food', 'Local'],
+    bestFor: 'Restaurants, cafes, food trucks',
     icon: ShoppingBag,
     prompt: 'A modern restaurant website with online ordering, menu display, and reservations',
   },
   {
     id: 'portfolio',
     title: 'Portfolio',
-    description: 'Showcase your work',
+    description: 'Showcase work with case studies & contact',
+    tags: ['Creative', 'Personal'],
+    bestFor: 'Designers, developers, freelancers',
     icon: Layout,
     prompt: 'A professional portfolio website to showcase my work and attract clients',
   },
   {
-    id: 'booking',
-    title: 'Booking Service',
-    description: 'Appointments & scheduling',
-    icon: Calendar,
-    prompt: 'A service business website with appointment booking and service listings',
+    id: 'service',
+    title: 'Service Business',
+    description: 'Lead generation with booking & testimonials',
+    tags: ['Local', 'Services'],
+    bestFor: 'Contractors, consultants, agencies',
+    icon: Briefcase,
+    prompt: 'A service business website with appointment booking, testimonials, and service listings',
   },
   {
-    id: 'agency',
-    title: 'Agency',
-    description: 'Professional services',
-    icon: Briefcase,
-    prompt: 'A professional agency website with services, team, and case studies',
+    id: 'ecommerce',
+    title: 'E-commerce Store',
+    description: 'Product catalog, cart, checkout flow',
+    tags: ['Retail', 'Online'],
+    bestFor: 'Online shops, dropshipping, D2C brands',
+    icon: ShoppingBag,
+    prompt: 'An e-commerce store with product catalog, shopping cart, and checkout flow',
   },
+  {
+    id: 'blog',
+    title: 'Blog / Content',
+    description: 'Articles, categories, newsletter signup',
+    tags: ['Content', 'Media'],
+    bestFor: 'Writers, publications, thought leaders',
+    icon: BookOpen,
+    prompt: 'A blog website with articles, categories, and newsletter signup',
+  },
+];
+
+const NAV_ITEMS = [
+  { icon: Home, label: 'Home', active: true },
+  { icon: FolderKanban, label: 'Projects', active: false },
+  { icon: BookOpen, label: 'Resources', active: false },
 ];
 
 export default function SecretBuilderHub() {
   const [idea, setIdea] = useState('');
-  const [chatMode, setChatMode] = useState(true);
   const [projects, setProjects] = useState<BuilderProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -84,7 +138,7 @@ export default function SecretBuilderHub() {
       toast({ title: 'Error', description: 'Failed to delete project', variant: 'destructive' });
     } else {
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
-      toast({ title: 'Deleted', description: 'Project removed' });
+      toast({ title: 'Project deleted' });
     }
   };
 
@@ -92,8 +146,8 @@ export default function SecretBuilderHub() {
     const fetchProjects = async () => {
       const { data, error } = await supabase
         .from('builder_projects')
-        .select('id, name, idea, created_at')
-        .order('created_at', { ascending: false })
+        .select('id, name, idea, created_at, updated_at')
+        .order('updated_at', { ascending: false })
         .limit(10);
 
       if (!error && data) {
@@ -107,7 +161,9 @@ export default function SecretBuilderHub() {
 
   const handleSubmit = (prompt?: string) => {
     const ideaToUse = prompt || idea;
-    if (!ideaToUse.trim()) return;
+    if (!ideaToUse.trim() || isGenerating) return;
+    
+    setIsGenerating(true);
     navigate('/secret-builder', { state: { initialIdea: ideaToUse } });
   };
 
@@ -118,249 +174,344 @@ export default function SecretBuilderHub() {
     }
   };
 
+  const handleOpenProject = (projectId: string) => {
+    navigate('/secret-builder', { state: { projectId } });
+  };
+
+  const formatTimeAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const lastProject = projects[0];
+
   return (
-    <div className="min-h-screen flex" style={{ background: '#0a0a0a' }}>
-      {/* Left Sidebar - Dark Theme */}
-      <aside className="w-64 flex flex-col fixed h-full z-20 border-r" style={{ background: 'linear-gradient(180deg, #0f0f0f 0%, #0d0a12 100%)', borderColor: 'rgba(212, 175, 55, 0.15)' }}>
-        {/* Workspace Selector */}
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
-          <button className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
-            <img src={excellionLogo} alt="Excellion" className="h-6 w-6" />
-            <span className="font-medium flex-1 text-left" style={{ color: '#d4af37' }}>Excellion</span>
-            <ChevronDown className="h-4 w-4" style={{ color: 'rgba(212, 175, 55, 0.6)' }} />
-          </button>
+    <div className="min-h-screen flex bg-background">
+      {/* Sidebar */}
+      <aside className="w-64 flex flex-col fixed h-full z-20 border-r border-border bg-card">
+        {/* Workspace Header */}
+        <div className="p-4 border-b border-border">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between h-auto py-2 px-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <img src={excellionLogo} alt="Excellion" className="h-5 w-5" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-foreground">Excellion</p>
+                    <p className="text-xs text-muted-foreground">Builder</p>
+                  </div>
+                </div>
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem>Workspace Settings</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {/* Navigation Menu */}
-        <nav className="flex-1 p-3 space-y-1">
-          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors" style={{ color: 'rgba(255,255,255,0.8)', background: 'rgba(147, 51, 234, 0.2)' }}>
-            <Home className="h-4 w-4" style={{ color: '#d4af37' }} />
-            <span className="text-sm font-medium">Home</span>
-          </a>
-          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-violet-500/15 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
-            <Search className="h-4 w-4" style={{ color: '#d4af37' }} />
-            <span className="text-sm font-medium">Search</span>
-          </a>
-          
-          {/* Projects Section */}
-          <div className="pt-4">
-            <span className="px-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(212, 175, 55, 0.5)' }}>Projects</span>
-            <div className="mt-2 space-y-1">
-              {projects.length > 0 ? (
-                projects.slice(0, 5).map((project) => (
-                  <div
-                    key={project.id}
-                    className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors w-full"
-                  >
-                    <button
-                      onClick={() => navigate('/secret-builder', { state: { projectId: project.id } })}
-                      className="flex items-center gap-3 flex-1 text-left min-w-0"
-                    >
-                      <FileCode className="h-4 w-4 flex-shrink-0" style={{ color: '#d4af37' }} />
-                      <span className="text-sm truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>{project.name}</span>
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteProject(project.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-900/30 transition-all"
-                      title="Delete project"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-red-400" />
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <div className="px-3 py-2 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                  {isLoading ? 'Loading...' : 'No projects yet'}
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Search */}
+        <div className="px-3 py-2">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground"
+          >
+            <Search className="w-4 h-4" />
+            <span className="text-sm">Search</span>
+            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              <Command className="w-3 h-3" />K
+            </kbd>
+          </Button>
+        </div>
 
-          {/* Resources Section */}
-          <div className="pt-4">
-            <span className="px-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(212, 175, 55, 0.5)' }}>Resources</span>
-            <div className="mt-2 space-y-1">
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-violet-500/15 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                <Compass className="h-4 w-4" style={{ color: '#d4af37' }} />
-                <span className="text-sm">Discover</span>
-              </a>
-            </div>
-          </div>
+        {/* Navigation */}
+        <nav className="px-3 py-2 space-y-1">
+          {NAV_ITEMS.map((item) => (
+            <Button
+              key={item.label}
+              variant="ghost"
+              className={`w-full justify-start gap-2 h-9 ${
+                item.active 
+                  ? 'bg-secondary text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+              }`}
+            >
+              <item.icon className="w-4 h-4" />
+              <span className="text-sm">{item.label}</span>
+            </Button>
+          ))}
         </nav>
 
-        {/* Bottom Section */}
-        <div className="p-3 space-y-3 border-t" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
-          {/* Share Promo Card */}
-          <div className="p-3 rounded-xl border" style={{ background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.18) 0%, rgba(212, 175, 55, 0.08) 100%)', borderColor: 'rgba(147, 51, 234, 0.35)' }}>
-            <div className="flex items-center gap-2 mb-1">
-              <Gift className="h-4 w-4" style={{ color: '#d4af37' }} />
-              <span className="text-sm font-medium" style={{ color: '#d4af37' }}>Share Excellion</span>
-            </div>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>Invite friends and earn rewards</p>
+        {/* Projects Section */}
+        <div className="flex-1 overflow-hidden flex flex-col px-3 py-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Projects
+            </h3>
           </div>
 
-          {/* Upgrade Promo Card */}
-          <div className="p-3 rounded-xl border" style={{ background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)', borderColor: 'rgba(147, 51, 234, 0.3)' }}>
-            <div className="flex items-center gap-2 mb-1">
-              <Zap className="h-4 w-4" style={{ color: '#d4af37' }} />
-              <span className="text-sm font-medium" style={{ color: '#d4af37' }}>Upgrade to Pro</span>
-            </div>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>Unlock unlimited builds</p>
+          <div className="flex-1 overflow-y-auto space-y-1">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : projects.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-2 px-2">
+                No projects yet
+              </p>
+            ) : (
+              projects.slice(0, 5).map((project) => (
+                <div
+                  key={project.id}
+                  onClick={() => handleOpenProject(project.id)}
+                  className="group flex items-start gap-2 p-2 rounded-md hover:bg-secondary/50 cursor-pointer transition-colors"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-1.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground truncate leading-tight">
+                      {project.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {formatTimeAgo(project.updated_at)}
+                    </p>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal className="w-3.5 h-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
+                        <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={(e) => handleDeleteProject(project.id, e as unknown as React.MouseEvent)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))
+            )}
           </div>
+        </div>
 
-          {/* User Profile */}
-          <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
-            <div className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium" style={{ background: 'linear-gradient(135deg, #d4af37, #8b7227)', color: '#0a0a0a' }}>
-              U
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>User</p>
-              <p className="text-xs" style={{ color: 'rgba(212, 175, 55, 0.6)' }}>Free plan</p>
-            </div>
-          </div>
+        {/* Bottom CTA */}
+        <div className="p-3 border-t border-border">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full text-xs h-8 text-muted-foreground hover:text-foreground"
+          >
+            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+            Upgrade to Pro
+          </Button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 relative min-h-screen">
-        {/* Dark Gradient Background with Gold & Purple Accents */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `
-              radial-gradient(ellipse at 20% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 30%, rgba(147, 51, 234, 0.15) 0%, transparent 45%),
-              radial-gradient(ellipse at 10% 80%, rgba(147, 51, 234, 0.1) 0%, transparent 40%),
-              radial-gradient(ellipse at 80% 80%, rgba(139, 114, 39, 0.06) 0%, transparent 50%),
-              radial-gradient(ellipse at 50% 50%, rgba(10, 10, 10, 0.95) 0%, transparent 80%),
-              linear-gradient(135deg, #0a0a0a 0%, #0d0a10 50%, #0a0a0a 100%)
-            `
-          }}
-        />
-
-        {/* Content Container */}
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-8 pb-48">
-          {/* Welcome Message */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{ color: 'rgba(255,255,255,0.95)' }}>
-              Let's build something, <span style={{ color: '#d4af37' }}>User</span>
+      <main className="flex-1 ml-64 min-h-screen overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-6 py-16">
+          
+          {/* Hero Section */}
+          <section className="text-center mb-10">
+            <h1 className="text-3xl lg:text-4xl font-semibold text-foreground mb-3">
+              Let's build your next site
             </h1>
-            <p className="text-lg max-w-md mx-auto" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Describe your website idea and watch it come to life
+            <p className="text-base text-muted-foreground max-w-lg mx-auto">
+              Describe what you want. Excellion generates a full site you can edit and publish.
             </p>
-          </div>
+          </section>
 
-          {/* Input Container Card */}
-          <div className="w-full max-w-2xl">
-            <div className="rounded-2xl border overflow-hidden" style={{ background: 'rgba(15, 15, 15, 0.9)', borderColor: 'rgba(212, 175, 55, 0.2)', boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 60px rgba(212, 175, 55, 0.05), 0 0 80px rgba(147, 51, 234, 0.1)' }}>
-              {/* Text Input Area */}
-              <div className="p-4">
-                <Input
+          {/* Input Card */}
+          <section className="mb-8">
+            <Card className="bg-card border-border">
+              <CardContent className="p-4">
+                <Textarea
+                  ref={textareaRef}
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Describe your website idea..."
-                  className="border-0 bg-transparent text-base h-12 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  style={{ color: 'rgba(255,255,255,0.9)' }}
+                  className="min-h-[100px] resize-none border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 p-0 text-base"
+                  disabled={isGenerating}
                 />
-              </div>
-
-              {/* Controls Row */}
-              <div className="px-4 pb-4 flex items-center justify-between">
-                {/* Left Controls */}
-                <div className="flex items-center gap-2">
-                  <button className="h-8 w-8 rounded-full flex items-center justify-center transition-colors" style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
-                    <Plus className="h-4 w-4" style={{ color: '#d4af37' }} />
-                  </button>
-                  <button className="h-8 px-3 rounded-full flex items-center gap-1.5 transition-colors" style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
-                    <Paperclip className="h-3.5 w-3.5" style={{ color: '#d4af37' }} />
-                    <span className="text-xs font-medium" style={{ color: '#d4af37' }}>Attach</span>
-                  </button>
-                  <button className="h-8 px-3 rounded-full flex items-center gap-1.5 transition-colors" style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
-                    <Palette className="h-3.5 w-3.5" style={{ color: '#d4af37' }} />
-                    <span className="text-xs font-medium" style={{ color: '#d4af37' }}>Theme</span>
-                    <ChevronDown className="h-3 w-3" style={{ color: 'rgba(212, 175, 55, 0.6)' }} />
-                  </button>
-                </div>
-
-                {/* Right Controls */}
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => setChatMode(!chatMode)}
-                    className="h-8 px-3 rounded-full flex items-center gap-1.5 transition-colors"
-                    style={{ 
-                      background: chatMode ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.05)',
-                      color: chatMode ? '#d4af37' : 'rgba(255,255,255,0.6)'
-                    }}
-                  >
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    <span className="text-xs font-medium">Chat</span>
-                  </button>
-                  <button className="h-8 w-8 rounded-full flex items-center justify-center transition-colors" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <Waves className="h-4 w-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
-                  </button>
-                  <button 
+                
+                {/* Input Actions */}
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-foreground">
+                      <Paperclip className="w-4 h-4 mr-1.5" />
+                      Attach
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-foreground">
+                      <Palette className="w-4 h-4 mr-1.5" />
+                      Theme
+                    </Button>
+                  </div>
+                  
+                  <Button 
                     onClick={() => handleSubmit()}
-                    disabled={!idea.trim()}
-                    className="h-9 w-9 rounded-full flex items-center justify-center transition-colors disabled:opacity-30"
-                    style={{ background: 'linear-gradient(135deg, #d4af37, #8b7227)' }}
+                    disabled={!idea.trim() || isGenerating}
+                    className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    <ArrowRight className="h-4 w-4" style={{ color: '#0a0a0a' }} />
-                  </button>
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating…
+                      </>
+                    ) : (
+                      <>
+                        Generate
+                        <Send className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
+              </CardContent>
+            </Card>
 
-        {/* Bottom Templates Sheet */}
-        <div className="fixed bottom-0 left-64 right-0 z-20">
-          <div className="rounded-t-3xl border-t" style={{ background: 'linear-gradient(180deg, rgba(15, 15, 15, 0.98) 0%, rgba(12, 10, 18, 0.98) 100%)', borderColor: 'rgba(212, 175, 55, 0.15)', boxShadow: '0 -10px 40px rgba(0,0,0,0.5), 0 -5px 30px rgba(147, 51, 234, 0.08)' }}>
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" style={{ color: '#d4af37' }} />
-                <span className="font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>Templates</span>
-              </div>
-              <button className="flex items-center gap-1 text-sm transition-colors" style={{ color: 'rgba(212, 175, 55, 0.7)' }}>
-                Browse all
-                <ChevronRight className="h-4 w-4" />
-              </button>
+            {/* Quick Prompts */}
+            <div className="flex flex-wrap gap-2 mt-4 justify-center">
+              {QUICK_PROMPTS.map((qp) => (
+                <Button
+                  key={qp.label}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIdea(qp.label)}
+                  className="h-8 text-xs text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                >
+                  <qp.icon className="w-3.5 h-3.5 mr-1.5" />
+                  {qp.label}
+                </Button>
+              ))}
             </div>
+          </section>
 
-            {/* Templates Grid */}
-            <div className="px-6 py-4">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {TEMPLATES.map((template) => (
-                  <button
-                    key={template.id}
-                    onClick={() => handleSubmit(template.prompt)}
-                    className="group p-4 rounded-xl border transition-all text-left hover:scale-[1.02]"
-                    style={{ 
-                      background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(212, 175, 55, 0.03) 100%)', 
-                      borderColor: 'rgba(147, 51, 234, 0.25)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(147, 51, 234, 0.22) 0%, rgba(212, 175, 55, 0.08) 100%)';
-                      e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.45)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(212, 175, 55, 0.03) 100%)';
-                      e.currentTarget.style.borderColor = 'rgba(147, 51, 234, 0.25)';
-                    }}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 rounded-lg border flex items-center justify-center transition-colors" style={{ background: 'rgba(147, 51, 234, 0.18)', borderColor: 'rgba(147, 51, 234, 0.35)' }}>
-                        <template.icon className="h-5 w-5 transition-colors" style={{ color: '#d4af37' }} />
+          {/* Continue Section */}
+          <section className="mb-10">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              Continue
+            </h2>
+            
+            {isLoading ? (
+              <Card className="bg-card/50 border-border">
+                <CardContent className="p-6 flex items-center justify-center">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </CardContent>
+              </Card>
+            ) : lastProject ? (
+              <Card 
+                className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer group"
+                onClick={() => handleOpenProject(lastProject.id)}
+              >
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
+                      <FolderKanban className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{lastProject.name}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="secondary" className="text-xs">Draft</Badge>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatTimeAgo(lastProject.updated_at)}
+                        </span>
                       </div>
                     </div>
-                    <h3 className="font-medium mb-0.5" style={{ color: 'rgba(255,255,255,0.9)' }}>{template.title}</h3>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{template.description}</p>
-                  </button>
-                ))}
-              </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    Open
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-card/50 border-border border-dashed">
+                <CardContent className="p-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No projects yet — generate your first build above.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </section>
+
+          {/* Templates Section */}
+          <section>
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              Start from a Template
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {TEMPLATES.map((template) => (
+                <Card 
+                  key={template.id}
+                  className="bg-card border-border hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+                  onClick={() => handleSubmit(template.prompt)}
+                >
+                  <CardContent className="p-0">
+                    {/* Preview Placeholder */}
+                    <div className="h-28 bg-gradient-to-br from-secondary to-muted rounded-t-lg relative overflow-hidden">
+                      <div className="absolute inset-0 opacity-30">
+                        <div className="absolute top-3 left-3 right-3 h-2 bg-foreground/10 rounded" />
+                        <div className="absolute top-7 left-3 w-16 h-8 bg-foreground/10 rounded" />
+                        <div className="absolute top-7 right-3 w-12 h-4 bg-foreground/10 rounded" />
+                        <div className="absolute bottom-3 left-3 right-3 h-6 bg-foreground/10 rounded" />
+                      </div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        {template.tags.map((tag) => (
+                          <Badge 
+                            key={tag} 
+                            variant="secondary" 
+                            className="text-[10px] px-1.5 py-0"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      <h3 className="font-medium text-foreground mb-1">
+                        {template.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {template.bestFor}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </div>
+          </section>
+
         </div>
       </main>
     </div>
