@@ -121,7 +121,7 @@ export default function SecretBuilderHub() {
   return (
     <div className="min-h-screen flex" style={{ background: '#0a0a0a' }}>
       {/* Left Sidebar - Dark Theme */}
-      <aside className="w-64 flex flex-col fixed h-full z-20 border-r" style={{ background: '#0f0f0f', borderColor: 'rgba(212, 175, 55, 0.15)' }}>
+      <aside className="w-64 flex flex-col fixed h-full z-20 border-r" style={{ background: 'linear-gradient(180deg, #0f0f0f 0%, #0d0a12 100%)', borderColor: 'rgba(212, 175, 55, 0.15)' }}>
         {/* Workspace Selector */}
         <div className="p-4 border-b" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
           <button className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
@@ -223,15 +223,17 @@ export default function SecretBuilderHub() {
 
       {/* Main Content */}
       <main className="flex-1 ml-64 relative min-h-screen">
-        {/* Dark Gradient Background with Gold Accents */}
+        {/* Dark Gradient Background with Gold & Purple Accents */}
         <div 
           className="absolute inset-0 pointer-events-none"
           style={{
             background: `
               radial-gradient(ellipse at 20% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 30%, rgba(88, 28, 135, 0.12) 0%, transparent 45%),
+              radial-gradient(ellipse at 10% 80%, rgba(88, 28, 135, 0.08) 0%, transparent 40%),
               radial-gradient(ellipse at 80% 80%, rgba(139, 114, 39, 0.06) 0%, transparent 50%),
               radial-gradient(ellipse at 50% 50%, rgba(10, 10, 10, 0.95) 0%, transparent 80%),
-              linear-gradient(135deg, #0a0a0a 0%, #111111 50%, #0a0a0a 100%)
+              linear-gradient(135deg, #0a0a0a 0%, #0d0a10 50%, #0a0a0a 100%)
             `
           }}
         />
@@ -250,7 +252,7 @@ export default function SecretBuilderHub() {
 
           {/* Input Container Card */}
           <div className="w-full max-w-2xl">
-            <div className="rounded-2xl border overflow-hidden" style={{ background: 'rgba(15, 15, 15, 0.9)', borderColor: 'rgba(212, 175, 55, 0.2)', boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 60px rgba(212, 175, 55, 0.05)' }}>
+            <div className="rounded-2xl border overflow-hidden" style={{ background: 'rgba(15, 15, 15, 0.9)', borderColor: 'rgba(212, 175, 55, 0.2)', boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 60px rgba(212, 175, 55, 0.05), 0 0 80px rgba(88, 28, 135, 0.08)' }}>
               {/* Text Input Area */}
               <div className="p-4">
                 <Input
@@ -313,7 +315,7 @@ export default function SecretBuilderHub() {
 
         {/* Bottom Templates Sheet */}
         <div className="fixed bottom-0 left-64 right-0 z-20">
-          <div className="rounded-t-3xl border-t" style={{ background: 'rgba(15, 15, 15, 0.98)', borderColor: 'rgba(212, 175, 55, 0.15)', boxShadow: '0 -10px 40px rgba(0,0,0,0.5)' }}>
+          <div className="rounded-t-3xl border-t" style={{ background: 'linear-gradient(180deg, rgba(15, 15, 15, 0.98) 0%, rgba(12, 10, 18, 0.98) 100%)', borderColor: 'rgba(212, 175, 55, 0.15)', boxShadow: '0 -10px 40px rgba(0,0,0,0.5), 0 -5px 30px rgba(88, 28, 135, 0.05)' }}>
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
               <div className="flex items-center gap-2">
