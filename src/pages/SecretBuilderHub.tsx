@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,14 +29,21 @@ import {
   Users,
   Rocket,
   Command,
-  ExternalLink
+  ExternalLink,
+  X,
+  Copy,
+  Pencil,
+  Check
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { SearchModal } from '@/components/secret-builder/SearchModal';
+import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import excellionLogo from '@/assets/excellion-logo.png';
 
 interface BuilderProject {
@@ -45,21 +52,56 @@ interface BuilderProject {
   idea: string;
   created_at: string;
   updated_at: string;
+  spec?: any;
 }
 
+interface Attachment {
+  file: File;
+  name: string;
+  type: string;
+}
+
+const THEME_OPTIONS = [
+  { id: 'modern', label: 'Modern', color: 'hsl(220, 70%, 50%)' },
+  { id: 'minimal', label: 'Minimal', color: 'hsl(0, 0%, 60%)' },
+  { id: 'bold', label: 'Bold', color: 'hsl(350, 80%, 50%)' },
+  { id: 'luxury', label: 'Luxury', color: 'hsl(38, 45%, 55%)' },
+  { id: 'playful', label: 'Playful', color: 'hsl(280, 70%, 60%)' },
+  { id: 'dark', label: 'Dark', color: 'hsl(0, 0%, 15%)' },
+];
+
 const QUICK_PROMPTS = [
-  { label: 'Restaurant with online ordering', icon: Store },
-  { label: 'Service business lead-gen', icon: Briefcase },
-  { label: 'Booking / appointments', icon: Calendar },
-  { label: 'Portfolio', icon: Users },
-  { label: 'Agency site', icon: Rocket },
+  { 
+    label: 'Restaurant with online ordering', 
+    icon: Store,
+    fullPrompt: 'Build a modern restaurant website with online ordering, menu sections organized by category, hours/location info, and a prominent pickup/delivery CTA. Include a hero with food photography, testimonials, and a newsletter signup.'
+  },
+  { 
+    label: 'Service business lead-gen', 
+    icon: Briefcase,
+    fullPrompt: 'Build a service business lead-gen site with a compelling hero CTA, services grid with icons, customer reviews/testimonials, FAQ section, and a contact form. Include trust badges and a clear value proposition.'
+  },
+  { 
+    label: 'Booking / appointments', 
+    icon: Calendar,
+    fullPrompt: 'Build a booking site with a services list, availability CTA button, booking form with date/time selection, confirmation messages, and a pricing section. Include staff profiles and customer reviews.'
+  },
+  { 
+    label: 'Portfolio', 
+    icon: Users,
+    fullPrompt: 'Build a personal portfolio with a projects grid showing case studies, about section with skills, contact form, and social links. Include a hero with headline and a clean, minimal design.'
+  },
+  { 
+    label: 'Agency site', 
+    icon: Rocket,
+    fullPrompt: 'Build an agency site with case studies, our process section, team profiles, pricing tiers, and a contact form. Include a compelling hero, client logos, and testimonials.'
+  },
 ];
 
 const TEMPLATES = [
   {
     id: 'saas',
     title: 'SaaS Landing Page',
-    description: 'Modern product landing with pricing & features',
     tags: ['Marketing', 'Tech'],
     bestFor: 'Software products, apps, digital services',
     icon: Layout,
@@ -68,7 +110,6 @@ const TEMPLATES = [
   {
     id: 'restaurant',
     title: 'Restaurant & Menu',
-    description: 'Online ordering, menu display, reservations',
     tags: ['Food', 'Local'],
     bestFor: 'Restaurants, cafes, food trucks',
     icon: ShoppingBag,
@@ -77,7 +118,6 @@ const TEMPLATES = [
   {
     id: 'portfolio',
     title: 'Portfolio',
-    description: 'Showcase work with case studies & contact',
     tags: ['Creative', 'Personal'],
     bestFor: 'Designers, developers, freelancers',
     icon: Layout,
@@ -86,7 +126,6 @@ const TEMPLATES = [
   {
     id: 'service',
     title: 'Service Business',
-    description: 'Lead generation with booking & testimonials',
     tags: ['Local', 'Services'],
     bestFor: 'Contractors, consultants, agencies',
     icon: Briefcase,
@@ -95,7 +134,6 @@ const TEMPLATES = [
   {
     id: 'ecommerce',
     title: 'E-commerce Store',
-    description: 'Product catalog, cart, checkout flow',
     tags: ['Retail', 'Online'],
     bestFor: 'Online shops, dropshipping, D2C brands',
     icon: ShoppingBag,
@@ -104,7 +142,6 @@ const TEMPLATES = [
   {
     id: 'blog',
     title: 'Blog / Content',
-    description: 'Articles, categories, newsletter signup',
     tags: ['Content', 'Media'],
     bestFor: 'Writers, publications, thought leaders',
     icon: BookOpen,
@@ -118,14 +155,69 @@ const NAV_ITEMS = [
   { icon: BookOpen, label: 'Resources', active: false },
 ];
 
+// localStorage keys
+const LS_LAST_PROJECT_ID = 'excellion_last_project_id';
+const LS_PENDING_PROMPT = 'excellion_pending_prompt';
+const LS_PENDING_THEME = 'excellion_pending_theme';
+
 export default function SecretBuilderHub() {
   const [idea, setIdea] = useState('');
   const [projects, setProjects] = useState<BuilderProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('modern');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [projectToRename, setProjectToRename] = useState<BuilderProject | null>(null);
+  
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isSubmittingRef = useRef(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Restore pending prompt from localStorage
+  useEffect(() => {
+    const pendingPrompt = localStorage.getItem(LS_PENDING_PROMPT);
+    const pendingTheme = localStorage.getItem(LS_PENDING_THEME);
+    if (pendingPrompt) {
+      setIdea(pendingPrompt);
+    }
+    if (pendingTheme) {
+      setSelectedTheme(pendingTheme);
+    }
+  }, []);
+
+  // Fetch projects
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const { data, error } = await supabase
+        .from('builder_projects')
+        .select('id, name, idea, created_at, updated_at, spec')
+        .order('updated_at', { ascending: false })
+        .limit(20);
+
+      if (!error && data) {
+        setProjects(data);
+      }
+      setIsLoading(false);
+    };
+
+    fetchProjects();
+  }, []);
 
   const handleDeleteProject = async (projectId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -138,44 +230,171 @@ export default function SecretBuilderHub() {
       toast({ title: 'Error', description: 'Failed to delete project', variant: 'destructive' });
     } else {
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      // Clear last project if it was deleted
+      if (localStorage.getItem(LS_LAST_PROJECT_ID) === projectId) {
+        localStorage.removeItem(LS_LAST_PROJECT_ID);
+      }
       toast({ title: 'Project deleted' });
     }
   };
 
-  useEffect(() => {
-    const fetchProjects = async () => {
+  const handleRenameProject = async (newName: string) => {
+    if (!projectToRename) return;
+
+    const { error } = await supabase
+      .from('builder_projects')
+      .update({ name: newName, updated_at: new Date().toISOString() })
+      .eq('id', projectToRename.id);
+
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to rename project', variant: 'destructive' });
+    } else {
+      setProjects((prev) =>
+        prev.map((p) => (p.id === projectToRename.id ? { ...p, name: newName } : p))
+      );
+      toast({ title: 'Project renamed' });
+    }
+    setProjectToRename(null);
+  };
+
+  const handleDuplicateProject = async (project: BuilderProject, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const { data, error } = await supabase
+      .from('builder_projects')
+      .insert({
+        name: `${project.name} (copy)`,
+        idea: project.idea,
+        spec: project.spec,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to duplicate project', variant: 'destructive' });
+    } else if (data) {
+      setProjects((prev) => [data, ...prev]);
+      toast({ title: 'Project duplicated' });
+    }
+  };
+
+  const handleGenerate = useCallback(async (promptOverride?: string) => {
+    const ideaToUse = promptOverride || idea;
+    if (!ideaToUse.trim() || isGenerating || isSubmittingRef.current) return;
+    
+    isSubmittingRef.current = true;
+    setIsGenerating(true);
+    
+    // Save to localStorage in case of refresh
+    localStorage.setItem(LS_PENDING_PROMPT, ideaToUse);
+    localStorage.setItem(LS_PENDING_THEME, selectedTheme);
+
+    try {
+      // Create project in database
+      const projectName = ideaToUse.slice(0, 50) + (ideaToUse.length > 50 ? '...' : '');
       const { data, error } = await supabase
         .from('builder_projects')
-        .select('id, name, idea, created_at, updated_at')
-        .order('updated_at', { ascending: false })
-        .limit(10);
+        .insert({
+          name: projectName,
+          idea: ideaToUse,
+          spec: { theme: selectedTheme, attachments: attachments.map(a => a.name) },
+        })
+        .select()
+        .single();
 
-      if (!error && data) {
-        setProjects(data);
-      }
-      setIsLoading(false);
-    };
+      if (error) throw error;
 
-    fetchProjects();
-  }, []);
+      // Store as last project
+      localStorage.setItem(LS_LAST_PROJECT_ID, data.id);
+      
+      // Clear pending state
+      localStorage.removeItem(LS_PENDING_PROMPT);
+      localStorage.removeItem(LS_PENDING_THEME);
 
-  const handleSubmit = (prompt?: string) => {
-    const ideaToUse = prompt || idea;
-    if (!ideaToUse.trim() || isGenerating) return;
-    
-    setIsGenerating(true);
-    navigate('/secret-builder', { state: { initialIdea: ideaToUse } });
-  };
+      toast({ title: 'Project created', description: 'Opening builder...' });
+      
+      // Navigate to builder
+      navigate('/secret-builder', { 
+        state: { 
+          projectId: data.id, 
+          initialIdea: ideaToUse,
+          theme: selectedTheme 
+        } 
+      });
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to create project. Please try again.', 
+        variant: 'destructive' 
+      });
+      setIsGenerating(false);
+      isSubmittingRef.current = false;
+    }
+  }, [idea, isGenerating, selectedTheme, attachments, navigate, toast]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      handleGenerate();
     }
   };
 
   const handleOpenProject = (projectId: string) => {
+    localStorage.setItem(LS_LAST_PROJECT_ID, projectId);
     navigate('/secret-builder', { state: { projectId } });
+  };
+
+  const handleChipClick = (fullPrompt: string) => {
+    setIdea(fullPrompt);
+    textareaRef.current?.focus();
+  };
+
+  const handleClearPrompt = () => {
+    setIdea('');
+    setAttachments([]);
+    localStorage.removeItem(LS_PENDING_PROMPT);
+    textareaRef.current?.focus();
+  };
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newAttachments: Attachment[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size <= 10 * 1024 * 1024) { // 10MB limit
+        newAttachments.push({
+          file,
+          name: file.name,
+          type: file.type,
+        });
+      } else {
+        toast({
+          title: 'File too large',
+          description: `${file.name} exceeds 10MB limit`,
+          variant: 'destructive',
+        });
+      }
+    }
+    
+    setAttachments((prev) => [...prev, ...newAttachments].slice(0, 5));
+    e.target.value = ''; // Reset input
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const openRenameDialog = (project: BuilderProject, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setProjectToRename(project);
+    setRenameDialogOpen(true);
   };
 
   const formatTimeAgo = (dateStr: string) => {
@@ -194,9 +413,35 @@ export default function SecretBuilderHub() {
   };
 
   const lastProject = projects[0];
+  const selectedThemeOption = THEME_OPTIONS.find((t) => t.id === selectedTheme);
 
   return (
     <div className="min-h-screen flex bg-background">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,.pdf"
+        multiple
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* Search Modal */}
+      <SearchModal
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        projects={projects}
+      />
+
+      {/* Rename Dialog */}
+      <RenameDialog
+        open={renameDialogOpen}
+        onOpenChange={setRenameDialogOpen}
+        currentName={projectToRename?.name || ''}
+        onRename={handleRenameProject}
+      />
+
       {/* Sidebar */}
       <aside className="w-64 flex flex-col fixed h-full z-20 border-r border-border bg-card">
         {/* Workspace Header */}
@@ -222,11 +467,12 @@ export default function SecretBuilderHub() {
           </DropdownMenu>
         </div>
 
-        {/* Search */}
+        {/* Search Button */}
         <div className="px-3 py-2">
           <Button 
             variant="ghost" 
             className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground"
+            onClick={() => setSearchOpen(true)}
           >
             <Search className="w-4 h-4" />
             <span className="text-sm">Search</span>
@@ -272,7 +518,7 @@ export default function SecretBuilderHub() {
                 No projects yet
               </p>
             ) : (
-              projects.slice(0, 5).map((project) => (
+              projects.slice(0, 8).map((project) => (
                 <div
                   key={project.id}
                   onClick={() => handleOpenProject(project.id)}
@@ -280,19 +526,24 @@ export default function SecretBuilderHub() {
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-1.5 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate leading-tight">
+                    <p className="text-sm text-foreground line-clamp-2 leading-tight">
                       {project.name}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {formatTimeAgo(project.updated_at)}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                        Draft
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatTimeAgo(project.updated_at)}
+                      </span>
+                    </div>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <MoreHorizontal className="w-3.5 h-3.5" />
@@ -302,6 +553,13 @@ export default function SecretBuilderHub() {
                       <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
                         <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => openRenameDialog(project, e as unknown as React.MouseEvent)}>
+                        <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => handleDuplicateProject(project, e as unknown as React.MouseEvent)}>
+                        <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         className="text-destructive"
                         onClick={(e) => handleDeleteProject(project.id, e as unknown as React.MouseEvent)}
@@ -347,31 +605,112 @@ export default function SecretBuilderHub() {
           <section className="mb-8">
             <Card className="bg-card border-border">
               <CardContent className="p-4">
-                <Textarea
-                  ref={textareaRef}
-                  value={idea}
-                  onChange={(e) => setIdea(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Describe your website idea..."
-                  className="min-h-[100px] resize-none border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 p-0 text-base"
-                  disabled={isGenerating}
-                />
+                <div className="relative">
+                  <Textarea
+                    ref={textareaRef}
+                    value={idea}
+                    onChange={(e) => setIdea(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Describe your website idea..."
+                    className="min-h-[100px] resize-none border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 p-0 pr-8 text-base"
+                    disabled={isGenerating}
+                  />
+                  {idea && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-0 right-0 h-6 w-6 text-muted-foreground hover:text-foreground"
+                      onClick={handleClearPrompt}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Attachments */}
+                {attachments.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border/50">
+                    {attachments.map((att, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="pl-2 pr-1 py-1 gap-1"
+                      >
+                        <Paperclip className="w-3 h-3" />
+                        <span className="text-xs max-w-24 truncate">{att.name}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-4 ml-1 hover:bg-destructive/20"
+                          onClick={() => removeAttachment(index)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
                 
                 {/* Input Actions */}
                 <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-foreground">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 text-muted-foreground hover:text-foreground"
+                      onClick={handleAttachClick}
+                      disabled={isGenerating}
+                    >
                       <Paperclip className="w-4 h-4 mr-1.5" />
                       Attach
+                      {attachments.length > 0 && (
+                        <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
+                          {attachments.length}
+                        </Badge>
+                      )}
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-foreground">
-                      <Palette className="w-4 h-4 mr-1.5" />
-                      Theme
-                    </Button>
+                    
+                    {/* Theme Dropdown */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 text-muted-foreground hover:text-foreground"
+                          disabled={isGenerating}
+                        >
+                          <div 
+                            className="w-3 h-3 rounded-full mr-1.5 border border-border"
+                            style={{ backgroundColor: selectedThemeOption?.color }}
+                          />
+                          <Palette className="w-4 h-4 mr-1" />
+                          {selectedThemeOption?.label}
+                          <ChevronDown className="w-3 h-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        {THEME_OPTIONS.map((theme) => (
+                          <DropdownMenuItem
+                            key={theme.id}
+                            onClick={() => setSelectedTheme(theme.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <div 
+                              className="w-4 h-4 rounded-full border border-border"
+                              style={{ backgroundColor: theme.color }}
+                            />
+                            <span>{theme.label}</span>
+                            {selectedTheme === theme.id && (
+                              <Check className="w-4 h-4 ml-auto" />
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   
                   <Button 
-                    onClick={() => handleSubmit()}
+                    onClick={() => handleGenerate()}
                     disabled={!idea.trim() || isGenerating}
                     className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
@@ -398,8 +737,9 @@ export default function SecretBuilderHub() {
                   key={qp.label}
                   variant="outline"
                   size="sm"
-                  onClick={() => setIdea(qp.label)}
+                  onClick={() => handleChipClick(qp.fullPrompt)}
                   className="h-8 text-xs text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                  disabled={isGenerating}
                 >
                   <qp.icon className="w-3.5 h-3.5 mr-1.5" />
                   {qp.label}
@@ -421,34 +761,54 @@ export default function SecretBuilderHub() {
                 </CardContent>
               </Card>
             ) : lastProject ? (
-              <Card 
-                className="bg-card border-border hover:border-primary/30 transition-colors cursor-pointer group"
-                onClick={() => handleOpenProject(lastProject.id)}
-              >
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
-                      <FolderKanban className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{lastProject.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary" className="text-xs">Draft</Badge>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {formatTimeAgo(lastProject.updated_at)}
-                        </span>
+              <Card className="bg-card border-border hover:border-primary/30 transition-colors group">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div 
+                      className="flex items-center gap-4 flex-1 cursor-pointer"
+                      onClick={() => handleOpenProject(lastProject.id)}
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
+                        <FolderKanban className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">{lastProject.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary" className="text-xs">Draft</Badge>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatTimeAgo(lastProject.updated_at)}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleOpenProject(lastProject.id)}
+                      >
+                        Open
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => openRenameDialog(lastProject, e as unknown as React.MouseEvent)}>
+                            <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => handleDuplicateProject(lastProject, e as unknown as React.MouseEvent)}>
+                            <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    Open
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
                 </CardContent>
               </Card>
             ) : (
@@ -473,7 +833,7 @@ export default function SecretBuilderHub() {
                 <Card 
                   key={template.id}
                   className="bg-card border-border hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
-                  onClick={() => handleSubmit(template.prompt)}
+                  onClick={() => handleGenerate(template.prompt)}
                 >
                   <CardContent className="p-0">
                     {/* Preview Placeholder */}
