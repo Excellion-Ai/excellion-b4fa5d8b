@@ -133,11 +133,11 @@ export default function SecretBuilderHub() {
 
         {/* Navigation Menu */}
         <nav className="flex-1 p-3 space-y-1">
-          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors" style={{ color: 'rgba(255,255,255,0.8)', background: 'rgba(88, 28, 135, 0.15)' }}>
             <Home className="h-4 w-4" style={{ color: '#d4af37' }} />
             <span className="text-sm font-medium">Home</span>
           </a>
-          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+          <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-purple-900/20 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
             <Search className="h-4 w-4" style={{ color: '#d4af37' }} />
             <span className="text-sm font-medium">Search</span>
           </a>
@@ -180,7 +180,7 @@ export default function SecretBuilderHub() {
           <div className="pt-4">
             <span className="px-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(212, 175, 55, 0.5)' }}>Resources</span>
             <div className="mt-2 space-y-1">
-              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
+              <a href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-purple-900/20 transition-colors" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 <Compass className="h-4 w-4" style={{ color: '#d4af37' }} />
                 <span className="text-sm">Discover</span>
               </a>
@@ -191,7 +191,7 @@ export default function SecretBuilderHub() {
         {/* Bottom Section */}
         <div className="p-3 space-y-3 border-t" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
           {/* Share Promo Card */}
-          <div className="p-3 rounded-xl border" style={{ background: 'rgba(212, 175, 55, 0.08)', borderColor: 'rgba(212, 175, 55, 0.2)' }}>
+          <div className="p-3 rounded-xl border" style={{ background: 'linear-gradient(135deg, rgba(88, 28, 135, 0.15) 0%, rgba(212, 175, 55, 0.08) 100%)', borderColor: 'rgba(88, 28, 135, 0.3)' }}>
             <div className="flex items-center gap-2 mb-1">
               <Gift className="h-4 w-4" style={{ color: '#d4af37' }} />
               <span className="text-sm font-medium" style={{ color: '#d4af37' }}>Share Excellion</span>
@@ -200,7 +200,7 @@ export default function SecretBuilderHub() {
           </div>
 
           {/* Upgrade Promo Card */}
-          <div className="p-3 rounded-xl border" style={{ background: 'rgba(212, 175, 55, 0.05)', borderColor: 'rgba(212, 175, 55, 0.15)' }}>
+          <div className="p-3 rounded-xl border" style={{ background: 'linear-gradient(135deg, rgba(88, 28, 135, 0.12) 0%, rgba(212, 175, 55, 0.05) 100%)', borderColor: 'rgba(88, 28, 135, 0.25)' }}>
             <div className="flex items-center gap-2 mb-1">
               <Zap className="h-4 w-4" style={{ color: '#d4af37' }} />
               <span className="text-sm font-medium" style={{ color: '#d4af37' }}>Upgrade to Pro</span>
@@ -337,20 +337,20 @@ export default function SecretBuilderHub() {
                     onClick={() => handleSubmit(template.prompt)}
                     className="group p-4 rounded-xl border transition-all text-left hover:scale-[1.02]"
                     style={{ 
-                      background: 'rgba(212, 175, 55, 0.03)', 
-                      borderColor: 'rgba(212, 175, 55, 0.1)'
+                      background: 'linear-gradient(135deg, rgba(88, 28, 135, 0.08) 0%, rgba(212, 175, 55, 0.03) 100%)', 
+                      borderColor: 'rgba(88, 28, 135, 0.2)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(212, 175, 55, 0.08)';
-                      e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.25)';
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(88, 28, 135, 0.18) 0%, rgba(212, 175, 55, 0.08) 100%)';
+                      e.currentTarget.style.borderColor = 'rgba(88, 28, 135, 0.4)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(212, 175, 55, 0.03)';
-                      e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.1)';
+                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(88, 28, 135, 0.08) 0%, rgba(212, 175, 55, 0.03) 100%)';
+                      e.currentTarget.style.borderColor = 'rgba(88, 28, 135, 0.2)';
                     }}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 rounded-lg border flex items-center justify-center transition-colors" style={{ background: 'rgba(10, 10, 10, 0.8)', borderColor: 'rgba(212, 175, 55, 0.15)' }}>
+                      <div className="h-10 w-10 rounded-lg border flex items-center justify-center transition-colors" style={{ background: 'rgba(88, 28, 135, 0.15)', borderColor: 'rgba(88, 28, 135, 0.3)' }}>
                         <template.icon className="h-5 w-5 transition-colors" style={{ color: '#d4af37' }} />
                       </div>
                     </div>
