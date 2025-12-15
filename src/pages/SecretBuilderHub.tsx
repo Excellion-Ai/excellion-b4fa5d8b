@@ -878,46 +878,60 @@ export default function SecretBuilderHub() {
               Start from a Template
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {TEMPLATES.map((template) => (
-                <Card 
+                <button
                   key={template.id}
-                  className="bg-card border-border hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
                   onClick={() => handleGenerate(template.prompt)}
+                  className="group text-left bg-zinc-900/40 border border-white/10 rounded-xl overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-200"
                 >
-                  <CardContent className="p-0">
-                    {/* Preview Placeholder */}
-                    <div className="h-28 bg-gradient-to-br from-secondary to-muted rounded-t-lg relative overflow-hidden">
-                      <div className="absolute inset-0 opacity-30">
-                        <div className="absolute top-3 left-3 right-3 h-2 bg-foreground/10 rounded" />
-                        <div className="absolute top-7 left-3 w-16 h-8 bg-foreground/10 rounded" />
-                        <div className="absolute top-7 right-3 w-12 h-4 bg-foreground/10 rounded" />
-                        <div className="absolute bottom-3 left-3 right-3 h-6 bg-foreground/10 rounded" />
+                  {/* Skeleton UI Preview */}
+                  <div className="h-32 bg-zinc-900 p-3 flex flex-col gap-2">
+                    {/* Header bar */}
+                    <div className="flex items-center justify-between">
+                      <div className="w-16 h-2 bg-zinc-800 rounded" />
+                      <div className="flex gap-1.5">
+                        <div className="w-8 h-2 bg-zinc-800 rounded" />
+                        <div className="w-8 h-2 bg-zinc-800 rounded" />
                       </div>
                     </div>
-                    
-                    {/* Content */}
-                    <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        {template.tags.map((tag) => (
-                          <Badge 
-                            key={tag} 
-                            variant="secondary" 
-                            className="text-[10px] px-1.5 py-0"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
+                    {/* Hero section */}
+                    <div className="flex-1 flex gap-3 mt-2">
+                      <div className="flex-1 flex flex-col gap-1.5">
+                        <div className="w-3/4 h-3 bg-zinc-800 rounded" />
+                        <div className="w-1/2 h-2 bg-zinc-800 rounded" />
+                        <div className="w-12 h-4 bg-zinc-800 rounded mt-2" />
                       </div>
-                      <h3 className="font-medium text-foreground mb-1">
-                        {template.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {template.bestFor}
-                      </p>
+                      <div className="w-16 h-12 bg-zinc-800 rounded" />
                     </div>
-                  </CardContent>
-                </Card>
+                    {/* Content lines */}
+                    <div className="flex gap-2 mt-auto">
+                      <div className="flex-1 h-6 bg-zinc-800 rounded" />
+                      <div className="flex-1 h-6 bg-zinc-800 rounded" />
+                      <div className="flex-1 h-6 bg-zinc-800 rounded" />
+                    </div>
+                  </div>
+                  
+                  {/* Card Content */}
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      {template.tags.map((tag) => (
+                        <span 
+                          key={tag} 
+                          className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-1">
+                      {template.title}
+                    </h3>
+                    <p className="text-sm text-zinc-500">
+                      {template.bestFor}
+                    </p>
+                  </div>
+                </button>
               ))}
             </div>
           </section>
