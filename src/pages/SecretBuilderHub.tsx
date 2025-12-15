@@ -65,44 +65,38 @@ const THEME_OPTIONS = [
   { 
     id: 'modern', 
     label: 'Modern', 
-    color: 'hsl(220, 70%, 50%)', // Blue
-    description: 'Clean blue tones, professional feel',
-    palette: { primary: '#3b82f6', secondary: '#8b5cf6', accent: '#06b6d4', bg: '#ffffff', text: '#1f2937', darkMode: false }
+    color: 'hsl(220, 70%, 50%)',
+    description: 'Clean layouts, balanced spacing, professional'
   },
   { 
     id: 'minimal', 
     label: 'Minimal', 
-    color: 'hsl(0, 0%, 40%)', // Gray
-    description: 'Black & white, typography-focused',
-    palette: { primary: '#18181b', secondary: '#52525b', accent: '#a1a1aa', bg: '#fafafa', text: '#09090b', darkMode: false }
+    color: 'hsl(0, 0%, 40%)',
+    description: 'Typography-focused, lots of whitespace'
   },
   { 
     id: 'bold', 
     label: 'Bold', 
-    color: 'hsl(350, 80%, 50%)', // Red
-    description: 'Vibrant red, high contrast',
-    palette: { primary: '#dc2626', secondary: '#f97316', accent: '#facc15', bg: '#ffffff', text: '#1c1917', darkMode: false }
+    color: 'hsl(350, 80%, 50%)',
+    description: 'High contrast, large fonts, attention-grabbing'
   },
   { 
     id: 'luxury', 
     label: 'Luxury', 
-    color: 'hsl(38, 45%, 55%)', // Gold
-    description: 'Gold accents, dark elegance',
-    palette: { primary: '#d4af37', secondary: '#b8860b', accent: '#ffd700', bg: '#0a0a0a', text: '#f5f5f5', darkMode: true }
+    color: 'hsl(38, 45%, 55%)',
+    description: 'Elegant, sophisticated, premium feel'
   },
   { 
     id: 'playful', 
     label: 'Playful', 
-    color: 'hsl(280, 70%, 60%)', // Purple/Pink
-    description: 'Bright gradients, fun & energetic',
-    palette: { primary: '#a855f7', secondary: '#ec4899', accent: '#22d3ee', bg: '#fffbeb', text: '#1e1b4b', darkMode: false }
+    color: 'hsl(280, 70%, 60%)',
+    description: 'Rounded shapes, bright, fun & energetic'
   },
   { 
     id: 'dark', 
     label: 'Dark', 
-    color: 'hsl(0, 0%, 15%)', // Near black
-    description: 'Dark mode, neon accents',
-    palette: { primary: '#22d3ee', secondary: '#a855f7', accent: '#34d399', bg: '#0f172a', text: '#f1f5f9', darkMode: true }
+    color: 'hsl(0, 0%, 15%)',
+    description: 'Dark backgrounds, tech/developer aesthetic'
   },
 ];
 
@@ -326,9 +320,7 @@ export default function SecretBuilderHub() {
     localStorage.setItem(LS_PENDING_THEME, selectedTheme);
 
     try {
-      // Get full theme palette
-      const themeOption = THEME_OPTIONS.find(t => t.id === selectedTheme);
-      const themePalette = themeOption?.palette || THEME_OPTIONS[0].palette;
+      // Create project in database
       
       // Create project in database
       const projectName = ideaToUse.slice(0, 50) + (ideaToUse.length > 50 ? '...' : '');
@@ -339,7 +331,6 @@ export default function SecretBuilderHub() {
           idea: ideaToUse,
           spec: { 
             themeId: selectedTheme, 
-            theme: themePalette,
             attachments: attachments.map(a => a.name) 
           },
         })
@@ -357,13 +348,12 @@ export default function SecretBuilderHub() {
 
       toast({ title: 'Project created', description: 'Opening builder...' });
       
-      // Navigate to builder with full theme palette
+      // Navigate to builder with theme style ID
       navigate('/secret-builder', { 
         state: { 
           projectId: data.id, 
           initialIdea: ideaToUse,
-          themeId: selectedTheme,
-          theme: themePalette
+          themeId: selectedTheme
         } 
       });
     } catch (error) {
