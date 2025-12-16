@@ -1,10 +1,22 @@
 import { useCallback } from 'react';
 import { SiteSpec, SiteSection, HeroContent, FeaturesContent, FeatureItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent } from '@/types/site-spec';
+import { arrayMove } from '@dnd-kit/sortable';
 
 type UpdateSiteSpec = React.Dispatch<React.SetStateAction<SiteSpec | null>>;
 
 export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSiteSpec) {
   
+  const reorderSections = useCallback((oldIndex: number, newIndex: number) => {
+    setSiteSpec((prev) => {
+      if (!prev || !prev.pages[0]) return prev;
+      const newSections = arrayMove(prev.pages[0].sections, oldIndex, newIndex);
+      return {
+        ...prev,
+        pages: [{ ...prev.pages[0], sections: newSections }],
+      };
+    });
+  }, [setSiteSpec]);
+
   const updateSection = useCallback((sectionId: string, updater: (section: SiteSection) => SiteSection) => {
     setSiteSpec((prev) => {
       if (!prev) return prev;
@@ -116,6 +128,7 @@ export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSite
   }, [setSiteSpec]);
 
   return {
+    reorderSections,
     updateSection,
     updateHeroContent,
     updateFeaturesContent,

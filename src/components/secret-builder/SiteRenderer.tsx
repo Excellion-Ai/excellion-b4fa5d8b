@@ -4,6 +4,20 @@ import { Button } from '@/components/ui/button';
 import { SiteSpec, SiteSection, SiteTheme } from '@/types/site-spec';
 import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
   HeroSection,
   FeaturesSection,
   PricingSection,
@@ -14,6 +28,7 @@ import {
   CustomSection,
 } from './preview-sections';
 import { EditableText } from './EditableText';
+import { DraggableSection } from './DraggableSection';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
@@ -25,6 +40,7 @@ interface SiteRendererProps {
   onUpdateFeatureItem?: (sectionId: string, index: number, field: keyof FeatureItem, value: string) => void;
   onUpdateSiteName?: (name: string) => void;
   onUpdateNavItem?: (index: number, label: string) => void;
+  onReorderSections?: (oldIndex: number, newIndex: number) => void;
 }
 
 // Convert SiteSpec theme to app-spec compatible theme
@@ -58,8 +74,20 @@ export function SiteRenderer({
   onUpdateFeatureItem,
   onUpdateSiteName,
   onUpdateNavItem,
+  onReorderSections,
 }: SiteRendererProps) {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const previewWidth = {
     desktop: 'w-full',
@@ -96,44 +124,72 @@ export function SiteRenderer({
   const legacyTheme = toSectionTheme(theme);
   const isEditable = !!onUpdateHeroContent;
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id && onReorderSections) {
+      const sections = currentPage?.sections || [];
+      const oldIndex = sections.findIndex((s) => s.id === active.id);
+      const newIndex = sections.findIndex((s) => s.id === over.id);
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        onReorderSections(oldIndex, newIndex);
+      }
+    }
+  };
+
   const renderSection = (section: SiteSection) => {
     const key = section.id;
     const legacySection = toLegacySection(section);
     const commonProps = { section: legacySection, theme: legacyTheme };
 
+    let sectionContent;
     switch (section.type) {
       case 'hero':
-        return (
+        sectionContent = (
           <HeroSection 
-            key={key} 
             {...commonProps} 
             siteName={siteSpec.name}
             onUpdateContent={onUpdateHeroContent ? (field, value) => onUpdateHeroContent(section.id, field, value) : undefined}
           />
         );
+        break;
       case 'features':
-        return (
+        sectionContent = (
           <FeaturesSection 
-            key={key} 
             {...commonProps}
             onUpdateContent={onUpdateFeaturesContent ? (field, value) => onUpdateFeaturesContent(section.id, field, value) : undefined}
             onUpdateItem={onUpdateFeatureItem ? (index, field, value) => onUpdateFeatureItem(section.id, index, field, value) : undefined}
           />
         );
+        break;
       case 'pricing':
-        return <PricingSection key={key} {...commonProps} />;
+        sectionContent = <PricingSection {...commonProps} />;
+        break;
       case 'testimonials':
-        return <TestimonialsSection key={key} {...commonProps} />;
+        sectionContent = <TestimonialsSection {...commonProps} />;
+        break;
       case 'faq':
-        return <FAQSection key={key} {...commonProps} />;
+        sectionContent = <FAQSection {...commonProps} />;
+        break;
       case 'contact':
-        return <ContactSection key={key} {...commonProps} />;
+        sectionContent = <ContactSection {...commonProps} />;
+        break;
       case 'cta':
-        return <CTASection key={key} {...commonProps} />;
+        sectionContent = <CTASection {...commonProps} />;
+        break;
       default:
-        return <CustomSection key={key} {...commonProps} />;
+        sectionContent = <CustomSection {...commonProps} />;
     }
+
+    return (
+      <DraggableSection key={key} id={section.id} isEditable={isEditable}>
+        {sectionContent}
+      </DraggableSection>
+    );
   };
+
+  const sectionIds = currentPage?.sections?.map((s) => s.id) || [];
 
   return (
     <div className="h-full flex flex-col">
@@ -141,7 +197,7 @@ export function SiteRenderer({
       <div className="h-10 border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
         <span className="text-xs text-muted-foreground">
           {siteSpec.name || 'Generated Site'}
-          {isEditable && <span className="ml-2 text-primary">(Click text to edit)</span>}
+          {isEditable && <span className="ml-2 text-primary">(Click text to edit, drag to reorder)</span>}
         </span>
         <div className="flex items-center gap-1">
           <Button
@@ -240,10 +296,22 @@ export function SiteRenderer({
             </div>
           </nav>
 
-          {/* Render all sections */}
+          {/* Render all sections with drag and drop */}
           <main>
             {currentPage?.sections?.length > 0 ? (
-              currentPage.sections.map(renderSection)
+              isEditable && onReorderSections ? (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext items={sectionIds} strategy={verticalListSortingStrategy}>
+                    {currentPage.sections.map(renderSection)}
+                  </SortableContext>
+                </DndContext>
+              ) : (
+                currentPage.sections.map(renderSection)
+              )
             ) : (
               <div className="py-20 text-center text-gray-500">
                 No sections defined
