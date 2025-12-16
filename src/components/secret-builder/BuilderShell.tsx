@@ -472,6 +472,7 @@ export function BuilderShell() {
                   onUpdateFeatureItem={editor.updateFeatureItem}
                   onUpdateSiteName={editor.updateSiteName}
                   onUpdateNavItem={editor.updateNavItem}
+                  onReorderSections={editor.reorderSections}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center">
