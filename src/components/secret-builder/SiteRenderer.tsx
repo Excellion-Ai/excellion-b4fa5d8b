@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SiteSpec, SiteSection, SiteTheme } from '@/types/site-spec';
+import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
 import {
   HeroSection,
   FeaturesSection,
@@ -12,16 +13,22 @@ import {
   CTASection,
   CustomSection,
 } from './preview-sections';
+import { EditableText } from './EditableText';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
 interface SiteRendererProps {
   siteSpec: SiteSpec | null;
   isLoading: boolean;
+  onUpdateHeroContent?: (sectionId: string, field: keyof HeroContent, value: string) => void;
+  onUpdateFeaturesContent?: (sectionId: string, field: keyof FeaturesContent, value: string) => void;
+  onUpdateFeatureItem?: (sectionId: string, index: number, field: keyof FeatureItem, value: string) => void;
+  onUpdateSiteName?: (name: string) => void;
+  onUpdateNavItem?: (index: number, label: string) => void;
 }
 
-// Convert new SiteSpec theme to legacy SiteTheme format for section components
-function toSectionTheme(theme: SiteTheme) {
+// Convert SiteSpec theme to app-spec compatible theme
+function toSectionTheme(theme: SiteTheme): AppSiteTheme {
   return {
     primaryColor: theme.primaryColor,
     secondaryColor: theme.secondaryColor,
@@ -29,20 +36,29 @@ function toSectionTheme(theme: SiteTheme) {
     fontHeading: theme.fontHeading,
     fontBody: theme.fontBody,
     darkMode: theme.darkMode,
+    backgroundStyle: theme.darkMode ? 'dark' : 'light',
   };
 }
 
-// Convert new section format to legacy format for existing section components
+// Convert section format for preview components
 function toLegacySection(section: SiteSection) {
   return {
     id: section.id,
-    type: section.type,
+    type: section.type as any,
     label: section.label,
     content: section.content,
   };
 }
 
-export function SiteRenderer({ siteSpec, isLoading }: SiteRendererProps) {
+export function SiteRenderer({ 
+  siteSpec, 
+  isLoading,
+  onUpdateHeroContent,
+  onUpdateFeaturesContent,
+  onUpdateFeatureItem,
+  onUpdateSiteName,
+  onUpdateNavItem,
+}: SiteRendererProps) {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
 
   const previewWidth = {
@@ -76,8 +92,9 @@ export function SiteRenderer({ siteSpec, isLoading }: SiteRendererProps) {
   }
 
   const { theme, pages, navigation, footer } = siteSpec;
-  const currentPage = pages[0]; // Single-page for now
+  const currentPage = pages[0];
   const legacyTheme = toSectionTheme(theme);
+  const isEditable = !!onUpdateHeroContent;
 
   const renderSection = (section: SiteSection) => {
     const key = section.id;
@@ -86,9 +103,23 @@ export function SiteRenderer({ siteSpec, isLoading }: SiteRendererProps) {
 
     switch (section.type) {
       case 'hero':
-        return <HeroSection key={key} {...commonProps} siteName={siteSpec.name} />;
+        return (
+          <HeroSection 
+            key={key} 
+            {...commonProps} 
+            siteName={siteSpec.name}
+            onUpdateContent={onUpdateHeroContent ? (field, value) => onUpdateHeroContent(section.id, field, value) : undefined}
+          />
+        );
       case 'features':
-        return <FeaturesSection key={key} {...commonProps} />;
+        return (
+          <FeaturesSection 
+            key={key} 
+            {...commonProps}
+            onUpdateContent={onUpdateFeaturesContent ? (field, value) => onUpdateFeaturesContent(section.id, field, value) : undefined}
+            onUpdateItem={onUpdateFeatureItem ? (index, field, value) => onUpdateFeatureItem(section.id, index, field, value) : undefined}
+          />
+        );
       case 'pricing':
         return <PricingSection key={key} {...commonProps} />;
       case 'testimonials':
@@ -110,6 +141,7 @@ export function SiteRenderer({ siteSpec, isLoading }: SiteRendererProps) {
       <div className="h-10 border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
         <span className="text-xs text-muted-foreground">
           {siteSpec.name || 'Generated Site'}
+          {isEditable && <span className="ml-2 text-primary">(Click text to edit)</span>}
         </span>
         <div className="flex items-center gap-1">
           <Button
@@ -157,27 +189,53 @@ export function SiteRenderer({ siteSpec, isLoading }: SiteRendererProps) {
               borderBottom: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
             }}
           >
-            <span 
-              className="font-bold text-lg"
-              style={{ 
-                fontFamily: theme.fontHeading,
-                color: theme.primaryColor
-              }}
-            >
-              {siteSpec.name}
-            </span>
+            {onUpdateSiteName ? (
+              <EditableText
+                value={siteSpec.name}
+                onSave={onUpdateSiteName}
+                as="span"
+                className="font-bold text-lg"
+                style={{ 
+                  fontFamily: theme.fontHeading,
+                  color: theme.primaryColor
+                }}
+              />
+            ) : (
+              <span 
+                className="font-bold text-lg"
+                style={{ 
+                  fontFamily: theme.fontHeading,
+                  color: theme.primaryColor
+                }}
+              >
+                {siteSpec.name}
+              </span>
+            )}
             <div className="flex items-center gap-6">
               {navigation?.map((item, index) => (
-                <a
-                  key={index}
-                  href={item.href}
-                  className="text-sm font-medium transition-colors hover:opacity-80"
-                  style={{ 
-                    color: theme.darkMode ? '#d1d5db' : '#4b5563'
-                  }}
-                >
-                  {item.label}
-                </a>
+                onUpdateNavItem ? (
+                  <EditableText
+                    key={index}
+                    value={item.label}
+                    onSave={(val) => onUpdateNavItem(index, val)}
+                    as="span"
+                    className="text-sm font-medium transition-colors hover:opacity-80"
+                    style={{ 
+                      color: theme.darkMode ? '#d1d5db' : '#4b5563'
+                    }}
+                  />
+                ) : (
+                  <a
+                    key={index}
+                    href={item.href}
+                    className="text-sm font-medium transition-colors hover:opacity-80"
+                    style={{ 
+                      color: theme.darkMode ? '#d1d5db' : '#4b5563'
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                )
               ))}
             </div>
           </nav>
