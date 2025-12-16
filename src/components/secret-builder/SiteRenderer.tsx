@@ -26,6 +26,7 @@ import {
   ContactSection,
   CTASection,
   CustomSection,
+  StatsSection,
 } from './preview-sections';
 import { EditableText } from './EditableText';
 import { DraggableSection } from './DraggableSection';
@@ -34,6 +35,7 @@ type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
 interface SiteRendererProps {
   siteSpec: SiteSpec | null;
+  pageIndex?: number;
   isLoading: boolean;
   onUpdateHeroContent?: (sectionId: string, field: keyof HeroContent, value: string) => void;
   onUpdateFeaturesContent?: (sectionId: string, field: keyof FeaturesContent, value: string) => void;
@@ -68,6 +70,7 @@ function toLegacySection(section: SiteSection) {
 
 export function SiteRenderer({ 
   siteSpec, 
+  pageIndex = 0,
   isLoading,
   onUpdateHeroContent,
   onUpdateFeaturesContent,
@@ -120,7 +123,7 @@ export function SiteRenderer({
   }
 
   const { theme, pages, navigation, footer } = siteSpec;
-  const currentPage = pages[0];
+  const currentPage = pages[pageIndex] || pages[0];
   const legacyTheme = toSectionTheme(theme);
   const isEditable = !!onUpdateHeroContent;
 
@@ -177,6 +180,18 @@ export function SiteRenderer({
         break;
       case 'cta':
         sectionContent = <CTASection {...commonProps} />;
+        break;
+      case 'stats':
+        sectionContent = (
+          <StatsSection 
+            content={section.content as any}
+            theme={{
+              primaryColor: theme.primaryColor,
+              backgroundColor: theme.backgroundColor,
+              textColor: theme.textColor,
+            }}
+          />
+        );
         break;
       default:
         sectionContent = <CustomSection {...commonProps} />;

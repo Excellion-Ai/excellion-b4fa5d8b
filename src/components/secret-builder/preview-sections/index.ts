@@ -6,3 +6,4 @@ export { FAQSection } from './FAQSection';
 export { ContactSection } from './ContactSection';
 export { CTASection } from './CTASection';
 export { CustomSection } from './CustomSection';
+export { StatsSection } from './StatsSection';
