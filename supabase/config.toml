@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.code-agent]
 verify_jwt = false
+
+[functions.publish-site]
+verify_jwt = false

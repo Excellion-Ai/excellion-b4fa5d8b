@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2 } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink } from 'lucide-react';
 import { SiteSpec } from '@/types/site-spec';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
 import { ThemeEditor } from './ThemeEditor';
@@ -102,6 +103,10 @@ export function BuilderShell() {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
   const [projectId, setProjectId] = useState<string | null>(projectIdFromState);
   const [projectName, setProjectName] = useState<string>('New Project');
@@ -397,6 +402,50 @@ export function BuilderShell() {
     }
   };
 
+  const handlePublish = async () => {
+    if (!siteSpec || !projectId) {
+      toast.error('No site to publish');
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      const html = generateHtmlFromSpec(siteSpec);
+      
+      const { data, error } = await supabase.functions.invoke('publish-site', {
+        body: { 
+          html, 
+          projectId, 
+          projectName 
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        setPublishedUrl(data.url);
+        setShowPublishDialog(true);
+        toast.success('Site published successfully!');
+      } else {
+        throw new Error('No URL returned from publish');
+      }
+    } catch (error) {
+      console.error('Publish error:', error);
+      toast.error('Failed to publish site');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const copyUrl = () => {
+    if (publishedUrl) {
+      navigator.clipboard.writeText(publishedUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success('URL copied!');
+    }
+  };
+
   const getPreviewWidth = () => {
     switch (previewMode) {
       case 'tablet': return 'max-w-[768px]';
@@ -552,25 +601,16 @@ export function BuilderShell() {
             
             <Button
               size="sm"
-              disabled={!siteSpec}
-              onClick={() => {
-                if (!siteSpec) return;
-                const html = generateHtmlFromSpec(siteSpec);
-                const blob = new Blob([html], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${projectName.replace(/\s+/g, '-').toLowerCase()}.html`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                toast.success('Website published! HTML file downloaded.');
-              }}
+              disabled={!siteSpec || isPublishing}
+              onClick={handlePublish}
               className="gap-1.5 bg-primary hover:bg-primary/90"
             >
-              <Upload className="h-3.5 w-3.5" />
-              Publish
+              {isPublishing ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="h-3.5 w-3.5" />
+              )}
+              {isPublishing ? 'Publishing...' : 'Publish'}
             </Button>
           </div>
         </div>
@@ -610,6 +650,59 @@ export function BuilderShell() {
           </div>
         </div>
       </div>
+
+      {/* Publish Success Dialog */}
+      <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Check className="h-5 w-5 text-green-500" />
+              Site Published!
+            </DialogTitle>
+            <DialogDescription>
+              Your website is now live and accessible at the URL below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <input
+                type="text"
+                readOnly
+                value={publishedUrl || ''}
+                className="flex-1 bg-transparent text-sm text-foreground outline-none"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                onClick={copyUrl}
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={() => publishedUrl && window.open(publishedUrl, '_blank')}
+              >
+                <ExternalLink className="h-4 w-4" />
+                View Site
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => setShowPublishDialog(false)}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
