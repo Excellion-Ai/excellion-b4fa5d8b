@@ -53,6 +53,8 @@ export type Database = {
           id: string
           idea: string
           name: string
+          published_at: string | null
+          published_url: string | null
           spec: Json | null
           updated_at: string
           user_id: string | null
@@ -62,6 +64,8 @@ export type Database = {
           id?: string
           idea: string
           name: string
+          published_at?: string | null
+          published_url?: string | null
           spec?: Json | null
           updated_at?: string
           user_id?: string | null
@@ -71,6 +75,8 @@ export type Database = {
           id?: string
           idea?: string
           name?: string
+          published_at?: string | null
+          published_url?: string | null
           spec?: Json | null
           updated_at?: string
           user_id?: string | null
