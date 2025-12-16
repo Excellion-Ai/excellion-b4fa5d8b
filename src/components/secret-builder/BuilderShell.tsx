@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Download } from 'lucide-react';
 import { SiteSpec } from '@/types/site-spec';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
 import { ThemeEditor } from './ThemeEditor';
+import { CodeExport, generateHtmlFromSpec } from './CodeExport';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import type { Json } from '@/integrations/supabase/types';
@@ -435,23 +436,6 @@ export function BuilderShell() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Tabs defaultValue="code" className="h-full">
-              <TabsList className="bg-transparent h-full gap-2">
-                <TabsTrigger value="code" className="text-xs gap-1.5 data-[state=active]:bg-muted">
-                  <Code className="h-3.5 w-3.5" />
-                  Code
-                </TabsTrigger>
-                <TabsTrigger value="questions" className="text-xs gap-1.5 data-[state=active]:bg-muted">
-                  <HelpCircle className="h-3.5 w-3.5" />
-                  Questions
-                </TabsTrigger>
-                <TabsTrigger value="debug" className="text-xs gap-1.5 data-[state=active]:bg-muted">
-                  <Settings className="h-3.5 w-3.5" />
-                  Debug
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            
             <Button
               variant="outline"
               size="sm"
@@ -461,6 +445,29 @@ export function BuilderShell() {
               <LayoutGrid className="h-3.5 w-3.5" />
               My Hub
             </Button>
+            
+            {siteSpec && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  const html = generateHtmlFromSpec(siteSpec);
+                  const blob = new Blob([html], { type: 'text/html' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${projectName.replace(/\s+/g, '-').toLowerCase()}.html`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  toast.success('HTML file downloaded!');
+                }}
+                className="gap-1.5 text-xs"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export HTML
+              </Button>
+            )}
           </div>
         </div>
 
