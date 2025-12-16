@@ -1,12 +1,14 @@
 import { SiteSection, SiteTheme, HeroContent } from '@/types/app-spec';
+import { EditableText } from '../EditableText';
 
 interface HeroSectionProps {
   section: SiteSection;
   theme: SiteTheme;
   siteName: string;
+  onUpdateContent?: (field: keyof HeroContent, value: string) => void;
 }
 
-export function HeroSection({ section, theme, siteName }: HeroSectionProps) {
+export function HeroSection({ section, theme, siteName, onUpdateContent }: HeroSectionProps) {
   const content = section.content as HeroContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
@@ -26,24 +28,53 @@ export function HeroSection({ section, theme, siteName }: HeroSectionProps) {
       }}
     >
       <div className="max-w-4xl mx-auto text-center">
-        <h1 
-          className="text-4xl md:text-6xl font-bold mb-6"
-          style={{ 
-            fontFamily: theme.fontHeading || 'system-ui',
-            color: isDark ? '#ffffff' : theme.primaryColor 
-          }}
-        >
-          {headline}
-        </h1>
-        <p 
-          className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
-          style={{ 
-            fontFamily: theme.fontBody || 'system-ui',
-            color: isDark ? '#e5e5e5' : '#4b5563'
-          }}
-        >
-          {subheadline}
-        </p>
+        {onUpdateContent ? (
+          <EditableText
+            value={headline}
+            onSave={(val) => onUpdateContent('headline', val)}
+            as="h1"
+            className="text-4xl md:text-6xl font-bold mb-6"
+            style={{ 
+              fontFamily: theme.fontHeading || 'system-ui',
+              color: isDark ? '#ffffff' : theme.primaryColor 
+            }}
+          />
+        ) : (
+          <h1 
+            className="text-4xl md:text-6xl font-bold mb-6"
+            style={{ 
+              fontFamily: theme.fontHeading || 'system-ui',
+              color: isDark ? '#ffffff' : theme.primaryColor 
+            }}
+          >
+            {headline}
+          </h1>
+        )}
+        
+        {onUpdateContent ? (
+          <EditableText
+            value={subheadline}
+            onSave={(val) => onUpdateContent('subheadline', val)}
+            as="p"
+            multiline
+            className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
+            style={{ 
+              fontFamily: theme.fontBody || 'system-ui',
+              color: isDark ? '#e5e5e5' : '#4b5563'
+            }}
+          />
+        ) : (
+          <p 
+            className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
+            style={{ 
+              fontFamily: theme.fontBody || 'system-ui',
+              color: isDark ? '#e5e5e5' : '#4b5563'
+            }}
+          >
+            {subheadline}
+          </p>
+        )}
+        
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             className="px-8 py-3 rounded-lg font-semibold text-white transition-all hover:scale-105"
