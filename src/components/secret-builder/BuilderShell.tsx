@@ -458,7 +458,7 @@ export function BuilderShell() {
               className="gap-1.5 text-xs"
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-              My Hub
+              Studio
             </Button>
             
             <Button
