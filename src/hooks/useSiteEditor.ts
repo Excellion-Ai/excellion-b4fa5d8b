@@ -1,10 +1,20 @@
 import { useCallback } from 'react';
-import { SiteSpec, SiteSection, HeroContent, FeaturesContent, FeatureItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent } from '@/types/site-spec';
+import { SiteSpec, SiteSection, SiteTheme, HeroContent, FeaturesContent, FeatureItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent } from '@/types/site-spec';
 import { arrayMove } from '@dnd-kit/sortable';
 
 type UpdateSiteSpec = React.Dispatch<React.SetStateAction<SiteSpec | null>>;
 
 export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSiteSpec) {
+  
+  const updateTheme = useCallback((updates: Partial<SiteTheme>) => {
+    setSiteSpec((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        theme: { ...prev.theme, ...updates },
+      };
+    });
+  }, [setSiteSpec]);
   
   const reorderSections = useCallback((oldIndex: number, newIndex: number) => {
     setSiteSpec((prev) => {
@@ -130,6 +140,7 @@ export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSite
   return {
     reorderSections,
     updateSection,
+    updateTheme,
     updateHeroContent,
     updateFeaturesContent,
     updateFeatureItem,

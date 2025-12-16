@@ -9,6 +9,7 @@ import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone,
 import { SiteSpec } from '@/types/site-spec';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
+import { ThemeEditor } from './ThemeEditor';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import type { Json } from '@/integrations/supabase/types';
@@ -362,6 +363,16 @@ export function BuilderShell() {
             )}
           </div>
         </ScrollArea>
+
+        {/* Theme Editor - show when site exists */}
+        {siteSpec && (
+          <div className="border-t border-border p-3">
+            <ThemeEditor 
+              theme={siteSpec.theme} 
+              onUpdateTheme={editor.updateTheme} 
+            />
+          </div>
+        )}
 
         <div className="border-t border-border p-4">
           <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-2">
