@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Download } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload } from 'lucide-react';
 import { SiteSpec } from '@/types/site-spec';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
@@ -461,28 +461,28 @@ export function BuilderShell() {
               My Hub
             </Button>
             
-            {siteSpec && (
-              <Button
-                size="sm"
-                onClick={() => {
-                  const html = generateHtmlFromSpec(siteSpec);
-                  const blob = new Blob([html], { type: 'text/html' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${projectName.replace(/\s+/g, '-').toLowerCase()}.html`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                  toast.success('HTML file downloaded!');
-                }}
-                className="gap-1.5 text-xs"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Export HTML
-              </Button>
-            )}
+            <Button
+              size="sm"
+              disabled={!siteSpec}
+              onClick={() => {
+                if (!siteSpec) return;
+                const html = generateHtmlFromSpec(siteSpec);
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${projectName.replace(/\s+/g, '-').toLowerCase()}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                toast.success('Website published! HTML file downloaded.');
+              }}
+              className="gap-1.5 bg-primary hover:bg-primary/90"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Publish
+            </Button>
           </div>
         </div>
 
