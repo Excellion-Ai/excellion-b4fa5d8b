@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2 } from 'lucide-react';
 import { SiteSpec } from '@/types/site-spec';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
@@ -13,6 +13,7 @@ import { ThemeEditor } from './ThemeEditor';
 import { CodeExport, generateHtmlFromSpec } from './CodeExport';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
+import { useHistory } from '@/hooks/useHistory';
 import type { Json } from '@/integrations/supabase/types';
 
 type GenerationStep = {
@@ -42,14 +43,38 @@ const INITIAL_STEPS: GenerationStep[] = [
   { id: 4, label: 'Building preview', status: 'pending' },
 ];
 
-function extractHtmlFromResponse(text: string): { message: string; html: string | null } {
-  const htmlMatch = text.match(/```html\s*([\s\S]*?)```/);
-  if (htmlMatch) {
-    const html = htmlMatch[1].trim();
-    const message = text.replace(/```html[\s\S]*?```/, '').trim();
-    return { message, html };
+function extractJsonFromResponse(text: string): { message: string; siteSpec: SiteSpec | null } {
+  // Try to find JSON code block
+  const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[1].trim());
+      const message = text.replace(/```json[\s\S]*?```/, '').trim();
+      
+      // Validate it has the required structure
+      if (parsed.name && parsed.pages && Array.isArray(parsed.pages)) {
+        return { message, siteSpec: parsed as SiteSpec };
+      }
+    } catch (e) {
+      console.error('Failed to parse JSON from response:', e);
+    }
   }
-  return { message: text, html: null };
+  
+  // Fallback: try to find raw JSON object
+  const rawJsonMatch = text.match(/\{[\s\S]*"name"[\s\S]*"pages"[\s\S]*\}/);
+  if (rawJsonMatch) {
+    try {
+      const parsed = JSON.parse(rawJsonMatch[0]);
+      if (parsed.name && parsed.pages) {
+        const message = text.replace(rawJsonMatch[0], '').trim();
+        return { message, siteSpec: parsed as SiteSpec };
+      }
+    } catch (e) {
+      console.error('Failed to parse raw JSON:', e);
+    }
+  }
+  
+  return { message: text, siteSpec: null };
 }
 
 function containsUrl(text: string): boolean {
@@ -65,13 +90,33 @@ export function BuilderShell() {
 
   const [idea, setIdea] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
+  const { 
+    state: siteSpec, 
+    setState: setSiteSpecWithHistory, 
+    undo, 
+    redo, 
+    canUndo, 
+    canRedo,
+    reset: resetSiteSpec 
+  } = useHistory<SiteSpec | null>(null);
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
   const [projectId, setProjectId] = useState<string | null>(projectIdFromState);
   const [projectName, setProjectName] = useState<string>('New Project');
+  
+  // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
+  const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
+    if (typeof value === 'function') {
+      const newValue = value(siteSpec);
+      if (newValue !== null) {
+        setSiteSpecWithHistory(newValue);
+      }
+    } else {
+      setSiteSpecWithHistory(value);
+    }
+  }, [siteSpec, setSiteSpecWithHistory]);
   
   // Use the site editor hook for inline editing
   const editor = useSiteEditor(siteSpec, setSiteSpec);
@@ -201,6 +246,22 @@ export function BuilderShell() {
     }
   }, [siteSpec]);
 
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyboard = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey && canUndo) {
+        e.preventDefault();
+        undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z')) && canRedo) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
+  }, [canUndo, canRedo, undo, redo]);
+
   const handleGenerate = async (inputIdea?: string) => {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
@@ -215,7 +276,7 @@ export function BuilderShell() {
 
     setIsGenerating(true);
     setGeneratedHtml(null);
-    setSiteSpec(null);
+    resetSiteSpec(null);
     setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: 'pending' })));
 
     const hasUrl = containsUrl(ideaToUse);
@@ -291,12 +352,16 @@ export function BuilderShell() {
 
       updateStep(4, 'active');
       
-      const { message: assistantText, html } = extractHtmlFromResponse(fullResponse);
+      const { message: assistantText, siteSpec: parsedSpec } = extractJsonFromResponse(fullResponse);
       
       let newSiteSpec: SiteSpec | null = null;
-      if (html) {
-        setGeneratedHtml(html);
+      if (parsedSpec) {
+        newSiteSpec = parsedSpec;
+        setSiteSpec(parsedSpec);
+        setGeneratedHtml(null); // Use SiteSpec rendering instead of raw HTML
       } else {
+        // Fallback to rule-based generation if AI didn't return valid JSON
+        console.warn('AI did not return valid JSON, using fallback generator');
         newSiteSpec = specFromChat(ideaToUse);
         setSiteSpec(newSiteSpec);
       }
@@ -307,13 +372,13 @@ export function BuilderShell() {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: assistantText || 'Website generated! Check the preview on the right.',
-        htmlCode: html || undefined,
+        htmlCode: undefined,
       };
       const allMessages = [...messages, userMessage, assistantMessage];
       setMessages(allMessages);
 
       const firstUserMessage = allMessages.find(m => m.role === 'user');
-      await saveProject(html, allMessages, firstUserMessage?.content || ideaToUse, newSiteSpec);
+      await saveProject(null, allMessages, firstUserMessage?.content || ideaToUse, newSiteSpec);
     } catch (error) {
       console.error('Generation error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate. Please try again.');
@@ -447,6 +512,30 @@ export function BuilderShell() {
               onClick={() => setPreviewMode('mobile')}
             >
               <Smartphone className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Undo/Redo buttons */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={undo}
+              disabled={!canUndo}
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={redo}
+              disabled={!canRedo}
+              title="Redo (Ctrl+Y)"
+            >
+              <Redo2 className="h-4 w-4" />
             </Button>
           </div>
 
