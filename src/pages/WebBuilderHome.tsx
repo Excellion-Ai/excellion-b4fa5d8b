@@ -401,7 +401,7 @@ const WebBuilderHome = () => {
               <p className="text-xs text-muted-foreground mt-4 mb-4">
                 Start free with a draft site. Only pay when you're ready to launch.
               </p>
-              <Button onClick={() => navigate("/bot-experiment")} className="w-full">
+              <Button onClick={() => navigate("/secret-builder-hub")} className="w-full">
                 Start with AI
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
