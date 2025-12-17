@@ -110,12 +110,12 @@ Generate a complete, self-contained React component. Return ONLY valid JSON.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
+        max_completion_tokens: 8000,
       }),
     });
 

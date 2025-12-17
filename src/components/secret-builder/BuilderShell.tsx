@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { specFromChat } from '@/lib/specFromChat';
@@ -113,6 +114,10 @@ export function BuilderShell() {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [projectId, setProjectId] = useState<string | null>(projectIdFromState);
   const [projectName, setProjectName] = useState<string>('New Project');
+  const [modelMode, setModelMode] = useState<'fast' | 'quality'>('quality');
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState('');
+  const [showImageDialog, setShowImageDialog] = useState(false);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
@@ -313,7 +318,7 @@ export function BuilderShell() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: chatMessages }),
+        body: JSON.stringify({ messages: chatMessages, modelMode }),
       });
 
       if (!response.ok) {
@@ -402,6 +407,61 @@ export function BuilderShell() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleGenerate();
+    }
+  };
+
+  const handleGenerateImage = async () => {
+    if (!imagePrompt.trim()) {
+      toast.error('Please enter an image description');
+      return;
+    }
+
+    setIsGeneratingImage(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ prompt: imagePrompt }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate image');
+      }
+
+      const data = await response.json();
+      if (data.imageUrl) {
+        // Update hero section image if site exists
+        if (siteSpec) {
+          const heroSection = siteSpec.pages[currentPageIndex]?.sections.find(s => s.type === 'hero');
+          if (heroSection) {
+            editor.updateSection(heroSection.id, (section) => ({
+              ...section,
+              content: {
+                ...section.content,
+                image: data.imageUrl,
+              },
+            }));
+            toast.success('Image applied to hero section!');
+          } else {
+            navigator.clipboard.writeText(data.imageUrl);
+            toast.success('Image generated! URL copied to clipboard.');
+          }
+        } else {
+          navigator.clipboard.writeText(data.imageUrl);
+          toast.success('Image URL copied to clipboard!');
+        }
+        setShowImageDialog(false);
+        setImagePrompt('');
+      }
+    } catch (error) {
+      console.error('Image generation error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to generate image');
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -585,6 +645,41 @@ export function BuilderShell() {
             </Button>
           </div>
 
+          {/* Model Mode Selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                {modelMode === 'fast' ? (
+                  <>
+                    <Zap className="h-3.5 w-3.5 text-yellow-500" />
+                    Fast
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+                    Quality
+                  </>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center">
+              <DropdownMenuItem onClick={() => setModelMode('fast')} className="gap-2">
+                <Zap className="h-4 w-4 text-yellow-500" />
+                <div>
+                  <div className="font-medium">Fast Mode</div>
+                  <div className="text-xs text-muted-foreground">Gemini Flash - quicker, cheaper</div>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setModelMode('quality')} className="gap-2">
+                <Sparkles className="h-4 w-4 text-purple-500" />
+                <div>
+                  <div className="font-medium">Quality Mode</div>
+                  <div className="text-xs text-muted-foreground">GPT-5 - better output, slower</div>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {/* Undo/Redo buttons */}
           <div className="flex items-center gap-1">
             <Button
@@ -617,6 +712,21 @@ export function BuilderShell() {
                 existingSections={siteSpec.pages[currentPageIndex].sections}
               />
             )}
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowImageDialog(true)}
+              className="gap-1.5 text-xs"
+              disabled={isGeneratingImage}
+            >
+              {isGeneratingImage ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ImagePlus className="h-3.5 w-3.5" />
+              )}
+              AI Image
+            </Button>
             
             <Button
               variant="outline"
@@ -728,6 +838,63 @@ export function BuilderShell() {
                 onClick={() => setShowPublishDialog(false)}
               >
                 Done
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Generation Dialog */}
+      <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ImagePlus className="h-5 w-5 text-primary" />
+              Generate AI Image
+            </DialogTitle>
+            <DialogDescription>
+              Describe the image you want to generate for your website (hero backgrounds, product images, etc.)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              value={imagePrompt}
+              onChange={(e) => setImagePrompt(e.target.value)}
+              placeholder="e.g., Modern gym interior with equipment, dramatic lighting"
+              className="w-full"
+              disabled={isGeneratingImage}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleGenerateImage();
+                }
+              }}
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowImageDialog(false)}
+                disabled={isGeneratingImage}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 gap-2"
+                onClick={handleGenerateImage}
+                disabled={!imagePrompt.trim() || isGeneratingImage}
+              >
+                {isGeneratingImage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Generate
+                  </>
+                )}
               </Button>
             </div>
           </div>

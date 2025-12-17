@@ -339,7 +339,7 @@ serve(async (req) => {
       );
     }
 
-    const { messages, context } = await req.json();
+    const { messages, context, modelMode } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -378,6 +378,10 @@ Use this information to match the business name, services, and style.`;
 
     console.log("Processing chat request with", messages.length, "messages");
 
+    // Select model based on mode (quality = gpt-5-mini for streaming, fast = gemini flash)
+    const selectedModel = modelMode === 'quality' ? 'openai/gpt-5-mini' : 'google/gemini-2.5-flash';
+    console.log("Using model:", selectedModel);
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -385,7 +389,7 @@ Use this information to match the business name, services, and style.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: selectedModel,
         messages: [
           { role: "system", content: enhancedPrompt },
           ...messages,
