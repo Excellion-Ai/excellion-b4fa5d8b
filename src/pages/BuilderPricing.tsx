@@ -11,7 +11,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Check, Sparkles, ArrowRight, Zap, Phone } from "lucide-react";
-import excellionLogo from "@/assets/excellion-logo.png";
+import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
 const aiBuilderPlans = [
@@ -165,33 +165,9 @@ const BuilderPricing = () => {
         <meta name="description" content="Choose your plan. AI-powered website builder starting free, or let our team build it for you." />
       </Helmet>
 
-      {/* Navigation */}
-      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <button onClick={() => navigate("/")} className="flex items-center gap-2">
-              <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
-              <span className="font-bold text-lg text-foreground">Excellion AI</span>
-            </button>
-            <div className="hidden md:flex items-center gap-6">
-              <a href="#ai-builder" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                AI Builder
-              </a>
-              <a href="#done-for-you" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Done-for-you
-              </a>
-              <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                FAQ
-              </a>
-            </div>
-            <Button size="sm" onClick={() => navigate("/secret-builder-hub")}>
-              Studio
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
