@@ -24,25 +24,18 @@ const Navigation = () => {
         </Link>
           
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/book-call" className="text-sm font-medium text-accent hover:text-accent/80 transition-colors">
-              Book a Call
+            <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Pricing
             </Link>
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Done for you
+              How it Works
             </Link>
-            {/* HIDDEN - Uncomment to restore DIY link:
-            <Link to="/diy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              DIY
+            <Link to="/faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              FAQ
             </Link>
-            */}
-            <Link to="/maintenance-request" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Maintenance Request
+            <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Contact
             </Link>
-            {/* HIDDEN - Uncomment to restore Operations link:
-            <Link to="/operations" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Operations
-            </Link>
-            */}
           </div>
 
           <div className="flex items-center gap-4">
@@ -71,39 +64,29 @@ const Navigation = () => {
               <SheetContent side="right" className="w-[280px]">
                 <div className="flex flex-col gap-6 mt-8">
                   <Link 
-                    to="/book-call" 
-                    className="text-lg font-medium text-accent hover:text-accent/80 transition-colors"
+                    to="/pricing" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
-                    Book a Call
+                    Pricing
                   </Link>
                   <Link 
                     to="/dfy" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
-                    Done for you
+                    How it Works
                   </Link>
-                  {/* HIDDEN - Uncomment to restore DIY link:
                   <Link 
-                    to="/diy" 
+                    to="/faq" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
-                    DIY
+                    FAQ
                   </Link>
-                  */}
                   <Link 
-                    to="/maintenance-request" 
+                    to="/contact" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
-                    Maintenance Request
+                    Contact
                   </Link>
-                  {/* HIDDEN - Uncomment to restore Operations link:
-                  <Link 
-                    to="/operations" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    Operations
-                  </Link>
-                  */}
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
                     {isAdmin && (
                       <Link to="/admin">
