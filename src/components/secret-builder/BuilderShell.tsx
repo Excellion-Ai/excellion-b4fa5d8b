@@ -939,7 +939,7 @@ export function BuilderShell() {
           setImagePrompt('');
         }
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ImagePlus className="h-5 w-5 text-primary" />
@@ -1046,8 +1046,8 @@ export function BuilderShell() {
               ) : generatedImages.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">No images generated yet</p>
               ) : (
-                <ScrollArea className="h-40">
-                  <div className="grid grid-cols-3 gap-2">
+                <ScrollArea className="h-64">
+                  <div className="grid grid-cols-4 gap-3">
                     {generatedImages.map((image) => (
                       <button
                         key={image.name}
