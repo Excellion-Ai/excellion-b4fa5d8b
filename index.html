@@ -3,63 +3,67 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Excellion - The Most Convenient Website &amp; App Builder</title>
-    <meta name="description" content="Describe your dream website and/or web app, and launch fast with Excellion's convenient website and app builder platform.">
+    <title>Excellion Websites | Professional Web Builds in Days, Not Months</title>
+    <meta name="description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses. Book a free 15-minute consultation today.">
     <meta name="author" content="Excellion" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://excellionwebsites.com/" />
 
     <!-- Preconnect to external domains for faster resource loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     
-    <!-- Google Fonts for builder theme options -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Lato:wght@400;700&family=Raleway:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&family=Merriweather:wght@400;700&display=swap">
+    <!-- Google Fonts - Load only essential weights -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap">
+    </noscript>
     
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://excellionwebsites.com/" />
+    <meta property="og:title" content="Excellion Websites | Professional Web Builds in Days, Not Months">
+    <meta property="og:description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses.">
     <meta property="og:image" content="https://excellionwebsites.com/og-image.png">
-    <meta property="og:image:width" content="1920" />
-    <meta property="og:image:height" content="1080" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Excellion Websites" />
 
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@excellionai" />
+    <meta name="twitter:title" content="Excellion Websites | Professional Web Builds in Days, Not Months">
+    <meta name="twitter:description" content="Get a custom website mockup and clear pricing before you pay. Book a free 15-minute consultation.">
     <meta name="twitter:image" content="https://excellionwebsites.com/og-image.png">
     
-    <!-- Preload critical video assets for instant loading -->
-    <link rel="preload" href="/src/assets/excellion-city.mp4" as="video" type="video/mp4" fetchpriority="high" />
-    <link rel="preload" href="/src/assets/dfy-background-new.mp4" as="video" type="video/mp4" fetchpriority="high" />
-    <link rel="preload" href="/src/assets/contact-background.mp4" as="video" type="video/mp4" />
-    <link rel="preload" href="/src/assets/faq-background.mp4" as="video" type="video/mp4" />
-    <link rel="preload" href="/src/assets/diy-background.mp4" as="video" type="video/mp4" />
-    <link rel="preload" href="/src/assets/operations-background-new.mp4" as="video" type="video/mp4" />
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/og-image.png">
     
-    <!-- Preload logo for instant header rendering -->
-    <link rel="preload" href="/src/assets/excellion-logo.png" as="image" fetchpriority="high" />
-    
-    <meta property="og:title" content="Excellion - The Most Convenient Website &amp; App Builder">
-  <meta name="twitter:title" content="Excellion - The Most Convenient Website &amp; App Builder">
-  <meta property="og:description" content="Describe your dream website and/or web app, and launch fast with Excellion&#39;s convenient website and app builder platform.">
-  <meta name="twitter:description" content="Describe your dream website and/or web app, and launch fast with Excellion&#39;s convenient website and app builder platform.">
-  <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/ViJNibNqf3RrjmrhXO3W5aL39vS2/uploads/1762590396947-Excellion Logo.png">
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#0a0a0a">
   
-  <!-- Google tag (gtag.js) - Deferred for performance -->
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'AW-17764146565');
-    
-    // Defer Google Analytics loading
-    window.addEventListener('load', function() {
-      var script = document.createElement('script');
-      script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17764146565';
-      script.async = true;
-      document.head.appendChild(script);
-    });
-  </script>
-</head>
+    <!-- Google tag (gtag.js) - Deferred for performance -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-17764146565');
+      
+      // Defer Google Analytics loading
+      if (typeof window !== 'undefined') {
+        window.addEventListener('load', function() {
+          var script = document.createElement('script');
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17764146565';
+          script.async = true;
+          document.head.appendChild(script);
+        });
+      }
+    </script>
+  </head>
 
   <body>
     <div id="root"></div>

@@ -9,12 +9,18 @@ const Index = () => {
     <>
       <Helmet>
         <title>Excellion Websites | Professional Web Builds in Days, Not Months</title>
-        <meta name="description" content="Excellion Websites builds fast, professional websites for your business. Book a free 15-minute call to get a clear build plan and price." />
+        <meta name="description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses. Book a free 15-minute consultation today." />
+        <link rel="canonical" href="https://excellionwebsites.com/" />
+        <meta property="og:title" content="Excellion Websites | Professional Web Builds in Days" />
+        <meta property="og:description" content="Get a custom website mockup and clear pricing before you pay. Book a free 15-minute consultation." />
+        <meta property="og:url" content="https://excellionwebsites.com/" />
       </Helmet>
       <div className="min-h-screen bg-background">
         <Navigation />
-        <Hero />
-        <PortfolioShowcase />
+        <main>
+          <Hero />
+          <PortfolioShowcase />
+        </main>
         <LazyFooter />
       </div>
     </>

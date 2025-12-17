@@ -2,20 +2,20 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border/50 bg-background">
+    <footer className="border-t border-border/50 bg-background" role="contentinfo">
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
           {/* Brand Column */}
           <div className="space-y-4 md:col-span-3">
-            <h3 className="text-xl font-bold text-foreground">Excellion</h3>
+            <p className="text-xl font-bold text-foreground">Excellion</p>
             <p className="text-sm text-muted-foreground">
               Excellion builds modern, custom websites for small businesses. We handle the design, development, and launch for you, so you can stay focused on running your business. Start with a free mockup and estimate—no obligation.
             </p>
           </div>
 
           {/* Company Column */}
-          <div className="space-y-4 md:col-span-3">
-            <h4 className="text-sm font-semibold text-foreground">Company</h4>
+          <nav className="space-y-4 md:col-span-3" aria-label="Company links">
+            <p className="text-sm font-semibold text-foreground">Company</p>
             <ul className="space-y-2">
               <li>
                 <Link to="/legal#privacy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
@@ -33,11 +33,11 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Solutions Column */}
-          <div className="space-y-4 md:col-span-3">
-            <h4 className="text-sm font-semibold text-foreground">Solutions</h4>
+          <nav className="space-y-4 md:col-span-3" aria-label="Solutions links">
+            <p className="text-sm font-semibold text-foreground">Solutions</p>
             <ul className="space-y-2">
               <li>
                 <Link to="/diy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
@@ -55,11 +55,11 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Support Column */}
-          <div className="space-y-4 md:col-span-3">
-            <h4 className="text-sm font-semibold text-foreground">Support</h4>
+          <nav className="space-y-4 md:col-span-3" aria-label="Support links">
+            <p className="text-sm font-semibold text-foreground">Support</p>
             <ul className="space-y-2">
               <li>
                 <Link to="/contact" className="text-sm text-muted-foreground hover:text-accent transition-colors">
@@ -77,12 +77,13 @@ const Footer = () => {
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-accent transition-colors"
+                  aria-label="Join Excellion Discord community (opens in new tab)"
                 >
                   Discord
                 </a>
               </li>
             </ul>
-          </div>
+          </nav>
         </div>
 
         {/* Bottom Bar */}
