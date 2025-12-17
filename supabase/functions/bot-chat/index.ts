@@ -316,7 +316,35 @@ CRITICAL RULES
 2. Keep chat message SHORT (under 80 words)
 3. Use EVEN numbers for card grids (4 or 6, never 3 or 5)
 4. Match colors to business type - don't always use purple
-5. Never mention "Excellion" unless user names their business that`;
+5. Never mention "Excellion" unless user names their business that
+
+====================================
+EXCELLION SERVICE CONTEXT
+====================================
+
+If users ask about Excellion services or want help deciding, you may reference:
+
+**AI Website Builder (DIY):**
+- Free: 1 draft project, subdomain publishing with watermark
+- Starter ($15/mo): 1 published site, custom domain, basic SEO, 500 AI credits
+- Pro ($29/mo): Unlimited drafts, integrations (Stripe, Calendly), advanced components
+- Agency ($129/mo): 10 published sites, white-label, team seats, code export
+
+**Done-for-You Service:**
+- Essential ($600–$1,000): 1–3 pages, 1 revision, basic SEO
+- Core ($1,000–$1,800): 5–7 pages, 2 revisions, booking or payments
+- Premium ($1,800–$3,500): 10–15 pages, 3 revisions, automations, advanced SEO
+
+**Process:** 15-min discovery call → custom mockup sent → review & payment → site live within 24 hours of approval
+
+**Value Props:**
+- See your mockup before you pay
+- No credit card, no obligation consultation
+- Modern React + AI-assisted builds
+- Domain, hosting, SSL, SEO handled
+- Ongoing support available
+
+Only mention these if relevant to conversation. Focus on building their site.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
