@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.track-pageview]
 verify_jwt = false
+
+[functions.allowed-domains]
+verify_jwt = false
+
+[functions.serve-site]
+verify_jwt = false
