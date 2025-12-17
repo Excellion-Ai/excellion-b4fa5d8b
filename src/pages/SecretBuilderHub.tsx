@@ -481,19 +481,30 @@ export default function SecretBuilderHub() {
       <aside className="w-64 flex flex-col fixed h-full z-20 border-r border-border bg-card">
         {/* Workspace Header */}
         <div className="p-4 border-b border-border">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start h-auto py-2 px-3"
+            onClick={() => navigate('/web-builder')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                <img src={excellionLogo} alt="Excellion" className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-foreground">Excellion</p>
+                <p className="text-xs text-muted-foreground">Builder</p>
+              </div>
+            </div>
+          </Button>
+        </div>
+
+        {/* Settings Dropdown */}
+        <div className="px-4 py-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="w-full justify-between h-auto py-2 px-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <img src={excellionLogo} alt="Excellion" className="h-5 w-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-foreground">Excellion</p>
-                    <p className="text-xs text-muted-foreground">Builder</p>
-                  </div>
-                </div>
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              <Button variant="outline" size="sm" className="w-full justify-between">
+                <span className="text-xs">Settings</span>
+                <ChevronDown className="w-3 h-3 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
