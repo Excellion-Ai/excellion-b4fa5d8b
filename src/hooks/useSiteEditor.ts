@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { SiteSpec, SiteSection, SiteTheme, SitePage, HeroContent, FeaturesContent, FeatureItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent } from '@/types/site-spec';
+import { SiteSpec, SiteSection, SiteTheme, SitePage, HeroContent, FeaturesContent, FeatureItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent, AnimationConfig } from '@/types/site-spec';
 import { arrayMove } from '@dnd-kit/sortable';
 
 type UpdateSiteSpec = React.Dispatch<React.SetStateAction<SiteSpec | null>>;
@@ -126,6 +126,13 @@ export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSite
     }));
   }, [updateSection]);
 
+  const updateSectionAnimation = useCallback((sectionId: string, animation: AnimationConfig) => {
+    updateSection(sectionId, (section) => ({
+      ...section,
+      animation,
+    }));
+  }, [updateSection]);
+
   const updateSiteName = useCallback((name: string) => {
     setSiteSpec((prev) => prev ? { ...prev, name } : prev);
   }, [setSiteSpec]);
@@ -230,6 +237,7 @@ export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSite
     updateFAQContent,
     updateContactContent,
     updateCTAContent,
+    updateSectionAnimation,
     updateSiteName,
     updateNavItem,
     addSection,
