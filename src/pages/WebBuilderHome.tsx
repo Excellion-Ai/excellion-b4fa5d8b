@@ -183,9 +183,9 @@ const WebBuilderHome = () => {
               <a href="#examples" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Examples
               </a>
-              <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={() => navigate("/pricing")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
-              </a>
+              </button>
               <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 FAQ
               </a>

@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 
 // Lazy load all non-critical routes for faster initial load
 const Pricing = lazy(() => import("./pages/Pricing"));
+const BuilderPricing = lazy(() => import("./pages/BuilderPricing"));
 const DFY = lazy(() => import("./pages/DFY"));
 const Operations = lazy(() => import("./pages/Operations"));
 const Survey = lazy(() => import("./pages/Survey"));
@@ -54,6 +55,7 @@ const App = () => (
         <Route path="/maintenance-request" element={<MaintenanceRequest />} />
         <Route path="/bot-experiment" element={<BotExperiment />} />
         <Route path="/web-builder" element={<WebBuilderHome />} />
+        <Route path="/pricing" element={<BuilderPricing />} />
         <Route path="/secret-builder-hub" element={<SecretBuilderHub />} />
         <Route path="/secret-builder" element={<SecretBuilder />} />
         <Route path="/hub" element={<Hub />} />
