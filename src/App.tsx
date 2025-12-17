@@ -3,15 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import Index from "./pages/Index";
 
-// Lazy load all non-critical routes for faster initial load
-const Pricing = lazy(() => import("./pages/Pricing"));
+// Lazy load all routes for faster initial load
+const WebBuilderHome = lazy(() => import("./pages/WebBuilderHome"));
 const BuilderPricing = lazy(() => import("./pages/BuilderPricing"));
-const DFY = lazy(() => import("./pages/DFY"));
-const Operations = lazy(() => import("./pages/Operations"));
-const Survey = lazy(() => import("./pages/Survey"));
-const BookCall = lazy(() => import("./pages/BookCall"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Legal = lazy(() => import("./pages/Legal"));
@@ -19,12 +14,19 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Admin = lazy(() => import("./pages/Admin"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const MaintenanceRequest = lazy(() => import("./pages/MaintenanceRequest"));
-const BotExperiment = lazy(() => import("./pages/BotExperiment"));
-const WebBuilderHome = lazy(() => import("./pages/WebBuilderHome"));
 const SecretBuilder = lazy(() => import("./pages/SecretBuilder"));
 const SecretBuilderHub = lazy(() => import("./pages/SecretBuilderHub"));
-const Hub = lazy(() => import("./pages/Hub"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+// HIDDEN - Legacy pages kept for potential future use
+// const Index = lazy(() => import("./pages/Index"));
+// const DFY = lazy(() => import("./pages/DFY"));
+// const BookCall = lazy(() => import("./pages/BookCall"));
+// const Survey = lazy(() => import("./pages/Survey"));
+// const Pricing = lazy(() => import("./pages/Pricing"));
+// const Operations = lazy(() => import("./pages/Operations"));
+// const BotExperiment = lazy(() => import("./pages/BotExperiment"));
+// const Hub = lazy(() => import("./pages/Hub"));
 
 const queryClient = new QueryClient();
 
@@ -40,12 +42,8 @@ const App = () => (
     <Sonner />
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<Index />} />
-        {/* HIDDEN - Uncomment to restore DIY page: <Route path="/diy" element={<Pricing />} /> */}
-        <Route path="/dfy" element={<DFY />} />
-        {/* HIDDEN - Uncomment to restore Operations page: <Route path="/operations" element={<Operations />} /> */}
-        <Route path="/survey" element={<Survey />} />
-        <Route path="/book-call" element={<BookCall />} />
+        <Route path="/" element={<WebBuilderHome />} />
+        <Route path="/pricing" element={<BuilderPricing />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/legal" element={<Legal />} />
@@ -53,12 +51,13 @@ const App = () => (
         <Route path="/admin" element={<Admin />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/maintenance-request" element={<MaintenanceRequest />} />
-        <Route path="/bot-experiment" element={<BotExperiment />} />
-        <Route path="/web-builder" element={<WebBuilderHome />} />
-        <Route path="/pricing" element={<BuilderPricing />} />
         <Route path="/secret-builder-hub" element={<SecretBuilderHub />} />
         <Route path="/secret-builder" element={<SecretBuilder />} />
-        <Route path="/hub" element={<Hub />} />
+        {/* Legacy routes - kept commented for potential future use */}
+        {/* <Route path="/web-builder" element={<WebBuilderHome />} /> */}
+        {/* <Route path="/dfy" element={<DFY />} /> */}
+        {/* <Route path="/book-call" element={<BookCall />} /> */}
+        {/* <Route path="/survey" element={<Survey />} /> */}
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
