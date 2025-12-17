@@ -658,8 +658,11 @@ export default function SecretBuilderHub() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 min-h-screen overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-6 py-16">
+      <main className="flex-1 ml-64 min-h-screen overflow-y-auto relative">
+        {/* Subtle purple gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-transparent to-purple-900/10 pointer-events-none" />
+        
+        <div className="relative max-w-3xl mx-auto px-6 py-16">
           
           {/* Hero Section */}
           <section className="text-center mb-10">
@@ -673,7 +676,7 @@ export default function SecretBuilderHub() {
 
           {/* Input Card */}
           <section className="mb-8">
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border shadow-[0_0_30px_rgba(88,28,135,0.15)] hover:shadow-[0_0_40px_rgba(88,28,135,0.2)] transition-shadow duration-300">
               <CardContent className="p-4">
                 <div className="relative">
                   <Textarea
