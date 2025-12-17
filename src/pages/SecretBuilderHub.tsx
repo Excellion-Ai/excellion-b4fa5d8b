@@ -45,6 +45,7 @@ import {
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import excellionLogo from '@/assets/excellion-logo.png';
+import studioBackground from '@/assets/studio-background.png';
 
 interface BuilderProject {
   id: string;
@@ -657,8 +658,18 @@ export default function SecretBuilderHub() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 min-h-screen overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-6 py-16">
+      <main 
+        className="flex-1 ml-64 min-h-screen overflow-y-auto relative"
+        style={{
+          backgroundImage: `url(${studioBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-background/80" />
+        <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
           
           {/* Hero Section */}
           <section className="text-center mb-10">
