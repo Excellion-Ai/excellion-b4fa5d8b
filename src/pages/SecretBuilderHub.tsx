@@ -519,6 +519,16 @@ export default function SecretBuilderHub() {
 
         {/* Navigation */}
         <nav className="px-3 py-2 space-y-1">
+          {/* Back to Landing Page */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            onClick={() => navigate('/web-builder')}
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span className="text-sm">Landing Page</span>
+          </Button>
+          
           {NAV_ITEMS.map((item) => {
             const isActive = item.action === 'home';
             return (
