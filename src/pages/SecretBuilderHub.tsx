@@ -648,6 +648,7 @@ export default function SecretBuilderHub() {
             variant="outline" 
             size="sm" 
             className="w-full text-xs h-8 text-muted-foreground hover:text-foreground"
+            onClick={() => navigate('/pricing#pro')}
           >
             <Sparkles className="w-3.5 h-3.5 mr-1.5" />
             Upgrade to Pro
