@@ -30,12 +30,11 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Check if domain exists and is active in custom_domains table
+    // Check if domain exists and is verified in custom_domains table
     const { data, error } = await supabase
       .from('custom_domains')
-      .select('id, project_id, status, ssl_provisioned')
+      .select('id, project_id, status, ssl_provisioned, is_verified')
       .eq('domain', domain)
-      .eq('status', 'active')
       .maybeSingle()
 
     if (error) {
@@ -47,7 +46,18 @@ Deno.serve(async (req) => {
     }
 
     if (!data) {
-      console.log(`[allowed-domains] Domain not found or not active: ${domain}`)
+      console.log(`[allowed-domains] Domain not found: ${domain}`)
+      return new Response(
+        JSON.stringify({ allowed: false }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check if domain is verified (using new is_verified column or legacy status='active')
+    const isAllowed = data.is_verified || data.status === 'active'
+    
+    if (!isAllowed) {
+      console.log(`[allowed-domains] Domain not verified: ${domain}`)
       return new Response(
         JSON.stringify({ allowed: false }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

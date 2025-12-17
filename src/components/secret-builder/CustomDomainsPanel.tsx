@@ -15,6 +15,8 @@ interface CustomDomain {
   status: 'pending' | 'verifying' | 'active' | 'failed' | 'offline';
   verification_token: string;
   ssl_provisioned: boolean;
+  is_verified: boolean;
+  ssl_status: string;
   created_at: string;
   verified_at: string | null;
 }
@@ -30,6 +32,7 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
   const [newDomain, setNewDomain] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [isVerifying, setIsVerifying] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDomains();
@@ -63,11 +66,15 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
     }
 
     setIsAdding(true);
+    
+    const { data: userData } = await supabase.auth.getUser();
+    
     const { data, error } = await supabase
       .from('custom_domains')
       .insert({
         project_id: projectId,
         domain: newDomain.trim().toLowerCase(),
+        user_id: userData.user?.id,
       })
       .select()
       .single();
@@ -85,6 +92,31 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
       toast.success('Domain added! Configure DNS records below.');
     }
     setIsAdding(false);
+  };
+
+  const verifyDomain = async (domain: CustomDomain) => {
+    setIsVerifying(domain.id);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-domain-dns', {
+        body: { domain: domain.domain, token: domain.verification_token },
+      });
+
+      if (error) throw error;
+
+      if (data?.verified) {
+        // Refresh domains to get updated status
+        await fetchDomains();
+        toast.success('Domain verified successfully!');
+      } else {
+        toast.error(data?.message || 'Verification failed. Check your DNS records.');
+      }
+    } catch (err) {
+      console.error('Verification error:', err);
+      toast.error('Failed to verify domain. Please try again.');
+    }
+    
+    setIsVerifying(null);
   };
 
   const removeDomain = async (domainId: string) => {
@@ -107,13 +139,22 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
     toast.success(`${label} copied to clipboard`);
   };
 
-  const getStatusBadge = (status: string, sslProvisioned: boolean) => {
-    switch (status) {
+  const getStatusBadge = (domain: CustomDomain) => {
+    if (domain.is_verified) {
+      return (
+        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+          <CheckCircle2 className="w-3 h-3 mr-1" />
+          Verified {domain.ssl_provisioned && '(SSL)'}
+        </Badge>
+      );
+    }
+    
+    switch (domain.status) {
       case 'active':
         return (
           <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Active {sslProvisioned && '(SSL)'}
+            Active {domain.ssl_provisioned && '(SSL)'}
           </Badge>
         );
       case 'verifying':
@@ -197,10 +238,10 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <CardTitle className="text-base font-mono">{domain.domain}</CardTitle>
-                    {getStatusBadge(domain.status, domain.ssl_provisioned)}
+                    {getStatusBadge(domain)}
                   </div>
                   <div className="flex items-center gap-2">
-                    {domain.status === 'active' && (
+                    {(domain.is_verified || domain.status === 'active') && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -228,7 +269,7 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
                 </div>
               </CardHeader>
               
-              {domain.status !== 'active' && (
+              {!domain.is_verified && domain.status !== 'active' && (
                 <CardContent className="pt-0">
                   <Separator className="mb-4" />
                   
@@ -332,6 +373,24 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
                     <p className="text-xs text-muted-foreground">
                       DNS changes can take up to 72 hours to propagate. SSL will be automatically provisioned once verified.
                     </p>
+                    
+                    <Button
+                      className="w-full"
+                      onClick={() => verifyDomain(domain)}
+                      disabled={isVerifying === domain.id}
+                    >
+                      {isVerifying === domain.id ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          Verifying...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 mr-2" />
+                          Verify Now
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               )}
