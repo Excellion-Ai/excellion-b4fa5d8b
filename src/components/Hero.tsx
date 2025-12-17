@@ -45,12 +45,6 @@ const Hero = () => {
     };
   }, []);
 
-  const scrollToPortfolio = () => {
-    const portfolioSection = document.getElementById('portfolio-showcase');
-    if (portfolioSection) {
-      portfolioSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden" aria-label="Hero section">
@@ -110,15 +104,6 @@ const Hero = () => {
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
               >
                 Book My Mockup Call
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={scrollToPortfolio}
-                aria-label="View portfolio of example website builds"
-                className="font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg border-border/50 hover:bg-background/50"
-              >
-                View Example Builds
               </Button>
             </div>
           </div>
