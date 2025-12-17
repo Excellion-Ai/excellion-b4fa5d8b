@@ -44,7 +44,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
-import Navigation from '@/components/Navigation';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
@@ -453,9 +452,7 @@ export default function SecretBuilderHub() {
   const selectedThemeOption = THEME_OPTIONS.find((t) => t.id === selectedTheme);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Navigation />
-      
+    <div className="min-h-screen flex bg-background">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -481,9 +478,8 @@ export default function SecretBuilderHub() {
         onRename={handleRenameProject}
       />
 
-      <div className="flex flex-1 pt-16">
-        {/* Sidebar */}
-        <aside className="w-64 flex flex-col fixed top-16 h-[calc(100vh-4rem)] z-20 border-r border-border bg-card">
+      {/* Sidebar */}
+      <aside className="w-64 flex flex-col fixed h-full z-20 border-r border-border bg-card">
         {/* Workspace Header */}
         <div className="p-4 border-b border-border">
           <Button 
@@ -1037,7 +1033,6 @@ export default function SecretBuilderHub() {
 
         </div>
       </main>
-      </div>
     </div>
   );
 }
