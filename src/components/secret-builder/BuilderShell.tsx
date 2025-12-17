@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -120,6 +120,7 @@ export function BuilderShell() {
   const [modelMode, setModelMode] = useState<'fast' | 'quality'>('quality');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imagePrompt, setImagePrompt] = useState('');
+  const [imageAttachment, setImageAttachment] = useState<string | null>(null);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
   const [showDomainsDialog, setShowDomainsDialog] = useState(false);
@@ -429,7 +430,10 @@ export function BuilderShell() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ prompt: imagePrompt }),
+        body: JSON.stringify({ 
+          prompt: imagePrompt,
+          referenceImage: imageAttachment || undefined
+        }),
       });
 
       if (!response.ok) {
@@ -461,6 +465,7 @@ export function BuilderShell() {
         }
         setShowImageDialog(false);
         setImagePrompt('');
+        setImageAttachment(null);
       }
     } catch (error) {
       console.error('Image generation error:', error);
@@ -468,6 +473,22 @@ export function BuilderShell() {
     } finally {
       setIsGeneratingImage(false);
     }
+  };
+
+  const handleImageAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be less than 10MB');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageAttachment(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handlePublish = async () => {
@@ -882,31 +903,82 @@ export function BuilderShell() {
       </Dialog>
 
       {/* Image Generation Dialog */}
-      <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
+      <Dialog open={showImageDialog} onOpenChange={(open) => {
+        setShowImageDialog(open);
+        if (!open) {
+          setImageAttachment(null);
+          setImagePrompt('');
+        }
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ImagePlus className="h-5 w-5 text-primary" />
-              Generate AI Image
+              {imageAttachment ? 'Edit Image with AI' : 'Generate AI Image'}
             </DialogTitle>
             <DialogDescription>
-              Describe the image you want to generate for your website (hero backgrounds, product images, etc.)
+              {imageAttachment 
+                ? 'Describe how you want to edit the attached image'
+                : 'Describe the image you want to generate, or attach an image to edit it'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <Input
-              value={imagePrompt}
-              onChange={(e) => setImagePrompt(e.target.value)}
-              placeholder="e.g., Modern gym interior with equipment, dramatic lighting"
-              className="w-full"
-              disabled={isGeneratingImage}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleGenerateImage();
-                }
-              }}
-            />
+            {/* Image attachment preview */}
+            {imageAttachment && (
+              <div className="relative">
+                <img 
+                  src={imageAttachment} 
+                  alt="Attached" 
+                  className="w-full h-32 object-cover rounded-lg border border-border"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 h-6 w-6 bg-background/80 hover:bg-background"
+                  onClick={() => setImageAttachment(null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2">
+              <Input
+                value={imagePrompt}
+                onChange={(e) => setImagePrompt(e.target.value)}
+                placeholder={imageAttachment ? "e.g., Make it more vibrant, add sunset colors" : "e.g., Modern gym interior with equipment"}
+                className="flex-1"
+                disabled={isGeneratingImage}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleGenerateImage();
+                  }
+                }}
+              />
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageAttach}
+                  disabled={isGeneratingImage}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10"
+                  disabled={isGeneratingImage}
+                  asChild
+                >
+                  <span>
+                    <Paperclip className="h-4 w-4" />
+                  </span>
+                </Button>
+              </label>
+            </div>
+            
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -924,12 +996,12 @@ export function BuilderShell() {
                 {isGeneratingImage ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Generating...
+                    {imageAttachment ? 'Editing...' : 'Generating...'}
                   </>
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4" />
-                    Generate
+                    {imageAttachment ? 'Edit' : 'Generate'}
                   </>
                 )}
               </Button>
