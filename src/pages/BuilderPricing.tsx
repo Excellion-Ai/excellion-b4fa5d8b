@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/accordion";
 import { Check, Sparkles, ArrowRight, Zap, Phone } from "lucide-react";
 import excellionLogo from "@/assets/excellion-logo.png";
+import Footer from "@/components/Footer";
 
 const aiBuilderPlans = [
   {
@@ -415,13 +416,7 @@ const BuilderPricing = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Excellion AI. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
