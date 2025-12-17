@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Globe, Plus, Trash2, RefreshCw, CheckCircle2, Clock, AlertCircle, Copy, ExternalLink } from 'lucide-react';
+import { Globe, Plus, Trash2, RefreshCw, CheckCircle2, Clock, AlertCircle, Copy, ExternalLink, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +26,7 @@ interface CustomDomainsPanelProps {
 }
 
 const LOVABLE_IP = '185.158.133.1';
+const STORAGE_BASE_URL = 'https://twaljzxgbbkhhjjocilf.supabase.co/storage/v1/object/public/published-sites';
 
 export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
   const [domains, setDomains] = useState<CustomDomain[]>([]);
@@ -33,10 +34,33 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [isVerifying, setIsVerifying] = useState<string | null>(null);
+  
+  // Temp domain state
+  const [tempDomainSlug, setTempDomainSlug] = useState<string>('');
+  const [isEditingTempDomain, setIsEditingTempDomain] = useState(false);
+  const [editTempDomainValue, setEditTempDomainValue] = useState('');
+  const [isSavingTempDomain, setIsSavingTempDomain] = useState(false);
 
   useEffect(() => {
     fetchDomains();
+    fetchTempDomain();
   }, [projectId]);
+
+  const fetchTempDomain = async () => {
+    const { data, error } = await supabase
+      .from('builder_projects')
+      .select('published_url')
+      .eq('id', projectId)
+      .single();
+
+    if (!error && data?.published_url) {
+      // Extract slug from URL like https://.../published-sites/my-slug/index.html
+      const match = data.published_url.match(/published-sites\/([^/]+)\//);
+      if (match) {
+        setTempDomainSlug(match[1]);
+      }
+    }
+  };
 
   const fetchDomains = async () => {
     setIsLoading(true);
@@ -53,6 +77,80 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
       setDomains((data || []) as CustomDomain[]);
     }
     setIsLoading(false);
+  };
+
+  const handleEditTempDomain = () => {
+    setEditTempDomainValue(tempDomainSlug);
+    setIsEditingTempDomain(true);
+  };
+
+  const handleSaveTempDomain = async () => {
+    const newSlug = editTempDomainValue.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    
+    if (!newSlug) {
+      toast.error('Please enter a valid subdomain');
+      return;
+    }
+
+    if (newSlug === tempDomainSlug) {
+      setIsEditingTempDomain(false);
+      return;
+    }
+
+    setIsSavingTempDomain(true);
+    try {
+      // Check if new slug is available by listing files
+      const { data: existing } = await supabase.storage
+        .from('published-sites')
+        .list(newSlug);
+
+      if (existing && existing.length > 0) {
+        toast.error('This subdomain is already taken');
+        setIsSavingTempDomain(false);
+        return;
+      }
+
+      // Copy old files to new location
+      const { data: oldFiles } = await supabase.storage
+        .from('published-sites')
+        .list(tempDomainSlug);
+
+      if (oldFiles && oldFiles.length > 0) {
+        for (const file of oldFiles) {
+          const { data: fileData } = await supabase.storage
+            .from('published-sites')
+            .download(`${tempDomainSlug}/${file.name}`);
+
+          if (fileData) {
+            await supabase.storage
+              .from('published-sites')
+              .upload(`${newSlug}/${file.name}`, fileData, { upsert: true });
+          }
+        }
+
+        // Delete old files
+        const filesToDelete = oldFiles.map(f => `${tempDomainSlug}/${f.name}`);
+        await supabase.storage
+          .from('published-sites')
+          .remove(filesToDelete);
+      }
+
+      // Update project with new URL
+      const newUrl = `${STORAGE_BASE_URL}/${newSlug}/index.html`;
+      await supabase
+        .from('builder_projects')
+        .update({ published_url: newUrl })
+        .eq('id', projectId);
+
+      setTempDomainSlug(newSlug);
+      setIsEditingTempDomain(false);
+      toast.success('Subdomain updated successfully!');
+    } catch (error) {
+      console.error('Error updating subdomain:', error);
+      toast.error('Failed to update subdomain');
+    } finally {
+      setIsSavingTempDomain(false);
+    }
   };
 
   const addDomain = async () => {
@@ -190,6 +288,109 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
 
   return (
     <div className="space-y-6">
+      {/* Temp Domain Section */}
+      {tempDomainSlug && (
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-blue-500" />
+                  Published URL
+                </CardTitle>
+                <CardDescription>
+                  Your site's default shareable link
+                </CardDescription>
+              </div>
+              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Active
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isEditingTempDomain ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editTempDomainValue}
+                    onChange={(e) => setEditTempDomainValue(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                    placeholder="my-site-name"
+                    className="flex-1 font-mono"
+                    disabled={isSavingTempDomain}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Only lowercase letters, numbers, and hyphens allowed
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleSaveTempDomain}
+                    disabled={isSavingTempDomain || !editTempDomainValue.trim()}
+                    className="gap-1"
+                  >
+                    {isSavingTempDomain ? (
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Check className="w-3 h-3" />
+                    )}
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditingTempDomain(false)}
+                    disabled={isSavingTempDomain}
+                  >
+                    <X className="w-3 h-3" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 justify-between">
+                <code className="text-sm bg-muted px-3 py-2 rounded-md flex-1 truncate">
+                  {tempDomainSlug}
+                </code>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={handleEditTempDomain}
+                    title="Edit subdomain"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${STORAGE_BASE_URL}/${tempDomainSlug}/index.html`);
+                      toast.success('URL copied!');
+                    }}
+                    title="Copy URL"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => window.open(`${STORAGE_BASE_URL}/${tempDomainSlug}/index.html`, '_blank')}
+                    title="Open site"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Add Domain Section */}
       <Card className="bg-card/50 border-border/50">
         <CardHeader className="pb-3">
