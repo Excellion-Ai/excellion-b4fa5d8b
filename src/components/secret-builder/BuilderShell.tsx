@@ -709,6 +709,7 @@ export function BuilderShell() {
               <SectionLibrary
                 onAddSection={editor.addSection}
                 onRemoveSection={editor.removeSection}
+                onUpdateAnimation={editor.updateSectionAnimation}
                 existingSections={siteSpec.pages[currentPageIndex].sections}
               />
             )}

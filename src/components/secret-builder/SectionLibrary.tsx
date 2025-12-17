@@ -1,7 +1,10 @@
-import { Plus, X, Type, Grid3X3, DollarSign, MessageSquare, HelpCircle, Mail, Zap, BarChart3 } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, X, Type, Grid3X3, DollarSign, MessageSquare, HelpCircle, Mail, Zap, BarChart3, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { SectionType, SiteSection, HeroContent, FeaturesContent, PricingContent, TestimonialsContent, FAQContent, ContactContent, CTAContent, StatsContent } from '@/types/site-spec';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { SectionType, SiteSection, HeroContent, FeaturesContent, PricingContent, TestimonialsContent, FAQContent, ContactContent, CTAContent, StatsContent, AnimationConfig } from '@/types/site-spec';
+import { AnimationPicker } from './AnimationPicker';
 
 type SectionTemplate = {
   type: SectionType;
@@ -135,10 +138,13 @@ const SECTION_TEMPLATES: SectionTemplate[] = [
 interface SectionLibraryProps {
   onAddSection: (section: SiteSection) => void;
   onRemoveSection: (sectionId: string) => void;
+  onUpdateAnimation?: (sectionId: string, animation: AnimationConfig) => void;
   existingSections: SiteSection[];
 }
 
-export function SectionLibrary({ onAddSection, onRemoveSection, existingSections }: SectionLibraryProps) {
+export function SectionLibrary({ onAddSection, onRemoveSection, onUpdateAnimation, existingSections }: SectionLibraryProps) {
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
   const handleAddSection = (template: SectionTemplate) => {
     const newSection: SiteSection = {
       id: `${template.type}-${Date.now()}`,
@@ -154,55 +160,96 @@ export function SectionLibrary({ onAddSection, onRemoveSection, existingSections
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5 text-xs">
           <Plus className="h-3.5 w-3.5" />
-          Add Section
+          Sections
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Add a Section</DialogTitle>
+          <DialogTitle>Manage Sections</DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-3 p-1">
-            {SECTION_TEMPLATES.map((template) => (
-              <button
-                key={template.type}
-                onClick={() => handleAddSection(template)}
-                className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent hover:border-primary/50 transition-colors text-left"
-              >
-                <div className="p-2 rounded-md bg-primary/10 text-primary shrink-0">
-                  {template.icon}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium text-sm">{template.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{template.description}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-
+          {/* Current Sections with Animation Controls */}
           {existingSections.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-border">
-              <p className="text-sm font-medium mb-3">Current Sections</p>
+            <div className="mb-6">
+              <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Current Sections
+              </p>
               <div className="space-y-2">
                 {existingSections.map((section) => (
-                  <div
+                  <Collapsible
                     key={section.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border bg-card"
+                    open={expandedSection === section.id}
+                    onOpenChange={(open) => setExpandedSection(open ? section.id : null)}
                   >
-                    <span className="text-sm">{section.label}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => onRemoveSection(section.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
+                    <div className="rounded-lg border border-border bg-card overflow-hidden">
+                      <div className="flex items-center justify-between p-3">
+                        <CollapsibleTrigger asChild>
+                          <button className="flex items-center gap-2 hover:text-primary transition-colors">
+                            {expandedSection === section.id ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                            <span className="text-sm font-medium">{section.label}</span>
+                            {section.animation && section.animation.type !== 'none' && (
+                              <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                {section.animation.type}
+                              </span>
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => onRemoveSection(section.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <CollapsibleContent>
+                        <div className="px-3 pb-3 pt-1 border-t border-border">
+                          {onUpdateAnimation ? (
+                            <AnimationPicker
+                              config={section.animation}
+                              onChange={(animation) => onUpdateAnimation(section.id, animation)}
+                            />
+                          ) : (
+                            <p className="text-xs text-muted-foreground">
+                              Animation editing not available
+                            </p>
+                          )}
+                        </div>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Add New Section */}
+          <div className="pt-4 border-t border-border">
+            <p className="text-sm font-medium mb-3">Add New Section</p>
+            <div className="grid grid-cols-2 gap-3">
+              {SECTION_TEMPLATES.map((template) => (
+                <button
+                  key={template.type}
+                  onClick={() => handleAddSection(template)}
+                  className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent hover:border-primary/50 transition-colors text-left"
+                >
+                  <div className="p-2 rounded-md bg-primary/10 text-primary shrink-0">
+                    {template.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm">{template.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{template.description}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SiteSpec, SiteSection, SiteTheme } from '@/types/site-spec';
+import { SiteSpec, SiteSection, SiteTheme, AnimationConfig } from '@/types/site-spec';
 import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
 import {
   DndContext,
@@ -30,6 +30,7 @@ import {
 } from './preview-sections';
 import { EditableText } from './EditableText';
 import { DraggableSection } from './DraggableSection';
+import { AnimatedSection } from './AnimatedSection';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
@@ -199,7 +200,9 @@ export function SiteRenderer({
 
     return (
       <DraggableSection key={key} id={section.id} isEditable={isEditable}>
-        {sectionContent}
+        <AnimatedSection animation={section.animation}>
+          {sectionContent}
+        </AnimatedSection>
       </DraggableSection>
     );
   };

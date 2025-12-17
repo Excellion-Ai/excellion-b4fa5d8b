@@ -145,12 +145,40 @@ export type SectionContent =
   | StatsContent
   | CustomContent;
 
+// Animation configuration for sections
+export type AnimationType = 
+  | 'none'
+  | 'fade-in'
+  | 'fade-up'
+  | 'fade-down'
+  | 'fade-left'
+  | 'fade-right'
+  | 'scale-in'
+  | 'scale-up'
+  | 'slide-up'
+  | 'slide-down'
+  | 'slide-left'
+  | 'slide-right'
+  | 'bounce'
+  | 'pulse'
+  | 'float'
+  | 'blur-in';
+
+export type AnimationConfig = {
+  type: AnimationType;
+  duration: number;
+  delay: number;
+  easing: 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
+  trigger: 'load' | 'scroll' | 'hover';
+};
+
 // A single section in the site
 export type SiteSection = {
   id: string;
   type: SectionType;
   label: string;
   content: SectionContent;
+  animation?: AnimationConfig;
 };
 
 // Page definition
