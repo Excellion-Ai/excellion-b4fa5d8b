@@ -88,10 +88,13 @@ export type Database = {
           created_at: string
           domain: string
           id: string
+          is_verified: boolean
           last_checked_at: string | null
           project_id: string
           ssl_provisioned: boolean
+          ssl_status: string
           status: string
+          user_id: string | null
           verification_token: string
           verified_at: string | null
         }
@@ -99,10 +102,13 @@ export type Database = {
           created_at?: string
           domain: string
           id?: string
+          is_verified?: boolean
           last_checked_at?: string | null
           project_id: string
           ssl_provisioned?: boolean
+          ssl_status?: string
           status?: string
+          user_id?: string | null
           verification_token?: string
           verified_at?: string | null
         }
@@ -110,10 +116,13 @@ export type Database = {
           created_at?: string
           domain?: string
           id?: string
+          is_verified?: boolean
           last_checked_at?: string | null
           project_id?: string
           ssl_provisioned?: boolean
+          ssl_status?: string
           status?: string
+          user_id?: string | null
           verification_token?: string
           verified_at?: string | null
         }
