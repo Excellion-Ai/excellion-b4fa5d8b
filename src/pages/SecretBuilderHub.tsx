@@ -484,7 +484,7 @@ export default function SecretBuilderHub() {
           <Button 
             variant="ghost" 
             className="w-full justify-start h-auto py-2 px-3"
-            onClick={() => navigate('/web-builder')}
+            onClick={() => navigate('/')}
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -534,7 +534,7 @@ export default function SecretBuilderHub() {
           <Button
             variant="ghost"
             className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            onClick={() => navigate('/web-builder')}
+            onClick={() => navigate('/')}
           >
             <ExternalLink className="w-4 h-4" />
             <span className="text-sm">Landing Page</span>

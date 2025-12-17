@@ -168,7 +168,7 @@ const BuilderPricing = () => {
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <button onClick={() => navigate("/web-builder")} className="flex items-center gap-2">
+            <button onClick={() => navigate("/")} className="flex items-center gap-2">
               <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
               <span className="font-bold text-lg text-foreground">Excellion AI</span>
             </button>
