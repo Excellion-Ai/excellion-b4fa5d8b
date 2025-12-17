@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import excellionLogo from "@/assets/excellion-logo.png";
 
 const Footer = () => {
   return (
@@ -6,15 +7,40 @@ const Footer = () => {
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
           {/* Brand Column */}
-          <div className="space-y-4 md:col-span-3">
-            <p className="text-xl font-bold text-foreground">Excellion</p>
+          <div className="space-y-4 md:col-span-4">
+            <div className="flex items-center gap-2">
+              <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
+              <span className="text-xl font-bold text-foreground">Excellion AI</span>
+            </div>
             <p className="text-sm text-muted-foreground">
-              Excellion builds modern, custom websites for small businesses. We handle the design, development, and launch for you, so you can stay focused on running your business. Start with a free mockup and estimate—no obligation.
+              Build beautiful websites with AI. No coding required. Excellion turns a short conversation into a real website with pages, copy, forms, and a clear launch plan.
             </p>
           </div>
 
+          {/* Product Column */}
+          <nav className="space-y-4 md:col-span-2" aria-label="Product links">
+            <p className="text-sm font-semibold text-foreground">Product</p>
+            <ul className="space-y-2">
+              <li>
+                <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  How it works
+                </a>
+              </li>
+              <li>
+                <a href="#examples" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  Examples
+                </a>
+              </li>
+              <li>
+                <Link to="/pricing" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  Pricing
+                </Link>
+              </li>
+            </ul>
+          </nav>
+
           {/* Company Column */}
-          <nav className="space-y-4 md:col-span-3" aria-label="Company links">
+          <nav className="space-y-4 md:col-span-2" aria-label="Company links">
             <p className="text-sm font-semibold text-foreground">Company</p>
             <ul className="space-y-2">
               <li>
@@ -35,30 +61,8 @@ const Footer = () => {
             </ul>
           </nav>
 
-          {/* Solutions Column */}
-          <nav className="space-y-4 md:col-span-3" aria-label="Solutions links">
-            <p className="text-sm font-semibold text-foreground">Solutions</p>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/diy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  DIY Builder
-                </Link>
-              </li>
-              <li>
-                <Link to="/dfy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  Done for you
-                </Link>
-              </li>
-              <li>
-                <Link to="/operations#maintenance" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  Maintenance
-                </Link>
-              </li>
-            </ul>
-          </nav>
-
           {/* Support Column */}
-          <nav className="space-y-4 md:col-span-3" aria-label="Support links">
+          <nav className="space-y-4 md:col-span-2" aria-label="Support links">
             <p className="text-sm font-semibold text-foreground">Support</p>
             <ul className="space-y-2">
               <li>
@@ -69,6 +73,11 @@ const Footer = () => {
               <li>
                 <Link to="/faq" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                   FAQ
+                </Link>
+              </li>
+              <li>
+                <Link to="/maintenance-request" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  Maintenance
                 </Link>
               </li>
               <li>
@@ -84,12 +93,24 @@ const Footer = () => {
               </li>
             </ul>
           </nav>
+
+          {/* Studio Column */}
+          <nav className="space-y-4 md:col-span-2" aria-label="Builder links">
+            <p className="text-sm font-semibold text-foreground">Builder</p>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/secret-builder-hub" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  Studio
+                </Link>
+              </li>
+            </ul>
+          </nav>
         </div>
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border/50 flex flex-col md:flex-row justify-center items-center">
           <p className="text-sm text-muted-foreground">
-            © 2025 Excellion. All rights reserved.
+            © {new Date().getFullYear()} Excellion AI. All rights reserved.
           </p>
         </div>
       </div>

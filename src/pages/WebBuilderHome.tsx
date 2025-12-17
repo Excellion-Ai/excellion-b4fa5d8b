@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import excellionLogo from "@/assets/excellion-logo.png";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
+import Footer from "@/components/Footer";
 
 const suggestionChips = [
   "Restaurant taking online orders",
@@ -530,58 +531,7 @@ const WebBuilderHome = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
-            <div className="col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
-                <span className="font-bold text-lg text-foreground">Excellion AI</span>
-              </div>
-              <p className="text-sm text-muted-foreground max-w-xs">
-                Build beautiful websites with AI. No coding required.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-foreground mb-3">Product</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#how-it-works" className="hover:text-foreground transition-colors">How it works</a></li>
-                <li><a href="#examples" className="hover:text-foreground transition-colors">Examples</a></li>
-                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
-                <li><a href="#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-foreground mb-3">Services</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/dfy" className="hover:text-foreground transition-colors">Done for you</a></li>
-                <li><a href="/book-call" className="hover:text-foreground transition-colors">Book a call</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-foreground mb-3">Company</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/" className="hover:text-foreground transition-colors">Home</a></li>
-                <li><a href="/contact" className="hover:text-foreground transition-colors">Contact</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-foreground mb-3">Legal</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/legal" className="hover:text-foreground transition-colors">Privacy & Terms</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-12 pt-8 border-t border-border/50 text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Excellion AI. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   );
