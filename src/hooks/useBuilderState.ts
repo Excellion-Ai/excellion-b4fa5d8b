@@ -295,10 +295,16 @@ export function useBuilderState() {
     error,
     projectName,
     
-    // Setters
-    setInputs,
-    setProjectName,
-    setState,
+  // Setters
+  setInputs: (updater: SmartDefaults | ((prev: SmartDefaults) => SmartDefaults)) => {
+    if (typeof updater === 'function') {
+      setInputs(updater);
+    } else {
+      setInputs(updater);
+    }
+  },
+  setProjectName,
+  setState,
     
     // Actions
     generatePlan,

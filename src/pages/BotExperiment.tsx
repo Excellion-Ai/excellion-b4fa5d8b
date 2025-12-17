@@ -6,7 +6,6 @@ import { BuilderSidebar } from "@/components/builder/BuilderSidebar";
 import { BuilderChat } from "@/components/builder/BuilderChat";
 import { BuilderPreviewPanel } from "@/components/builder/BuilderPreviewPanel";
 
-// Local storage key for history
 const HISTORY_KEY = 'excellion-builder-history';
 
 type HistoryItem = {
@@ -23,14 +22,15 @@ const BotExperiment = () => {
   
   const {
     state,
-    steps,
     messages,
+    inputs,
     spec,
     generatedCode,
     error,
     projectName,
     isLoading,
     canExport,
+    setInputs,
     setProjectName,
     generatePlan,
     handleQuickAction,
@@ -41,7 +41,6 @@ const BotExperiment = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const hasAutoSent = useRef(false);
 
-  // Load history from localStorage
   useEffect(() => {
     const stored = localStorage.getItem(HISTORY_KEY);
     if (stored) {
@@ -53,7 +52,6 @@ const BotExperiment = () => {
     }
   }, []);
 
-  // Save to history when project completes
   useEffect(() => {
     if (state === 'preview_ready' && projectName !== 'Untitled Project') {
       const newItem: HistoryItem = {
@@ -62,14 +60,13 @@ const BotExperiment = () => {
         date: new Date().toLocaleDateString(),
       };
       setHistory(prev => {
-        const updated = [newItem, ...prev.slice(0, 9)]; // Keep last 10
+        const updated = [newItem, ...prev.slice(0, 9)];
         localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
         return updated;
       });
     }
   }, [state, projectName]);
 
-  // Auto-send initial prompt if provided
   useEffect(() => {
     if (hasAutoSent.current) return;
     
@@ -88,15 +85,22 @@ const BotExperiment = () => {
   };
 
   const handleSelectHistory = (id: string) => {
-    // In a full implementation, this would load the saved project
     console.log('Load project:', id);
   };
 
   const handleRefresh = () => {
     if (spec) {
       // Re-trigger build with existing spec
-      // For now, this is handled by the state hook
     }
+  };
+
+  const handleBuildFromBrief = () => {
+    const briefMessage = `Build a ${inputs.vibe} ${inputs.businessType || 'business'} website focused on ${inputs.goal}. Primary CTA: "${inputs.ctaText}".`;
+    generatePlan(briefMessage);
+  };
+
+  const handleInputsChange = (newInputs: Partial<typeof inputs>) => {
+    setInputs(prev => ({ ...prev, ...newInputs }));
   };
 
   return (
@@ -106,35 +110,38 @@ const BotExperiment = () => {
         <title>Excellion Website Builder</title>
       </Helmet>
 
-      {/* Left Sidebar */}
+      {/* Left Sidebar - Project Management */}
       <BuilderSidebar
         projectName={projectName}
         onProjectNameChange={setProjectName}
-        steps={steps}
+        state={state}
         onNewProject={handleNewProject}
         history={history}
         onSelectHistory={handleSelectHistory}
       />
 
-      {/* Center Chat Panel */}
-      <div className="flex-1 min-w-0 border-r border-border/50">
+      {/* Center Panel - Chat Builder */}
+      <div className="flex-1 min-w-0 border-r border-border/40">
         <BuilderChat
           messages={messages}
           state={state}
           isLoading={isLoading}
+          inputs={inputs}
+          onInputsChange={handleInputsChange}
           onSendMessage={generatePlan}
           onQuickAction={handleQuickAction}
         />
       </div>
 
-      {/* Right Preview Panel */}
-      <div className="w-[55%] min-w-[400px]">
+      {/* Right Panel - Preview Workspace */}
+      <div className="w-[55%] min-w-[450px]">
         <BuilderPreviewPanel
           generatedCode={generatedCode}
           isLoading={isLoading}
           error={error}
           onRefresh={handleRefresh}
           onExport={startExport}
+          onBuildFromBrief={handleBuildFromBrief}
         />
       </div>
     </div>

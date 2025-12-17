@@ -18,7 +18,8 @@ import {
   Download,
   Copy,
   Check,
-  GripVertical
+  GripVertical,
+  Sparkles
 } from 'lucide-react';
 import { GeneratedCode, SiteSection } from '@/types/app-spec';
 import { SitePreview } from '@/components/secret-builder/SitePreview';
@@ -31,6 +32,7 @@ interface BuilderPreviewPanelProps {
   error: string | null;
   onRefresh: () => void;
   onExport: () => void;
+  onBuildFromBrief: () => void;
 }
 
 type DeviceMode = 'desktop' | 'tablet' | 'mobile';
@@ -41,28 +43,20 @@ export function BuilderPreviewPanel({
   error,
   onRefresh,
   onExport,
+  onBuildFromBrief,
 }: BuilderPreviewPanelProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('preview');
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
   const [copied, setCopied] = useState(false);
   
-  // SEO state
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
   const [seoKeywords, setSeoKeywords] = useState('');
 
-  // Sections state
   const [sections, setSections] = useState<(SiteSection & { enabled: boolean })[]>([]);
 
-  // Initialize sections when generatedCode changes
-  useState(() => {
-    if (generatedCode?.siteDefinition?.sections) {
-      setSections(
-        generatedCode.siteDefinition.sections.map(s => ({ ...s, enabled: true }))
-      );
-    }
-  });
+  const hasContent = generatedCode?.siteDefinition;
 
   const handleCopyCode = async () => {
     if (!generatedCode?.reactCode) return;
@@ -87,74 +81,91 @@ export function BuilderPreviewPanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background/50">
+    <div className="flex flex-col h-full bg-background/30">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="h-12 border-b border-border/50 px-4 flex items-center justify-between">
-          <TabsList className="h-9 bg-muted/50">
-            <TabsTrigger value="preview" className="text-xs gap-1.5 data-[state=active]:bg-background">
+        {/* Header with Tabs */}
+        <div className="h-14 border-b border-border/40 px-5 flex items-center justify-between">
+          <TabsList className="h-10 bg-muted/40 p-1">
+            <TabsTrigger 
+              value="preview" 
+              className="text-xs font-medium gap-1.5 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
               <Monitor className="w-3.5 h-3.5" />
               Preview
             </TabsTrigger>
-            <TabsTrigger value="sections" className="text-xs gap-1.5 data-[state=active]:bg-background">
+            <TabsTrigger 
+              value="sections" 
+              className="text-xs font-medium gap-1.5 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
               <Layers className="w-3.5 h-3.5" />
               Sections
             </TabsTrigger>
-            <TabsTrigger value="styles" className="text-xs gap-1.5 data-[state=active]:bg-background">
+            <TabsTrigger 
+              value="styles" 
+              className="text-xs font-medium gap-1.5 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
               <Palette className="w-3.5 h-3.5" />
               Styles
             </TabsTrigger>
-            <TabsTrigger value="seo" className="text-xs gap-1.5 data-[state=active]:bg-background">
+            <TabsTrigger 
+              value="seo" 
+              className="text-xs font-medium gap-1.5 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
               <Search className="w-3.5 h-3.5" />
               SEO
             </TabsTrigger>
-            <TabsTrigger value="export" className="text-xs gap-1.5 data-[state=active]:bg-background">
+            <TabsTrigger 
+              value="export" 
+              className="text-xs font-medium gap-1.5 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
               <Download className="w-3.5 h-3.5" />
               Export
             </TabsTrigger>
           </TabsList>
 
-          {activeTab === 'preview' && (
-            <div className="flex items-center gap-2">
-              {/* Device toggles */}
-              <div className="flex items-center border border-border/50 rounded-md p-0.5">
+          {/* Preview Controls - only show on preview tab */}
+          {activeTab === 'preview' && hasContent && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center border border-border/50 rounded-lg p-0.5 bg-muted/30">
                 <Button
                   variant={deviceMode === 'desktop' ? 'secondary' : 'ghost'}
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-8 w-8 rounded-md"
                   onClick={() => setDeviceMode('desktop')}
                 >
-                  <Monitor className="w-3.5 h-3.5" />
+                  <Monitor className="w-4 h-4" />
                 </Button>
                 <Button
                   variant={deviceMode === 'tablet' ? 'secondary' : 'ghost'}
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-8 w-8 rounded-md"
                   onClick={() => setDeviceMode('tablet')}
                 >
-                  <Tablet className="w-3.5 h-3.5" />
+                  <Tablet className="w-4 h-4" />
                 </Button>
                 <Button
                   variant={deviceMode === 'mobile' ? 'secondary' : 'ghost'}
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-8 w-8 rounded-md"
                   onClick={() => setDeviceMode('mobile')}
                 >
-                  <Smartphone className="w-3.5 h-3.5" />
+                  <Smartphone className="w-4 h-4" />
                 </Button>
               </div>
+
+              <div className="h-6 w-px bg-border/50" />
 
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7"
+                className="h-8 w-8"
                 onClick={onRefresh}
                 disabled={isLoading}
               >
-                <RefreshCw className={cn("w-3.5 h-3.5", isLoading && "animate-spin")} />
+                <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
               </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <ExternalLink className="w-3.5 h-3.5" />
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ExternalLink className="w-4 h-4" />
               </Button>
             </div>
           )}
@@ -163,44 +174,83 @@ export function BuilderPreviewPanel({
         {/* Preview Tab */}
         <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
           {error ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center max-w-md p-6">
-                <AlertCircle className="w-10 h-10 text-destructive mx-auto mb-3" />
-                <h3 className="text-sm font-medium text-foreground mb-2">Build Error</h3>
-                <p className="text-xs text-muted-foreground mb-4">{error}</p>
-                <Button variant="outline" size="sm" onClick={onRefresh}>
+            <div className="h-full flex items-center justify-center p-8">
+              <div className="text-center max-w-md">
+                <div className="w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-5">
+                  <AlertCircle className="w-8 h-8 text-destructive" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Build Error</h3>
+                <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{error}</p>
+                <Button variant="outline" onClick={onRefresh}>
                   Try Again
                 </Button>
               </div>
             </div>
+          ) : !hasContent ? (
+            <div className="h-full flex items-center justify-center p-8">
+              <div className="text-center max-w-md">
+                <div className="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-6">
+                  <Sparkles className="w-10 h-10 text-muted-foreground/50" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">No preview yet</h3>
+                <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                  Describe your website idea in the chat panel to generate a preview. You can also fill in the project setup to help guide the build.
+                </p>
+                <Button onClick={onBuildFromBrief} className="gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Build from Brief
+                </Button>
+              </div>
+            </div>
           ) : (
-            <SitePreview 
-              siteDefinition={generatedCode?.siteDefinition || null}
-              isLoading={isLoading}
-            />
+            <div className={cn(
+              "h-full flex items-center justify-center p-6 bg-muted/20",
+              deviceMode === 'desktop' && "p-0",
+              deviceMode === 'tablet' && "p-8",
+              deviceMode === 'mobile' && "p-8"
+            )}>
+              <div className={cn(
+                "h-full bg-background rounded-lg overflow-hidden shadow-2xl border border-border/50",
+                deviceMode === 'desktop' && "w-full rounded-none border-0",
+                deviceMode === 'tablet' && "w-[768px] max-w-full",
+                deviceMode === 'mobile' && "w-[375px] max-w-full"
+              )}>
+                <SitePreview 
+                  siteDefinition={generatedCode?.siteDefinition || null}
+                  isLoading={isLoading}
+                />
+              </div>
+            </div>
           )}
         </TabsContent>
 
         {/* Sections Tab */}
         <TabsContent value="sections" className="flex-1 m-0 overflow-hidden">
           <ScrollArea className="h-full">
-            <div className="p-4 space-y-2">
-              <p className="text-xs text-muted-foreground mb-4">Drag to reorder, toggle to enable/disable sections.</p>
-              {generatedCode?.siteDefinition?.sections?.map((section, index) => (
-                <div 
-                  key={section.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-card/50 hover:bg-card transition-colors"
-                >
-                  <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{section.label}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{section.type}</p>
+            <div className="p-5">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">Page Sections</p>
+              <p className="text-xs text-muted-foreground mb-5">Drag to reorder, toggle to enable/disable sections.</p>
+              <div className="space-y-2">
+                {generatedCode?.siteDefinition?.sections?.map((section, index) => (
+                  <div 
+                    key={section.id}
+                    className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-card/50 hover:bg-card transition-all group"
+                  >
+                    <GripVertical className="w-4 h-4 text-muted-foreground/50 cursor-grab group-hover:text-muted-foreground transition-colors" />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-foreground">{section.label}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{section.type.replace('-', ' ')}</p>
+                    </div>
+                    <Switch defaultChecked />
                   </div>
-                  <Switch defaultChecked />
-                </div>
-              )) || (
-                <p className="text-sm text-muted-foreground text-center py-8">No sections yet. Build a site first.</p>
-              )}
+                )) || (
+                  <div className="text-center py-12">
+                    <Layers className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">No sections yet</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">Build a site first</p>
+                  </div>
+                )}
+              </div>
             </div>
           </ScrollArea>
         </TabsContent>
@@ -208,21 +258,21 @@ export function BuilderPreviewPanel({
         {/* Styles Tab */}
         <TabsContent value="styles" className="flex-1 m-0 overflow-hidden">
           <ScrollArea className="h-full">
-            <div className="p-4 space-y-6">
+            <div className="p-5 space-y-6">
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block">Colors</label>
-                <div className="grid grid-cols-2 gap-3">
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">Colors</p>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-xs text-muted-foreground/80">Primary</span>
+                    <span className="text-xs text-muted-foreground mb-2 block">Primary</span>
                     <div 
-                      className="h-10 rounded-md border border-border mt-1 cursor-pointer"
+                      className="h-12 rounded-xl border border-border cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
                       style={{ backgroundColor: generatedCode?.siteDefinition?.theme?.primaryColor || '#3b82f6' }}
                     />
                   </div>
                   <div>
-                    <span className="text-xs text-muted-foreground/80">Secondary</span>
+                    <span className="text-xs text-muted-foreground mb-2 block">Secondary</span>
                     <div 
-                      className="h-10 rounded-md border border-border mt-1 cursor-pointer"
+                      className="h-12 rounded-xl border border-border cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
                       style={{ backgroundColor: generatedCode?.siteDefinition?.theme?.secondaryColor || '#8b5cf6' }}
                     />
                   </div>
@@ -230,17 +280,17 @@ export function BuilderPreviewPanel({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block">Typography</label>
-                <div className="space-y-2">
-                  <div className="p-3 rounded-md border border-border/50">
-                    <span className="text-xs text-muted-foreground/80">Heading Font</span>
-                    <p className="text-sm font-semibold mt-1">
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">Typography</p>
+                <div className="space-y-3">
+                  <div className="p-4 rounded-xl border border-border/50 bg-card/50">
+                    <span className="text-xs text-muted-foreground">Heading Font</span>
+                    <p className="text-base font-bold mt-1">
                       {generatedCode?.siteDefinition?.theme?.fontHeading || 'Inter'}
                     </p>
                   </div>
-                  <div className="p-3 rounded-md border border-border/50">
-                    <span className="text-xs text-muted-foreground/80">Body Font</span>
-                    <p className="text-sm mt-1">
+                  <div className="p-4 rounded-xl border border-border/50 bg-card/50">
+                    <span className="text-xs text-muted-foreground">Body Font</span>
+                    <p className="text-base mt-1">
                       {generatedCode?.siteDefinition?.theme?.fontBody || 'Inter'}
                     </p>
                   </div>
@@ -248,12 +298,12 @@ export function BuilderPreviewPanel({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block">Border Radius</label>
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">Border Radius</p>
                 <div className="flex gap-2">
                   {['None', 'Small', 'Medium', 'Large', 'Full'].map((radius) => (
                     <button
                       key={radius}
-                      className="flex-1 py-2 text-xs rounded-md border border-border hover:border-primary transition-colors"
+                      className="flex-1 py-2.5 text-xs font-medium rounded-lg border border-border/50 hover:border-primary hover:bg-primary/5 transition-all"
                     >
                       {radius}
                     </button>
@@ -267,36 +317,38 @@ export function BuilderPreviewPanel({
         {/* SEO Tab */}
         <TabsContent value="seo" className="flex-1 m-0 overflow-hidden">
           <ScrollArea className="h-full">
-            <div className="p-4 space-y-4">
+            <div className="p-5 space-y-5">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">SEO Settings</p>
+              
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Page Title</label>
+                <label className="text-xs font-semibold text-muted-foreground mb-2 block">Page Title</label>
                 <Input
                   value={seoTitle || generatedCode?.siteDefinition?.name || ''}
                   onChange={(e) => setSeoTitle(e.target.value)}
                   placeholder="My Awesome Website"
-                  className="text-sm"
+                  className="h-11"
                 />
-                <p className="text-xs text-muted-foreground mt-1">Recommended: 50-60 characters</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1.5">Recommended: 50-60 characters</p>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Meta Description</label>
+                <label className="text-xs font-semibold text-muted-foreground mb-2 block">Meta Description</label>
                 <textarea
                   value={seoDescription || generatedCode?.siteDefinition?.description || ''}
                   onChange={(e) => setSeoDescription(e.target.value)}
                   placeholder="A brief description of your website..."
-                  className="w-full h-20 px-3 py-2 text-sm rounded-md border border-input bg-background resize-none"
+                  className="w-full h-24 px-4 py-3 text-sm rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                 />
-                <p className="text-xs text-muted-foreground mt-1">Recommended: 150-160 characters</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1.5">Recommended: 150-160 characters</p>
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Keywords</label>
+                <label className="text-xs font-semibold text-muted-foreground mb-2 block">Keywords</label>
                 <Input
                   value={seoKeywords}
                   onChange={(e) => setSeoKeywords(e.target.value)}
                   placeholder="web design, business, services"
-                  className="text-sm"
+                  className="h-11"
                 />
               </div>
             </div>
@@ -306,33 +358,36 @@ export function BuilderPreviewPanel({
         {/* Export Tab */}
         <TabsContent value="export" className="flex-1 m-0 overflow-hidden">
           <ScrollArea className="h-full">
-            <div className="p-4 space-y-4">
-              <div className="p-4 rounded-lg border border-border/50 bg-card/50">
-                <h3 className="text-sm font-medium text-foreground mb-2">Download Code</h3>
-                <p className="text-xs text-muted-foreground mb-3">Get the React/Tailwind source code for your site.</p>
+            <div className="p-5 space-y-4">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">Export Options</p>
+
+              <div className="p-5 rounded-xl border border-border/50 bg-card/50">
+                <h3 className="text-sm font-semibold text-foreground mb-2">Download Code</h3>
+                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Get the React/Tailwind source code for your site.</p>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={handleCopyCode}>
-                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  <Button variant="outline" size="sm" className="gap-2" onClick={handleCopyCode}>
+                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     {copied ? 'Copied' : 'Copy Code'}
                   </Button>
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={handleDownload}>
-                    <Download className="w-3.5 h-3.5" />
+                  <Button variant="outline" size="sm" className="gap-2" onClick={handleDownload}>
+                    <Download className="w-4 h-4" />
                     Download .tsx
                   </Button>
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg border border-border/50 bg-card/50">
-                <h3 className="text-sm font-medium text-foreground mb-2">Deploy</h3>
-                <p className="text-xs text-muted-foreground mb-3">Publish your site to a live URL.</p>
-                <Button size="sm" onClick={onExport}>
+              <div className="p-5 rounded-xl border border-border/50 bg-card/50">
+                <h3 className="text-sm font-semibold text-foreground mb-2">Deploy</h3>
+                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Publish your site to a live URL.</p>
+                <Button size="sm" onClick={onExport} className="gap-2">
+                  <ExternalLink className="w-4 h-4" />
                   Publish Site
                 </Button>
               </div>
 
-              <div className="p-4 rounded-lg border border-dashed border-border/50">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Coming Soon</h3>
-                <ul className="text-xs text-muted-foreground/80 space-y-1">
+              <div className="p-5 rounded-xl border border-dashed border-border/40 bg-muted/20">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2">Coming Soon</h3>
+                <ul className="text-xs text-muted-foreground/70 space-y-1.5">
                   <li>• Export to Lovable</li>
                   <li>• Export to v0.dev</li>
                   <li>• Custom domain setup</li>

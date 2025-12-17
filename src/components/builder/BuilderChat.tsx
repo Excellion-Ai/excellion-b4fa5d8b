@@ -2,15 +2,22 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Send, 
   Sparkles, 
   User, 
   Loader2,
   Link2,
-  ChevronDown
+  ChevronDown,
+  ChevronUp,
+  Target,
+  Briefcase,
+  Palette,
+  FileText,
+  Globe
 } from 'lucide-react';
-import { Message, BuilderState } from '@/hooks/useBuilderState';
+import { Message, BuilderState, SmartDefaults } from '@/hooks/useBuilderState';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -23,6 +30,8 @@ interface BuilderChatProps {
   messages: Message[];
   state: BuilderState;
   isLoading: boolean;
+  inputs: SmartDefaults;
+  onInputsChange: (inputs: Partial<SmartDefaults>) => void;
   onSendMessage: (message: string) => void;
   onQuickAction: (action: string) => void;
 }
@@ -33,7 +42,7 @@ const QUICK_ACTIONS = [
   'Add booking section',
   'Add pricing section',
   'Change colors',
-  'Add testimonials',
+  'Tighten copy',
 ];
 
 const BUSINESS_TYPES = [
@@ -47,15 +56,33 @@ const BUSINESS_TYPES = [
   'Other',
 ];
 
+const GOALS = [
+  { value: 'leads', label: 'Generate Leads' },
+  { value: 'bookings', label: 'Get Bookings' },
+  { value: 'ecommerce', label: 'Sell Products' },
+  { value: 'info', label: 'Share Information' },
+] as const;
+
+const VIBES = [
+  { value: 'modern', label: 'Modern' },
+  { value: 'luxury', label: 'Luxury' },
+  { value: 'playful', label: 'Playful' },
+  { value: 'minimal', label: 'Minimal' },
+  { value: 'bold', label: 'Bold' },
+] as const;
+
 function formatMessageContent(content: string) {
   return content.split('\n').map((line, i) => {
     if (line.startsWith('**') && line.endsWith('**')) {
-      return <strong key={i} className="block mt-2 text-foreground">{line.replace(/\*\*/g, '')}</strong>;
+      return <strong key={i} className="block mt-3 mb-1 text-foreground font-semibold">{line.replace(/\*\*/g, '')}</strong>;
     }
     if (line.startsWith('• ')) {
-      return <span key={i} className="block ml-2 text-muted-foreground">{line}</span>;
+      return <span key={i} className="block ml-3 text-muted-foreground leading-relaxed">{line}</span>;
     }
-    return <span key={i} className="block">{line}</span>;
+    if (line.trim() === '') {
+      return <span key={i} className="block h-2" />;
+    }
+    return <span key={i} className="block leading-relaxed">{line}</span>;
   });
 }
 
@@ -63,14 +90,22 @@ export function BuilderChat({
   messages,
   state,
   isLoading,
+  inputs,
+  onInputsChange,
   onSendMessage,
   onQuickAction,
 }: BuilderChatProps) {
   const [input, setInput] = useState('');
-  const [referenceUrl, setReferenceUrl] = useState('');
-  const [showUrlInput, setShowUrlInput] = useState(false);
-  const [businessType, setBusinessType] = useState<string | null>(null);
+  const [setupOpen, setSetupOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hasBuilt = state === 'preview_ready' || state === 'editing' || state === 'exporting';
+
+  // Collapse setup after first build
+  useEffect(() => {
+    if (hasBuilt) {
+      setSetupOpen(false);
+    }
+  }, [hasBuilt]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -82,18 +117,15 @@ export function BuilderChat({
     if (!input.trim() || isLoading) return;
     
     let fullMessage = input.trim();
-    if (businessType) {
-      fullMessage = `[Business type: ${businessType}] ${fullMessage}`;
+    if (inputs.businessType && !hasBuilt) {
+      fullMessage = `[Business type: ${inputs.businessType}] ${fullMessage}`;
     }
-    if (referenceUrl.trim()) {
-      fullMessage = `${fullMessage}\n\nReference: ${referenceUrl.trim()}`;
+    if (inputs.referenceUrl?.trim() && !hasBuilt) {
+      fullMessage = `${fullMessage}\n\nReference: ${inputs.referenceUrl.trim()}`;
     }
     
     onSendMessage(fullMessage);
     setInput('');
-    setReferenceUrl('');
-    setShowUrlInput(false);
-    setBusinessType(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -107,26 +139,153 @@ export function BuilderChat({
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Status Bar */}
-      <div className="h-12 border-b border-border/50 px-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            "w-2 h-2 rounded-full",
-            state === 'idle' && "bg-muted-foreground",
-            (state === 'generating_plan' || state === 'building') && "bg-primary animate-pulse",
-            state === 'preview_ready' && "bg-green-500",
-            state === 'editing' && "bg-amber-500",
-            state === 'exporting' && "bg-blue-500"
-          )} />
-          <span className="text-xs font-medium text-muted-foreground capitalize">
-            {state.replace(/_/g, ' ')}
-          </span>
+      {/* Build Brief Card - shows when project has content */}
+      {hasBuilt && (
+        <div className="px-5 pt-5 pb-3">
+          <div className="p-4 rounded-xl border border-border/50 bg-card/50">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">Build Brief</p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              {inputs.businessType && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  <span>{inputs.businessType}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Target className="w-3.5 h-3.5" />
+                <span className="capitalize">{inputs.goal}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Palette className="w-3.5 h-3.5" />
+                <span className="capitalize">{inputs.vibe}</span>
+              </div>
+              {inputs.referenceUrl && (
+                <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                  <Globe className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate text-xs">{inputs.referenceUrl}</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Project Setup Accordion - shows before build */}
+      {!hasBuilt && (
+        <div className="px-5 pt-5 pb-3">
+          <Collapsible open={setupOpen} onOpenChange={setSetupOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-4 rounded-xl border border-border/50 bg-card/50 hover:bg-card/80 transition-colors">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold">Project Setup</span>
+              </div>
+              {setupOpen ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-3 p-4 rounded-xl border border-border/50 bg-card/30 space-y-4">
+                {/* Business Type */}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Business Type</label>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-full justify-between h-10 text-sm">
+                        {inputs.businessType || 'Select type...'}
+                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-[200px]">
+                      {BUSINESS_TYPES.map((type) => (
+                        <DropdownMenuItem 
+                          key={type} 
+                          onClick={() => onInputsChange({ businessType: type })}
+                          className="cursor-pointer"
+                        >
+                          {type}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Goal */}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Goal</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {GOALS.map((goal) => (
+                      <button
+                        key={goal.value}
+                        onClick={() => onInputsChange({ goal: goal.value })}
+                        className={cn(
+                          "px-3 py-2 rounded-lg text-xs font-medium transition-all border",
+                          inputs.goal === goal.value 
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border/50 hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {goal.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Vibe */}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Style/Vibe</label>
+                  <div className="flex flex-wrap gap-2">
+                    {VIBES.map((vibe) => (
+                      <button
+                        key={vibe.value}
+                        onClick={() => onInputsChange({ vibe: vibe.value })}
+                        className={cn(
+                          "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                          inputs.vibe === vibe.value 
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border/50 hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {vibe.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA Text */}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Primary CTA</label>
+                  <Input
+                    value={inputs.ctaText}
+                    onChange={(e) => onInputsChange({ ctaText: e.target.value })}
+                    placeholder="e.g., Get Started, Book Now"
+                    className="h-10 text-sm"
+                  />
+                </div>
+
+                {/* Reference URL */}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block flex items-center gap-1.5">
+                    <Link2 className="w-3.5 h-3.5" />
+                    Reference URL <span className="text-muted-foreground/60 font-normal">(optional)</span>
+                  </label>
+                  <Input
+                    value={inputs.referenceUrl || ''}
+                    onChange={(e) => onInputsChange({ referenceUrl: e.target.value })}
+                    placeholder="https://example.com"
+                    className="h-10 text-sm"
+                  />
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      )}
 
       {/* Messages */}
-      <ScrollArea className="flex-1" ref={scrollRef}>
-        <div className="p-4 space-y-4">
+      <ScrollArea className="flex-1 px-5" ref={scrollRef}>
+        <div className="py-4 space-y-5">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -136,13 +295,13 @@ export function BuilderChat({
               )}
             >
               {message.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Sparkles className="w-4 h-4 text-primary" />
                 </div>
               )}
               <div
                 className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm",
+                  "max-w-[85%] rounded-2xl px-4 py-3 text-sm",
                   message.role === 'user'
                     ? "bg-primary text-primary-foreground"
                     : "bg-card border border-border/50"
@@ -153,7 +312,7 @@ export function BuilderChat({
                 </div>
               </div>
               {message.role === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
                   <User className="w-4 h-4 text-muted-foreground" />
                 </div>
               )}
@@ -162,10 +321,10 @@ export function BuilderChat({
           
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <div className="flex gap-3 justify-start">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-4 h-4 text-primary" />
               </div>
-              <div className="bg-card border border-border/50 rounded-2xl px-4 py-2.5">
+              <div className="bg-card border border-border/50 rounded-2xl px-4 py-3">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
               </div>
             </div>
@@ -175,13 +334,14 @@ export function BuilderChat({
 
       {/* Quick Actions */}
       {canUseQuickActions && (
-        <div className="px-4 py-2 border-t border-border/50">
+        <div className="px-5 py-3 border-t border-border/40">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Quick Actions</p>
           <div className="flex flex-wrap gap-2">
             {QUICK_ACTIONS.map((action) => (
               <button
                 key={action}
                 onClick={() => onQuickAction(action)}
-                className="px-3 py-1.5 text-xs rounded-full bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
+                className="px-3 py-1.5 text-xs font-medium rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
               >
                 {action}
               </button>
@@ -191,64 +351,21 @@ export function BuilderChat({
       )}
 
       {/* Input Area */}
-      <div className="p-4 border-t border-border/50 space-y-3">
-        {/* Optional inputs row */}
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                {businessType || 'Business type'}
-                <ChevronDown className="w-3 h-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {BUSINESS_TYPES.map((type) => (
-                <DropdownMenuItem 
-                  key={type} 
-                  onClick={() => setBusinessType(type === businessType ? null : type)}
-                >
-                  {type}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button 
-            variant={showUrlInput ? "secondary" : "outline"} 
-            size="sm" 
-            className="h-8 text-xs gap-1.5"
-            onClick={() => setShowUrlInput(!showUrlInput)}
-          >
-            <Link2 className="w-3 h-3" />
-            Reference URL
-          </Button>
-        </div>
-
-        {/* Reference URL input */}
-        {showUrlInput && (
-          <Input
-            value={referenceUrl}
-            onChange={(e) => setReferenceUrl(e.target.value)}
-            placeholder="https://example.com (optional)"
-            className="h-9 text-sm"
-          />
-        )}
-
-        {/* Main input */}
-        <div className="flex gap-2">
+      <div className="p-5 border-t border-border/40">
+        <div className="flex gap-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={state === 'idle' ? "Describe your website idea..." : "Ask for changes or refinements..."}
-            className="text-sm h-11"
+            className="text-sm h-12 rounded-xl"
             disabled={isLoading}
           />
           <Button 
             onClick={handleSend} 
             disabled={isLoading || !input.trim()} 
             size="icon" 
-            className="h-11 w-11 flex-shrink-0"
+            className="h-12 w-12 flex-shrink-0 rounded-xl"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -257,6 +374,9 @@ export function BuilderChat({
             )}
           </Button>
         </div>
+        <p className="text-[10px] text-muted-foreground/60 mt-2 text-center">
+          {hasBuilt ? 'Press Enter to update' : 'Press Enter to build'}
+        </p>
       </div>
     </div>
   );
