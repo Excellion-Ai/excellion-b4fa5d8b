@@ -124,6 +124,8 @@ export function BuilderShell() {
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
   const [showDomainsDialog, setShowDomainsDialog] = useState(false);
+  const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string }[]>([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
@@ -463,7 +465,8 @@ export function BuilderShell() {
           navigator.clipboard.writeText(data.imageUrl);
           toast.success('Image URL copied to clipboard!');
         }
-        setShowImageDialog(false);
+        // Refresh the library to show the new image
+        fetchGeneratedImages();
         setImagePrompt('');
         setImageAttachment(null);
       }
@@ -489,6 +492,30 @@ export function BuilderShell() {
       setImageAttachment(reader.result as string);
     };
     reader.readAsDataURL(file);
+  };
+
+  const fetchGeneratedImages = async () => {
+    setIsLoadingImages(true);
+    try {
+      const { data, error } = await supabase.storage
+        .from('builder-images')
+        .list('generated', { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
+      
+      if (error) throw error;
+      
+      const images = (data || [])
+        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+        .map(file => ({
+          name: file.name,
+          url: supabase.storage.from('builder-images').getPublicUrl(`generated/${file.name}`).data.publicUrl,
+        }));
+      
+      setGeneratedImages(images);
+    } catch (error) {
+      console.error('Failed to fetch images:', error);
+    } finally {
+      setIsLoadingImages(false);
+    }
   };
 
   const handlePublish = async () => {
@@ -905,7 +932,9 @@ export function BuilderShell() {
       {/* Image Generation Dialog */}
       <Dialog open={showImageDialog} onOpenChange={(open) => {
         setShowImageDialog(open);
-        if (!open) {
+        if (open) {
+          fetchGeneratedImages();
+        } else {
           setImageAttachment(null);
           setImagePrompt('');
         }
@@ -1005,6 +1034,40 @@ export function BuilderShell() {
                   </>
                 )}
               </Button>
+            </div>
+
+            {/* Image Library */}
+            <div className="border-t border-border pt-4">
+              <p className="text-sm font-medium text-muted-foreground mb-3">Generated Images</p>
+              {isLoadingImages ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : generatedImages.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">No images generated yet</p>
+              ) : (
+                <ScrollArea className="h-40">
+                  <div className="grid grid-cols-3 gap-2">
+                    {generatedImages.map((image) => (
+                      <button
+                        key={image.name}
+                        className="relative group aspect-square rounded-md overflow-hidden border border-border hover:border-primary transition-colors"
+                        onClick={() => setImageAttachment(image.url)}
+                        title="Click to use as reference"
+                      >
+                        <img
+                          src={image.url}
+                          alt={image.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="text-xs text-white">Use</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
             </div>
           </div>
         </DialogContent>
