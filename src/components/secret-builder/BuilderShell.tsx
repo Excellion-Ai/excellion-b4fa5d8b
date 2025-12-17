@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
@@ -522,83 +523,90 @@ export function BuilderShell() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-background">
-      {/* Left Column - Chat */}
-      <div className="w-[400px] border-r border-border flex flex-col bg-card/30">
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
-            {messages.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-sm">
-                  Describe your business idea to get started
-                </p>
+    <div className="h-screen overflow-hidden bg-background">
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        {/* Left Panel - Chat */}
+        <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+          <div className="h-full border-r border-border flex flex-col bg-card/30">
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {messages.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground text-sm">
+                      Describe your business idea to get started
+                    </p>
+                  </div>
+                )}
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-xl px-4 py-2 text-sm ${
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-foreground'
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+                {isGenerating && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-xl px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating...
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            {/* Theme Editor - show when site exists */}
+            {siteSpec && (
+              <div className="border-t border-border p-3">
+                <ThemeEditor 
+                  theme={siteSpec.theme} 
+                  onUpdateTheme={editor.updateTheme} 
+                />
               </div>
             )}
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-xl px-4 py-2 text-sm ${
-                    msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-foreground'
-                  }`}
+
+            <div className="border-t border-border p-4">
+              <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-2">
+                <Input
+                  value={idea}
+                  onChange={(e) => setIdea(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Describe your app idea..."
+                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+                  disabled={isGenerating}
+                />
+                <Button
+                  size="icon"
+                  onClick={() => handleGenerate()}
+                  disabled={!idea.trim() || isGenerating}
+                  className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
                 >
-                  {msg.content}
-                </div>
+                  {isGenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
-            ))}
-            {isGenerating && (
-              <div className="flex justify-start">
-                <div className="bg-muted rounded-xl px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Generating...
-                </div>
-              </div>
-            )}
+            </div>
           </div>
-        </ScrollArea>
+        </ResizablePanel>
 
-        {/* Theme Editor - show when site exists */}
-        {siteSpec && (
-          <div className="border-t border-border p-3">
-            <ThemeEditor 
-              theme={siteSpec.theme} 
-              onUpdateTheme={editor.updateTheme} 
-            />
-          </div>
-        )}
+        {/* Resize Handle */}
+        <ResizableHandle withHandle />
 
-        <div className="border-t border-border p-4">
-          <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-2">
-            <Input
-              value={idea}
-              onChange={(e) => setIdea(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Describe your app idea..."
-              className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
-              disabled={isGenerating}
-            />
-            <Button
-              size="icon"
-              onClick={() => handleGenerate()}
-              disabled={!idea.trim() || isGenerating}
-              className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
-            >
-              {isGenerating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Column - Preview + Tabs */}
-      <div className="flex-1 flex flex-col">
+        {/* Right Panel - Preview + Tabs */}
+        <ResizablePanel defaultSize={70} minSize={40}>
+          <div className="h-full flex flex-col">
         <div className="h-12 border-b border-border flex items-center justify-between px-4 bg-card/30">
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground truncate max-w-[150px]">
@@ -816,7 +824,9 @@ export function BuilderShell() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
 
       {/* Publish Success Dialog */}
       <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
