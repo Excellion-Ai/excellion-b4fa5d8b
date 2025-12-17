@@ -1,0 +1,47 @@
+# Caddy Configuration for On-Demand TLS Custom Domains
+# Deploy this on your VPS/server running Caddy
+
+{
+    # Global options
+    email admin@excellionwebsites.com
+    
+    # On-Demand TLS configuration
+    on_demand_tls {
+        # API endpoint to validate domains before issuing certificates
+        ask https://twaljzxgbbkhhjjocilf.supabase.co/functions/v1/allowed-domains?domain={host}
+        
+        # Rate limiting for certificate requests
+        interval 1m
+        burst 5
+    }
+}
+
+# Catch-all for any domain
+:443 {
+    # Enable On-Demand TLS for automatic certificate generation
+    tls {
+        on_demand
+    }
+    
+    # Reverse proxy to your main application
+    # Replace with your actual application URL
+    reverse_proxy https://twaljzxgbbkhhjjocilf.supabase.co {
+        # Pass the original host header so your app knows which site to serve
+        header_up Host {host}
+        header_up X-Forwarded-Host {host}
+        header_up X-Original-Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
+    # Logging
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
+
+# HTTP to HTTPS redirect
+:80 {
+    redir https://{host}{uri} permanent
+}
