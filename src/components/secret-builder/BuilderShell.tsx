@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3 } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -16,6 +16,7 @@ import { CodeExport, generateHtmlFromSpec } from './CodeExport';
 import { SectionLibrary } from './SectionLibrary';
 import { PageManager } from './PageManager';
 import { AnalyticsPanel } from './AnalyticsPanel';
+import { CustomDomainsPanel } from './CustomDomainsPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -120,6 +121,7 @@ export function BuilderShell() {
   const [imagePrompt, setImagePrompt] = useState('');
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
+  const [showDomainsDialog, setShowDomainsDialog] = useState(false);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
@@ -745,6 +747,17 @@ export function BuilderShell() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setShowDomainsDialog(true)}
+              className="gap-1.5 text-xs"
+              disabled={!projectId}
+            >
+              <Globe className="h-3.5 w-3.5" />
+              Domains
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate('/secret-builder-hub')}
               className="gap-1.5 text-xs"
             >
@@ -928,6 +941,22 @@ export function BuilderShell() {
             </DialogDescription>
           </DialogHeader>
           <AnalyticsPanel projectId={projectId} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Domains Dialog */}
+      <Dialog open={showDomainsDialog} onOpenChange={setShowDomainsDialog}>
+        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-primary" />
+              Custom Domains
+            </DialogTitle>
+            <DialogDescription>
+              Connect your own domain to your published site with automatic SSL.
+            </DialogDescription>
+          </DialogHeader>
+          {projectId && <CustomDomainsPanel projectId={projectId} />}
         </DialogContent>
       </Dialog>
     </div>
