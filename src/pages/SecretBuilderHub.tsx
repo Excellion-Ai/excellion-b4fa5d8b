@@ -45,6 +45,7 @@ import {
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import excellionLogo from '@/assets/excellion-logo.png';
+import contactBackgroundVideo from '@/assets/contact-background.mp4';
 
 interface BuilderProject {
   id: string;
@@ -203,9 +204,44 @@ export default function SecretBuilderHub() {
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isSubmittingRef = useRef(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Video playback control
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.playbackRate = 0.75;
+
+    const playVideo = async () => {
+      try {
+        await video.play();
+      } catch (error) {
+        console.log("Video autoplay prevented:", error);
+      }
+    };
+
+    if (video.readyState >= 3) {
+      playVideo();
+    } else {
+      video.addEventListener('loadeddata', playVideo, { once: true });
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && video.paused) {
+        playVideo();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Keyboard shortcut for search
   useEffect(() => {
@@ -451,7 +487,33 @@ export default function SecretBuilderHub() {
   const selectedThemeOption = THEME_OPTIONS.find((t) => t.id === selectedTheme);
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-background relative">
+      {/* Video Background */}
+      <div className="fixed inset-0 z-0">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ 
+            backfaceVisibility: 'hidden', 
+            transform: 'translateZ(0) scale(1.0)', 
+            minWidth: '100%', 
+            minHeight: '100%',
+            WebkitTransform: 'translateZ(0) scale(1.0)',
+            filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
+            contain: 'paint',
+            willChange: 'transform',
+          } as React.CSSProperties}
+        >
+          <source src={contactBackgroundVideo} type="video/mp4" />
+        </video>
+      </div>
+
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -656,7 +718,7 @@ export default function SecretBuilderHub() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 min-h-screen overflow-y-auto">
+      <main className="flex-1 ml-64 min-h-screen overflow-y-auto relative z-10">
         <div className="max-w-3xl mx-auto px-6 py-16">
           
           {/* Hero Section */}
