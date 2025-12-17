@@ -183,6 +183,9 @@ const WebBuilderHome = () => {
               <a href="#examples" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Examples
               </a>
+              <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Pricing
+              </a>
               <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 FAQ
               </a>
@@ -366,8 +369,8 @@ const WebBuilderHome = () => {
         </div>
       </section>
 
-      {/* Two Ways to Launch Section */}
-      <section className="py-20 px-4 border-t border-border/50">
+      {/* Two Ways to Launch / Pricing Section */}
+      <section id="pricing" className="py-20 px-4 border-t border-border/50">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-foreground text-center mb-4">
             Two ways to launch with Excellion
@@ -548,6 +551,7 @@ const WebBuilderHome = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="#how-it-works" className="hover:text-foreground transition-colors">How it works</a></li>
                 <li><a href="#examples" className="hover:text-foreground transition-colors">Examples</a></li>
+                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
                 <li><a href="#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
               </ul>
             </div>
