@@ -280,7 +280,8 @@ const BuilderPricing = () => {
             {aiBuilderPlans.map((plan) => (
               <Card 
                 key={plan.name}
-                className={`relative flex flex-col ${
+                id={plan.name.toLowerCase()}
+                className={`relative flex flex-col scroll-mt-24 ${
                   plan.highlighted 
                     ? 'border-primary bg-primary/5 ring-1 ring-primary' 
                     : 'border-border bg-card'
