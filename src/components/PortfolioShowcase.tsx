@@ -30,60 +30,62 @@ const PortfolioShowcase = () => {
   ];
 
   return (
-    <section id="portfolio-showcase" className="py-24 px-4 bg-background relative">
+    <section id="portfolio-showcase" className="py-24 px-4 bg-background relative" aria-labelledby="portfolio-heading">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+        <header className="text-center mb-16">
+          <h2 id="portfolio-heading" className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
             Websites We've Built
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Take a look at real websites we've designed and launched for small businesses. Each build is tailored to the brand, goals, and budget.
           </p>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <ul className="grid grid-cols-1 md:grid-cols-3 gap-8 list-none p-0" role="list">
           {projects.map((project) => (
-            <a
-              key={project.id}
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group"
-            >
-              <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20">
-                <div className="aspect-video overflow-hidden bg-muted relative">
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="450"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    style={{ 
-                      objectPosition: 'left center',
-                      transform: 'scale(1.02)',
-                      marginLeft: '-1%'
-                    }}
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {project.title}
-                    </h3>
-                    <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            <li key={project.id}>
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block"
+                aria-label={`View ${project.title} website (opens in new tab)`}
+              >
+                <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20">
+                  <div className="aspect-video overflow-hidden bg-muted relative">
+                    <img
+                      src={project.image}
+                      alt={`Screenshot of ${project.title} website homepage`}
+                      loading="lazy"
+                      decoding="async"
+                      width="800"
+                      height="450"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      style={{ 
+                        objectPosition: 'left center',
+                        transform: 'scale(1.02)',
+                        marginLeft: '-1%'
+                      }}
+                    />
                   </div>
-                  {project.description && (
-                    <p className="text-muted-foreground text-sm">
-                      {project.description}
-                    </p>
-                  )}
-                </div>
-              </Card>
-            </a>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {project.title}
+                      </h3>
+                      <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
+                    </div>
+                    {project.description && (
+                      <p className="text-muted-foreground text-sm">
+                        {project.description}
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              </a>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

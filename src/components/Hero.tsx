@@ -53,9 +53,9 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden" aria-label="Hero section">
       {/* Video Background */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden">
+      <div className="absolute inset-0 w-full h-full overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0 flex items-center justify-end flex-col">
           <video
             ref={videoRef}
@@ -63,8 +63,9 @@ const Hero = () => {
             loop
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             disablePictureInPicture
+            aria-hidden="true"
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
@@ -105,6 +106,7 @@ const Hero = () => {
               <Button 
                 size="lg" 
                 onClick={() => navigate("/book-call")}
+                aria-label="Book a free mockup call with Excellion"
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
               >
                 Book My Mockup Call
@@ -113,6 +115,7 @@ const Hero = () => {
                 size="lg" 
                 variant="outline"
                 onClick={scrollToPortfolio}
+                aria-label="View portfolio of example website builds"
                 className="font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg border-border/50 hover:bg-background/50"
               >
                 View Example Builds
