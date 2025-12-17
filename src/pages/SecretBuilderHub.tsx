@@ -798,77 +798,146 @@ export default function SecretBuilderHub() {
             </div>
           </section>
 
-          {/* Continue Section */}
-          <section id="projects-section" className="mb-10">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
-              Continue
-            </h2>
+          {/* Projects Section */}
+          <section id="projects-section" className="mb-12">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-foreground">
+                Your Projects
+              </h2>
+              {projects.length > 6 && (
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  View all ({projects.length})
+                </Button>
+              )}
+            </div>
             
             {isLoading ? (
-              <Card className="bg-card/50 border-border">
-                <CardContent className="p-6 flex items-center justify-center">
-                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                </CardContent>
-              </Card>
-            ) : lastProject ? (
-              <Card className="bg-card border-border hover:border-primary/30 transition-colors group">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div 
-                      className="flex items-center gap-4 flex-1 cursor-pointer"
-                      onClick={() => handleOpenProject(lastProject.id)}
-                    >
-                      <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
-                        <FolderKanban className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{lastProject.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary" className="text-xs">Draft</Badge>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {formatTimeAgo(lastProject.updated_at)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleOpenProject(lastProject.id)}
-                      >
-                        Open
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => openRenameDialog(lastProject, e as unknown as React.MouseEvent)}>
-                            <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => handleDuplicateProject(lastProject, e as unknown as React.MouseEvent)}>
-                            <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="bg-card/50 border-border animate-pulse">
+                    <div className="h-36 bg-muted/30" />
+                    <CardContent className="p-4">
+                      <div className="h-4 bg-muted/30 rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-muted/30 rounded w-1/2" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : projects.length === 0 ? (
+              <Card className="bg-card/30 border-border border-dashed">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto mb-4">
+                    <FolderKanban className="w-8 h-8 text-muted-foreground/50" />
                   </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-card/50 border-border border-dashed">
-                <CardContent className="p-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    No projects yet — generate your first build above.
+                  <h3 className="text-base font-medium text-foreground mb-2">No projects yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Describe your website idea above to create your first project.
                   </p>
                 </CardContent>
               </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {projects.slice(0, 6).map((project) => {
+                  const themeId = project.spec?.themeId || 'modern';
+                  const themeOption = THEME_OPTIONS.find(t => t.id === themeId);
+                  
+                  return (
+                    <Card 
+                      key={project.id}
+                      className="bg-card border-border hover:border-primary/40 transition-all cursor-pointer group overflow-hidden"
+                      onClick={() => handleOpenProject(project.id)}
+                    >
+                      {/* Preview Thumbnail */}
+                      <div className="h-36 bg-gradient-to-br from-muted/50 to-muted/20 p-3 relative overflow-hidden">
+                        {/* Mini site skeleton preview */}
+                        <div className="w-full h-full bg-background/80 rounded-md border border-border/50 p-2 flex flex-col gap-1.5 shadow-sm">
+                          {/* Header */}
+                          <div className="flex items-center justify-between">
+                            <div className="w-12 h-1.5 rounded" style={{ backgroundColor: themeOption?.color || '#3b82f6', opacity: 0.7 }} />
+                            <div className="flex gap-1">
+                              <div className="w-6 h-1.5 bg-muted-foreground/20 rounded" />
+                              <div className="w-6 h-1.5 bg-muted-foreground/20 rounded" />
+                            </div>
+                          </div>
+                          {/* Hero */}
+                          <div className="flex-1 flex gap-2 mt-1">
+                            <div className="flex-1 flex flex-col gap-1">
+                              <div className="w-3/4 h-2 bg-foreground/20 rounded" />
+                              <div className="w-1/2 h-1.5 bg-muted-foreground/20 rounded" />
+                              <div className="w-10 h-3 rounded mt-1" style={{ backgroundColor: themeOption?.color || '#3b82f6', opacity: 0.8 }} />
+                            </div>
+                            <div className="w-12 h-10 bg-muted-foreground/10 rounded" />
+                          </div>
+                          {/* Content */}
+                          <div className="flex gap-1.5 mt-auto">
+                            <div className="flex-1 h-4 bg-muted-foreground/10 rounded" />
+                            <div className="flex-1 h-4 bg-muted-foreground/10 rounded" />
+                            <div className="flex-1 h-4 bg-muted-foreground/10 rounded" />
+                          </div>
+                        </div>
+                        
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button size="sm" variant="secondary" className="gap-1.5">
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            Open
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Card Content */}
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                              {project.name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                                Draft
+                              </Badge>
+                              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatTimeAgo(project.updated_at)}
+                              </span>
+                            </div>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
+                                <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => openRenameDialog(project, e as unknown as React.MouseEvent)}>
+                                <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => handleDuplicateProject(project, e as unknown as React.MouseEvent)}>
+                                <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                className="text-destructive"
+                                onClick={(e) => handleDeleteProject(project.id, e as unknown as React.MouseEvent)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             )}
           </section>
 
