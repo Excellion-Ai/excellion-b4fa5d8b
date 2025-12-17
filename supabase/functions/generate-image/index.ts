@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, width = 1024, height = 1024 } = await req.json();
+    const { prompt, width = 1024, height = 1024, referenceImage } = await req.json();
 
     if (!prompt) {
       return new Response(
@@ -26,10 +26,20 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Generating image with prompt:", prompt);
+    console.log("Generating image with prompt:", prompt, "Has reference:", !!referenceImage);
 
     // Enhance prompt for website-appropriate images
-    const enhancedPrompt = `Professional website image: ${prompt}. High quality, modern design, suitable for web use. Clean composition, vibrant colors, professional photography style. ${width}x${height} resolution.`;
+    const enhancedPrompt = referenceImage 
+      ? `Edit this image: ${prompt}. Maintain professional quality suitable for web use.`
+      : `Professional website image: ${prompt}. High quality, modern design, suitable for web use. Clean composition, vibrant colors, professional photography style. ${width}x${height} resolution.`;
+
+    // Build message content - text only or text + image for editing
+    const messageContent = referenceImage
+      ? [
+          { type: "text", text: enhancedPrompt },
+          { type: "image_url", image_url: { url: referenceImage } }
+        ]
+      : enhancedPrompt;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -42,7 +52,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: enhancedPrompt,
+            content: messageContent,
           },
         ],
         modalities: ["image", "text"],
