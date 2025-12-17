@@ -214,12 +214,12 @@ Generate the complete blueprint and build prompt. Return ONLY valid JSON matchin
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
+        max_completion_tokens: 8000,
       }),
     });
 
