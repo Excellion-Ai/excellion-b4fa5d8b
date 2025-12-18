@@ -86,7 +86,7 @@ const faqItems = [
   },
   {
     question: "Can I talk to a real person if I get stuck?",
-    answer: "Yes. You can book a short call and we'll walk through your site, answer questions, and help you decide whether to keep it DIY or move to a done-for-you build."
+    answer: "Yes. You can call our support agent for step-by-step help. If it can't resolve your issue, you'll be transferred to a founder directly—no runaround."
   },
   {
     question: "Who owns the website once it's built?",
