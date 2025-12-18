@@ -34,7 +34,8 @@ import {
   Copy,
   Pencil,
   Check,
-  Globe
+  Globe,
+  Folder
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -188,6 +189,7 @@ const NAV_ITEMS = [
   { icon: Home, label: 'Home', action: 'home' },
   { icon: FolderKanban, label: 'Projects', action: 'projects' },
   { icon: BookOpen, label: 'Resources', action: 'resources' },
+  { icon: Folder, label: 'Projects Folder', action: 'projects-folder' },
 ] as const;
 
 // localStorage keys
