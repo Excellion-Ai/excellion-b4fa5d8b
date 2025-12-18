@@ -554,8 +554,8 @@ export default function SecretBuilderHub() {
           </Button>
         </div>
 
-        {/* Navigation */}
-        <nav className="px-3 py-2 space-y-1">
+        {/* Navigation - scrollable section */}
+        <nav className="px-3 py-2 space-y-1 flex-1 overflow-y-auto">
           {/* Back to Landing Page */}
           <Button
             variant="ghost"
