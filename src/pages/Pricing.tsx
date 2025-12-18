@@ -133,9 +133,9 @@ const Pricing = () => {
             transform: 'translateZ(0)',
             filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
           }}
-        >
-          <source src={pricingBackgroundVideo} type="video/mp4" />
-        </video>
+          onError={(e) => console.error("Video error:", e)}
+          src={pricingBackgroundVideo}
+        />
       </div>
 
       <div className="relative z-10">
