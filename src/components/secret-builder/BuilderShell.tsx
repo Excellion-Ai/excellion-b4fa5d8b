@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2 } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2, GitCompare } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -18,6 +18,9 @@ import { SectionLibrary } from './SectionLibrary';
 import { PageManager } from './PageManager';
 import { AnalyticsPanel } from './AnalyticsPanel';
 import { CustomDomainsPanel } from './CustomDomainsPanel';
+import { DiffViewer } from './DiffViewer';
+import { BookmarksPanel } from './BookmarksPanel';
+import { PWAExport } from './PWAExport';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -130,6 +133,9 @@ export function BuilderShell() {
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [attachments, setAttachments] = useState<{ file?: File; name: string; url?: string }[]>([]);
   const [visualEditsEnabled, setVisualEditsEnabled] = useState(false);
+  const [showDiffViewer, setShowDiffViewer] = useState(false);
+  const [pendingSpec, setPendingSpec] = useState<SiteSpec | null>(null);
+  const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
@@ -868,6 +874,20 @@ export function BuilderShell() {
               />
             )}
             
+            {/* Bookmarks */}
+            <BookmarksPanel
+              projectId={projectId}
+              currentSpec={siteSpec}
+              onRestoreBookmark={(spec) => {
+                setPreviousSpecForDiff(siteSpec);
+                setPendingSpec(spec);
+                setShowDiffViewer(true);
+              }}
+            />
+            
+            {/* PWA Export */}
+            <PWAExport siteSpec={siteSpec} projectName={projectName} />
+            
             <Button
               variant="outline"
               size="sm"
@@ -1202,6 +1222,31 @@ export function BuilderShell() {
           {projectId && <CustomDomainsPanel projectId={projectId} />}
         </DialogContent>
       </Dialog>
+
+      {/* Diff Viewer Dialog */}
+      <DiffViewer
+        isOpen={showDiffViewer}
+        onClose={() => {
+          setShowDiffViewer(false);
+          setPendingSpec(null);
+          setPreviousSpecForDiff(null);
+        }}
+        previousSpec={previousSpecForDiff}
+        currentSpec={pendingSpec}
+        onAccept={() => {
+          if (pendingSpec) {
+            setSiteSpec(pendingSpec);
+          }
+          setShowDiffViewer(false);
+          setPendingSpec(null);
+          setPreviousSpecForDiff(null);
+        }}
+        onReject={() => {
+          setShowDiffViewer(false);
+          setPendingSpec(null);
+          setPreviousSpecForDiff(null);
+        }}
+      />
     </div>
   );
 }
