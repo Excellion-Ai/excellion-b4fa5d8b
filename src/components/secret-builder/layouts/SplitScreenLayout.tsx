@@ -27,7 +27,7 @@ export function SplitSidebarNav({
   
   return (
     <nav 
-      className="fixed left-0 top-0 h-full w-16 lg:w-20 flex flex-col items-center justify-between py-8 z-50"
+      className="absolute left-0 top-0 h-full w-16 lg:w-20 flex flex-col items-center justify-between py-8 z-40"
       style={{ 
         backgroundColor: isDark ? '#0a0a0a' : '#ffffff',
         borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
@@ -88,7 +88,7 @@ export function SplitScreenLayout({ children, theme, sections, siteName, navigat
   
   return (
     <div 
-      className="min-h-screen flex"
+      className="min-h-screen flex relative"
       style={{ backgroundColor: theme.backgroundColor }}
     >
       {/* Vertical Sidebar Navigation */}

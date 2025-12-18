@@ -111,7 +111,7 @@ export function BentoPillNav({
   
   return (
     <nav 
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full backdrop-blur-xl shadow-2xl flex items-center gap-6"
+      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full backdrop-blur-xl shadow-2xl flex items-center gap-6"
       style={{ 
         backgroundColor: isDark ? 'rgba(17, 17, 17, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
