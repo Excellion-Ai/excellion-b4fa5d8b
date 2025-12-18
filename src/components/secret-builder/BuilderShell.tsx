@@ -155,6 +155,11 @@ export function BuilderShell() {
     }
   }, [projectId]);
 
+  // Load generated images on mount so library is always available
+  useEffect(() => {
+    fetchGeneratedImages();
+  }, []);
+
   const loadProjectAndMaybeGenerate = async (id: string) => {
     const { data, error } = await supabase
       .from('builder_projects')
