@@ -44,6 +44,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
@@ -188,7 +193,6 @@ const TEMPLATES = [
 const NAV_ITEMS = [
   { icon: Home, label: 'Home', action: 'home' },
   { icon: BookOpen, label: 'Resources', action: 'resources' },
-  { icon: Folder, label: 'Projects Folder', action: 'projects-folder' },
 ] as const;
 
 // localStorage keys
@@ -209,6 +213,7 @@ export default function SecretBuilderHub() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [projectToRename, setProjectToRename] = useState<BuilderProject | null>(null);
+  const [projectsFolderOpen, setProjectsFolderOpen] = useState(true);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -575,8 +580,6 @@ export default function SecretBuilderHub() {
                 onClick={() => {
                   if (item.action === 'home') {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                  } else if (item.action === 'projects-folder') {
-                    document.getElementById('projects-section')?.scrollIntoView({ behavior: 'smooth' });
                   } else if (item.action === 'resources') {
                     window.open('https://docs.lovable.dev', '_blank');
                   }
@@ -587,81 +590,101 @@ export default function SecretBuilderHub() {
               </Button>
             );
           })}
-        </nav>
 
-        {/* Projects Section */}
-        <div className="flex-1 overflow-hidden flex flex-col px-3 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Projects
-            </h3>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-1">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-              </div>
-            ) : projects.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-2 px-2">
-                No projects yet
-              </p>
-            ) : (
-              projects.slice(0, 8).map((project) => (
-                <div
-                  key={project.id}
-                  onClick={() => handleOpenProject(project.id)}
-                  className="group flex items-start gap-2 p-2 rounded-md hover:bg-secondary/50 cursor-pointer transition-colors"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-1.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground line-clamp-2 leading-tight">
-                      {project.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
-                        Draft
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">
-                        {formatTimeAgo(project.updated_at)}
-                      </span>
-                    </div>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreHorizontal className="w-3.5 h-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
-                        <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => openRenameDialog(project, e as unknown as React.MouseEvent)}>
-                        <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => handleDuplicateProject(project, e as unknown as React.MouseEvent)}>
-                        <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        className="text-destructive"
-                        onClick={(e) => handleDeleteProject(project.id, e as unknown as React.MouseEvent)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+          {/* Projects Folder Collapsible */}
+          <Collapsible open={projectsFolderOpen} onOpenChange={setProjectsFolderOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              >
+                <Folder className="w-4 h-4" />
+                <span className="text-sm flex-1 text-left">Projects Folder</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${projectsFolderOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-4 mt-1 space-y-0.5 max-h-64 overflow-y-auto">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                 </div>
-              ))
-            )}
-          </div>
-        </div>
+              ) : projects.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2 px-2">
+                  No projects yet
+                </p>
+              ) : (
+                projects.slice(0, 8).map((project) => (
+                  <div
+                    key={project.id}
+                    onClick={() => handleOpenProject(project.id)}
+                    className="group flex items-start gap-2 p-2 rounded-md hover:bg-secondary/50 cursor-pointer transition-colors"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-1.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground line-clamp-2 leading-tight">
+                        {project.name}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {project.published_url ? (
+                          <Badge className="text-[10px] px-1 py-0 h-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                            Published
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                            Draft
+                          </Badge>
+                        )}
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatTimeAgo(project.updated_at)}
+                        </span>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="w-3.5 h-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
+                          <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
+                        </DropdownMenuItem>
+                        {project.published_url && (
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(project.published_url!, '_blank');
+                            }}
+                          >
+                            <Globe className="w-3.5 h-3.5 mr-2" /> View Live Site
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onClick={(e) => openRenameDialog(project, e as unknown as React.MouseEvent)}>
+                          <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => handleDuplicateProject(project, e as unknown as React.MouseEvent)}>
+                          <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={(e) => handleDeleteProject(project.id, e as unknown as React.MouseEvent)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ))
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+        </nav>
 
         {/* Bottom CTA */}
         <div className="p-3 border-t border-border">
