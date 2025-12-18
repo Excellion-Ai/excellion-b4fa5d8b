@@ -616,7 +616,7 @@ export function BuilderShell() {
         {/* Left Panel - Chat */}
         <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
           <div className="h-full border-r border-border flex flex-col bg-card/30">
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 p-4" scrollbarVariant="gold">
               <div className="space-y-4">
                 {messages.length === 0 && (
                   <div className="text-center py-12">
@@ -1140,7 +1140,7 @@ export function BuilderShell() {
               ) : generatedImages.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">No images generated yet</p>
               ) : (
-                <ScrollArea className="h-64">
+                <ScrollArea className="h-64" scrollbarVariant="gold">
                   <div className="grid grid-cols-4 gap-3">
                     {generatedImages.map((image) => (
                       <button
