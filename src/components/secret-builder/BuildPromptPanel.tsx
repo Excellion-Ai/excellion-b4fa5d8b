@@ -54,7 +54,7 @@ export function BuildPromptPanel({ spec, isLoading }: BuildPromptPanelProps) {
   }
 
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full" scrollbarVariant="gold">
       <div className="p-6 space-y-6">
         {/* Optimized Build Prompt */}
         <Card className="bg-card/50 border-border/50">
