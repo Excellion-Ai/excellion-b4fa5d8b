@@ -273,7 +273,7 @@ const WebBuilderHome = () => {
                     }}
                   />
                   {!prompt && (
-                    <div className="absolute inset-0 px-4 py-3 pointer-events-none text-base">
+                    <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
                       <AnimatedPlaceholder 
                         suggestions={placeholderSuggestions}
                         typingSpeed={40}
