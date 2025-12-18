@@ -32,6 +32,7 @@ import { EditableText } from './EditableText';
 import { DraggableSection } from './DraggableSection';
 import { AnimatedSection } from './AnimatedSection';
 import { BentoLayout, BentoPillNav } from './layouts/BentoLayout';
+import { SplitScreenLayout, SplitSidebarNav, SplitHero } from './layouts/SplitScreenLayout';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
@@ -211,8 +212,9 @@ export function SiteRenderer({
 
   const sectionIds = currentPage?.sections?.map((s) => s.id) || [];
 
-  // Determine if we should use Bento layout
+  // Determine layout type
   const useBentoLayout = layoutStructure === 'bento';
+  const useSplitScreenLayout = layoutStructure === 'split-screen';
 
   // Render Bento Layout
   const renderBentoLayout = () => {
@@ -315,6 +317,117 @@ export function SiteRenderer({
             {footer?.copyright || `© ${new Date().getFullYear()} ${siteSpec.name}. All rights reserved.`}
           </p>
         </footer>
+      </div>
+    );
+  };
+
+  // Render Split-Screen Immersive Layout (Portfolio/Luxury)
+  const renderSplitScreenLayout = () => {
+    const sections = currentPage?.sections || [];
+    const heroSection = sections.find(s => s.type === 'hero');
+    const otherSections = sections.filter(s => s.type !== 'hero');
+    const heroContent = heroSection?.content as any;
+    
+    return (
+      <div 
+        className="min-h-screen flex"
+        style={{ 
+          backgroundColor: theme.backgroundColor,
+          fontFamily: theme.fontBody,
+        }}
+      >
+        {/* Vertical Sidebar Navigation */}
+        <SplitSidebarNav
+          siteName={siteSpec.name}
+          navigation={navigation || []}
+          theme={theme}
+        />
+
+        {/* Main Split Container */}
+        <div className="flex-1 ml-16 lg:ml-20 flex min-h-screen">
+          {/* Left Panel - Sticky Hero */}
+          <div 
+            className="w-[45%] lg:w-[40%] sticky top-0 h-screen overflow-hidden"
+            style={{
+              backgroundColor: theme.darkMode ? '#0f0f0f' : '#f8f8f8',
+            }}
+          >
+            {heroSection ? (
+              <SplitHero
+                headline={heroContent?.headline || siteSpec.name}
+                subheadline={heroContent?.subheadline || 'Welcome to our website'}
+                theme={theme}
+                backgroundImage={heroContent?.backgroundImage}
+              />
+            ) : (
+              <div 
+                className="h-full flex items-center justify-center p-8"
+                style={{
+                  background: `linear-gradient(135deg, ${theme.primaryColor}30, ${theme.secondaryColor}30)`,
+                }}
+              >
+                <h1 
+                  className="text-4xl lg:text-6xl font-bold"
+                  style={{ 
+                    fontFamily: theme.fontHeading,
+                    color: theme.darkMode ? '#ffffff' : '#111111',
+                  }}
+                >
+                  {siteSpec.name}
+                </h1>
+              </div>
+            )}
+          </div>
+
+          {/* Right Panel - Scrollable Content */}
+          <div 
+            className="w-[55%] lg:w-[60%] overflow-y-auto"
+            style={{
+              backgroundColor: theme.backgroundColor,
+            }}
+          >
+            {isEditable && onReorderSections ? (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext 
+                  items={otherSections.map(s => s.id)} 
+                  strategy={verticalListSortingStrategy}
+                >
+                  {otherSections.map((section) => (
+                    <div key={section.id} className="border-b border-border/10 last:border-0">
+                      {renderSection(section, false)}
+                    </div>
+                  ))}
+                </SortableContext>
+              </DndContext>
+            ) : (
+              otherSections.map((section) => (
+                <div key={section.id} className="border-b border-border/10 last:border-0">
+                  {renderSection(section, false)}
+                </div>
+              ))
+            )}
+            
+            {/* Footer */}
+            <footer 
+              className="py-12 px-8 text-center"
+              style={{ 
+                backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
+                borderTop: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
+              }}
+            >
+              <p 
+                className="text-sm"
+                style={{ color: theme.darkMode ? '#6b7280' : '#9ca3af' }}
+              >
+                {footer?.copyright || `© ${new Date().getFullYear()} ${siteSpec.name}. All rights reserved.`}
+              </p>
+            </footer>
+          </div>
+        </div>
       </div>
     );
   };
@@ -474,7 +587,12 @@ export function SiteRenderer({
         <div 
           className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300`}
         >
-          {useBentoLayout ? renderBentoLayout() : renderStandardLayout()}
+          {useBentoLayout 
+            ? renderBentoLayout() 
+            : useSplitScreenLayout 
+              ? renderSplitScreenLayout() 
+              : renderStandardLayout()
+          }
         </div>
       </div>
     </div>
