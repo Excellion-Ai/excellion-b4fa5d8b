@@ -176,9 +176,10 @@ export function PageManager({
               currentPageIndex === index ? 'bg-background shadow-sm' : ''
             }`}
             onClick={() => onSelectPage(index)}
+            title={page.title}
           >
             {PAGE_ICONS[page.path] || <FileText className="h-3.5 w-3.5" />}
-            <span className="max-w-[80px] truncate">{page.title}</span>
+            {page.path !== '/' && <span className="max-w-[80px] truncate">{page.title}</span>}
           </Button>
           {index > 0 && (
             <button
