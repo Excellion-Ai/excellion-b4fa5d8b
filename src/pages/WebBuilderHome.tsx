@@ -14,10 +14,6 @@ import {
   AlertCircle,
   ChevronRight,
   Phone,
-  UtensilsCrossed,
-  Wrench,
-  Users,
-  ShoppingBag,
   Mail
 } from "lucide-react";
 import excellionLogo from "@/assets/excellion-logo.png";
@@ -40,32 +36,6 @@ const suggestionChips = [
   "Online coach selling packages"
 ];
 
-const exampleSites = [
-  {
-    title: "Local restaurant",
-    body: "Online menu, order buttons, and mobile-first layout – started from a 3-minute conversation.",
-    icon: UtensilsCrossed,
-    gradient: "from-amber-500/20 to-red-500/20"
-  },
-  {
-    title: "Home services",
-    body: "Lead-focused pages for contractors with quote forms and clear calls to book.",
-    icon: Wrench,
-    gradient: "from-blue-500/20 to-cyan-500/20"
-  },
-  {
-    title: "Coaches & consultants",
-    body: "Packages, testimonials, and booking links for 1:1 or group programs.",
-    icon: Users,
-    gradient: "from-purple-500/20 to-pink-500/20"
-  },
-  {
-    title: "E-commerce & digital products",
-    body: "Product grids with checkout links to your existing tools.",
-    icon: ShoppingBag,
-    gradient: "from-green-500/20 to-teal-500/20"
-  }
-];
 
 const greatAtItems = [
   "Designs clean, modern layouts based on your business type.",
@@ -163,9 +133,6 @@ const WebBuilderHome = () => {
             <div className="hidden md:flex items-center gap-6">
               <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 How it works
-              </a>
-              <a href="#examples" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Examples
               </a>
               <button onClick={() => navigate("/pricing")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
@@ -339,34 +306,6 @@ const WebBuilderHome = () => {
         </div>
       </section>
 
-      {/* Example Sites Section */}
-      <section id="examples" className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-foreground text-center mb-4">
-            Sites started from a short chat
-          </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Examples of what Excellion AI can build
-          </p>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {exampleSites.map((site, index) => (
-              <div
-                key={index}
-                className="rounded-xl border border-border bg-card overflow-hidden"
-              >
-                <div className={`aspect-video bg-gradient-to-br ${site.gradient} flex items-center justify-center`}>
-                  <site.icon className="w-12 h-12 text-foreground/30" />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-foreground mb-2">{site.title}</h3>
-                  <p className="text-sm text-muted-foreground">{site.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Two Ways to Launch / Pricing Section */}
       <section id="pricing" className="py-20 px-4 border-t border-border/50">
