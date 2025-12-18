@@ -92,9 +92,9 @@ const WebBuilderHome = () => {
 
   const handleStart = () => {
     if (prompt.trim()) {
-      navigate("/bot-experiment", { state: { initialPrompt: prompt } });
+      navigate("/secret-builder-hub", { state: { initialIdea: prompt, autoGenerate: true } });
     } else {
-      navigate("/bot-experiment");
+      navigate("/secret-builder-hub");
     }
   };
 
