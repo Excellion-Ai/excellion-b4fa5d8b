@@ -5,10 +5,11 @@ interface HeroSectionProps {
   section: SiteSection;
   theme: SiteTheme;
   siteName: string;
+  asTile?: boolean;
   onUpdateContent?: (field: keyof HeroContent, value: string) => void;
 }
 
-export function HeroSection({ section, theme, siteName, onUpdateContent }: HeroSectionProps) {
+export function HeroSection({ section, theme, siteName, asTile = false, onUpdateContent }: HeroSectionProps) {
   const content = section.content as HeroContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
@@ -30,6 +31,85 @@ export function HeroSection({ section, theme, siteName, onUpdateContent }: HeroS
           : `linear-gradient(135deg, ${theme.primaryColor}10, ${theme.secondaryColor}10)`,
       };
 
+  // Tile mode for Bento layout - compact, asymmetric
+  if (asTile) {
+    return (
+      <section 
+        id={section.id}
+        className="h-full min-h-[300px] flex flex-col justify-end p-6 lg:p-8 relative"
+        style={backgroundStyle}
+      >
+        <div className="max-w-xl">
+          {onUpdateContent ? (
+            <EditableText
+              value={headline}
+              onSave={(val) => onUpdateContent('headline', val)}
+              as="h1"
+              className="text-2xl lg:text-4xl font-bold mb-3"
+              style={{ 
+                fontFamily: theme.fontHeading || 'system-ui',
+                color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor)
+              }}
+            />
+          ) : (
+            <h1 
+              className="text-2xl lg:text-4xl font-bold mb-3"
+              style={{ 
+                fontFamily: theme.fontHeading || 'system-ui',
+                color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor)
+              }}
+            >
+              {headline}
+            </h1>
+          )}
+          
+          {onUpdateContent ? (
+            <EditableText
+              value={subheadline}
+              onSave={(val) => onUpdateContent('subheadline', val)}
+              as="p"
+              multiline
+              className="text-sm lg:text-base mb-5 opacity-80"
+              style={{ 
+                fontFamily: theme.fontBody || 'system-ui',
+                color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563')
+              }}
+            />
+          ) : (
+            <p 
+              className="text-sm lg:text-base mb-5 opacity-80"
+              style={{ 
+                fontFamily: theme.fontBody || 'system-ui',
+                color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563')
+              }}
+            >
+              {subheadline}
+            </p>
+          )}
+          
+          <div className="flex flex-wrap gap-3">
+            <button
+              className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all hover:scale-105"
+              style={{ backgroundColor: theme.primaryColor }}
+            >
+              {ctaText}
+            </button>
+            <button
+              className="px-5 py-2 rounded-lg font-semibold border text-sm transition-all hover:scale-105"
+              style={{ 
+                borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
+                color: backgroundImage ? '#ffffff' : theme.primaryColor
+              }}
+            >
+              {secondaryCtaText}
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Standard full-width centered layout
   return (
     <section 
       id={section.id}

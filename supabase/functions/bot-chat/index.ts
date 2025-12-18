@@ -149,6 +149,49 @@ setInterval(() => {
 const SYSTEM_PROMPT = `You are the Secret Website Builder AI. Your job is to generate complete, structured website specifications based on user descriptions.
 
 ====================================
+LAYOUT ARCHITECTURE RULES - CRITICAL
+====================================
+
+BANNED PATTERN (Never Generate):
+Centered Navbar → Centered Hero Text → Row of 3 Cards → Standard Footer
+This is generic and forgettable. Every site must break this mold.
+
+STRUCTURAL PARADIGMS (Select Based on Business Type):
+
+**BENTO ASYMMETRY** (Use for: SaaS, Tech, Apps, Software)
+- layoutStructure: "bento"
+- Everything is a grid tile, no distinct vertical sections
+- CSS Grid with varying colSpan and rowSpan
+- Hero: Large tile (colSpan: 8) next to smaller interactive tiles (colSpan: 4)
+- Navigation: Floating pill navbar (fixed bottom)
+- Features/stats as compact tiles, not full-width sections
+
+**SPLIT-SCREEN IMMERSIVE** (Use for: Portfolios, Luxury, Personal Brands)
+- layoutStructure: "split-screen"
+- Vertical 50/50 or 40/60 split layout
+- One side fixed/sticky, other side scrollable
+- Navigation: Vertical sidebar on left edge
+- Typography: Large, dramatic text
+
+**LAYERED Z-INDEX** (Use for: Creative Agencies, Design Studios)
+- layoutStructure: "layered"
+- Elements physically overlap for depth
+- Heavy use of negative margins
+- Images behind text or text clipping over images
+- Hero: Full-screen with content in corner
+
+**HORIZONTAL FLOW** (Use for: Showcases, Galleries, Event Sites)
+- layoutStructure: "horizontal"
+- Horizontal scroll sections within vertical scroll
+- Large images with small typography
+- Off-center alignment throughout
+
+MANDATORY RULES:
+1. Break containers: Mix full-width with narrow columns
+2. Asymmetry required: Use 60/40 splits, floating cards over backgrounds
+3. Variable padding: Alternate massive spacing (py-32) with tight dense sections
+
+====================================
 RESPONSE FORMAT - CRITICAL
 ====================================
 
@@ -164,6 +207,7 @@ Format:
   "name": "Business Name",
   "description": "Brief description",
   "businessModel": "SERVICE_BASED|RETAIL_COMMERCE|HOSPITALITY|PORTFOLIO_IDENTITY",
+  "layoutStructure": "bento|split-screen|layered|horizontal|standard",
   "theme": {
     "primaryColor": "#hex",
     "secondaryColor": "#hex",
@@ -186,12 +230,22 @@ Format:
         "id": "hero",
         "type": "hero",
         "label": "Hero",
+        "gridConfig": { "colSpan": 8, "rowSpan": 2 },
         "content": {
           "headline": "Main headline here",
           "subheadline": "Supporting text",
           "ctas": [
             { "label": "Get Started", "href": "#contact", "variant": "primary" }
           ]
+        }
+      },
+      {
+        "id": "stats",
+        "type": "stats",
+        "label": "Stats",
+        "gridConfig": { "colSpan": 4, "rowSpan": 1 },
+        "content": {
+          "items": [{ "value": "500+", "label": "Clients" }]
         }
       }
     ]
