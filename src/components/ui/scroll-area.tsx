@@ -31,7 +31,7 @@ const scrollThumbVariants = cva(
       variant: {
         default: "bg-border",
         gold: "bg-orange-500 hover:bg-orange-400 transition-colors",
-        purple: "bg-purple-600 hover:bg-purple-500 transition-colors",
+        purple: "bg-purple-900 hover:bg-purple-800 transition-colors",
       },
     },
     defaultVariants: {
