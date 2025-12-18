@@ -62,7 +62,11 @@ export type CTAButton = {
 export type HeroContent = {
   headline: string;
   subheadline: string;
-  ctas: CTAButton[];
+  ctas?: CTAButton[];
+  ctaText?: string;
+  ctaLink?: string;
+  secondaryCtaText?: string;
+  secondaryCtaLink?: string;
   backgroundImage?: string;
 };
 
@@ -130,7 +134,9 @@ export type ContactContent = {
 export type CTAContent = {
   headline: string;
   subheadline?: string;
-  ctas: CTAButton[];
+  ctas?: CTAButton[];
+  ctaText?: string;
+  ctaLink?: string;
 };
 
 export type StatsItem = {
@@ -192,6 +198,7 @@ export type SiteSection = {
   id: string;
   type: SectionType;
   label: string;
+  description?: string;
   content: SectionContent;
   animation?: AnimationConfig;
   gridConfig?: GridConfig;  // For bento/tile layouts
