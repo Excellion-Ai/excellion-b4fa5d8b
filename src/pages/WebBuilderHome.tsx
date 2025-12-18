@@ -29,6 +29,16 @@ import {
 import excellionLogo from "@/assets/excellion-logo.png";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
+import { AnimatedPlaceholder } from "@/components/AnimatedPlaceholder";
+
+const placeholderSuggestions = [
+  "A local restaurant with online ordering and menu...",
+  "A roofing contractor website with quote forms...",
+  "A fitness coach selling training packages...",
+  "A hair salon with booking and services...",
+  "A law firm with practice areas and contact...",
+  "An online store for handmade jewelry...",
+];
 
 const suggestionChips = [
   "Restaurant taking online orders",
@@ -248,20 +258,31 @@ const WebBuilderHome = () => {
             {/* Prompt Input */}
             <div className="max-w-2xl mx-auto">
               <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-3">
-                <Textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask Excellion AI to create a website for… (e.g. local restaurant, roofing contractor, fitness coach)"
-                  className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
-                  rows={1}
-                  style={{ height: 'auto' }}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = 'auto';
-                    target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-                  }}
-                />
+                <div className="relative">
+                  <Textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
+                    rows={1}
+                    style={{ height: 'auto' }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                    }}
+                  />
+                  {!prompt && (
+                    <div className="absolute inset-0 px-4 py-3 pointer-events-none text-base">
+                      <AnimatedPlaceholder 
+                        suggestions={placeholderSuggestions}
+                        typingSpeed={40}
+                        deletingSpeed={25}
+                        pauseDuration={2500}
+                      />
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center justify-end mt-3">
                   <Button onClick={handleStart} size="icon" className="h-10 w-10">
                     <ArrowRight className="w-5 h-5" />
