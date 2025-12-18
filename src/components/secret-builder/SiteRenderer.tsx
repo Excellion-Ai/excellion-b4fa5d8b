@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SiteSpec, SiteSection, SiteTheme, AnimationConfig } from '@/types/site-spec';
+import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure } from '@/types/site-spec';
 import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
 import {
   DndContext,
@@ -31,6 +31,7 @@ import {
 import { EditableText } from './EditableText';
 import { DraggableSection } from './DraggableSection';
 import { AnimatedSection } from './AnimatedSection';
+import { BentoLayout, BentoPillNav } from './layouts/BentoLayout';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
@@ -123,7 +124,7 @@ export function SiteRenderer({
     );
   }
 
-  const { theme, pages, navigation, footer } = siteSpec;
+  const { theme, pages, navigation, footer, layoutStructure } = siteSpec;
   const currentPage = pages[pageIndex] || pages[0];
   const legacyTheme = toSectionTheme(theme);
   const isEditable = !!onUpdateHeroContent;
@@ -142,10 +143,10 @@ export function SiteRenderer({
     }
   };
 
-  const renderSection = (section: SiteSection) => {
+  const renderSection = (section: SiteSection, asTile: boolean = false) => {
     const key = section.id;
     const legacySection = toLegacySection(section);
-    const commonProps = { section: legacySection, theme: legacyTheme };
+    const commonProps = { section: legacySection, theme: legacyTheme, asTile };
 
     let sectionContent;
     switch (section.type) {
@@ -191,6 +192,7 @@ export function SiteRenderer({
               backgroundColor: theme.backgroundColor,
               textColor: theme.textColor,
             }}
+            asTile={asTile}
           />
         );
         break;
@@ -209,12 +211,234 @@ export function SiteRenderer({
 
   const sectionIds = currentPage?.sections?.map((s) => s.id) || [];
 
+  // Determine if we should use Bento layout
+  const useBentoLayout = layoutStructure === 'bento';
+
+  // Render Bento Layout
+  const renderBentoLayout = () => {
+    const sections = currentPage?.sections || [];
+    
+    return (
+      <div className="min-h-screen relative" style={{ backgroundColor: theme.backgroundColor }}>
+        {/* Floating Pill Navigation */}
+        <BentoPillNav
+          siteName={siteSpec.name}
+          navigation={navigation || []}
+          theme={theme}
+          onUpdateSiteName={onUpdateSiteName}
+          onUpdateNavItem={onUpdateNavItem}
+        />
+
+        {/* Bento Grid */}
+        <main className="p-4 lg:p-8 pb-24">
+          {isEditable && onReorderSections ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={sectionIds} strategy={verticalListSortingStrategy}>
+                <div className="grid grid-cols-12 gap-4 lg:gap-6 auto-rows-min">
+                  {sections.map((section) => {
+                    const gridConfig = section.gridConfig || getDefaultGridConfig(section);
+                    const colSpan = gridConfig.colSpan || 6;
+                    const rowSpan = gridConfig.rowSpan || 1;
+                    
+                    return (
+                      <div 
+                        key={section.id}
+                        className={`col-span-12 lg:col-span-${colSpan} row-span-${rowSpan} transition-all duration-300`}
+                        style={{
+                          gridColumn: `span ${colSpan} / span ${colSpan}`,
+                          gridRow: `span ${rowSpan} / span ${rowSpan}`,
+                        }}
+                      >
+                        <div 
+                          className="h-full rounded-2xl overflow-hidden"
+                          style={{
+                            backgroundColor: theme.darkMode ? '#111111' : '#ffffff',
+                            border: `1px solid ${theme.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                          }}
+                        >
+                          {renderSection(section, true)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="grid grid-cols-12 gap-4 lg:gap-6 auto-rows-min">
+              {sections.map((section) => {
+                const gridConfig = section.gridConfig || getDefaultGridConfig(section);
+                const colSpan = gridConfig.colSpan || 6;
+                const rowSpan = gridConfig.rowSpan || 1;
+                
+                return (
+                  <div 
+                    key={section.id}
+                    className="transition-all duration-300"
+                    style={{
+                      gridColumn: `span ${colSpan} / span ${colSpan}`,
+                      gridRow: `span ${rowSpan} / span ${rowSpan}`,
+                    }}
+                  >
+                    <div 
+                      className="h-full rounded-2xl overflow-hidden"
+                      style={{
+                        backgroundColor: theme.darkMode ? '#111111' : '#ffffff',
+                        border: `1px solid ${theme.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                      }}
+                    >
+                      {renderSection(section, true)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </main>
+
+        {/* Footer */}
+        <footer 
+          className="py-8 px-6 text-center"
+          style={{ 
+            backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
+            borderTop: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
+          }}
+        >
+          <p 
+            className="text-sm"
+            style={{ color: theme.darkMode ? '#6b7280' : '#9ca3af' }}
+          >
+            {footer?.copyright || `© ${new Date().getFullYear()} ${siteSpec.name}. All rights reserved.`}
+          </p>
+        </footer>
+      </div>
+    );
+  };
+
+  // Render Standard Layout (default)
+  const renderStandardLayout = () => (
+    <div 
+      style={{ 
+        backgroundColor: theme.backgroundColor,
+        fontFamily: theme.fontBody,
+        color: theme.textColor,
+      }}
+    >
+      {/* Navigation bar */}
+      <nav 
+        className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between"
+        style={{ 
+          backgroundColor: theme.darkMode ? '#111111' : '#ffffff',
+          borderBottom: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
+        }}
+      >
+        {onUpdateSiteName ? (
+          <EditableText
+            value={siteSpec.name}
+            onSave={onUpdateSiteName}
+            as="span"
+            className="font-bold text-lg"
+            style={{ 
+              fontFamily: theme.fontHeading,
+              color: theme.primaryColor
+            }}
+          />
+        ) : (
+          <span 
+            className="font-bold text-lg"
+            style={{ 
+              fontFamily: theme.fontHeading,
+              color: theme.primaryColor
+            }}
+          >
+            {siteSpec.name}
+          </span>
+        )}
+        <div className="flex items-center gap-6">
+          {navigation?.map((item, index) => (
+            onUpdateNavItem ? (
+              <EditableText
+                key={index}
+                value={item.label}
+                onSave={(val) => onUpdateNavItem(index, val)}
+                as="span"
+                className="text-sm font-medium transition-colors hover:opacity-80"
+                style={{ 
+                  color: theme.darkMode ? '#d1d5db' : '#4b5563'
+                }}
+              />
+            ) : (
+              <a
+                key={index}
+                href={item.href}
+                className="text-sm font-medium transition-colors hover:opacity-80"
+                style={{ 
+                  color: theme.darkMode ? '#d1d5db' : '#4b5563'
+                }}
+              >
+                {item.label}
+              </a>
+            )
+          ))}
+        </div>
+      </nav>
+
+      {/* Render all sections with drag and drop */}
+      <main>
+        {currentPage?.sections?.length > 0 ? (
+          isEditable && onReorderSections ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={sectionIds} strategy={verticalListSortingStrategy}>
+                {currentPage.sections.map((s) => renderSection(s, false))}
+              </SortableContext>
+            </DndContext>
+          ) : (
+            currentPage.sections.map((s) => renderSection(s, false))
+          )
+        ) : (
+          <div className="py-20 text-center text-gray-500">
+            No sections defined
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer 
+        className="py-8 px-6 text-center"
+        style={{ 
+          backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
+          borderTop: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
+        }}
+      >
+        <p 
+          className="text-sm"
+          style={{ color: theme.darkMode ? '#6b7280' : '#9ca3af' }}
+        >
+          {footer?.copyright || `© ${new Date().getFullYear()} ${siteSpec.name}. All rights reserved.`}
+        </p>
+      </footer>
+    </div>
+  );
+
   return (
     <div className="h-full flex flex-col">
       {/* Preview controls */}
       <div className="h-10 border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
         <span className="text-xs text-muted-foreground">
           {siteSpec.name || 'Generated Site'}
+          {layoutStructure && layoutStructure !== 'standard' && (
+            <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-primary/20 text-primary">
+              {layoutStructure.toUpperCase()}
+            </span>
+          )}
           {isEditable && <span className="ml-2 text-primary">(Click text to edit, drag to reorder)</span>}
         </span>
         <div className="flex items-center gap-1">
@@ -249,111 +473,34 @@ export function SiteRenderer({
       <div className="flex-1 overflow-auto bg-[#1a1a1a] flex justify-center p-4">
         <div 
           className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300`}
-          style={{ 
-            backgroundColor: theme.backgroundColor,
-            fontFamily: theme.fontBody,
-            color: theme.textColor,
-          }}
         >
-          {/* Navigation bar */}
-          <nav 
-            className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between"
-            style={{ 
-              backgroundColor: theme.darkMode ? '#111111' : '#ffffff',
-              borderBottom: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
-            }}
-          >
-            {onUpdateSiteName ? (
-              <EditableText
-                value={siteSpec.name}
-                onSave={onUpdateSiteName}
-                as="span"
-                className="font-bold text-lg"
-                style={{ 
-                  fontFamily: theme.fontHeading,
-                  color: theme.primaryColor
-                }}
-              />
-            ) : (
-              <span 
-                className="font-bold text-lg"
-                style={{ 
-                  fontFamily: theme.fontHeading,
-                  color: theme.primaryColor
-                }}
-              >
-                {siteSpec.name}
-              </span>
-            )}
-            <div className="flex items-center gap-6">
-              {navigation?.map((item, index) => (
-                onUpdateNavItem ? (
-                  <EditableText
-                    key={index}
-                    value={item.label}
-                    onSave={(val) => onUpdateNavItem(index, val)}
-                    as="span"
-                    className="text-sm font-medium transition-colors hover:opacity-80"
-                    style={{ 
-                      color: theme.darkMode ? '#d1d5db' : '#4b5563'
-                    }}
-                  />
-                ) : (
-                  <a
-                    key={index}
-                    href={item.href}
-                    className="text-sm font-medium transition-colors hover:opacity-80"
-                    style={{ 
-                      color: theme.darkMode ? '#d1d5db' : '#4b5563'
-                    }}
-                  >
-                    {item.label}
-                  </a>
-                )
-              ))}
-            </div>
-          </nav>
-
-          {/* Render all sections with drag and drop */}
-          <main>
-            {currentPage?.sections?.length > 0 ? (
-              isEditable && onReorderSections ? (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext items={sectionIds} strategy={verticalListSortingStrategy}>
-                    {currentPage.sections.map(renderSection)}
-                  </SortableContext>
-                </DndContext>
-              ) : (
-                currentPage.sections.map(renderSection)
-              )
-            ) : (
-              <div className="py-20 text-center text-gray-500">
-                No sections defined
-              </div>
-            )}
-          </main>
-
-          {/* Footer */}
-          <footer 
-            className="py-8 px-6 text-center"
-            style={{ 
-              backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
-              borderTop: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
-            }}
-          >
-            <p 
-              className="text-sm"
-              style={{ color: theme.darkMode ? '#6b7280' : '#9ca3af' }}
-            >
-              {footer?.copyright || `© ${new Date().getFullYear()} ${siteSpec.name}. All rights reserved.`}
-            </p>
-          </footer>
+          {useBentoLayout ? renderBentoLayout() : renderStandardLayout()}
         </div>
       </div>
     </div>
   );
+}
+
+// Default grid configuration based on section type
+function getDefaultGridConfig(section: SiteSection): { colSpan: number; rowSpan: number } {
+  switch (section.type) {
+    case 'hero':
+      return { colSpan: 8, rowSpan: 2 };
+    case 'stats':
+      return { colSpan: 4, rowSpan: 1 };
+    case 'features':
+      return { colSpan: 6, rowSpan: 1 };
+    case 'testimonials':
+      return { colSpan: 6, rowSpan: 1 };
+    case 'pricing':
+      return { colSpan: 12, rowSpan: 1 };
+    case 'cta':
+      return { colSpan: 8, rowSpan: 1 };
+    case 'contact':
+      return { colSpan: 4, rowSpan: 1 };
+    case 'faq':
+      return { colSpan: 6, rowSpan: 1 };
+    default:
+      return { colSpan: 6, rowSpan: 1 };
+  }
 }

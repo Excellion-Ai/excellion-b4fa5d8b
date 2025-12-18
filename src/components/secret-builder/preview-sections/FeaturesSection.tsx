@@ -5,6 +5,7 @@ import { EditableText } from '../EditableText';
 interface FeaturesSectionProps {
   section: SiteSection;
   theme: SiteTheme;
+  asTile?: boolean;
   onUpdateContent?: (field: keyof FeaturesContent, value: string) => void;
   onUpdateItem?: (index: number, field: keyof FeatureItem, value: string) => void;
 }
@@ -20,7 +21,7 @@ const defaultFeatures: FeatureItem[] = [
   { icon: 'Star', title: 'Top Quality', description: 'Excellence in everything we do' },
 ];
 
-export function FeaturesSection({ section, theme, onUpdateContent, onUpdateItem }: FeaturesSectionProps) {
+export function FeaturesSection({ section, theme, asTile = false, onUpdateContent, onUpdateItem }: FeaturesSectionProps) {
   const content = section.content as FeaturesContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
@@ -30,6 +31,95 @@ export function FeaturesSection({ section, theme, onUpdateContent, onUpdateItem 
 
   // Ensure even number of items for symmetry
   const displayItems = items.length % 2 !== 0 ? items.slice(0, items.length - 1) : items;
+
+  // Tile mode for Bento layout - compact grid
+  if (asTile) {
+    const tileItems = displayItems.slice(0, 4); // Max 4 for tile view
+    
+    return (
+      <section 
+        id={section.id}
+        className="h-full p-5"
+        style={{ 
+          backgroundColor: isDark ? '#111111' : '#ffffff'
+        }}
+      >
+        <div className="mb-4">
+          {onUpdateContent ? (
+            <EditableText
+              value={title}
+              onSave={(val) => onUpdateContent('title', val)}
+              as="h3"
+              className="text-lg font-bold"
+              style={{ 
+                fontFamily: theme.fontHeading || 'system-ui',
+                color: isDark ? '#ffffff' : '#111827'
+              }}
+            />
+          ) : (
+            <h3 
+              className="text-lg font-bold"
+              style={{ 
+                fontFamily: theme.fontHeading || 'system-ui',
+                color: isDark ? '#ffffff' : '#111827'
+              }}
+            >
+              {title}
+            </h3>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-2 gap-3">
+          {tileItems.map((feature, index) => {
+            const IconComponent = iconComponents[feature.icon || 'Zap'] || Zap;
+            return (
+              <div 
+                key={index}
+                className="p-3 rounded-lg"
+                style={{ 
+                  backgroundColor: isDark ? '#1f1f1f' : '#f9fafb',
+                }}
+              >
+                <div 
+                  className="w-8 h-8 rounded-md flex items-center justify-center mb-2"
+                  style={{ backgroundColor: `${theme.primaryColor}20` }}
+                >
+                  <IconComponent 
+                    className="w-4 h-4" 
+                    style={{ color: theme.primaryColor }} 
+                  />
+                </div>
+                {onUpdateItem ? (
+                  <EditableText
+                    value={feature.title}
+                    onSave={(val) => onUpdateItem(index, 'title', val)}
+                    as="h3"
+                    className="text-sm font-semibold mb-1"
+                    style={{ 
+                      fontFamily: theme.fontHeading || 'system-ui',
+                      color: isDark ? '#ffffff' : '#111827'
+                    }}
+                  />
+                ) : (
+                  <h3 
+                    className="text-sm font-semibold mb-1"
+                    style={{ 
+                      fontFamily: theme.fontHeading || 'system-ui',
+                      color: isDark ? '#ffffff' : '#111827'
+                    }}
+                  >
+                    {feature.title}
+                  </h3>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    );
+  }
+
+  // Standard full-width layout
   const gridCols = displayItems.length <= 2 ? 'md:grid-cols-2' : displayItems.length <= 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3 lg:grid-cols-4';
 
   return (

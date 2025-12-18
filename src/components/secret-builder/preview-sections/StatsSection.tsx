@@ -7,9 +7,50 @@ interface StatsSectionProps {
     backgroundColor: string;
     textColor: string;
   };
+  asTile?: boolean;
 }
 
-export function StatsSection({ content, theme }: StatsSectionProps) {
+export function StatsSection({ content, theme, asTile = false }: StatsSectionProps) {
+  // Tile mode for Bento layout - compact vertical stack
+  if (asTile) {
+    const displayItems = content.items?.slice(0, 4) || [];
+    
+    return (
+      <section 
+        className="h-full p-5 flex flex-col justify-center"
+        style={{ backgroundColor: theme.primaryColor + '15' }}
+      >
+        {content.title && (
+          <h3 
+            className="text-sm font-semibold mb-4 opacity-70"
+            style={{ color: theme.textColor }}
+          >
+            {content.title}
+          </h3>
+        )}
+        <div className="space-y-4">
+          {displayItems.map((stat, index) => (
+            <div key={index} className="flex items-baseline gap-2">
+              <div 
+                className="text-2xl lg:text-3xl font-bold"
+                style={{ color: theme.primaryColor }}
+              >
+                {stat.value}
+              </div>
+              <div 
+                className="text-xs uppercase tracking-wider"
+                style={{ color: theme.textColor + 'aa' }}
+              >
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  // Standard full-width layout
   return (
     <section 
       className="py-16 px-6"

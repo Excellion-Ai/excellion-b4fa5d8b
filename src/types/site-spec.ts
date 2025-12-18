@@ -3,6 +3,21 @@
 
 export type BusinessModel = 'SERVICE_BASED' | 'RETAIL_COMMERCE' | 'HOSPITALITY' | 'PORTFOLIO_IDENTITY';
 
+// Layout structure paradigms - controls overall page composition
+export type LayoutStructure = 
+  | 'standard'      // Traditional vertical stack (backwards compatible)
+  | 'bento'         // CSS Grid asymmetric tiles (SaaS/Tech)
+  | 'split-screen'  // 50/50 or 40/60 vertical splits (Portfolio/Luxury)
+  | 'layered'       // Z-index overlapping elements (Creative/Agency)
+  | 'horizontal';   // Horizontal scroll sections (Showcases)
+
+// Grid configuration for bento/tile-based layouts
+export type GridConfig = {
+  colSpan?: number;   // How many columns this tile spans (1-12)
+  rowSpan?: number;   // How many rows this tile spans
+  order?: number;     // Display order in grid
+};
+
 export type SectionType = 
   | 'hero' 
   | 'features'
@@ -179,6 +194,7 @@ export type SiteSection = {
   label: string;
   content: SectionContent;
   animation?: AnimationConfig;
+  gridConfig?: GridConfig;  // For bento/tile layouts
 };
 
 // Page definition
@@ -193,6 +209,7 @@ export type SiteSpec = {
   name: string;
   description?: string;
   businessModel: BusinessModel;
+  layoutStructure?: LayoutStructure;  // Layout paradigm for the site
   theme: SiteTheme;
   navigation: NavItem[];
   pages: SitePage[];
