@@ -128,6 +128,16 @@ export type CTAContent = {
   ctaLink?: string;
 };
 
+export type StatsItem = {
+  value: string;
+  label: string;
+};
+
+export type StatsContent = {
+  title?: string;
+  items: StatsItem[];
+};
+
 export type SectionContent = 
   | HeroContent 
   | FeaturesContent 
@@ -136,6 +146,7 @@ export type SectionContent =
   | FAQContent 
   | ContactContent
   | CTAContent
+  | StatsContent
   | Record<string, unknown>;
 
 export type SiteSection = {

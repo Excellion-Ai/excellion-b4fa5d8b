@@ -1,4 +1,4 @@
-import { SiteSection, SiteTheme } from '@/types/app-spec';
+import { SiteSection, SiteTheme, CTAContent } from '@/types/app-spec';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
 
 interface CTASectionProps {
@@ -7,6 +7,12 @@ interface CTASectionProps {
 }
 
 export function CTASection({ section, theme }: CTASectionProps) {
+  const content = section.content as CTAContent | undefined;
+  
+  const headline = content?.headline || section.label || 'Ready to Get Started?';
+  const subheadline = content?.subheadline || section.description || 'Join thousands of satisfied customers and transform your business today.';
+  const ctaText = content?.ctaText || 'Start Free Trial';
+  
   return (
     <section 
       id={section.id}
@@ -21,7 +27,7 @@ export function CTASection({ section, theme }: CTASectionProps) {
             className="text-3xl md:text-4xl font-bold mb-4 text-white"
             style={{ fontFamily: theme.fontHeading }}
           >
-            {section.label || 'Ready to Get Started?'}
+            {headline}
           </h2>
         </ScrollAnimation>
         <ScrollAnimation animation="fade-up" delay={150}>
@@ -29,7 +35,7 @@ export function CTASection({ section, theme }: CTASectionProps) {
             className="text-lg mb-8 text-white/90 max-w-2xl mx-auto"
             style={{ fontFamily: theme.fontBody }}
           >
-            {section.description || 'Join thousands of satisfied customers and transform your business today.'}
+            {subheadline}
           </p>
         </ScrollAnimation>
         <ScrollAnimation animation="scale-up" delay={300}>
@@ -41,7 +47,7 @@ export function CTASection({ section, theme }: CTASectionProps) {
                 color: theme.primaryColor
               }}
             >
-              Start Free Trial
+              {ctaText}
             </button>
             <button
               className="px-8 py-3 rounded-lg font-semibold border-2 border-white text-white transition-all hover:bg-white/10"

@@ -2,6 +2,7 @@ import { SiteSpec } from '@/types/site-spec';
 import { Layout, ShoppingBag, Briefcase, BookOpen, Palette, Users } from 'lucide-react';
 
 // Full SiteSpec definitions for each template
+// Note: Hero and CTA use ctaText/secondaryCtaText format for preview component compatibility
 export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
   saas: {
     name: 'SaaS Starter',
@@ -34,10 +35,8 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           content: {
             headline: 'Build faster with AI-powered tools',
             subheadline: 'Ship products 10x faster. Our platform automates your workflow so you can focus on what matters.',
-            ctas: [
-              { label: 'Start Free Trial', href: '#', variant: 'primary' },
-              { label: 'Watch Demo', href: '#', variant: 'outline' },
-            ],
+            ctaText: 'Start Free Trial',
+            secondaryCtaText: 'Watch Demo',
           },
         },
         {
@@ -48,10 +47,10 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
             title: 'Everything you need to scale',
             subtitle: 'Powerful features designed for modern teams',
             items: [
-              { title: 'AI Automation', description: 'Automate repetitive tasks with smart AI' },
-              { title: 'Real-time Analytics', description: 'Track metrics that matter instantly' },
-              { title: 'Team Collaboration', description: 'Work together seamlessly' },
-              { title: 'Enterprise Security', description: 'Bank-grade encryption for your data' },
+              { icon: 'Zap', title: 'AI Automation', description: 'Automate repetitive tasks with smart AI' },
+              { icon: 'Shield', title: 'Real-time Analytics', description: 'Track metrics that matter instantly' },
+              { icon: 'Users', title: 'Team Collaboration', description: 'Work together seamlessly' },
+              { icon: 'Star', title: 'Enterprise Security', description: 'Bank-grade encryption for your data' },
             ],
           },
         },
@@ -65,7 +64,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
             items: [
               { name: 'Starter', price: '$29', period: '/mo', features: ['5 team members', '10GB storage', 'Basic analytics'], ctaText: 'Get Started' },
               { name: 'Pro', price: '$79', period: '/mo', features: ['Unlimited members', '100GB storage', 'Advanced analytics', 'Priority support'], highlighted: true, ctaText: 'Start Free Trial' },
-              { name: 'Enterprise', price: 'Custom', features: ['Custom limits', 'Dedicated support', 'SLA guarantee', 'SSO'], ctaText: 'Contact Sales' },
+              { name: 'Enterprise', price: 'Custom', period: '', features: ['Custom limits', 'Dedicated support', 'SLA guarantee', 'SSO'], ctaText: 'Contact Sales' },
             ],
           },
         },
@@ -75,20 +74,23 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Testimonials',
           content: {
             title: 'Loved by teams worldwide',
+            subtitle: 'See what our customers have to say',
             items: [
               { name: 'Sarah Chen', role: 'CTO at TechCorp', quote: 'This tool cut our deployment time by 80%. Absolutely game-changing.', rating: 5 },
               { name: 'Mark Rivera', role: 'Founder, StartupX', quote: 'The best investment we made this year. ROI was immediate.', rating: 5 },
+              { name: 'Anna Kim', role: 'Product Lead', quote: 'Finally a tool that just works. No more hassle.', rating: 5 },
             ],
           },
         },
         {
           id: 'cta',
           type: 'cta',
-          label: 'CTA',
+          label: 'Ready to get started?',
+          description: 'Join thousands of teams already using our platform.',
           content: {
             headline: 'Ready to get started?',
             subheadline: 'Join thousands of teams already using our platform.',
-            ctas: [{ label: 'Start Your Free Trial', href: '#', variant: 'primary' }],
+            ctaText: 'Start Your Free Trial',
           },
         },
       ],
@@ -127,10 +129,8 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           content: {
             headline: 'Authentic flavors, unforgettable moments',
             subheadline: 'Experience fine dining crafted with passion. Fresh ingredients, bold flavors, warm hospitality.',
-            ctas: [
-              { label: 'View Menu', href: '#menu', variant: 'primary' },
-              { label: 'Book a Table', href: '#contact', variant: 'outline' },
-            ],
+            ctaText: 'View Menu',
+            secondaryCtaText: 'Book a Table',
           },
         },
         {
@@ -141,10 +141,10 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
             title: 'Our Signature Dishes',
             subtitle: 'Chef-curated selections made with locally sourced ingredients',
             items: [
-              { title: 'Wagyu Steak', description: 'Grade A5 Japanese wagyu, truffle butter, seasonal vegetables' },
-              { title: 'Lobster Risotto', description: 'Fresh Maine lobster, saffron arborio, parmesan foam' },
-              { title: 'Tasting Menu', description: '7-course chef\'s selection with wine pairings' },
-              { title: 'Seasonal Specials', description: 'Rotating dishes featuring the freshest ingredients' },
+              { icon: 'Star', title: 'Wagyu Steak', description: 'Grade A5 Japanese wagyu, truffle butter, seasonal vegetables' },
+              { icon: 'Star', title: 'Lobster Risotto', description: 'Fresh Maine lobster, saffron arborio, parmesan foam' },
+              { icon: 'Star', title: 'Tasting Menu', description: "7-course chef's selection with wine pairings" },
+              { icon: 'Star', title: 'Seasonal Specials', description: 'Rotating dishes featuring the freshest ingredients' },
             ],
           },
         },
@@ -154,9 +154,11 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Reviews',
           content: {
             title: 'What our guests say',
+            subtitle: 'Read reviews from our satisfied diners',
             items: [
               { name: 'James Miller', role: 'Food Critic', quote: 'An exceptional dining experience. Every dish was a masterpiece.', rating: 5 },
               { name: 'Emily Rose', role: 'Regular Guest', quote: 'My go-to spot for special occasions. Never disappoints.', rating: 5 },
+              { name: 'David Park', role: 'Food Blogger', quote: 'The best fine dining in the city. Period.', rating: 5 },
             ],
           },
         },
@@ -207,11 +209,9 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Hero',
           content: {
             headline: 'Designer & Developer',
-            subheadline: 'I craft digital experiences that blend creativity with functionality. Let\'s build something remarkable together.',
-            ctas: [
-              { label: 'View My Work', href: '#work', variant: 'primary' },
-              { label: 'Get in Touch', href: '#contact', variant: 'outline' },
-            ],
+            subheadline: "I craft digital experiences that blend creativity with functionality. Let's build something remarkable together.",
+            ctaText: 'View My Work',
+            secondaryCtaText: 'Get in Touch',
           },
         },
         {
@@ -219,6 +219,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           type: 'stats',
           label: 'Stats',
           content: {
+            title: 'By the Numbers',
             items: [
               { value: '8+', label: 'Years Experience' },
               { value: '50+', label: 'Projects Completed' },
@@ -235,21 +236,22 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
             title: 'What I Do',
             subtitle: 'Specializing in end-to-end digital product design',
             items: [
-              { title: 'Brand Identity', description: 'Logo design, visual systems, brand guidelines' },
-              { title: 'UI/UX Design', description: 'User research, wireframes, high-fidelity prototypes' },
-              { title: 'Web Development', description: 'React, Next.js, responsive web applications' },
-              { title: 'Motion Design', description: 'Animations, micro-interactions, video editing' },
+              { icon: 'Palette', title: 'Brand Identity', description: 'Logo design, visual systems, brand guidelines' },
+              { icon: 'Target', title: 'UI/UX Design', description: 'User research, wireframes, high-fidelity prototypes' },
+              { icon: 'Code', title: 'Web Development', description: 'React, Next.js, responsive web applications' },
+              { icon: 'Zap', title: 'Motion Design', description: 'Animations, micro-interactions, video editing' },
             ],
           },
         },
         {
           id: 'cta',
           type: 'cta',
-          label: 'CTA',
+          label: "Let's work together",
+          description: "Have a project in mind? I'd love to hear about it.",
           content: {
-            headline: 'Let\'s work together',
-            subheadline: 'Have a project in mind? I\'d love to hear about it.',
-            ctas: [{ label: 'Start a Project', href: '#contact', variant: 'primary' }],
+            headline: "Let's work together",
+            subheadline: "Have a project in mind? I'd love to hear about it.",
+            ctaText: 'Start a Project',
           },
         },
         {
@@ -258,7 +260,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Contact',
           content: {
             title: 'Get in Touch',
-            subtitle: 'Drop me a line and let\'s create something amazing',
+            subtitle: "Drop me a line and let's create something amazing",
             email: 'hello@portfolio.com',
           },
         },
@@ -299,10 +301,8 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           content: {
             headline: 'Professional services you can trust',
             subheadline: 'We deliver exceptional results with a commitment to quality. Get a free consultation today.',
-            ctas: [
-              { label: 'Get Free Quote', href: '#contact', variant: 'primary' },
-              { label: 'Our Services', href: '#services', variant: 'outline' },
-            ],
+            ctaText: 'Get Free Quote',
+            secondaryCtaText: 'Our Services',
           },
         },
         {
@@ -310,6 +310,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           type: 'stats',
           label: 'Stats',
           content: {
+            title: 'Why Choose Us',
             items: [
               { value: '15+', label: 'Years in Business' },
               { value: '1000+', label: 'Projects Done' },
@@ -326,10 +327,10 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
             title: 'Our Services',
             subtitle: 'Comprehensive solutions tailored to your needs',
             items: [
-              { title: 'Consulting', description: 'Expert advice to optimize your operations' },
-              { title: 'Implementation', description: 'End-to-end project delivery and support' },
-              { title: 'Maintenance', description: 'Ongoing care to keep everything running smoothly' },
-              { title: 'Training', description: 'Empower your team with the skills they need' },
+              { icon: 'Briefcase', title: 'Consulting', description: 'Expert advice to optimize your operations' },
+              { icon: 'Wrench', title: 'Implementation', description: 'End-to-end project delivery and support' },
+              { icon: 'Clock', title: 'Maintenance', description: 'Ongoing care to keep everything running smoothly' },
+              { icon: 'Users', title: 'Training', description: 'Empower your team with the skills they need' },
             ],
           },
         },
@@ -339,9 +340,11 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Reviews',
           content: {
             title: 'What clients say',
+            subtitle: 'Trusted by businesses across the country',
             items: [
               { name: 'Robert Johnson', role: 'CEO, TechStart', quote: 'Incredibly professional team. They delivered beyond our expectations.', rating: 5 },
               { name: 'Lisa Wang', role: 'Operations Director', quote: 'Reliable, efficient, and always responsive. Highly recommend.', rating: 5 },
+              { name: 'Tom Bradley', role: 'Small Business Owner', quote: 'The best service provider we have worked with.', rating: 5 },
             ],
           },
         },
@@ -351,10 +354,12 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'FAQ',
           content: {
             title: 'Frequently Asked Questions',
+            subtitle: 'Get answers to common questions',
             items: [
               { question: 'How do I get started?', answer: 'Simply fill out our contact form or call us for a free consultation.' },
               { question: 'What areas do you serve?', answer: 'We serve clients nationwide with both on-site and remote services.' },
               { question: 'Do you offer warranties?', answer: 'Yes, all our work comes with a satisfaction guarantee.' },
+              { question: 'What are your business hours?', answer: 'We are available Monday to Friday, 9am to 6pm, with 24/7 emergency support.' },
             ],
           },
         },
@@ -364,7 +369,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Contact',
           content: {
             title: 'Request a Free Quote',
-            subtitle: 'Tell us about your project and we\'ll get back to you within 24 hours',
+            subtitle: "Tell us about your project and we'll get back to you within 24 hours",
             phone: '(555) 987-6543',
             email: 'info@servicecompany.com',
             address: '456 Business Avenue, Suite 100',
@@ -406,10 +411,8 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           content: {
             headline: 'New arrivals are here',
             subheadline: 'Discover the latest trends. Free shipping on orders over $50. Shop the collection now.',
-            ctas: [
-              { label: 'Shop Now', href: '#shop', variant: 'primary' },
-              { label: 'View Collections', href: '#collections', variant: 'outline' },
-            ],
+            ctaText: 'Shop Now',
+            secondaryCtaText: 'View Collections',
           },
         },
         {
@@ -418,12 +421,12 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Collections',
           content: {
             title: 'Shop by Category',
-            subtitle: 'Find exactly what you\'re looking for',
+            subtitle: "Find exactly what you're looking for",
             items: [
-              { title: 'New Arrivals', description: 'Fresh styles just dropped' },
-              { title: 'Best Sellers', description: 'Customer favorites' },
-              { title: 'Sale Items', description: 'Up to 50% off' },
-              { title: 'Limited Edition', description: 'Exclusive pieces' },
+              { icon: 'Star', title: 'New Arrivals', description: 'Fresh styles just dropped' },
+              { icon: 'Heart', title: 'Best Sellers', description: 'Customer favorites' },
+              { icon: 'Zap', title: 'Sale Items', description: 'Up to 50% off' },
+              { icon: 'Award', title: 'Limited Edition', description: 'Exclusive pieces' },
             ],
           },
         },
@@ -432,6 +435,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           type: 'stats',
           label: 'Stats',
           content: {
+            title: 'Shop With Confidence',
             items: [
               { value: '50K+', label: 'Happy Customers' },
               { value: '500+', label: 'Products' },
@@ -446,20 +450,23 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Reviews',
           content: {
             title: 'Customer Reviews',
+            subtitle: 'See what our customers are saying',
             items: [
               { name: 'Jessica T.', role: 'Verified Buyer', quote: 'Amazing quality and fast shipping. Will definitely order again!', rating: 5 },
               { name: 'Michael K.', role: 'Verified Buyer', quote: 'Love my purchase! The fit is perfect and the material is premium.', rating: 5 },
+              { name: 'Sarah M.', role: 'Verified Buyer', quote: 'Great customer service and beautiful products.', rating: 5 },
             ],
           },
         },
         {
           id: 'cta',
           type: 'cta',
-          label: 'CTA',
+          label: 'Join our newsletter',
+          description: 'Get 15% off your first order plus exclusive access to new drops.',
           content: {
             headline: 'Join our newsletter',
             subheadline: 'Get 15% off your first order plus exclusive access to new drops.',
-            ctas: [{ label: 'Subscribe Now', href: '#', variant: 'primary' }],
+            ctaText: 'Subscribe Now',
           },
         },
       ],
@@ -498,10 +505,8 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           content: {
             headline: 'Ideas that inspire action',
             subheadline: 'Thoughtful perspectives on technology, design, and building products that matter. Subscribe for weekly insights.',
-            ctas: [
-              { label: 'Read Latest', href: '#articles', variant: 'primary' },
-              { label: 'Subscribe Free', href: '#subscribe', variant: 'outline' },
-            ],
+            ctaText: 'Read Latest',
+            secondaryCtaText: 'Subscribe Free',
           },
         },
         {
@@ -512,10 +517,10 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
             title: 'Explore Topics',
             subtitle: 'Deep dives into the subjects that shape our industry',
             items: [
-              { title: 'Product Strategy', description: 'Building products users love' },
-              { title: 'Design Systems', description: 'Scalable design at any size' },
-              { title: 'Engineering', description: 'Technical deep dives and tutorials' },
-              { title: 'Leadership', description: 'Growing teams and culture' },
+              { icon: 'Target', title: 'Product Strategy', description: 'Building products users love' },
+              { icon: 'Palette', title: 'Design Systems', description: 'Scalable design at any size' },
+              { icon: 'Code', title: 'Engineering', description: 'Technical deep dives and tutorials' },
+              { icon: 'Users', title: 'Leadership', description: 'Growing teams and culture' },
             ],
           },
         },
@@ -524,6 +529,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           type: 'stats',
           label: 'Stats',
           content: {
+            title: 'Growing Community',
             items: [
               { value: '200+', label: 'Articles' },
               { value: '50K', label: 'Subscribers' },
@@ -538,20 +544,23 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
           label: 'Reader Feedback',
           content: {
             title: 'What readers say',
+            subtitle: 'Join our growing community of readers',
             items: [
               { name: 'David Park', role: 'Product Manager', quote: 'The most actionable content I read. Every article teaches something new.', rating: 5 },
               { name: 'Anna Schmidt', role: 'Designer', quote: 'A must-read newsletter. Quality over quantity, always.', rating: 5 },
+              { name: 'Chris Lee', role: 'Engineer', quote: 'Deep technical content without the fluff.', rating: 5 },
             ],
           },
         },
         {
           id: 'cta',
           type: 'cta',
-          label: 'Subscribe',
+          label: 'Never miss an update',
+          description: 'Join 50,000+ readers getting weekly insights straight to their inbox.',
           content: {
             headline: 'Never miss an update',
             subheadline: 'Join 50,000+ readers getting weekly insights straight to their inbox.',
-            ctas: [{ label: 'Subscribe for Free', href: '#', variant: 'primary' }],
+            ctaText: 'Subscribe for Free',
           },
         },
       ],
