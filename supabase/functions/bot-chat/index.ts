@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,10 +7,6 @@ const corsHeaders = {
 
 // URL detection regex
 const URL_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi;
-
-// Color extraction regex patterns
-const HEX_COLOR_REGEX = /#([0-9A-Fa-f]{3,8})\b/g;
-const RGB_COLOR_REGEX = /rgba?\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/g;
 
 // Extract base URL for resolving relative paths
 function getBaseUrl(url: string): string {
@@ -38,83 +33,86 @@ function resolveUrl(relativeUrl: string, baseUrl: string): string {
   return `${baseUrl}/${relativeUrl}`;
 }
 
-// Fetch and extract content from a URL
-async function fetchUrlContent(url: string): Promise<string | null> {
+// Call the dedicated URL extractor function for deep extraction
+async function extractFromUrl(url: string): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
-    console.log("Fetching URL:", url);
-    const response = await fetch(url, {
+    console.log("Calling URL extractor for:", url);
+    
+    // Call our dedicated url-extractor edge function
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_ANON_KEY");
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/url-extractor`, {
+      method: "POST",
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; SecretBuilder/1.0)",
-        "Accept": "text/html,application/xhtml+xml",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseKey}`,
       },
+      body: JSON.stringify({ url }),
     });
     
     if (!response.ok) {
-      console.log("Failed to fetch URL:", response.status);
-      return null;
+      console.log("URL extractor failed:", response.status);
+      return { success: false, error: `Extraction failed: ${response.status}` };
     }
     
-    const html = await response.text();
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    if (!doc) return null;
-    
-    const baseUrl = getBaseUrl(url);
-    
-    // Extract useful content
-    const title = doc.querySelector("title")?.textContent || "";
-    const description = doc.querySelector('meta[name="description"]')?.getAttribute("content") || "";
-    const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute("content") || "";
-    const ogDescription = doc.querySelector('meta[property="og:description"]')?.getAttribute("content") || "";
-    
-    // Extract headings
-    const h1s = Array.from(doc.querySelectorAll("h1")).map((el) => el.textContent).filter(Boolean).slice(0, 3);
-    const h2s = Array.from(doc.querySelectorAll("h2")).map((el) => el.textContent).filter(Boolean).slice(0, 5);
-    
-    // Extract nav/menu items
-    const navItems = Array.from(doc.querySelectorAll("nav a, header a")).map((el) => el.textContent).filter(Boolean).slice(0, 10);
-    
-    // Extract main text content
-    const paragraphs = Array.from(doc.querySelectorAll("p")).map((el) => el.textContent).filter((t) => t && t.length > 30).slice(0, 5);
-    
-    // Extract colors from CSS
-    const colors = new Set<string>();
-    const styleTags = Array.from(doc.querySelectorAll("style"));
-    for (const styleTag of styleTags) {
-      const cssText = (styleTag as unknown as { textContent: string | null }).textContent || "";
-      const hexMatches = cssText.match(HEX_COLOR_REGEX) || [];
-      hexMatches.forEach((c: string) => {
-        if (c.toLowerCase() !== "#fff" && c.toLowerCase() !== "#ffffff" && 
-            c.toLowerCase() !== "#000" && c.toLowerCase() !== "#000000") {
-          colors.add(c);
-        }
-      });
-    }
-    
-    const colorArray = Array.from(colors).slice(0, 6);
-    
-    const content = `
-SCRAPED WEBSITE INFO FROM: ${url}
-=================================
-Title: ${title || ogTitle}
-Description: ${description || ogDescription}
-
-Main Headings: ${h1s.join(", ")}
-Section Headings: ${h2s.join(", ")}
-Navigation Items: ${navItems.join(", ")}
-
-Key Content:
-${paragraphs.slice(0, 3).join("\n")}
-
-Brand Colors: ${colorArray.length > 0 ? colorArray.join(", ") : "Not detected"}
-=================================
-`;
-    
-    console.log("Successfully scraped URL content");
-    return content;
+    const data = await response.json();
+    console.log("URL extraction complete:", data.success);
+    return { success: data.success, data };
   } catch (error) {
-    console.error("Error fetching URL:", error);
-    return null;
+    console.error("Error calling URL extractor:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
+}
+
+// Format extracted data for the system prompt
+function formatExtractionForPrompt(extraction: any): string {
+  if (!extraction || !extraction.success) {
+    return "";
+  }
+  
+  const { brandKit, content, siteMap, businessModel, suggestedLayout } = extraction;
+  
+  return `
+====================================
+URL EXTRACTION RESULTS (USE THIS DATA)
+====================================
+
+**BUSINESS IDENTIFICATION:**
+- Name: ${content.businessName}
+- Tagline: ${content.tagline}
+- Industry Model: ${businessModel}
+- Suggested Layout: ${suggestedLayout}
+
+**BRAND KIT (APPLY THESE):**
+- Primary Color: ${brandKit.colors.primary}
+- Secondary Color: ${brandKit.colors.secondary}
+- Accent Color: ${brandKit.colors.accent}
+- All Detected Colors: ${brandKit.colors.all.join(", ")}
+- Heading Font: ${brandKit.fonts.heading}
+- Body Font: ${brandKit.fonts.body}
+- Logo: ${brandKit.logo || "Not found"}
+
+**CONTENT TO REUSE:**
+- Headlines: ${content.headlines.slice(0, 5).join(" | ")}
+- Description: ${content.description}
+- Features/Services: ${content.features.slice(0, 6).join(", ")}
+- CTAs Found: ${content.ctaTexts.join(", ")}
+- Contact Email: ${content.contact?.email || "N/A"}
+- Contact Phone: ${content.contact?.phone || "N/A"}
+
+**NAVIGATION STRUCTURE:**
+${siteMap.navigation.map((n: any) => `- ${n.label}`).join("\n")}
+
+**DETECTED SECTIONS:**
+${siteMap.pages[0]?.sections.map((s: any) => `- ${s.type}: ${s.headline || ""}`).join("\n")}
+
+**IMAGES FOUND:** ${brandKit.images.length} images available
+
+====================================
+INSTRUCTIONS: Use the above brand kit colors, fonts, and content to generate a site that matches this business. Apply the suggested layout structure (${suggestedLayout}) and business model (${businessModel}).
+====================================
+`;
 }
 
 // Rate limiting
@@ -462,28 +460,25 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Check for URLs in the most recent user message
+    // Check for URLs in the most recent user message - use deep extraction
     const lastUserMessage = [...messages].reverse().find((m: any) => m.role === "user");
     let urlContext = "";
     
     if (lastUserMessage?.content) {
       const urls = lastUserMessage.content.match(URL_REGEX);
       if (urls && urls.length > 0) {
-        console.log("Found URLs in message:", urls);
-        const scrapedContent = await fetchUrlContent(urls[0]);
-        if (scrapedContent) urlContext = scrapedContent;
+        console.log("Found URLs in message, using deep extractor:", urls);
+        const extraction = await extractFromUrl(urls[0]);
+        if (extraction.success && extraction.data) {
+          urlContext = formatExtractionForPrompt(extraction.data);
+        }
       }
     }
 
     let enhancedPrompt = SYSTEM_PROMPT;
     
     if (urlContext) {
-      enhancedPrompt += `\n\n====================================
-REFERENCE WEBSITE CONTENT
-====================================
-${urlContext}
-
-Use this information to match the business name, services, and style.`;
+      enhancedPrompt += `\n${urlContext}`;
     }
     
     if (context?.businessName || context?.industry) {
