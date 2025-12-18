@@ -34,6 +34,8 @@ import { AnimatedSection } from './AnimatedSection';
 import { BentoLayout, BentoPillNav } from './layouts/BentoLayout';
 import { SplitScreenLayout, SplitSidebarNav, SplitHero } from './layouts/SplitScreenLayout';
 import { LayeredLayout, LayeredNav, LayeredHero, LayeredContentSection } from './layouts/LayeredLayout';
+import { HorizontalLayout, HorizontalNav, HorizontalHero, HorizontalScrollSection, HorizontalCard } from './layouts/HorizontalLayout';
+import { ScrollAnimation, StaggerContainer } from './animations/ScrollAnimations';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
@@ -217,6 +219,7 @@ export function SiteRenderer({
   const useBentoLayout = layoutStructure === 'bento';
   const useSplitScreenLayout = layoutStructure === 'split-screen';
   const useLayeredLayout = layoutStructure === 'layered';
+  const useHorizontalLayout = layoutStructure === 'horizontal';
 
   // Render Bento Layout
   const renderBentoLayout = () => {
@@ -533,6 +536,119 @@ export function SiteRenderer({
     );
   };
 
+  // Render Horizontal Flow Layout (Gallery/Showcase)
+  const renderHorizontalLayout = () => {
+    const sections = currentPage?.sections || [];
+    const heroSection = sections.find(s => s.type === 'hero');
+    const otherSections = sections.filter(s => s.type !== 'hero');
+    const heroContent = heroSection?.content as any;
+    const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
+    
+    return (
+      <div 
+        className="min-h-screen"
+        style={{ 
+          backgroundColor: theme.backgroundColor,
+          fontFamily: theme.fontBody,
+        }}
+      >
+        {/* Top Navigation */}
+        <HorizontalNav
+          siteName={siteSpec.name}
+          navigation={navigation || []}
+          theme={theme}
+          currentIndex={currentScrollIndex}
+          totalSections={otherSections.length + 1}
+        />
+
+        {/* Main Content */}
+        <div className="pt-20">
+          {/* Hero Horizontal Section */}
+          <section className="mb-8">
+            <div className="px-6 lg:px-12 mb-4">
+              <h2 
+                className="text-xs uppercase tracking-[0.3em] opacity-50"
+                style={{ color: theme.darkMode ? '#fff' : '#000' }}
+              >
+                Showcase
+              </h2>
+            </div>
+            
+            <HorizontalScrollSection theme={theme} onScrollChange={setCurrentScrollIndex}>
+              {/* Hero Card */}
+              <HorizontalCard theme={theme} isHero>
+                <HorizontalHero
+                  headline={heroContent?.headline || siteSpec.name}
+                  subheadline={heroContent?.subheadline || 'Creating extraordinary experiences'}
+                  theme={theme}
+                  backgroundImage={heroContent?.backgroundImage}
+                />
+              </HorizontalCard>
+              
+              {/* Feature cards in horizontal scroll */}
+              {otherSections.slice(0, 4).map((section, index) => (
+                <HorizontalCard key={section.id} theme={theme}>
+                  <div className="p-6 lg:p-8 h-full flex flex-col">
+                    <span 
+                      className="text-xs uppercase tracking-wider opacity-50 mb-2"
+                      style={{ color: theme.darkMode ? '#fff' : '#000' }}
+                    >
+                      0{index + 1}
+                    </span>
+                    <ScrollAnimation animation="fade-up" delay={index * 100}>
+                      {renderSection(section, false)}
+                    </ScrollAnimation>
+                  </div>
+                </HorizontalCard>
+              ))}
+            </HorizontalScrollSection>
+          </section>
+
+          {/* Remaining content in vertical flow with animations */}
+          {otherSections.length > 4 && (
+            <section className="px-6 lg:px-12 py-12">
+              <StaggerContainer staggerDelay={150} animation="fade-up">
+                {otherSections.slice(4).map((section) => (
+                  <div key={section.id} className="mb-12">
+                    {renderSection(section, false)}
+                  </div>
+                ))}
+              </StaggerContainer>
+            </section>
+          )}
+
+          {/* Footer */}
+          <footer 
+            className="py-16 px-6 lg:px-12"
+            style={{ 
+              backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
+              borderTop: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
+            }}
+          >
+            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-8">
+              <span 
+                className="text-xl font-bold"
+                style={{ 
+                  fontFamily: theme.fontHeading,
+                  color: theme.primaryColor 
+                }}
+              >
+                {siteSpec.name}
+              </span>
+              
+              <p 
+                className="text-xs"
+                style={{ color: theme.darkMode ? '#4b5563' : '#9ca3af' }}
+              >
+                {footer?.copyright || `© ${new Date().getFullYear()} ${siteSpec.name}. All rights reserved.`}
+              </p>
+            </div>
+          </footer>
+        </div>
+      </div>
+    );
+  };
+
   // Render Standard Layout (default)
   const renderStandardLayout = () => (
     <div 
@@ -694,7 +810,9 @@ export function SiteRenderer({
               ? renderSplitScreenLayout() 
               : useLayeredLayout
                 ? renderLayeredLayout()
-                : renderStandardLayout()
+                : useHorizontalLayout
+                  ? renderHorizontalLayout()
+                  : renderStandardLayout()
           }
         </div>
       </div>
