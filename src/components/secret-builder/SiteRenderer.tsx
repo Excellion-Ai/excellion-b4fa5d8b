@@ -33,6 +33,7 @@ import { DraggableSection } from './DraggableSection';
 import { AnimatedSection } from './AnimatedSection';
 import { BentoLayout, BentoPillNav } from './layouts/BentoLayout';
 import { SplitScreenLayout, SplitSidebarNav, SplitHero } from './layouts/SplitScreenLayout';
+import { LayeredLayout, LayeredNav, LayeredHero, LayeredContentSection } from './layouts/LayeredLayout';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
@@ -215,6 +216,7 @@ export function SiteRenderer({
   // Determine layout type
   const useBentoLayout = layoutStructure === 'bento';
   const useSplitScreenLayout = layoutStructure === 'split-screen';
+  const useLayeredLayout = layoutStructure === 'layered';
 
   // Render Bento Layout
   const renderBentoLayout = () => {
@@ -432,6 +434,105 @@ export function SiteRenderer({
     );
   };
 
+  // Render Layered Z-Index Layout (Creative/Agency)
+  const renderLayeredLayout = () => {
+    const sections = currentPage?.sections || [];
+    const heroSection = sections.find(s => s.type === 'hero');
+    const otherSections = sections.filter(s => s.type !== 'hero');
+    const heroContent = heroSection?.content as any;
+    
+    return (
+      <div 
+        className="min-h-screen relative"
+        style={{ 
+          backgroundColor: theme.backgroundColor,
+          fontFamily: theme.fontBody,
+        }}
+      >
+        {/* Floating Navigation */}
+        <LayeredNav
+          siteName={siteSpec.name}
+          navigation={navigation || []}
+          theme={theme}
+        />
+
+        {/* Layered Hero */}
+        <LayeredHero
+          headline={heroContent?.headline || siteSpec.name}
+          subheadline={heroContent?.subheadline || 'Creating extraordinary digital experiences'}
+          theme={theme}
+          backgroundImage={heroContent?.backgroundImage}
+        />
+
+        {/* Overlapping Content Sections */}
+        <div className="relative pb-20">
+          {isEditable && onReorderSections ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext 
+                items={otherSections.map(s => s.id)} 
+                strategy={verticalListSortingStrategy}
+              >
+                {otherSections.map((section, index) => (
+                  <LayeredContentSection 
+                    key={section.id} 
+                    theme={theme}
+                    index={index}
+                  >
+                    {renderSection(section, false)}
+                  </LayeredContentSection>
+                ))}
+              </SortableContext>
+            </DndContext>
+          ) : (
+            otherSections.map((section, index) => (
+              <LayeredContentSection 
+                key={section.id} 
+                theme={theme}
+                index={index}
+              >
+                {renderSection(section, false)}
+              </LayeredContentSection>
+            ))
+          )}
+        </div>
+
+        {/* Footer with overlap */}
+        <footer 
+          className="relative z-50 py-16 px-8"
+          style={{ 
+            backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
+            marginTop: '-3rem',
+          }}
+        >
+          <div className="max-w-6xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-8">
+            <div>
+              <span 
+                className="text-2xl font-bold"
+                style={{ 
+                  fontFamily: theme.fontHeading,
+                  color: theme.primaryColor 
+                }}
+              >
+                {siteSpec.name}
+              </span>
+            </div>
+            
+            <p 
+              className="text-xs"
+              style={{ color: theme.darkMode ? '#4b5563' : '#9ca3af' }}
+            >
+              {footer?.copyright || `© ${new Date().getFullYear()} ${siteSpec.name}. All rights reserved.`}
+            </p>
+          </div>
+        </footer>
+      </div>
+    );
+  };
+
   // Render Standard Layout (default)
   const renderStandardLayout = () => (
     <div 
@@ -591,7 +692,9 @@ export function SiteRenderer({
             ? renderBentoLayout() 
             : useSplitScreenLayout 
               ? renderSplitScreenLayout() 
-              : renderStandardLayout()
+              : useLayeredLayout
+                ? renderLayeredLayout()
+                : renderStandardLayout()
           }
         </div>
       </div>
