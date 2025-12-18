@@ -23,7 +23,7 @@ export function LayeredNav({ siteName, navigation, theme }: LayeredNavProps) {
     <>
       {/* Top-left brand */}
       <div 
-        className="fixed top-6 left-6 z-50"
+        className="absolute top-6 left-6 z-40"
       >
         <span 
           className="text-xl font-bold tracking-tight"
@@ -38,7 +38,7 @@ export function LayeredNav({ siteName, navigation, theme }: LayeredNavProps) {
 
       {/* Top-right navigation */}
       <nav 
-        className="fixed top-6 right-6 z-50 flex items-center gap-6"
+        className="absolute top-6 right-6 z-40 flex items-center gap-6"
       >
         {navigation?.slice(0, 4).map((item, index) => (
           <a
@@ -272,7 +272,7 @@ export function LayeredLayout({ children, theme, sections, siteName, navigation 
 
       {/* Footer with overlap */}
       <footer 
-        className="relative z-50 py-16 px-8"
+        className="relative z-10 py-16 px-8"
         style={{ 
           backgroundColor: isDark ? '#0a0a0a' : '#f9fafb',
           marginTop: '-3rem',

@@ -335,7 +335,7 @@ export function SiteRenderer({
     
     return (
       <div 
-        className="min-h-screen flex"
+        className="min-h-screen flex relative"
         style={{ 
           backgroundColor: theme.backgroundColor,
           fontFamily: theme.fontBody,
@@ -505,7 +505,7 @@ export function SiteRenderer({
 
         {/* Footer with overlap */}
         <footer 
-          className="relative z-50 py-16 px-8"
+          className="relative z-10 py-16 px-8"
           style={{ 
             backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
             marginTop: '-3rem',
@@ -545,7 +545,7 @@ export function SiteRenderer({
     
     return (
       <div 
-        className="min-h-screen"
+        className="min-h-screen relative"
         style={{ 
           backgroundColor: theme.backgroundColor,
           fontFamily: theme.fontBody,
@@ -801,7 +801,7 @@ export function SiteRenderer({
       {/* Preview content */}
       <div className="flex-1 overflow-auto bg-[#1a1a1a] flex justify-center p-4">
         <div 
-          className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300`}
+          className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300 relative`}
         >
           {useBentoLayout 
             ? renderBentoLayout() 

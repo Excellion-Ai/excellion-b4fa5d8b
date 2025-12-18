@@ -24,7 +24,7 @@ export function HorizontalNav({ siteName, navigation, theme, currentIndex, total
   
   return (
     <nav 
-      className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-12 py-4 flex items-center justify-between"
+      className="absolute top-0 left-0 right-0 z-40 px-6 lg:px-12 py-4 flex items-center justify-between"
       style={{ 
         backgroundColor: `${theme.backgroundColor}e6`,
         backdropFilter: 'blur(12px)',
@@ -275,7 +275,7 @@ export function HorizontalLayout({ children, theme, sections, siteName, navigati
   
   return (
     <div 
-      className="min-h-screen"
+      className="min-h-screen relative"
       style={{ 
         backgroundColor: theme.backgroundColor,
         fontFamily: theme.fontBody,
