@@ -196,32 +196,6 @@ export function PageManager({
         );
       })}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-7 w-7">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add a Page</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2">
-              {PAGE_TEMPLATES.map((template) => (
-                <button
-                  key={template.path}
-                  onClick={() => handleAddPage(template)}
-                  className="flex items-center gap-2 p-3 rounded-lg border border-border bg-card hover:bg-accent hover:border-primary/50 transition-colors text-left"
-                >
-                  {PAGE_ICONS[template.path] || <FileText className="h-4 w-4" />}
-                  <span className="text-sm font-medium">{template.title}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
