@@ -8,6 +8,7 @@ import { lazy, Suspense } from "react";
 const WebBuilderHome = lazy(() => import("./pages/WebBuilderHome"));
 const BuilderPricing = lazy(() => import("./pages/BuilderPricing"));
 const FAQ = lazy(() => import("./pages/FAQ"));
+const BuilderFAQ = lazy(() => import("./pages/BuilderFAQ"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Legal = lazy(() => import("./pages/Legal"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -45,6 +46,7 @@ const App = () => (
         <Route path="/" element={<WebBuilderHome />} />
         <Route path="/pricing" element={<BuilderPricing />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/builder-faq" element={<BuilderFAQ />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/legal" element={<Legal />} />
         <Route path="/auth" element={<Auth />} />
