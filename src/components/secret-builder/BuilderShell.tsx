@@ -21,6 +21,7 @@ import { CustomDomainsPanel } from './CustomDomainsPanel';
 import { DiffViewer } from './DiffViewer';
 import { BookmarksPanel } from './BookmarksPanel';
 import { PWAExport } from './PWAExport';
+import { KnowledgePanel } from './KnowledgePanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -350,7 +351,7 @@ export function BuilderShell() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: chatMessages, modelMode }),
+        body: JSON.stringify({ messages: chatMessages, modelMode, projectId }),
       });
 
       if (!response.ok) {
@@ -887,6 +888,9 @@ export function BuilderShell() {
             
             {/* PWA Export */}
             <PWAExport siteSpec={siteSpec} projectName={projectName} />
+            
+            {/* Knowledge Base */}
+            <KnowledgePanel projectId={projectId} />
             
             <Button
               variant="outline"

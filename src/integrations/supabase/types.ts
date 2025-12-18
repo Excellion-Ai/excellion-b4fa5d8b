@@ -246,6 +246,50 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_base: {
+        Row: {
+          content: string
+          created_at: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          name: string
+          project_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          name: string
+          project_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          name?: string
+          project_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_base_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "builder_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_requests: {
         Row: {
           additional_notes: string | null
