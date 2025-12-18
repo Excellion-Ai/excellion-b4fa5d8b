@@ -1,47 +1,13 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import pricingBackgroundVideo from "@/assets/pricing-background.mp4";
+
 
 const Pricing = () => {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.playbackRate = 0.75;
-
-    const playVideo = async () => {
-      try {
-        await video.play();
-      } catch (error) {
-        console.log("Video autoplay prevented:", error);
-      }
-    };
-
-    if (video.readyState >= 3) {
-      playVideo();
-    } else {
-      video.addEventListener('loadeddata', playVideo, { once: true });
-    }
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden && video.paused) {
-        playVideo();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
 
   const plans = [
     {
@@ -117,30 +83,9 @@ const Pricing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Video Background */}
-      <div className="fixed inset-0 z-0">
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          disablePictureInPicture
-          className="absolute inset-0 w-full h-full object-cover will-change-transform"
-          style={{ 
-            transform: 'translateZ(0)',
-            filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
-          }}
-          onError={(e) => console.error("Video error:", e)}
-          src={pricingBackgroundVideo}
-        />
-      </div>
-
-      <div className="relative z-10">
-        <Navigation />
-        <main className="container mx-auto px-6 py-20">
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <main className="container mx-auto px-6 py-20">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
@@ -237,7 +182,6 @@ const Pricing = () => {
         </div>
       </main>
       <Footer />
-      </div>
     </div>
   );
 };
