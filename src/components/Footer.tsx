@@ -27,11 +27,6 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#examples" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  Examples
-                </a>
-              </li>
-              <li>
                 <Link to="/pricing" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                   Pricing
                 </Link>
