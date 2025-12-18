@@ -345,14 +345,14 @@ const WebBuilderHome = () => {
             Sites started from a short chat
           </h2>
           <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Real examples of what Excellion AI can build
+            Examples of what Excellion AI can build
           </p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {exampleSites.map((site, index) => (
               <div
                 key={index}
-                className="group rounded-xl border border-border bg-card overflow-hidden hover:border-primary/50 transition-all"
+                className="rounded-xl border border-border bg-card overflow-hidden"
               >
                 <div className={`aspect-video bg-gradient-to-br ${site.gradient} flex items-center justify-center`}>
                   <site.icon className="w-12 h-12 text-foreground/30" />
