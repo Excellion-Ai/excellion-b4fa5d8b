@@ -453,11 +453,57 @@ serve(async (req) => {
       );
     }
 
-    const { messages, context, modelMode } = await req.json();
+    const { messages, context, modelMode, projectId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Fetch knowledge base entries for this project
+    let knowledgeContext = "";
+    if (projectId && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        console.log("Fetching knowledge base for project:", projectId);
+        const kbResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/knowledge_base?project_id=eq.${projectId}&select=name,content`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+          }
+        );
+        
+        if (kbResponse.ok) {
+          const kbEntries = await kbResponse.json();
+          if (kbEntries && kbEntries.length > 0) {
+            console.log(`Found ${kbEntries.length} knowledge base entries`);
+            knowledgeContext = `
+====================================
+## PROJECT KNOWLEDGE BASE
+====================================
+
+The user has provided the following brand guidelines, documentation, and reference materials. 
+IMPORTANT: Use this knowledge to inform your design decisions, copy, and overall approach.
+
+${kbEntries.map((entry: { name: string; content: string }) => `
+### ${entry.name}
+${entry.content}
+`).join('\n---\n')}
+
+====================================
+END OF KNOWLEDGE BASE
+====================================
+`;
+          }
+        }
+      } catch (kbError) {
+        console.error("Error fetching knowledge base:", kbError);
+        // Continue without knowledge base
+      }
     }
 
     // Check for URLs in the most recent user message - use deep extraction
@@ -476,6 +522,11 @@ serve(async (req) => {
     }
 
     let enhancedPrompt = SYSTEM_PROMPT;
+    
+    // Add knowledge base context first (higher priority)
+    if (knowledgeContext) {
+      enhancedPrompt += `\n${knowledgeContext}`;
+    }
     
     if (urlContext) {
       enhancedPrompt += `\n${urlContext}`;
