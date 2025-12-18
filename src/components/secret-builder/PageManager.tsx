@@ -1,8 +1,6 @@
-import { useState } from 'react';
-import { Plus, X, FileText, Home, Info, Mail, Briefcase, Settings } from 'lucide-react';
+
+import { X, FileText, Home, Info, Mail, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SitePage, SiteSection } from '@/types/site-spec';
 
 const PAGE_ICONS: Record<string, React.ReactNode> = {
@@ -138,32 +136,6 @@ export function PageManager({
   onRemovePage,
   onRenamePage,
 }: PageManagerProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newPageTitle, setNewPageTitle] = useState('');
-
-  const handleAddPage = (template: typeof PAGE_TEMPLATES[0]) => {
-    // Generate unique path if needed
-    let path = template.path;
-    let counter = 1;
-    while (pages.some(p => p.path === path)) {
-      path = `${template.path}-${counter}`;
-      counter++;
-    }
-
-    const newPage: SitePage = {
-      ...template,
-      path,
-      title: template.title === 'Blank Page' && newPageTitle ? newPageTitle : template.title,
-      sections: template.sections.map(s => ({
-        ...s,
-        id: `${s.id}-${Date.now()}`,
-      })),
-    };
-
-    onAddPage(newPage);
-    setIsDialogOpen(false);
-    setNewPageTitle('');
-  };
 
   return (
     <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
