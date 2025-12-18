@@ -1,7 +1,5 @@
 import { SiteSection, SiteTheme, HeroContent } from '@/types/app-spec';
 import { EditableText } from '../EditableText';
-import { ImageUpload } from '../ImageUpload';
-import { Image as ImageIcon } from 'lucide-react';
 
 interface HeroSectionProps {
   section: SiteSection;
@@ -38,20 +36,6 @@ export function HeroSection({ section, theme, siteName, onUpdateContent }: HeroS
       className="min-h-[70vh] flex items-center justify-center px-6 py-16 relative"
       style={backgroundStyle}
     >
-      {/* Image upload button for editable mode */}
-      {onUpdateContent && (
-        <div className="absolute top-4 right-4 z-10">
-          <div className="bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-border">
-            <ImageUpload
-              currentUrl={backgroundImage}
-              onUpload={(url) => onUpdateContent('backgroundImage', url)}
-              onRemove={() => onUpdateContent('backgroundImage', '')}
-              aspectRatio="banner"
-              className="w-48"
-            />
-          </div>
-        </div>
-      )}
 
       <div className="max-w-4xl mx-auto text-center">
         {onUpdateContent ? (
