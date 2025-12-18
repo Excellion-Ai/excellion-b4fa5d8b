@@ -33,7 +33,8 @@ import {
   X,
   Copy,
   Pencil,
-  Check
+  Check,
+  Globe
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -55,6 +56,8 @@ interface BuilderProject {
   created_at: string;
   updated_at: string;
   spec?: any;
+  published_url?: string | null;
+  published_at?: string | null;
 }
 
 interface Attachment {
@@ -242,7 +245,7 @@ export default function SecretBuilderHub() {
     const fetchProjects = async () => {
       const { data, error } = await supabase
         .from('builder_projects')
-        .select('id, name, idea, created_at, updated_at, spec')
+        .select('id, name, idea, created_at, updated_at, spec, published_url, published_at')
         .order('updated_at', { ascending: false })
         .limit(20);
 
@@ -913,9 +916,16 @@ export default function SecretBuilderHub() {
                               {project.name}
                             </p>
                             <div className="flex items-center gap-2 mt-1.5">
-                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-                                Draft
-                              </Badge>
+                              {project.published_url ? (
+                                <Badge className="text-[10px] px-1.5 py-0 h-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                  <Globe className="w-2.5 h-2.5 mr-0.5" />
+                                  Published
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                                  Draft
+                                </Badge>
+                              )}
                               <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {formatTimeAgo(project.updated_at)}
@@ -937,6 +947,16 @@ export default function SecretBuilderHub() {
                               <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
                                 <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
                               </DropdownMenuItem>
+                              {project.published_url && (
+                                <DropdownMenuItem 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(project.published_url!, '_blank');
+                                  }}
+                                >
+                                  <Globe className="w-3.5 h-3.5 mr-2" /> View Live Site
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem onClick={(e) => openRenameDialog(project, e as unknown as React.MouseEvent)}>
                                 <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
                               </DropdownMenuItem>
