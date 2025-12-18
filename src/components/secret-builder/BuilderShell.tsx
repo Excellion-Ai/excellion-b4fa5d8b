@@ -126,7 +126,7 @@ export function BuilderShell() {
   const [showDomainsDialog, setShowDomainsDialog] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string }[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
-  const [attachments, setAttachments] = useState<{ file: File; name: string }[]>([]);
+  const [attachments, setAttachments] = useState<{ file?: File; name: string; url?: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
@@ -667,7 +667,11 @@ export function BuilderShell() {
                 <div className="flex flex-wrap gap-2 mb-3">
                   {attachments.map((att, idx) => (
                     <div key={idx} className="flex items-center gap-1 bg-muted rounded-md px-2 py-1 text-xs">
-                      <Paperclip className="h-3 w-3" />
+                      {att.url ? (
+                        <img src={att.url} alt={att.name} className="h-6 w-6 rounded object-cover" />
+                      ) : (
+                        <Paperclip className="h-3 w-3" />
+                      )}
                       <span className="truncate max-w-[100px]">{att.name}</span>
                       <button onClick={() => removeAttachment(idx)} className="hover:text-destructive">
                         <X className="h-3 w-3" />
@@ -1115,8 +1119,12 @@ export function BuilderShell() {
                       <button
                         key={image.name}
                         className="relative group aspect-square rounded-md overflow-hidden border border-border hover:border-primary transition-colors"
-                        onClick={() => setImageAttachment(image.url)}
-                        title="Click to use as reference"
+                        onClick={() => {
+                          setAttachments(prev => [...prev, { name: image.name, url: image.url }].slice(0, 5));
+                          setShowImageDialog(false);
+                          toast.success('Image added to prompt');
+                        }}
+                        title="Click to add to prompt"
                       >
                         <img
                           src={image.url}
