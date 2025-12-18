@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Accordion,
@@ -247,12 +248,19 @@ const WebBuilderHome = () => {
             {/* Prompt Input */}
             <div className="max-w-2xl mx-auto">
               <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-3">
-                <Input
+                <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask Excellion AI to create a website for… (e.g. local restaurant, roofing contractor, fitness coach)"
-                  className="border-0 bg-transparent text-base h-12 px-4 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
+                  rows={1}
+                  style={{ height: 'auto' }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                  }}
                 />
                 <div className="flex items-center justify-end mt-3">
                   <Button onClick={handleStart} size="icon" className="h-10 w-10">
