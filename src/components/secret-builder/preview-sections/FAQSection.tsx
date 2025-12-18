@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SiteSection, SiteTheme, FAQContent, FAQItem } from '@/types/app-spec';
 import { ChevronDown } from 'lucide-react';
+import { ScrollAnimation } from '../animations/ScrollAnimations';
 
 interface FAQSectionProps {
   section: SiteSection;
@@ -45,65 +46,80 @@ export function FAQSection({ section, theme }: FAQSectionProps) {
     >
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
-          <h2 
-            className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ 
-              fontFamily: theme.fontHeading || 'system-ui',
-              color: isDark ? '#ffffff' : '#111827'
-            }}
-          >
-            {title}
-          </h2>
-          <p 
-            className="text-lg"
-            style={{ 
-              fontFamily: theme.fontBody || 'system-ui',
-              color: isDark ? '#9ca3af' : '#6b7280'
-            }}
-          >
-            {subtitle}
-          </p>
+          <ScrollAnimation animation="fade-up">
+            <h2 
+              className="text-3xl md:text-4xl font-bold mb-4"
+              style={{ 
+                fontFamily: theme.fontHeading || 'system-ui',
+                color: isDark ? '#ffffff' : '#111827'
+              }}
+            >
+              {title}
+            </h2>
+          </ScrollAnimation>
+          <ScrollAnimation animation="fade-up" delay={100}>
+            <p 
+              className="text-lg"
+              style={{ 
+                fontFamily: theme.fontBody || 'system-ui',
+                color: isDark ? '#9ca3af' : '#6b7280'
+              }}
+            >
+              {subtitle}
+            </p>
+          </ScrollAnimation>
         </div>
         
         <div className="space-y-4">
           {items.slice(0, 8).map((faq, index) => (
-            <div 
-              key={index}
-              className="rounded-xl overflow-hidden"
-              style={{ 
-                backgroundColor: isDark ? '#1f1f1f' : '#f9fafb',
-              }}
+            <ScrollAnimation 
+              key={index} 
+              animation="fade-up" 
+              delay={index * 75}
             >
-              <button
-                className="w-full px-6 py-4 text-left flex items-center justify-between"
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+              <div 
+                className="rounded-xl overflow-hidden"
+                style={{ 
+                  backgroundColor: isDark ? '#1f1f1f' : '#f9fafb',
+                }}
               >
-                <span 
-                  className="font-semibold"
-                  style={{ 
-                    fontFamily: theme.fontHeading || 'system-ui',
-                    color: isDark ? '#ffffff' : '#111827'
-                  }}
+                <button
+                  className="w-full px-6 py-4 text-left flex items-center justify-between"
+                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 >
-                  {faq.question}
-                </span>
-                <ChevronDown 
-                  className={`w-5 h-5 transition-transform ${openIndex === index ? 'rotate-180' : ''}`}
-                  style={{ color: theme.primaryColor }}
-                />
-              </button>
-              {openIndex === index && (
+                  <span 
+                    className="font-semibold"
+                    style={{ 
+                      fontFamily: theme.fontHeading || 'system-ui',
+                      color: isDark ? '#ffffff' : '#111827'
+                    }}
+                  >
+                    {faq.question}
+                  </span>
+                  <ChevronDown 
+                    className={`w-5 h-5 transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`}
+                    style={{ color: theme.primaryColor }}
+                  />
+                </button>
                 <div 
-                  className="px-6 pb-4"
+                  className="overflow-hidden transition-all duration-300"
                   style={{ 
-                    fontFamily: theme.fontBody || 'system-ui',
-                    color: isDark ? '#d1d5db' : '#4b5563'
+                    maxHeight: openIndex === index ? '200px' : '0',
+                    opacity: openIndex === index ? 1 : 0
                   }}
                 >
-                  {faq.answer}
+                  <div 
+                    className="px-6 pb-4"
+                    style={{ 
+                      fontFamily: theme.fontBody || 'system-ui',
+                      color: isDark ? '#d1d5db' : '#4b5563'
+                    }}
+                  >
+                    {faq.answer}
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            </ScrollAnimation>
           ))}
         </div>
       </div>
