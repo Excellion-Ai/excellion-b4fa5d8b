@@ -52,6 +52,7 @@ import {
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
+import { TEMPLATES } from '@/components/secret-builder/templateSpecs';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
@@ -139,56 +140,7 @@ const QUICK_PROMPTS = [
   },
 ];
 
-const TEMPLATES = [
-  {
-    id: 'saas',
-    title: 'SaaS Landing Page',
-    tags: ['Marketing', 'Tech'],
-    bestFor: 'Software products, apps, digital services',
-    icon: Layout,
-    prompt: 'A modern SaaS landing page with hero, features grid, pricing tiers, testimonials, and CTA sections',
-  },
-  {
-    id: 'restaurant',
-    title: 'Restaurant & Menu',
-    tags: ['Food', 'Local'],
-    bestFor: 'Restaurants, cafes, food trucks',
-    icon: ShoppingBag,
-    prompt: 'A modern restaurant website with online ordering, menu display, and reservations',
-  },
-  {
-    id: 'portfolio',
-    title: 'Portfolio',
-    tags: ['Creative', 'Personal'],
-    bestFor: 'Designers, developers, freelancers',
-    icon: Layout,
-    prompt: 'A professional portfolio website to showcase my work and attract clients',
-  },
-  {
-    id: 'service',
-    title: 'Service Business',
-    tags: ['Local', 'Services'],
-    bestFor: 'Contractors, consultants, agencies',
-    icon: Briefcase,
-    prompt: 'A service business website with appointment booking, testimonials, and service listings',
-  },
-  {
-    id: 'ecommerce',
-    title: 'E-commerce Store',
-    tags: ['Retail', 'Online'],
-    bestFor: 'Online shops, dropshipping, D2C brands',
-    icon: ShoppingBag,
-    prompt: 'An e-commerce store with product catalog, shopping cart, and checkout flow',
-  },
-  {
-    id: 'blog',
-    title: 'Blog / Content',
-    tags: ['Content', 'Media'],
-    bestFor: 'Writers, publications, thought leaders',
-    icon: BookOpen,
-    prompt: 'A blog website with articles, categories, and newsletter signup',
-  },
-];
+// Templates now imported from templateSpecs.ts
 
 const NAV_ITEMS = [
   { icon: Home, label: 'Home', action: 'home' },
@@ -382,6 +334,54 @@ export default function SecretBuilderHub() {
       isSubmittingRef.current = false;
     }
   }, [idea, isGenerating, selectedTheme, attachments, navigate, toast]);
+
+  // Generate from template with pre-built spec
+  const handleGenerateFromTemplate = useCallback(async (template: typeof TEMPLATES[0]) => {
+    if (isGenerating || isSubmittingRef.current) return;
+    
+    isSubmittingRef.current = true;
+    setIsGenerating(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('builder_projects')
+        .insert({
+          name: template.title,
+          idea: template.prompt,
+          spec: { 
+            siteSpec: template.spec,
+            themeId: selectedTheme, 
+          },
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      localStorage.setItem(LS_LAST_PROJECT_ID, data.id);
+
+      toast({ title: 'Template loaded', description: 'Opening builder...' });
+      
+      navigate('/secret-builder', { 
+        state: { 
+          projectId: data.id, 
+          initialIdea: template.prompt,
+          themeId: selectedTheme,
+          templateSpec: template.spec, // Pass spec directly to builder
+        } 
+      });
+    } catch (error) {
+      console.error('Error creating project from template:', error);
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to load template. Please try again.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsGenerating(false);
+      isSubmittingRef.current = false;
+    }
+  }, [isGenerating, selectedTheme, navigate, toast]);
 
   // Auto-generate when coming from home page with a prompt
   useEffect(() => {
@@ -1015,33 +1015,23 @@ export default function SecretBuilderHub() {
               {TEMPLATES.map((template) => (
                 <button
                   key={template.id}
-                  onClick={() => handleGenerate(template.prompt)}
-                  className="group text-left bg-zinc-900/40 border border-white/10 rounded-xl overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-200"
+                  onClick={() => handleGenerateFromTemplate(template)}
+                  disabled={isGenerating}
+                  className="group text-left bg-zinc-900/40 border border-white/10 rounded-xl overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {/* Skeleton UI Preview */}
-                  <div className="h-32 bg-zinc-900 p-3 flex flex-col gap-2">
-                    {/* Header bar */}
-                    <div className="flex items-center justify-between">
-                      <div className="w-16 h-2 bg-zinc-800 rounded" />
-                      <div className="flex gap-1.5">
-                        <div className="w-8 h-2 bg-zinc-800 rounded" />
-                        <div className="w-8 h-2 bg-zinc-800 rounded" />
+                  {/* Live Preview using ProjectPreview */}
+                  <div className="h-36 bg-gradient-to-br from-muted/50 to-muted/20 p-3 relative overflow-hidden">
+                    <ProjectPreview 
+                      spec={template.spec} 
+                      themeColor={template.spec.theme.primaryColor}
+                    />
+                    
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                        <ArrowRight className="w-4 h-4" />
+                        Use Template
                       </div>
-                    </div>
-                    {/* Hero section */}
-                    <div className="flex-1 flex gap-3 mt-2">
-                      <div className="flex-1 flex flex-col gap-1.5">
-                        <div className="w-3/4 h-3 bg-zinc-800 rounded" />
-                        <div className="w-1/2 h-2 bg-zinc-800 rounded" />
-                        <div className="w-12 h-4 bg-zinc-800 rounded mt-2" />
-                      </div>
-                      <div className="w-16 h-12 bg-zinc-800 rounded" />
-                    </div>
-                    {/* Content lines */}
-                    <div className="flex gap-2 mt-auto">
-                      <div className="flex-1 h-6 bg-zinc-800 rounded" />
-                      <div className="flex-1 h-6 bg-zinc-800 rounded" />
-                      <div className="flex-1 h-6 bg-zinc-800 rounded" />
                     </div>
                   </div>
                   
