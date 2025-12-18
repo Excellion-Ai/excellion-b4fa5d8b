@@ -605,7 +605,7 @@ export default function SecretBuilderHub() {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="pl-2 mt-1">
-              <ScrollArea className="h-64 pr-2" scrollbarVariant="gold">
+              <ScrollArea className="h-64 pr-2">
                 <div className="space-y-0.5 pl-2">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-4">
