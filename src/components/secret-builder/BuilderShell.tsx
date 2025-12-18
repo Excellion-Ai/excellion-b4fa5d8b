@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -127,6 +127,7 @@ export function BuilderShell() {
   const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string }[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [attachments, setAttachments] = useState<{ file?: File; name: string; url?: string }[]>([]);
+  const [visualEditsEnabled, setVisualEditsEnabled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
@@ -691,6 +692,22 @@ export function BuilderShell() {
                 >
                   <Paperclip className="h-4 w-4" />
                 </Button>
+                <Button
+                  variant={visualEditsEnabled ? "default" : "ghost"}
+                  size="icon"
+                  className={`h-8 w-8 shrink-0 transition-all duration-300 ${
+                    visualEditsEnabled 
+                      ? 'bg-primary text-primary-foreground animate-pulse shadow-lg shadow-primary/30' 
+                      : ''
+                  }`}
+                  onClick={() => {
+                    setVisualEditsEnabled(!visualEditsEnabled);
+                    toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
+                  }}
+                  title={visualEditsEnabled ? 'Disable visual edits' : 'Enable visual edits'}
+                >
+                  <MousePointer2 className={`h-4 w-4 transition-transform duration-300 ${visualEditsEnabled ? 'scale-110' : ''}`} />
+                </Button>
                 <Input
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
@@ -919,12 +936,12 @@ export function BuilderShell() {
                   siteSpec={siteSpec}
                   pageIndex={currentPageIndex}
                   isLoading={isGenerating}
-                  onUpdateHeroContent={editor.updateHeroContent}
-                  onUpdateFeaturesContent={editor.updateFeaturesContent}
-                  onUpdateFeatureItem={editor.updateFeatureItem}
-                  onUpdateSiteName={editor.updateSiteName}
-                  onUpdateNavItem={editor.updateNavItem}
-                  onReorderSections={editor.reorderSections}
+                  onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
+                  onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
+                  onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
+                  onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
+                  onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
+                  onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center">
