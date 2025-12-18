@@ -1,5 +1,6 @@
 import { SiteSection, SiteTheme, PricingContent, PricingTier } from '@/types/app-spec';
 import { Check } from 'lucide-react';
+import { ScrollAnimation } from '../animations/ScrollAnimations';
 
 interface PricingSectionProps {
   section: SiteSection;
@@ -48,91 +49,100 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
     >
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 
-            className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ 
-              fontFamily: theme.fontHeading || 'system-ui',
-              color: isDark ? '#ffffff' : '#111827'
-            }}
-          >
-            {title}
-          </h2>
-          <p 
-            className="text-lg max-w-2xl mx-auto"
-            style={{ 
-              fontFamily: theme.fontBody || 'system-ui',
-              color: isDark ? '#9ca3af' : '#6b7280'
-            }}
-          >
-            {subtitle}
-          </p>
+          <ScrollAnimation animation="fade-up">
+            <h2 
+              className="text-3xl md:text-4xl font-bold mb-4"
+              style={{ 
+                fontFamily: theme.fontHeading || 'system-ui',
+                color: isDark ? '#ffffff' : '#111827'
+              }}
+            >
+              {title}
+            </h2>
+          </ScrollAnimation>
+          <ScrollAnimation animation="fade-up" delay={100}>
+            <p 
+              className="text-lg max-w-2xl mx-auto"
+              style={{ 
+                fontFamily: theme.fontBody || 'system-ui',
+                color: isDark ? '#9ca3af' : '#6b7280'
+              }}
+            >
+              {subtitle}
+            </p>
+          </ScrollAnimation>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
           {items.slice(0, 4).map((plan, index) => (
-            <div 
-              key={index}
-              className="p-8 rounded-2xl transition-all hover:scale-105"
-              style={{ 
-                backgroundColor: plan.highlighted ? theme.primaryColor : (isDark ? '#1f1f1f' : '#f9fafb'),
-                boxShadow: plan.highlighted ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
+            <ScrollAnimation 
+              key={index} 
+              animation={plan.highlighted ? 'scale-up' : 'fade-up'} 
+              delay={index * 150}
             >
-              <h3 
-                className="text-xl font-semibold mb-2"
+              <div 
+                className="p-8 rounded-2xl transition-all hover:scale-105 h-full"
                 style={{ 
-                  fontFamily: theme.fontHeading || 'system-ui',
-                  color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
+                  backgroundColor: plan.highlighted ? theme.primaryColor : (isDark ? '#1f1f1f' : '#f9fafb'),
+                  boxShadow: plan.highlighted ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}
               >
-                {plan.name}
-              </h3>
-              <div className="mb-6">
-                <span 
-                  className="text-4xl font-bold"
+                <h3 
+                  className="text-xl font-semibold mb-2"
                   style={{ 
+                    fontFamily: theme.fontHeading || 'system-ui',
                     color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
                   }}
                 >
-                  {plan.price}
-                </span>
-                <span 
+                  {plan.name}
+                </h3>
+                <div className="mb-6">
+                  <span 
+                    className="text-4xl font-bold"
+                    style={{ 
+                      color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
+                    }}
+                  >
+                    {plan.price}
+                  </span>
+                  <span 
+                    style={{ 
+                      color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (isDark ? '#9ca3af' : '#6b7280')
+                    }}
+                  >
+                    {plan.period}
+                  </span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center gap-2">
+                      <Check 
+                        className="w-5 h-5 flex-shrink-0" 
+                        style={{ color: plan.highlighted ? '#ffffff' : theme.primaryColor }}
+                      />
+                      <span 
+                        className="text-sm"
+                        style={{ 
+                          fontFamily: theme.fontBody || 'system-ui',
+                          color: plan.highlighted ? 'rgba(255,255,255,0.9)' : (isDark ? '#d1d5db' : '#4b5563')
+                        }}
+                      >
+                        {feature}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  className="w-full py-3 rounded-lg font-semibold transition-all hover:opacity-90"
                   style={{ 
-                    color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (isDark ? '#9ca3af' : '#6b7280')
+                    backgroundColor: plan.highlighted ? '#ffffff' : theme.primaryColor,
+                    color: plan.highlighted ? theme.primaryColor : '#ffffff'
                   }}
                 >
-                  {plan.period}
-                </span>
+                  {plan.ctaText || 'Get Started'}
+                </button>
               </div>
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center gap-2">
-                    <Check 
-                      className="w-5 h-5 flex-shrink-0" 
-                      style={{ color: plan.highlighted ? '#ffffff' : theme.primaryColor }}
-                    />
-                    <span 
-                      className="text-sm"
-                      style={{ 
-                        fontFamily: theme.fontBody || 'system-ui',
-                        color: plan.highlighted ? 'rgba(255,255,255,0.9)' : (isDark ? '#d1d5db' : '#4b5563')
-                      }}
-                    >
-                      {feature}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <button
-                className="w-full py-3 rounded-lg font-semibold transition-all hover:opacity-90"
-                style={{ 
-                  backgroundColor: plan.highlighted ? '#ffffff' : theme.primaryColor,
-                  color: plan.highlighted ? theme.primaryColor : '#ffffff'
-                }}
-              >
-                {plan.ctaText || 'Get Started'}
-              </button>
-            </div>
+            </ScrollAnimation>
           ))}
         </div>
       </div>
