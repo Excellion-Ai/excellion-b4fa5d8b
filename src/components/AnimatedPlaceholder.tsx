@@ -53,7 +53,7 @@ export function AnimatedPlaceholder({
   return (
     <span className="text-muted-foreground/60">
       {displayText}
-      <span className="animate-pulse ml-0.5">|</span>
+      <span className="inline-block w-[2px] h-[1.1em] bg-muted-foreground/60 ml-0.5 animate-blink align-middle translate-y-[1px]" />
     </span>
   );
 }

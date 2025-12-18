@@ -276,9 +276,9 @@ const WebBuilderHome = () => {
                     <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
                       <AnimatedPlaceholder 
                         suggestions={placeholderSuggestions}
-                        typingSpeed={40}
-                        deletingSpeed={25}
-                        pauseDuration={2500}
+                        typingSpeed={25}
+                        deletingSpeed={15}
+                        pauseDuration={2000}
                       />
                     </div>
                   )}
