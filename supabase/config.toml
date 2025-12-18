@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.url-extractor]
 verify_jwt = false
+
+[functions.database-ai]
+verify_jwt = false

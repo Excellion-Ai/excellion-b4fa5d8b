@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2, GitCompare, Users } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2, GitCompare, Users, Database } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -24,6 +24,7 @@ import { PWAExport } from './PWAExport';
 import { KnowledgePanel } from './KnowledgePanel';
 import { PresenceAvatars } from './PresenceAvatars';
 import { PresenceCursor } from './PresenceCursor';
+import { SchemaVizPanel } from './SchemaVizPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -133,6 +134,7 @@ export function BuilderShell() {
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
   const [showDomainsDialog, setShowDomainsDialog] = useState(false);
+  const [showSchemaDialog, setShowSchemaDialog] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string }[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [attachments, setAttachments] = useState<{ file?: File; name: string; url?: string }[]>([]);
@@ -942,6 +944,16 @@ export function BuilderShell() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setShowSchemaDialog(true)}
+              className="gap-1.5 text-xs"
+            >
+              <Database className="h-3.5 w-3.5" />
+              Schema
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate('/secret-builder-hub')}
               className="gap-1.5 text-xs"
             >
@@ -1256,7 +1268,24 @@ export function BuilderShell() {
         </DialogContent>
       </Dialog>
 
-      {/* Diff Viewer Dialog */}
+      {/* Schema Viz Dialog */}
+      <Dialog open={showSchemaDialog} onOpenChange={setShowSchemaDialog}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-primary" />
+              Database Schema & AI
+            </DialogTitle>
+            <DialogDescription>
+              Visualize your schema and ask AI questions about your database.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
+            <SchemaVizPanel />
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <DiffViewer
         isOpen={showDiffViewer}
         onClose={() => {
