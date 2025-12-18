@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import diyBackgroundVideo from "@/assets/diy-background.mp4";
+import pricingBackgroundVideo from "@/assets/pricing-cave-background.mp4";
 
 const Pricing = () => {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
@@ -96,7 +96,7 @@ const Pricing = () => {
           className="absolute inset-0 w-full h-full object-cover will-change-transform"
           style={{ transform: 'translateZ(0)' }}
         >
-          <source src={diyBackgroundVideo} type="video/mp4" />
+          <source src={pricingBackgroundVideo} type="video/mp4" />
         </video>
       </div>
 
