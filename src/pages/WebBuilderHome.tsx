@@ -82,7 +82,7 @@ const faqItems = [
   },
   {
     question: "What happens after the AI builds my site?",
-    answer: "You can edit the text and sections yourself, or hand it off to our team to refine the design, plug in integrations, and launch."
+    answer: "You can edit the text and sections yourself, then publish with one click when you're ready. Connect your domain and go live on your own timeline."
   },
   {
     question: "Can I talk to a real person if I get stuck?",
