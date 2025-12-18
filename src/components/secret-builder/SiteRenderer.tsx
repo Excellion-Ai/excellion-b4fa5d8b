@@ -86,7 +86,7 @@ export function SiteRenderer({
   onReorderSections,
 }: SiteRendererProps) {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
-
+  const [horizontalScrollIndex, setHorizontalScrollIndex] = useState(0);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -542,7 +542,6 @@ export function SiteRenderer({
     const heroSection = sections.find(s => s.type === 'hero');
     const otherSections = sections.filter(s => s.type !== 'hero');
     const heroContent = heroSection?.content as any;
-    const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
     
     return (
       <div 
@@ -557,7 +556,7 @@ export function SiteRenderer({
           siteName={siteSpec.name}
           navigation={navigation || []}
           theme={theme}
-          currentIndex={currentScrollIndex}
+          currentIndex={horizontalScrollIndex}
           totalSections={otherSections.length + 1}
         />
 
@@ -574,7 +573,7 @@ export function SiteRenderer({
               </h2>
             </div>
             
-            <HorizontalScrollSection theme={theme} onScrollChange={setCurrentScrollIndex}>
+            <HorizontalScrollSection theme={theme} onScrollChange={setHorizontalScrollIndex}>
               {/* Hero Card */}
               <HorizontalCard theme={theme} isHero>
                 <HorizontalHero
