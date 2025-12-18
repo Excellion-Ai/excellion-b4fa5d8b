@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
+import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
@@ -890,32 +891,10 @@ export default function SecretBuilderHub() {
                     >
                       {/* Preview Thumbnail */}
                       <div className="h-36 bg-gradient-to-br from-muted/50 to-muted/20 p-3 relative overflow-hidden">
-                        {/* Mini site skeleton preview */}
-                        <div className="w-full h-full bg-background/80 rounded-md border border-border/50 p-2 flex flex-col gap-1.5 shadow-sm">
-                          {/* Header */}
-                          <div className="flex items-center justify-between">
-                            <div className="w-12 h-1.5 rounded" style={{ backgroundColor: themeOption?.color || '#3b82f6', opacity: 0.7 }} />
-                            <div className="flex gap-1">
-                              <div className="w-6 h-1.5 bg-muted-foreground/20 rounded" />
-                              <div className="w-6 h-1.5 bg-muted-foreground/20 rounded" />
-                            </div>
-                          </div>
-                          {/* Hero */}
-                          <div className="flex-1 flex gap-2 mt-1">
-                            <div className="flex-1 flex flex-col gap-1">
-                              <div className="w-3/4 h-2 bg-foreground/20 rounded" />
-                              <div className="w-1/2 h-1.5 bg-muted-foreground/20 rounded" />
-                              <div className="w-10 h-3 rounded mt-1" style={{ backgroundColor: themeOption?.color || '#3b82f6', opacity: 0.8 }} />
-                            </div>
-                            <div className="w-12 h-10 bg-muted-foreground/10 rounded" />
-                          </div>
-                          {/* Content */}
-                          <div className="flex gap-1.5 mt-auto">
-                            <div className="flex-1 h-4 bg-muted-foreground/10 rounded" />
-                            <div className="flex-1 h-4 bg-muted-foreground/10 rounded" />
-                            <div className="flex-1 h-4 bg-muted-foreground/10 rounded" />
-                          </div>
-                        </div>
+                        <ProjectPreview 
+                          spec={project.spec?.siteSpec || project.spec} 
+                          themeColor={themeOption?.color}
+                        />
                         
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
