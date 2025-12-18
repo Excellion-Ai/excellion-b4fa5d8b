@@ -385,7 +385,7 @@ const WebBuilderHome = () => {
               <ul className="space-y-3 flex-1">
                 <li className="flex items-start gap-2 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  Best if you want to stay hands-on but skip the blank page.
+                  Best if you want to stay hands-on without starting from a blank page.
                 </li>
                 <li className="flex items-start gap-2 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
@@ -393,14 +393,14 @@ const WebBuilderHome = () => {
                 </li>
                 <li className="flex items-start gap-2 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  Edit sections, text, and pages directly inside the builder.
+                  Edit pages, sections, and copy directly inside the builder.
                 </li>
               </ul>
               <p className="text-xs text-muted-foreground mt-4 mb-4">
                 Start free with a draft site. Only pay when you're ready to launch.
               </p>
               <Button onClick={() => navigate("/secret-builder-hub")} className="w-full">
-                Start with AI
+                Studio
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
