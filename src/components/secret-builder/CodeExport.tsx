@@ -364,7 +364,7 @@ export function CodeExport({ siteSpec, projectName, generatedCode }: CodeExportP
             </Button>
           </div>
         </div>
-        <ScrollArea className="flex-1" scrollbarVariant="gold">
+        <ScrollArea className="flex-1">
           <pre className="p-4 text-xs font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {generatedCode.reactCode}
           </pre>
@@ -421,7 +421,7 @@ export function CodeExport({ siteSpec, projectName, generatedCode }: CodeExportP
           </Button>
         </div>
       </div>
-      <ScrollArea className="flex-1" scrollbarVariant="gold">
+      <ScrollArea className="flex-1">
         <pre className="p-4 text-xs font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed">
           {html}
         </pre>

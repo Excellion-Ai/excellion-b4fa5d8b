@@ -211,7 +211,7 @@ export function BuilderSidebar({
             Recent Projects
           </p>
         </div>
-        <ScrollArea className="flex-1 px-5" scrollbarVariant="gold">
+        <ScrollArea className="flex-1 px-5">
           <div className="space-y-1 pb-5">
             {history.length === 0 ? (
               <p className="text-xs text-muted-foreground/60 py-3">No recent projects</p>

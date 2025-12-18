@@ -41,7 +41,7 @@ export function SpecPanel({ spec, isLoading }: SpecPanelProps) {
   }
 
   return (
-    <ScrollArea className="h-full" scrollbarVariant="gold">
+    <ScrollArea className="h-full">
       <div className="p-6 space-y-6">
         {/* Summary */}
         <Card className="bg-card/50 border-border/50">

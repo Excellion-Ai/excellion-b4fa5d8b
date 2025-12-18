@@ -10,6 +10,7 @@ const scrollBarVariants = cva(
       variant: {
         default: "",
         gold: "bg-zinc-900 rounded-full",
+        purple: "bg-zinc-900/50 rounded-full",
       },
       orientation: {
         vertical: "h-full w-2.5 border-l border-l-transparent p-[1px]",
@@ -17,7 +18,7 @@ const scrollBarVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "purple",
       orientation: "vertical",
     },
   }
@@ -30,22 +31,23 @@ const scrollThumbVariants = cva(
       variant: {
         default: "bg-border",
         gold: "bg-orange-500 hover:bg-orange-400 transition-colors",
+        purple: "bg-purple-600 hover:bg-purple-500 transition-colors",
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "purple",
     },
   }
 );
 
 interface ScrollAreaProps extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> {
-  scrollbarVariant?: "default" | "gold";
+  scrollbarVariant?: "default" | "gold" | "purple";
 }
 
 const ScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
   ScrollAreaProps
->(({ className, children, scrollbarVariant = "default", ...props }, ref) => (
+>(({ className, children, scrollbarVariant = "purple", ...props }, ref) => (
   <ScrollAreaPrimitive.Root ref={ref} className={cn("relative overflow-hidden", className)} {...props}>
     <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">{children}</ScrollAreaPrimitive.Viewport>
     <ScrollBar variant={scrollbarVariant} />
@@ -56,13 +58,13 @@ ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
 interface ScrollBarProps extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
   VariantProps<typeof scrollBarVariants> {
-  variant?: "default" | "gold";
+  variant?: "default" | "gold" | "purple";
 }
 
 const ScrollBar = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
   ScrollBarProps
->(({ className, orientation = "vertical", variant = "default", ...props }, ref) => (
+>(({ className, orientation = "vertical", variant = "purple", ...props }, ref) => (
   <ScrollAreaPrimitive.ScrollAreaScrollbar
     ref={ref}
     orientation={orientation}

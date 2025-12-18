@@ -284,7 +284,7 @@ export function BuilderChat({
       )}
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-5" scrollbarVariant="gold" ref={scrollRef}>
+      <ScrollArea className="flex-1 px-5" ref={scrollRef}>
         <div className="py-4 space-y-5">
           {messages.map((message) => (
             <div
