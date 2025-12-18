@@ -126,6 +126,8 @@ export function BuilderShell() {
   const [showDomainsDialog, setShowDomainsDialog] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string }[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [attachments, setAttachments] = useState<{ file: File; name: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
@@ -478,6 +480,28 @@ export function BuilderShell() {
     }
   };
 
+  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newAttachments: { file: File; name: string }[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size <= 10 * 1024 * 1024) {
+        newAttachments.push({ file, name: file.name });
+      } else {
+        toast.error(`${file.name} exceeds 10MB limit`);
+      }
+    }
+    
+    setAttachments(prev => [...prev, ...newAttachments].slice(0, 5));
+    e.target.value = '';
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleImageAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -622,8 +646,42 @@ export function BuilderShell() {
               </div>
             )}
 
+            {/* Hidden file input for attachments */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf"
+              multiple
+              className="hidden"
+              onChange={handleFileAttach}
+            />
+
             <div className="border-t border-border p-4">
+              {/* Attachments preview */}
+              {attachments.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {attachments.map((att, idx) => (
+                    <div key={idx} className="flex items-center gap-1 bg-muted rounded-md px-2 py-1 text-xs">
+                      <Paperclip className="h-3 w-3" />
+                      <span className="truncate max-w-[100px]">{att.name}</span>
+                      <button onClick={() => removeAttachment(idx)} className="hover:text-destructive">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
               <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isGenerating}
+                >
+                  <Paperclip className="h-4 w-4" />
+                </Button>
                 <Input
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
