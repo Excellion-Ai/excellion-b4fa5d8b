@@ -137,9 +137,9 @@ const WebBuilderHome = () => {
               <button onClick={() => navigate("/pricing")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
               </button>
-              <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={() => navigate("/builder-faq")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 FAQ
-              </a>
+              </button>
             </div>
             <div className="flex items-center gap-3">
               <Button size="sm" onClick={() => navigate("/secret-builder-hub")}>
