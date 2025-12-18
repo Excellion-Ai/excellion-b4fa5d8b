@@ -187,7 +187,6 @@ const TEMPLATES = [
 
 const NAV_ITEMS = [
   { icon: Home, label: 'Home', action: 'home' },
-  { icon: FolderKanban, label: 'Projects', action: 'projects' },
   { icon: BookOpen, label: 'Resources', action: 'resources' },
   { icon: Folder, label: 'Projects Folder', action: 'projects-folder' },
 ] as const;
@@ -576,7 +575,7 @@ export default function SecretBuilderHub() {
                 onClick={() => {
                   if (item.action === 'home') {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                  } else if (item.action === 'projects') {
+                  } else if (item.action === 'projects-folder') {
                     document.getElementById('projects-section')?.scrollIntoView({ behavior: 'smooth' });
                   } else if (item.action === 'resources') {
                     window.open('https://docs.lovable.dev', '_blank');
