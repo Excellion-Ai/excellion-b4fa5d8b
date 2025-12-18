@@ -4,12 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { 
   Sparkles, 
   ArrowRight, 
@@ -86,28 +80,6 @@ const notMagicItems = [
   "Doesn't run your ads or marketing for you – it focuses on the site."
 ];
 
-const faqItems = [
-  {
-    question: "Do I need any technical skills to use this?",
-    answer: "No. You answer questions in plain language, and Excellion AI handles the layout, copy, and page structure. You'll only need to approve things and connect your domain when you're ready."
-  },
-  {
-    question: "What happens after the AI builds my site?",
-    answer: "You can edit the text and sections yourself, then publish with one click when you're ready. Connect your domain and go live on your own timeline."
-  },
-  {
-    question: "Can I talk to a real person if I get stuck?",
-    answer: "Yes. You can call our support agent for step-by-step help. If it can't resolve your issue, you'll be transferred to a founder directly—no runaround."
-  },
-  {
-    question: "Who owns the website once it's built?",
-    answer: "You do. Your content, branding, and domain are yours, and you're free to move or export if your needs change later."
-  },
-  {
-    question: "How is this different from Wix or Squarespace?",
-    answer: "Instead of dragging blocks around from scratch, you talk to Excellion AI and start from a tailored draft with pages, copy, and structure already done for your business type."
-  }
-];
 
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
@@ -507,31 +479,6 @@ const WebBuilderHome = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-foreground text-center mb-12">
-            Frequently asked questions
-          </h2>
-
-          <Accordion type="single" collapsible className="space-y-4">
-            {faqItems.map((item, index) => (
-              <AccordionItem
-                key={index}
-                value={`item-${index}`}
-                className="rounded-lg border border-border bg-card px-4"
-              >
-                <AccordionTrigger className="text-foreground hover:no-underline text-left">
-                  {item.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  {item.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
 
       {/* Email Capture Section */}
       <section className="py-20 px-4 border-t border-border/50">
