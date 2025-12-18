@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2, GitCompare } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2, GitCompare, Users } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -22,9 +22,12 @@ import { DiffViewer } from './DiffViewer';
 import { BookmarksPanel } from './BookmarksPanel';
 import { PWAExport } from './PWAExport';
 import { KnowledgePanel } from './KnowledgePanel';
+import { PresenceAvatars } from './PresenceAvatars';
+import { PresenceCursor } from './PresenceCursor';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
+import { usePresence } from '@/hooks/usePresence';
 import type { Json } from '@/integrations/supabase/types';
 
 type GenerationStep = {
@@ -138,6 +141,10 @@ export function BuilderShell() {
   const [pendingSpec, setPendingSpec] = useState<SiteSpec | null>(null);
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Multiplayer presence
+  const { otherUsers, updateCursor } = usePresence(projectId);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
@@ -762,6 +769,9 @@ export function BuilderShell() {
               {projectName}
             </span>
             
+            {/* Presence Avatars */}
+            <PresenceAvatars users={otherUsers} />
+            
             {siteSpec && siteSpec.pages.length > 0 && (
               <PageManager
                 pages={siteSpec.pages}
@@ -955,7 +965,26 @@ export function BuilderShell() {
           </div>
         </div>
 
-        <div className="flex-1 bg-muted/30 p-4 overflow-hidden">
+        <div 
+          className="flex-1 bg-muted/30 p-4 overflow-hidden relative"
+          ref={previewContainerRef}
+          onMouseMove={(e) => {
+            if (projectId && previewContainerRef.current) {
+              const rect = previewContainerRef.current.getBoundingClientRect();
+              updateCursor({
+                x: e.clientX,
+                y: e.clientY
+              });
+            }
+          }}
+          onMouseLeave={() => updateCursor(null)}
+        >
+          {/* Other users' cursors */}
+          <PresenceCursor 
+            cursors={otherUsers.filter(u => u.cursor !== null)} 
+            containerRef={previewContainerRef as React.RefObject<HTMLElement>}
+          />
+          
           <div className={`h-full mx-auto ${getPreviewWidth()} transition-all duration-300`}>
             <div className="h-full bg-background rounded-xl shadow-lg overflow-hidden border border-border">
               {generatedHtml ? (
