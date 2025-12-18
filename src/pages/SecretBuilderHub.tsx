@@ -146,7 +146,6 @@ const QUICK_PROMPTS = [
 
 const NAV_ITEMS = [
   { icon: Home, label: 'Home', action: 'home' },
-  { icon: BookOpen, label: 'Resources', action: 'resources' },
 ] as const;
 
 // localStorage keys
