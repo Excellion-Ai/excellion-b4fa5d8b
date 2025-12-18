@@ -146,6 +146,7 @@ const QUICK_PROMPTS = [
 
 const NAV_ITEMS = [
   { icon: Home, label: 'Home', action: 'home' },
+  { icon: BookOpen, label: 'Resources', action: 'resources' },
 ] as const;
 
 // localStorage keys
@@ -581,9 +582,8 @@ export default function SecretBuilderHub() {
                 onClick={() => {
                   if (item.action === 'home') {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                  } else if (item.action === 'resources') {
-                    window.open('https://docs.lovable.dev', '_blank');
                   }
+                  // Resources action - no external link
                 }}
               >
                 <item.icon className="w-4 h-4" />
