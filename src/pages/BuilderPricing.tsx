@@ -41,7 +41,6 @@ const aiBuilderPlans = [
     features: [
       "1 project (draft-only)",
       "Drafts + editing in Studio",
-      "20 AI credits / mo (rollover)",
       "Basic templates",
       "Mobile responsive editing",
       "Community support/docs",
@@ -61,7 +60,6 @@ const aiBuilderPlans = [
       "No watermark",
       "Basic SEO (Title/Meta/OG)",
       "Simple analytics (views/visitors)",
-      "50 AI credits / mo (rollover)",
     ],
     cta: "Get Started",
     highlighted: false,
@@ -75,7 +73,6 @@ const aiBuilderPlans = [
     badge: "Best Seller",
     features: [
       "Unlimited drafts + 1 published site",
-      "100 AI credits / mo (rollover)",
       "Integrations: Stripe, Calendly, Mailchimp",
       "Advanced components: pricing, CMS, galleries",
       "Code export (Annual only)",
@@ -91,7 +88,6 @@ const aiBuilderPlans = [
     credits: 500,
     features: [
       "10 published sites",
-      "500 AI credits / mo (rollover)",
       "White-label dashboard",
       "Team seats + roles",
       "Client management & billing transfer",
@@ -457,16 +453,16 @@ const BuilderPricing = () => {
                   {isAnnual && getSavings(plan) && (
                     <p className="text-sm text-accent mt-1">{getSavings(plan)}</p>
                   )}
-                  {plan.monthlyPrice === 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">Free forever</p>
-                  )}
                   {/* Credits Badge */}
                   <div className="mt-3">
                     <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent/15 text-accent px-2.5 py-1 rounded-full">
                       <Sparkles className="w-3 h-3" />
-                      {plan.credits} credits / mo
+                      {plan.credits} AI credits/mo • rollover
                     </span>
                   </div>
+                  {plan.monthlyPrice === 0 && (
+                    <p className="text-sm text-muted-foreground mt-2">Free forever</p>
+                  )}
                 </CardHeader>
 
                 <CardContent className="flex-grow">
