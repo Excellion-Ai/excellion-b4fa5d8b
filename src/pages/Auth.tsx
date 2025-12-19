@@ -273,7 +273,7 @@ const Auth = () => {
         <Navigation />
         
         <main className="container mx-auto px-6 py-20 flex items-center justify-center min-h-[calc(100vh-200px)]">
-          <Card className="w-full max-w-md bg-background/10 backdrop-blur-md border-white/20">
+          <Card className="w-full max-w-md bg-background border-border">
             <CardHeader className="space-y-1">
               <CardTitle className="text-3xl text-center text-foreground">
                 {isLogin ? "Welcome Back" : "Create Account"}
