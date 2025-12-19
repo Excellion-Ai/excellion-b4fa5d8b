@@ -656,27 +656,25 @@ export function BuilderShell() {
         <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
           <div className="h-full border-r border-border flex flex-col bg-card/30">
             {/* Header with Studio button and Project Name */}
-            <div className="border-b border-border px-4 py-3 bg-card/50">
-              <div className="flex items-center justify-between mb-2">
+            <div className="border-b border-border px-3 py-2.5 bg-card/50">
+              <div className="flex items-center gap-3">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => navigate('/secret-builder-hub')}
-                  className="gap-2 text-sm font-medium hover:bg-muted/80"
+                  className="gap-1.5 text-xs shrink-0"
                 >
-                  <LayoutGrid className="h-4 w-4" />
+                  <LayoutGrid className="h-3.5 w-3.5" />
                   Studio
                 </Button>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Project:</span>
+                <div className="h-4 w-px bg-border" />
                 <button
                   onClick={() => setShowRenameDialog(true)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary hover:bg-muted/50 px-2 py-1 rounded transition-colors group"
+                  className="flex items-center gap-1.5 text-sm text-foreground hover:text-primary px-1.5 py-0.5 rounded transition-colors group min-w-0 flex-1"
                   title="Click to rename project"
                 >
-                  {projectName || 'New Project'}
-                  <svg className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <span className="truncate">{projectName || 'Untitled Project'}</span>
+                  <svg className="h-3 w-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                     <path d="m15 5 4 4"/>
                   </svg>
