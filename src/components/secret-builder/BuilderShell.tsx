@@ -771,6 +771,16 @@ export function BuilderShell() {
           <div className="h-full flex flex-col">
         <div className="h-12 border-b border-border flex items-center justify-between px-4 bg-card/30">
           <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/secret-builder-hub')}
+              className="gap-1.5 text-xs"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Studio
+            </Button>
+            
             <span className="text-sm text-muted-foreground truncate max-w-[150px]">
               {projectName}
             </span>
@@ -973,16 +983,6 @@ export function BuilderShell() {
             >
               <Shield className="h-3.5 w-3.5" />
               Security
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/secret-builder-hub')}
-              className="gap-1.5 text-xs"
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              Studio
             </Button>
             
             <Button
