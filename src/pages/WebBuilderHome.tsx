@@ -187,11 +187,11 @@ const WebBuilderHome = () => {
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-              Describe your business.{" "}
-              <span className="text-accent">Get a working website in minutes.</span>
+              Your dream website, generated in{" "}
+              <span className="text-accent">seconds.</span>
             </h1>
             <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold">
-              Excellion AI turns a short conversation into a real website with pages, copy, forms, and a clear launch plan – no coding or templates required.
+              From a simple text prompt to a live, multi-page website in minutes. No templates, no coding, just results.
             </p>
 
             {/* Prompt Input */}
