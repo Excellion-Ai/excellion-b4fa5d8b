@@ -655,24 +655,33 @@ export function BuilderShell() {
         {/* Left Panel - Chat */}
         <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
           <div className="h-full border-r border-border flex flex-col bg-card/30">
-            {/* Header with Studio button */}
-            <div className="h-12 border-b border-border flex items-center justify-between px-4 bg-card/50">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/secret-builder-hub')}
-                className="gap-2 text-sm font-medium hover:bg-muted/80"
-              >
-                <LayoutGrid className="h-4 w-4" />
-                Studio
-              </Button>
-              <button
-                onClick={() => setShowRenameDialog(true)}
-                className="text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors truncate max-w-[120px]"
-                title="Click to rename project"
-              >
-                {projectName || 'New Project'}
-              </button>
+            {/* Header with Studio button and Project Name */}
+            <div className="border-b border-border px-4 py-3 bg-card/50">
+              <div className="flex items-center justify-between mb-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/secret-builder-hub')}
+                  className="gap-2 text-sm font-medium hover:bg-muted/80"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  Studio
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Project:</span>
+                <button
+                  onClick={() => setShowRenameDialog(true)}
+                  className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary hover:bg-muted/50 px-2 py-1 rounded transition-colors group"
+                  title="Click to rename project"
+                >
+                  {projectName || 'New Project'}
+                  <svg className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                  </svg>
+                </button>
+              </div>
             </div>
             
             <ScrollArea className="flex-1 p-4">
