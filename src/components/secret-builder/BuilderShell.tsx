@@ -995,7 +995,7 @@ export function BuilderShell() {
               className="gap-1.5 text-xs"
             >
               <Database className="h-3.5 w-3.5" />
-              Schema
+              Database
             </Button>
             
             {/* 3D Button - hidden but code preserved */}
