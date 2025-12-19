@@ -248,13 +248,15 @@ export function SiteRenderer({
                 <div className="grid grid-cols-12 gap-4 lg:gap-6 auto-rows-min">
                   {sections.map((section) => {
                     const gridConfig = section.gridConfig || getDefaultGridConfig(section);
-                    const colSpan = gridConfig.colSpan || 6;
+                    const colSpan = gridConfig.colSpan || 12;
                     const rowSpan = gridConfig.rowSpan || 1;
+                    // Only use tile mode for sections explicitly configured as small tiles
+                    const useTileMode = colSpan < 12;
                     
                     return (
                       <div 
                         key={section.id}
-                        className={`col-span-12 lg:col-span-${colSpan} row-span-${rowSpan} transition-all duration-300`}
+                        className="transition-all duration-300"
                         style={{
                           gridColumn: `span ${colSpan} / span ${colSpan}`,
                           gridRow: `span ${rowSpan} / span ${rowSpan}`,
@@ -267,7 +269,7 @@ export function SiteRenderer({
                             border: `1px solid ${theme.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
                           }}
                         >
-                          {renderSection(section, true)}
+                          {renderSection(section, useTileMode)}
                         </div>
                       </div>
                     );
@@ -279,8 +281,10 @@ export function SiteRenderer({
             <div className="grid grid-cols-12 gap-4 lg:gap-6 auto-rows-min">
               {sections.map((section) => {
                 const gridConfig = section.gridConfig || getDefaultGridConfig(section);
-                const colSpan = gridConfig.colSpan || 6;
+                const colSpan = gridConfig.colSpan || 12;
                 const rowSpan = gridConfig.rowSpan || 1;
+                // Only use tile mode for sections explicitly configured as small tiles
+                const useTileMode = colSpan < 12;
                 
                 return (
                   <div 
@@ -298,7 +302,7 @@ export function SiteRenderer({
                         border: `1px solid ${theme.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
                       }}
                     >
-                      {renderSection(section, true)}
+                      {renderSection(section, useTileMode)}
                     </div>
                   </div>
                 );
@@ -820,25 +824,26 @@ export function SiteRenderer({
 }
 
 // Default grid configuration based on section type
+// IMPORTANT: Most sections should span full width (12 cols) to avoid clumpy layouts
 function getDefaultGridConfig(section: SiteSection): { colSpan: number; rowSpan: number } {
   switch (section.type) {
     case 'hero':
-      return { colSpan: 8, rowSpan: 2 };
+      return { colSpan: 12, rowSpan: 1 };
     case 'stats':
-      return { colSpan: 4, rowSpan: 1 };
+      return { colSpan: 12, rowSpan: 1 };
     case 'features':
-      return { colSpan: 6, rowSpan: 1 };
+      return { colSpan: 12, rowSpan: 1 };
     case 'testimonials':
-      return { colSpan: 6, rowSpan: 1 };
+      return { colSpan: 12, rowSpan: 1 };
     case 'pricing':
       return { colSpan: 12, rowSpan: 1 };
     case 'cta':
-      return { colSpan: 8, rowSpan: 1 };
+      return { colSpan: 12, rowSpan: 1 };
     case 'contact':
-      return { colSpan: 4, rowSpan: 1 };
+      return { colSpan: 12, rowSpan: 1 };
     case 'faq':
-      return { colSpan: 6, rowSpan: 1 };
+      return { colSpan: 12, rowSpan: 1 };
     default:
-      return { colSpan: 6, rowSpan: 1 };
+      return { colSpan: 12, rowSpan: 1 };
   }
 }

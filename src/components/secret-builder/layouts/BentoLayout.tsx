@@ -8,38 +8,20 @@ interface BentoLayoutProps {
 }
 
 // Get grid classes based on section type and gridConfig
+// IMPORTANT: Default to full-width (col-span-12) to avoid clumpy layouts
 function getGridClasses(section: SiteSection, index: number): string {
   const config = section.gridConfig;
   
   // If explicit grid config exists, use it
   if (config?.colSpan || config?.rowSpan) {
-    const col = config.colSpan ? `col-span-${Math.min(config.colSpan, 12)}` : 'col-span-6';
+    const col = config.colSpan ? `col-span-${Math.min(config.colSpan, 12)}` : 'col-span-12';
     const row = config.rowSpan ? `row-span-${config.rowSpan}` : '';
     return `${col} ${row}`;
   }
   
-  // Default asymmetric layout based on section type and position
-  switch (section.type) {
-    case 'hero':
-      return 'col-span-12 lg:col-span-8 row-span-2';
-    case 'stats':
-      return 'col-span-12 lg:col-span-4 row-span-1';
-    case 'features':
-      return 'col-span-12 lg:col-span-6';
-    case 'testimonials':
-      return 'col-span-12 lg:col-span-6';
-    case 'pricing':
-      return 'col-span-12';
-    case 'cta':
-      return 'col-span-12 lg:col-span-8';
-    case 'contact':
-      return 'col-span-12 lg:col-span-4';
-    case 'faq':
-      return 'col-span-12 lg:col-span-6';
-    default:
-      // Alternate between larger and smaller tiles
-      return index % 3 === 0 ? 'col-span-12 lg:col-span-8' : 'col-span-12 lg:col-span-4';
-  }
+  // Default all sections to full-width to ensure proper display
+  // Content sections should span full width and handle their own internal layout
+  return 'col-span-12';
 }
 
 export function BentoLayout({ children, theme, sections }: BentoLayoutProps) {
