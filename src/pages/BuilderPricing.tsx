@@ -174,14 +174,14 @@ const BuilderPricing = () => {
               <span className="font-bold text-lg text-foreground">Excellion AI</span>
             </button>
             <div className="hidden md:flex items-center gap-6">
-              <a href="#ai-builder" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#ai-builder" className="text-sm text-foreground/80 hover:text-foreground transition-colors">
                 AI Builder
               </a>
-              <a href="#done-for-you" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#done-for-you" className="text-sm text-foreground/80 hover:text-foreground transition-colors">
                 Done-for-you
               </a>
             </div>
-            <Button size="sm" onClick={() => navigate("/secret-builder-hub")}>
+            <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => navigate("/secret-builder-hub")}>
               Studio
             </Button>
           </div>
