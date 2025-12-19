@@ -443,31 +443,30 @@ const BuilderPricing = () => {
                   </div>
                 )}
                 
-                <CardHeader className="pb-4 min-h-[200px]">
+                <CardHeader className="pb-4 h-[210px] flex flex-col">
                   <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground h-5">{plan.description}</p>
+                  <p className="text-sm text-muted-foreground">{plan.description}</p>
                   <div className="mt-4">
                     <span className="text-4xl font-bold text-foreground">{getPrice(plan)}</span>
                     <span className="text-muted-foreground ml-1">/ month</span>
                   </div>
-                  {isAnnual && getSavings(plan) && (
-                    <p className="text-sm text-accent mt-1">{getSavings(plan)}</p>
-                  )}
-                  {!isAnnual && plan.monthlyPrice !== 0 && (
-                    <p className="text-sm text-transparent mt-1 select-none">-</p>
-                  )}
+                  <div className="h-5 mt-1">
+                    {isAnnual && getSavings(plan) && (
+                      <p className="text-sm text-accent">{getSavings(plan)}</p>
+                    )}
+                  </div>
                   {/* Credits Badge */}
-                  <div className="mt-3">
+                  <div className="mt-2">
                     <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent/15 text-accent px-2.5 py-1 rounded-full">
                       <Sparkles className="w-3 h-3" />
                       {plan.credits} AI credits/mo • rollover
                     </span>
                   </div>
-                  {plan.monthlyPrice === 0 ? (
-                    <p className="text-sm text-muted-foreground mt-2">Free forever</p>
-                  ) : (
-                    <p className="text-sm text-transparent mt-2 select-none">-</p>
-                  )}
+                  <div className="h-6 mt-2">
+                    {plan.monthlyPrice === 0 && (
+                      <p className="text-sm text-muted-foreground">Free forever</p>
+                    )}
+                  </div>
                 </CardHeader>
 
                 <CardContent className="flex-grow pb-4">
