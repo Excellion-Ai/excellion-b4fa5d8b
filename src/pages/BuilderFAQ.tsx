@@ -44,7 +44,7 @@ const BuilderFAQ = () => {
         },
         {
           question: "Can I add my own images and videos?",
-          answer: "Yes. Upload your own photos, videos, and graphics, or choose from our library of professional stock images. The AI can also suggest images based on your content."
+          answer: "Yes. Upload your own photos, videos, and graphics. You can also generate new images with Excellion AI, and it can suggest visuals that match your content and brand."
         },
         {
           question: "What if I don't like what the AI created?",
