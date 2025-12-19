@@ -5,7 +5,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Shield } from "lucide-react";
 import { useAdmin } from "@/hooks/useAdmin";
 
-const Navigation = () => {
+interface NavigationProps {
+  hideFaq?: boolean;
+}
+
+const Navigation = ({ hideFaq = false }: NavigationProps) => {
   const { isAdmin } = useAdmin();
   
   return (
@@ -30,9 +34,11 @@ const Navigation = () => {
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               How it Works
             </Link>
-            <Link to="/builder-faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              FAQ
-            </Link>
+            {!hideFaq && (
+              <Link to="/builder-faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                FAQ
+              </Link>
+            )}
             <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Contact
             </Link>
@@ -75,12 +81,14 @@ const Navigation = () => {
                   >
                     How it Works
                   </Link>
-                  <Link 
-                    to="/builder-faq" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    FAQ
-                  </Link>
+                  {!hideFaq && (
+                    <Link 
+                      to="/builder-faq" 
+                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                    >
+                      FAQ
+                    </Link>
+                  )}
                   <Link 
                     to="/contact" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
