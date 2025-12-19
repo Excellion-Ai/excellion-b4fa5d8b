@@ -5,11 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Shield } from "lucide-react";
 import { useAdmin } from "@/hooks/useAdmin";
 
-interface NavigationProps {
-  hideFaq?: boolean;
-}
-
-const Navigation = ({ hideFaq = false }: NavigationProps) => {
+const Navigation = () => {
   const { isAdmin } = useAdmin();
   
   return (
@@ -28,17 +24,15 @@ const Navigation = ({ hideFaq = false }: NavigationProps) => {
         </Link>
           
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
-            </Link>
             <a href="/#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               How it Works
             </a>
-            {!hideFaq && (
-              <Link to="/builder-faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                FAQ
-              </Link>
-            )}
+            <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Pricing
+            </Link>
+            <Link to="/builder-faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              FAQ
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -72,20 +66,24 @@ const Navigation = ({ hideFaq = false }: NavigationProps) => {
                   >
                     Pricing
                   </Link>
-                  <a 
+          <a 
                     href="/#how-it-works" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
                     How it Works
                   </a>
-                  {!hideFaq && (
-                    <Link 
-                      to="/builder-faq" 
-                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                    >
-                      FAQ
-                    </Link>
-                  )}
+                  <Link 
+                    to="/pricing" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                  >
+                    Pricing
+                  </Link>
+                  <Link 
+                    to="/builder-faq" 
+                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                  >
+                    FAQ
+                  </Link>
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
                     {isAdmin && (
                       <Link to="/admin">
