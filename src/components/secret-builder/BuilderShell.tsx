@@ -27,6 +27,7 @@ import { PresenceCursor } from './PresenceCursor';
 import { SchemaVizPanel } from './SchemaVizPanel';
 import { ThreeDPanel } from './ThreeDPanel';
 import { SecurityScanPanel } from './SecurityScanPanel';
+import { RenameDialog } from './RenameDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -139,6 +140,7 @@ export function BuilderShell() {
   const [showSchemaDialog, setShowSchemaDialog] = useState(false);
   const [showThreeDDialog, setShowThreeDDialog] = useState(false);
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string }[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [attachments, setAttachments] = useState<{ file?: File; name: string; url?: string }[]>([]);
@@ -630,6 +632,23 @@ export function BuilderShell() {
     }
   };
 
+  const handleRenameProject = async (newName: string) => {
+    if (!projectId) return;
+    try {
+      const { error } = await supabase
+        .from('builder_projects')
+        .update({ name: newName })
+        .eq('id', projectId);
+      
+      if (error) throw error;
+      setProjectName(newName);
+      toast.success('Project renamed');
+    } catch (error) {
+      console.error('Rename error:', error);
+      toast.error('Failed to rename project');
+    }
+  };
+
   return (
     <div className="h-screen overflow-hidden bg-background">
       <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -647,9 +666,13 @@ export function BuilderShell() {
                 <LayoutGrid className="h-4 w-4" />
                 Studio
               </Button>
-              <span className="text-xs text-muted-foreground">
+              <button
+                onClick={() => setShowRenameDialog(true)}
+                className="text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 px-2 py-1 rounded transition-colors truncate max-w-[120px]"
+                title="Click to rename project"
+              >
                 {projectName || 'New Project'}
-              </span>
+              </button>
             </div>
             
             <ScrollArea className="flex-1 p-4">
@@ -1370,6 +1393,14 @@ export function BuilderShell() {
           setPendingSpec(null);
           setPreviousSpecForDiff(null);
         }}
+      />
+
+      {/* Rename Dialog */}
+      <RenameDialog
+        open={showRenameDialog}
+        onOpenChange={setShowRenameDialog}
+        currentName={projectName}
+        onRename={handleRenameProject}
       />
     </div>
   );
