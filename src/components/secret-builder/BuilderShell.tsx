@@ -924,14 +924,15 @@ export function BuilderShell() {
           </div>
 
           <div className="flex items-center gap-2">
-            {siteSpec && siteSpec.pages[currentPageIndex] && (
+            {/* SectionLibrary hidden but code preserved */}
+            {/* {siteSpec && siteSpec.pages[currentPageIndex] && (
               <SectionLibrary
                 onAddSection={editor.addSection}
                 onRemoveSection={editor.removeSection}
                 onUpdateAnimation={editor.updateSectionAnimation}
                 existingSections={siteSpec.pages[currentPageIndex].sections}
               />
-            )}
+            )} */}
             
             {/* Bookmarks */}
             <BookmarksPanel
@@ -944,8 +945,8 @@ export function BuilderShell() {
               }}
             />
             
-            {/* PWA Export */}
-            <PWAExport siteSpec={siteSpec} projectName={projectName} />
+            {/* PWA Export - hidden but code preserved */}
+            {/* <PWAExport siteSpec={siteSpec} projectName={projectName} /> */}
             
             {/* Knowledge Base */}
             <KnowledgePanel projectId={projectId} />
@@ -997,7 +998,8 @@ export function BuilderShell() {
               Schema
             </Button>
             
-            <Button
+            {/* 3D Button - hidden but code preserved */}
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => setShowThreeDDialog(true)}
@@ -1005,7 +1007,7 @@ export function BuilderShell() {
             >
               <Box className="h-3.5 w-3.5" />
               3D
-            </Button>
+            </Button> */}
             
             <Button
               variant="outline"
