@@ -787,10 +787,6 @@ export function BuilderShell() {
           <div className="h-full flex flex-col">
         <div className="h-12 border-b border-border flex items-center justify-between px-4 bg-card/30">
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground truncate max-w-[150px]">
-              {projectName}
-            </span>
-            
             {/* Presence Avatars */}
             <PresenceAvatars users={otherUsers} />
             
