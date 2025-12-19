@@ -31,9 +31,9 @@ const Navigation = ({ hideFaq = false }: NavigationProps) => {
             <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </Link>
-            <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <a href="/#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               How it Works
-            </Link>
+            </a>
             {!hideFaq && (
               <Link to="/builder-faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 FAQ
@@ -72,12 +72,12 @@ const Navigation = ({ hideFaq = false }: NavigationProps) => {
                   >
                     Pricing
                   </Link>
-                  <Link 
-                    to="/dfy" 
+                  <a 
+                    href="/#how-it-works" 
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
                     How it Works
-                  </Link>
+                  </a>
                   {!hideFaq && (
                     <Link 
                       to="/builder-faq" 
