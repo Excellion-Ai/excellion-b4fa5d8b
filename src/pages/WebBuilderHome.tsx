@@ -16,9 +16,9 @@ import {
   Phone,
   Mail
 } from "lucide-react";
-import excellionLogo from "@/assets/excellion-logo.png";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
+import Navigation from "@/components/Navigation";
 import { AnimatedPlaceholder } from "@/components/AnimatedPlaceholder";
 
 const placeholderSuggestions = [
@@ -122,33 +122,7 @@ const WebBuilderHome = () => {
         <title>Website Builder AI | Build Your Site with AI</title>
       </Helmet>
 
-      {/* Navigation */}
-      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
-              <span className="font-bold text-lg text-foreground">Excellion AI</span>
-            </div>
-            <div className="hidden md:flex items-center gap-6">
-              <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                How it works
-              </a>
-              <button onClick={() => navigate("/pricing")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Pricing
-              </button>
-              <button onClick={() => navigate("/builder-faq")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                FAQ
-              </button>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button size="sm" onClick={() => navigate("/secret-builder-hub")}>
-                Start Building
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
