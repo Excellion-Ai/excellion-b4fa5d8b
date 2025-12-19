@@ -1014,6 +1014,21 @@ export default function SecretBuilderHub() {
                 })}
               </div>
             )}
+            
+            {/* View More Button */}
+            {projects.length > 6 && !showAllProjects && (
+              <div className="flex justify-center mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAllProjects(true)}
+                  className="gap-2"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                  View {projects.length - 6} more projects
+                </Button>
+              </div>
+            )}
           </section>
 
           {/* Templates Section */}
