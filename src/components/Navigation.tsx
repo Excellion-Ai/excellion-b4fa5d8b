@@ -30,9 +30,6 @@ const Navigation = () => {
             <Link to="/dfy" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               How it Works
             </Link>
-            <Link to="/builder-faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              FAQ
-            </Link>
             <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Contact
             </Link>
@@ -74,12 +71,6 @@ const Navigation = () => {
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
                     How it Works
-                  </Link>
-                  <Link 
-                    to="/builder-faq" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    FAQ
                   </Link>
                   <Link 
                     to="/contact" 
