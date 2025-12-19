@@ -52,7 +52,7 @@ const BuilderFAQ = () => {
         },
         {
           question: "Can I add custom sections or pages?",
-          answer: "Yes. Add new pages, duplicate sections, or create custom layouts. The AI can help you build anything from a simple contact page to a full portfolio gallery."
+          answer: "Yes. Create new pages, duplicate sections, and build custom layouts. Excellion AI can generate new sections from a prompt and help you refine structure, copy, and styling as you go."
         }
       ]
     },
