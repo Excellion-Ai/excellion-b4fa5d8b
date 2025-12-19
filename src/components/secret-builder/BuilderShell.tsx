@@ -966,7 +966,8 @@ export function BuilderShell() {
               AI Image
             </Button>
             
-            <Button
+            {/* Domains button - hidden, moved to publish dropdown */}
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => setShowDomainsDialog(true)}
@@ -975,7 +976,7 @@ export function BuilderShell() {
             >
               <Globe className="h-3.5 w-3.5" />
               Domains
-            </Button>
+            </Button> */}
             
             <Button
               variant="outline"
@@ -998,7 +999,8 @@ export function BuilderShell() {
               3D
             </Button> */}
             
-            <Button
+            {/* Security button - hidden, moved to publish dropdown */}
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => setShowSecurityDialog(true)}
@@ -1006,7 +1008,7 @@ export function BuilderShell() {
             >
               <Shield className="h-3.5 w-3.5" />
               Security
-            </Button>
+            </Button> */}
             
             <Button
               variant="outline"
@@ -1019,19 +1021,37 @@ export function BuilderShell() {
               Analytics
             </Button>
             
-            <Button
-              size="sm"
-              disabled={!siteSpec || isPublishing}
-              onClick={handlePublish}
-              className="gap-1.5 bg-primary hover:bg-primary/90"
-            >
-              {isPublishing ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Upload className="h-3.5 w-3.5" />
-              )}
-              {isPublishing ? 'Publishing...' : 'Publish'}
-            </Button>
+            {/* Publish dropdown with Domains and Security */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  disabled={!siteSpec || isPublishing}
+                  className="gap-1.5 bg-primary hover:bg-primary/90"
+                >
+                  {isPublishing ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Upload className="h-3.5 w-3.5" />
+                  )}
+                  {isPublishing ? 'Publishing...' : 'Publish'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handlePublish} disabled={!siteSpec || isPublishing} className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  <span>Publish Site</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowDomainsDialog(true)} disabled={!projectId} className="gap-2">
+                  <Globe className="h-4 w-4" />
+                  <span>Custom Domains</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowSecurityDialog(true)} className="gap-2">
+                  <Shield className="h-4 w-4" />
+                  <span>Security</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
