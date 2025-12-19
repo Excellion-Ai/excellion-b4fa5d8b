@@ -39,9 +39,6 @@ const Navigation = ({ hideFaq = false }: NavigationProps) => {
                 FAQ
               </Link>
             )}
-            <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Contact
-            </Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -89,12 +86,6 @@ const Navigation = ({ hideFaq = false }: NavigationProps) => {
                       FAQ
                     </Link>
                   )}
-                  <Link 
-                    to="/contact" 
-                    className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    Contact
-                  </Link>
                   <div className="pt-6 border-t border-border flex flex-col gap-3">
                     {isAdmin && (
                       <Link to="/admin">
