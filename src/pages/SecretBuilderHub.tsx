@@ -37,7 +37,8 @@ import {
   Check,
   Globe,
   Folder,
-  ChevronUp
+  ChevronUp,
+  Menu
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -51,6 +52,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
@@ -169,6 +175,7 @@ export default function SecretBuilderHub() {
   const [projectToRename, setProjectToRename] = useState<BuilderProject | null>(null);
   const [projectsFolderOpen, setProjectsFolderOpen] = useState(true);
   const [showAllProjects, setShowAllProjects] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isSubmittingRef = useRef(false);
@@ -505,8 +512,154 @@ export default function SecretBuilderHub() {
         onRename={handleRenameProject}
       />
 
-      {/* Sidebar */}
-      <aside className="w-64 flex flex-col fixed h-full z-20 border-r border-border bg-card">
+      {/* Mobile Header */}
+      <div className="fixed top-0 left-0 right-0 z-30 md:hidden bg-card border-b border-border">
+        <div className="flex items-center justify-between p-3">
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="w-5 h-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 p-0 bg-card">
+              {/* Mobile Sidebar Content */}
+              <div className="flex flex-col h-full">
+                {/* Workspace Header */}
+                <div className="p-4 border-b border-border">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start h-auto py-2 px-3"
+                    onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <img src={excellionLogo} alt="Excellion" className="h-5 w-5" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-foreground">Excellion</p>
+                        <p className="text-xs text-muted-foreground">Builder</p>
+                      </div>
+                    </div>
+                  </Button>
+                </div>
+
+                {/* Search Button */}
+                <div className="px-3 py-2">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground"
+                    onClick={() => { setSearchOpen(true); setMobileMenuOpen(false); }}
+                  >
+                    <Search className="w-4 h-4" />
+                    <span className="text-sm">Search</span>
+                  </Button>
+                </div>
+
+                {/* Navigation */}
+                <nav className="px-3 py-2 space-y-1 flex-1 overflow-y-auto">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span className="text-sm">Landing Page</span>
+                  </Button>
+                  
+                  {NAV_ITEMS.map((item) => {
+                    const isActive = item.action === 'home';
+                    return (
+                      <Button
+                        key={item.label}
+                        variant="ghost"
+                        className={`w-full justify-start gap-2 h-9 ${
+                          isActive 
+                            ? 'bg-secondary text-foreground' 
+                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                        }`}
+                        onClick={() => {
+                          if (item.action === 'home') {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <item.icon className="w-4 h-4" />
+                        <span className="text-sm">{item.label}</span>
+                      </Button>
+                    );
+                  })}
+
+                  {/* Projects List */}
+                  <Collapsible open={projectsFolderOpen} onOpenChange={setProjectsFolderOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      >
+                        <Folder className="w-4 h-4" />
+                        <span className="text-sm flex-1 text-left">Projects</span>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${projectsFolderOpen ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-2 mt-1">
+                      <ScrollArea className="h-48">
+                        <div className="space-y-0.5 pl-2">
+                          {projects.length === 0 ? (
+                            <p className="text-xs text-muted-foreground py-2 px-2">No projects yet</p>
+                          ) : (
+                            projects.slice(0, 5).map((project) => (
+                              <Button
+                                key={project.id}
+                                variant="ghost"
+                                className="w-full justify-start gap-2 h-8 text-xs"
+                                onClick={() => { handleOpenProject(project.id); setMobileMenuOpen(false); }}
+                              >
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                                <span className="truncate">{project.name}</span>
+                              </Button>
+                            ))
+                          )}
+                        </div>
+                      </ScrollArea>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </nav>
+
+                {/* Bottom CTA */}
+                <div className="p-3 border-t border-border">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full text-xs h-8 text-muted-foreground hover:text-foreground"
+                    onClick={() => { navigate('/pricing#pro'); setMobileMenuOpen(false); }}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                    Upgrade to Pro
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <div className="flex items-center gap-2">
+            <img src={excellionLogo} alt="Excellion" className="h-6 w-6" />
+            <span className="text-sm font-medium text-foreground">Excellion</span>
+          </div>
+
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9"
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 flex-col fixed h-full z-20 border-r border-border bg-card">
         {/* Workspace Header */}
         <div className="p-4 border-b border-border">
           <Button 
@@ -706,11 +859,11 @@ export default function SecretBuilderHub() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 min-h-screen overflow-y-auto relative">
+      <main className="flex-1 md:ml-64 min-h-screen overflow-y-auto relative pt-16 md:pt-0">
         {/* Subtle purple gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-transparent to-purple-900/10 pointer-events-none" />
         
-        <div className="relative max-w-3xl mx-auto px-6 py-16">
+        <div className="relative max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-16">
           
           {/* Hero Section */}
           <section className="text-center mb-10">
