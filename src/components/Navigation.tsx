@@ -45,9 +45,14 @@ const Navigation = () => {
                   </Button>
                 </Link>
               )}
-              <Link to="/">
+              <Link to="/auth">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/secret-builder-hub">
                 <Button variant="secondary" size="sm">
-                  Home
+                  Start Building
                 </Button>
               </Link>
             </div>
@@ -93,9 +98,14 @@ const Navigation = () => {
                         </Button>
                       </Link>
                     )}
-                    <Link to="/">
+                    <Link to="/auth">
+                      <Button variant="ghost" size="sm" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/secret-builder-hub">
                       <Button variant="secondary" size="sm" className="w-full">
-                        Home
+                        Start Building
                       </Button>
                     </Link>
                   </div>
