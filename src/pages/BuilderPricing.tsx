@@ -180,9 +180,6 @@ const BuilderPricing = () => {
               <a href="#done-for-you" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Done-for-you
               </a>
-              <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                FAQ
-              </a>
             </div>
             <Button size="sm" onClick={() => navigate("/secret-builder-hub")}>
               Studio
