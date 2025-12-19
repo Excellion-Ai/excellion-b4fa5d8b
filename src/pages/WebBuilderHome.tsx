@@ -143,7 +143,7 @@ const WebBuilderHome = () => {
             </div>
             <div className="flex items-center gap-3">
               <Button size="sm" onClick={() => navigate("/secret-builder-hub")}>
-                Studio
+                Start Building
               </Button>
             </div>
           </div>
