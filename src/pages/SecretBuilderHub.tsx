@@ -168,7 +168,7 @@ export default function SecretBuilderHub() {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [projectToRename, setProjectToRename] = useState<BuilderProject | null>(null);
   const [projectsFolderOpen, setProjectsFolderOpen] = useState(true);
-  
+  const [showAllProjects, setShowAllProjects] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isSubmittingRef = useRef(false);
@@ -879,8 +879,14 @@ export default function SecretBuilderHub() {
                 Your Projects
               </h2>
               {projects.length > 6 && (
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                  View all ({projects.length})
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-muted-foreground hover:text-foreground gap-1.5"
+                  onClick={() => setShowAllProjects(!showAllProjects)}
+                >
+                  {showAllProjects ? 'Show less' : `View all (${projects.length})`}
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showAllProjects ? 'rotate-180' : ''}`} />
                 </Button>
               )}
             </div>
@@ -911,7 +917,7 @@ export default function SecretBuilderHub() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {projects.slice(0, 6).map((project) => {
+                {(showAllProjects ? projects : projects.slice(0, 6)).map((project) => {
                   const themeId = project.spec?.themeId || 'modern';
                   const themeOption = THEME_OPTIONS.find(t => t.id === themeId);
                   
