@@ -409,6 +409,16 @@ const BuilderPricing = () => {
               </AccordionItem>
             ))}
           </Accordion>
+
+          <div className="text-center mt-8">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/builder-faq")}
+              className="gap-2"
+            >
+              More FAQs <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
         </section>
       </main>
 
