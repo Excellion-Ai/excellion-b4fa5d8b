@@ -969,17 +969,6 @@ export function BuilderShell() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowAnalyticsDialog(true)}
-              className="gap-1.5 text-xs"
-              disabled={!projectId}
-            >
-              <BarChart3 className="h-3.5 w-3.5" />
-              Analytics
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
               onClick={() => setShowDomainsDialog(true)}
               className="gap-1.5 text-xs"
               disabled={!projectId}
@@ -1017,6 +1006,17 @@ export function BuilderShell() {
             >
               <Shield className="h-3.5 w-3.5" />
               Security
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAnalyticsDialog(true)}
+              className="gap-1.5 text-xs"
+              disabled={!projectId}
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              Analytics
             </Button>
             
             <Button
