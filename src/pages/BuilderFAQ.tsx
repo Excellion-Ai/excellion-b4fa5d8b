@@ -61,7 +61,7 @@ const BuilderFAQ = () => {
       items: [
         {
           question: "How do I publish my website?",
-          answer: "Click the publish button when you're ready. Your site goes live instantly on a free subdomain, or you can connect your own custom domain."
+          answer: "Click Publish when you're ready. Your site goes live instantly on a free subdomain — and then you can connect your own custom domain."
         },
         {
           question: "Can I use my own domain name?",
