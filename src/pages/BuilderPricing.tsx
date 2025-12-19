@@ -424,12 +424,12 @@ const BuilderPricing = () => {
           </div>
 
           {/* AI Builder Cards */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             {aiBuilderPlans.map((plan) => (
               <Card 
                 key={plan.name}
                 id={plan.name.toLowerCase()}
-                className={`relative flex flex-col scroll-mt-24 ${
+                className={`relative flex flex-col scroll-mt-24 h-full ${
                   plan.highlighted 
                     ? 'border-primary bg-primary/5 ring-2 ring-primary' 
                     : 'border-border bg-card'
@@ -443,15 +443,18 @@ const BuilderPricing = () => {
                   </div>
                 )}
                 
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-4 min-h-[200px]">
                   <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground">{plan.description}</p>
+                  <p className="text-sm text-muted-foreground h-5">{plan.description}</p>
                   <div className="mt-4">
                     <span className="text-4xl font-bold text-foreground">{getPrice(plan)}</span>
                     <span className="text-muted-foreground ml-1">/ month</span>
                   </div>
                   {isAnnual && getSavings(plan) && (
                     <p className="text-sm text-accent mt-1">{getSavings(plan)}</p>
+                  )}
+                  {!isAnnual && plan.monthlyPrice !== 0 && (
+                    <p className="text-sm text-transparent mt-1 select-none">-</p>
                   )}
                   {/* Credits Badge */}
                   <div className="mt-3">
@@ -460,12 +463,14 @@ const BuilderPricing = () => {
                       {plan.credits} AI credits/mo • rollover
                     </span>
                   </div>
-                  {plan.monthlyPrice === 0 && (
+                  {plan.monthlyPrice === 0 ? (
                     <p className="text-sm text-muted-foreground mt-2">Free forever</p>
+                  ) : (
+                    <p className="text-sm text-transparent mt-2 select-none">-</p>
                   )}
                 </CardHeader>
 
-                <CardContent className="flex-grow">
+                <CardContent className="flex-grow pb-4">
                   <ul className="space-y-3">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2.5">
@@ -481,7 +486,7 @@ const BuilderPricing = () => {
                   )}
                 </CardContent>
 
-                <CardFooter className="pt-4">
+                <CardFooter className="pt-4 mt-auto">
                   <Button 
                     className={`w-full ${plan.highlighted ? 'bg-primary hover:bg-primary/90' : ''}`}
                     variant={plan.highlighted ? 'default' : 'outline'}
