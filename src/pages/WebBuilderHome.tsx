@@ -225,7 +225,7 @@ const WebBuilderHome = () => {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 border-t border-border/50">
+      <section id="how-it-works" className="py-20 px-4 border-t border-border/50 scroll-mt-20">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-foreground text-center mb-4">
             How Excellion AI builds your site
