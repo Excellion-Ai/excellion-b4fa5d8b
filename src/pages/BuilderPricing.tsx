@@ -199,41 +199,6 @@ const BuilderPricing = () => {
           </p>
         </div>
 
-        {/* Two Ways to Launch Intro */}
-        <section className="mb-20">
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <a href="#ai-builder" className="block p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all group">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground">AI Builder</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                Build with Excellion AI. Answer questions, get a full site draft in minutes, and edit it yourself.
-              </p>
-              <span className="text-sm text-primary group-hover:underline flex items-center gap-1">
-                View plans <ArrowRight className="w-4 h-4" />
-              </span>
-            </a>
-
-            <a href="#done-for-you" className="block p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all group">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground">Done-for-you</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                Have our team design, build, and launch your site based on a quick discovery call.
-              </p>
-              <span className="text-sm text-primary group-hover:underline flex items-center gap-1">
-                View pricing <ArrowRight className="w-4 h-4" />
-              </span>
-            </a>
-          </div>
-        </section>
-
         {/* AI Builder Pricing */}
         <section id="ai-builder" className="mb-24 scroll-mt-24">
           <div className="text-center mb-8">
