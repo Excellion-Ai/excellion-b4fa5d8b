@@ -10,10 +10,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Check, Sparkles, ArrowRight, Zap, Phone } from "lucide-react";
+import { Check, Sparkles, ArrowRight, Zap, Phone, Loader2 } from "lucide-react";
 import excellionLogo from "@/assets/excellion-logo.png";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
+// Stripe Price IDs
+const PRICE_IDS = {
+  starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",
+  pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",
+  agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",
+};
 const aiBuilderPlans = [
   {
     name: "Free",
@@ -141,6 +149,7 @@ const faqItems = [
 
 const BuilderPricing = () => {
   const [isAnnual, setIsAnnual] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const getPrice = (plan: typeof aiBuilderPlans[0]) => {
@@ -156,6 +165,52 @@ const BuilderPricing = () => {
     const savings = monthlyCost - plan.yearlyPrice;
     if (savings > 0) return `Save $${savings}/yr`;
     return null;
+  };
+
+  const handleCheckout = async (planName: string) => {
+    // Free plan goes directly to builder
+    if (planName.toLowerCase() === "free") {
+      navigate("/secret-builder-hub");
+      return;
+    }
+
+    setLoadingPlan(planName);
+    
+    try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Please sign in to subscribe");
+        navigate("/auth");
+        return;
+      }
+
+      const planType = planName.toLowerCase() as keyof typeof PRICE_IDS;
+      const priceId = PRICE_IDS[planType];
+      
+      if (!priceId) {
+        toast.error("Invalid plan selected");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId, planType },
+      });
+
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("No checkout URL received");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Failed to start checkout. Please try again.");
+    } finally {
+      setLoadingPlan(null);
+    }
   };
 
   return (
@@ -288,9 +343,17 @@ const BuilderPricing = () => {
                   <Button 
                     className={`w-full ${plan.highlighted ? '' : 'variant-outline'}`}
                     variant={plan.highlighted ? 'default' : 'outline'}
-                    onClick={() => navigate("/secret-builder-hub")}
+                    onClick={() => handleCheckout(plan.name)}
+                    disabled={loadingPlan === plan.name}
                   >
-                    {plan.cta}
+                    {loadingPlan === plan.name ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      plan.cta
+                    )}
                   </Button>
                 </CardFooter>
               </Card>
