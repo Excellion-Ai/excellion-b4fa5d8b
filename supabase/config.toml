@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.database-ai]
 verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
