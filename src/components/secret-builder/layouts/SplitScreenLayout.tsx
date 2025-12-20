@@ -186,16 +186,49 @@ export function SplitHero({ headline, subheadline, theme, backgroundImage }: Spl
         backgroundColor: fallbackBg,
       }
     : {
-        background: `linear-gradient(160deg, ${theme.primaryColor}40, ${theme.secondaryColor}20, ${fallbackBg})`,
+        // Enhanced gradient with better visibility for light themes
+        background: isDark 
+          ? `linear-gradient(160deg, ${theme.primaryColor}40, ${theme.secondaryColor}25, ${fallbackBg})`
+          : `linear-gradient(160deg, ${theme.primaryColor}20, ${theme.secondaryColor}15, ${theme.primaryColor}08, ${fallbackBg})`,
         backgroundColor: fallbackBg,
       };
 
   return (
     <div 
-      className="h-full w-full flex flex-col justify-end p-8 lg:p-12"
+      className="h-full w-full flex flex-col justify-center lg:justify-end p-8 lg:p-12 relative overflow-hidden"
       style={backgroundStyle}
     >
-      <div className="max-w-md">
+      {/* Decorative elements for visual interest when no background image */}
+      {!backgroundImage && (
+        <>
+          {/* Large accent blob - top right */}
+          <div 
+            className="absolute -top-20 -right-20 w-[400px] h-[400px] rounded-full blur-3xl pointer-events-none"
+            style={{ 
+              backgroundColor: theme.primaryColor,
+              opacity: isDark ? 0.15 : 0.12,
+            }}
+          />
+          {/* Secondary blob - bottom left */}
+          <div 
+            className="absolute -bottom-32 -left-32 w-[350px] h-[350px] rounded-full blur-3xl pointer-events-none"
+            style={{ 
+              backgroundColor: theme.secondaryColor,
+              opacity: isDark ? 0.12 : 0.10,
+            }}
+          />
+          {/* Accent shape - center */}
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] rounded-full blur-2xl pointer-events-none"
+            style={{ 
+              backgroundColor: theme.primaryColor,
+              opacity: isDark ? 0.08 : 0.06,
+            }}
+          />
+        </>
+      )}
+      
+      <div className="max-w-md relative z-10">
         <h1 
           className="text-3xl lg:text-5xl xl:text-6xl font-bold mb-4 leading-tight"
           style={{ 
