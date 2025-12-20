@@ -209,7 +209,7 @@ export default function SecretBuilderHub() {
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const [domainsDialogOpen, setDomainsDialogOpen] = useState(false);
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
-  const [aiModelDialogOpen, setAiModelDialogOpen] = useState(false);
+  
   const [shortcutsDialogOpen, setShortcutsDialogOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -221,7 +221,7 @@ export default function SecretBuilderHub() {
   });
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
-  const [preferredAiModel, setPreferredAiModel] = useState<'fast' | 'quality'>('fast');
+  
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -809,10 +809,6 @@ export default function SecretBuilderHub() {
               <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setThemeDialogOpen(true)}>
                 <Palette className="w-4 h-4" />
                 <span>Theme & Appearance</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setAiModelDialogOpen(true)}>
-                <Zap className="w-4 h-4" />
-                <span>AI Model Settings</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setShortcutsDialogOpen(true)}>
                 <Keyboard className="w-4 h-4" />
@@ -1587,42 +1583,6 @@ export default function SecretBuilderHub() {
         </DialogContent>
       </Dialog>
 
-      {/* AI Model Settings Dialog */}
-      <Dialog open={aiModelDialogOpen} onOpenChange={setAiModelDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5" />
-              AI Model Settings
-            </DialogTitle>
-            <DialogDescription>
-              Choose your preferred AI model for generation.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div 
-              className={`p-4 rounded-lg border cursor-pointer transition-colors ${preferredAiModel === 'fast' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
-              onClick={() => setPreferredAiModel('fast')}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="font-medium">Fast Mode</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Gemini Flash - quicker responses, lower cost</p>
-            </div>
-            <div 
-              className={`p-4 rounded-lg border cursor-pointer transition-colors ${preferredAiModel === 'quality' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
-              onClick={() => setPreferredAiModel('quality')}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-purple-500" />
-                <span className="font-medium">Quality Mode</span>
-              </div>
-              <p className="text-xs text-muted-foreground">GPT-5 - higher quality output, slower</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Keyboard Shortcuts Dialog */}
       <Dialog open={shortcutsDialogOpen} onOpenChange={setShortcutsDialogOpen}>
