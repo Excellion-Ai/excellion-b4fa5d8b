@@ -32,19 +32,10 @@ export function BentoLayout({ children, theme, sections }: BentoLayoutProps) {
   
   return (
     <div className="min-h-screen" style={{ backgroundColor: theme.backgroundColor }}>
-      {/* Floating Pill Navigation */}
-      <nav 
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full backdrop-blur-xl shadow-2xl flex items-center gap-6"
-        style={{ 
-          backgroundColor: isDark ? 'rgba(17, 17, 17, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        }}
-      >
-        {/* Nav items will be rendered by parent */}
-      </nav>
+      {/* Navigation is rendered by parent - NOT at the bottom */}
 
-      {/* Bento Grid Container */}
-      <main className="p-4 lg:p-8">
+      {/* Bento Grid Container - with top padding for nav */}
+      <main className="p-4 lg:p-8 pt-20">
         <div className="grid grid-cols-12 gap-4 lg:gap-6 auto-rows-min">
           {childArray.map((child, index) => {
             const section = sections[index];
@@ -93,11 +84,11 @@ export function BentoPillNav({
   
   return (
     <nav 
-      className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-full backdrop-blur-xl shadow-2xl flex items-center gap-6"
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full backdrop-blur-xl shadow-2xl flex items-center gap-6"
       style={{ 
         backgroundColor: isDark ? 'rgba(17, 17, 17, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        boxShadow: '0 4px 20px -4px rgba(0, 0, 0, 0.15)',
       }}
     >
       <span 
