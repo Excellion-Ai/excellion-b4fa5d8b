@@ -45,6 +45,7 @@ type Message = {
   role: 'user' | 'assistant';
   content: string;
   htmlCode?: string;
+  attachments?: { name: string; url: string; type: string }[];
 };
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
@@ -341,13 +342,35 @@ export function BuilderShell() {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
 
+    // Convert attachments to base64 for API and store for display
+    const currentAttachments = [...attachments];
+    const attachmentData: { name: string; url: string; type: string }[] = [];
+    const imageDataForApi: { type: 'image_url'; image_url: { url: string } }[] = [];
+
+    for (const att of currentAttachments) {
+      if (att.file && att.file.type.startsWith('image/')) {
+        // Convert to base64 for API
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(att.file!);
+        });
+        attachmentData.push({ name: att.name, url: att.url || base64, type: att.file.type });
+        imageDataForApi.push({ type: 'image_url', image_url: { url: base64 } });
+      } else if (att.file) {
+        attachmentData.push({ name: att.name, url: '', type: att.file.type });
+      }
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: ideaToUse,
+      attachments: attachmentData.length > 0 ? attachmentData : undefined,
     };
     setMessages((prev) => [...prev, userMessage]);
     setIdea('');
+    setAttachments([]); // Clear attachments after sending
 
     setIsGenerating(true);
     // Don't clear the existing preview - keep it visible until new one is ready
@@ -370,10 +393,26 @@ export function BuilderShell() {
 
       updateStep(3, 'active');
       
-      const chatMessages = [...messages, userMessage].map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      // Build chat messages, including images for the latest user message
+      const chatMessages = [...messages, userMessage].map((m, idx, arr) => {
+        const isLatestUserMessage = idx === arr.length - 1 && m.role === 'user';
+        
+        // For the latest user message with attachments, use multimodal format
+        if (isLatestUserMessage && imageDataForApi.length > 0) {
+          return {
+            role: m.role,
+            content: [
+              { type: 'text', text: m.content },
+              ...imageDataForApi,
+            ],
+          };
+        }
+        
+        return {
+          role: m.role,
+          content: m.content,
+        };
+      });
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`, {
         method: 'POST',
@@ -537,11 +576,13 @@ export function BuilderShell() {
     const files = e.target.files;
     if (!files) return;
 
-    const newAttachments: { file: File; name: string }[] = [];
+    const newAttachments: { file: File; name: string; url: string }[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.size <= 10 * 1024 * 1024) {
-        newAttachments.push({ file, name: file.name });
+        // Create a preview URL for images
+        const url = file.type.startsWith('image/') ? URL.createObjectURL(file) : '';
+        newAttachments.push({ file, name: file.name, url });
       } else {
         toast.error(`${file.name} exceeds 10MB limit`);
       }
@@ -725,6 +766,27 @@ export function BuilderShell() {
                           : 'bg-muted text-foreground'
                       }`}
                     >
+                      {/* Show attachments if present */}
+                      {msg.attachments && msg.attachments.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {msg.attachments.map((att, idx) => (
+                            <div key={idx} className="relative">
+                              {att.type.startsWith('image/') && att.url ? (
+                                <img 
+                                  src={att.url} 
+                                  alt={att.name} 
+                                  className="max-h-32 max-w-full rounded-lg object-cover" 
+                                />
+                              ) : (
+                                <div className="flex items-center gap-1 bg-black/20 rounded px-2 py-1 text-xs">
+                                  <Paperclip className="h-3 w-3" />
+                                  <span className="truncate max-w-[100px]">{att.name}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       {msg.content}
                     </div>
                   </div>
