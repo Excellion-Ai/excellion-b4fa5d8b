@@ -99,8 +99,14 @@ const Checkout = () => {
     appearance: {
       theme: 'night' as const,
       variables: {
-        colorBackground: '#0a0a0a',
         colorPrimary: '#a855f7',
+        colorBackground: '#1a1a1a',
+        colorText: '#ffffff',
+        colorDanger: '#ef4444',
+        fontFamily: 'system-ui, sans-serif',
+        borderRadius: '8px',
+        colorTextSecondary: '#a1a1aa',
+        colorTextPlaceholder: '#71717a',
       }
     }
   } : undefined;
