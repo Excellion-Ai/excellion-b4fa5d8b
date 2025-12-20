@@ -308,6 +308,45 @@ Format:
 \`\`\`
 
 ====================================
+## 8. USER-UPLOADED IMAGES
+====================================
+
+When users attach images (logos, photos, etc.), they will be provided as URLs in the format:
+[USER UPLOADED LOGO - USE THIS URL: https://...]
+[USER UPLOADED IMAGE "filename" - USE THIS URL: https://...]
+
+**CRITICAL**: When you see these URLs, you MUST use them in the site spec:
+
+For LOGOS:
+- Add to hero section: "logo": "THE_PROVIDED_URL"
+- Add to navigation: "logo": "THE_PROVIDED_URL"
+- Add to footer if appropriate
+
+For IMAGES:
+- Use as hero background: "backgroundImage": "THE_PROVIDED_URL"
+- Use in feature cards: "image": "THE_PROVIDED_URL"
+- Use wherever the user indicates
+
+Example when user provides a logo:
+\`\`\`json
+{
+  "navigation": [
+    { "logo": "https://user-provided-url.com/logo.png" },
+    { "label": "Home", "href": "#" }
+  ],
+  "pages": [{
+    "sections": [{
+      "type": "hero",
+      "content": {
+        "logo": "https://user-provided-url.com/logo.png",
+        "headline": "..."
+      }
+    }]
+  }]
+}
+\`\`\`
+
+DO NOT ignore user-uploaded images. They are specifically requesting their images be used.
 ## 6. SECTION TYPES & CONTENT
 ====================================
 

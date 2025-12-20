@@ -342,30 +342,79 @@ export function BuilderShell() {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
 
-    // Convert attachments to base64 for API and store for display
+    // Convert attachments to base64 for API and upload to storage for actual use
     const currentAttachments = [...attachments];
     const attachmentData: { name: string; url: string; type: string }[] = [];
     const imageDataForApi: { type: 'image_url'; image_url: { url: string } }[] = [];
+    const uploadedImageUrls: { name: string; url: string; purpose?: string }[] = [];
 
     for (const att of currentAttachments) {
       if (att.file && att.file.type.startsWith('image/')) {
-        // Convert to base64 for API
+        // Convert to base64 for multimodal AI context
         const base64 = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
           reader.readAsDataURL(att.file!);
         });
-        attachmentData.push({ name: att.name, url: att.url || base64, type: att.file.type });
+        
+        // Upload to Supabase storage so AI can reference it in the site
+        try {
+          const fileExt = att.name.split('.').pop() || 'png';
+          const fileName = `builder-uploads/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('builder-images')
+            .upload(fileName, att.file, { 
+              contentType: att.file.type,
+              upsert: false 
+            });
+          
+          if (!uploadError && uploadData) {
+            const { data: urlData } = supabase.storage
+              .from('builder-images')
+              .getPublicUrl(uploadData.path);
+            
+            if (urlData?.publicUrl) {
+              uploadedImageUrls.push({ 
+                name: att.name, 
+                url: urlData.publicUrl,
+                purpose: att.name.toLowerCase().includes('logo') ? 'logo' : 'image'
+              });
+              attachmentData.push({ name: att.name, url: urlData.publicUrl, type: att.file.type });
+            } else {
+              attachmentData.push({ name: att.name, url: base64, type: att.file.type });
+            }
+          } else {
+            console.error('Upload error:', uploadError);
+            attachmentData.push({ name: att.name, url: base64, type: att.file.type });
+          }
+        } catch (uploadErr) {
+          console.error('Failed to upload image:', uploadErr);
+          attachmentData.push({ name: att.name, url: base64, type: att.file.type });
+        }
+        
         imageDataForApi.push({ type: 'image_url', image_url: { url: base64 } });
       } else if (att.file) {
         attachmentData.push({ name: att.name, url: '', type: att.file.type });
       }
     }
 
+    // If images were uploaded, append instructions to the user's message
+    let enhancedIdea = ideaToUse;
+    if (uploadedImageUrls.length > 0) {
+      const imageInstructions = uploadedImageUrls.map(img => {
+        if (img.purpose === 'logo') {
+          return `[USER UPLOADED LOGO - USE THIS URL: ${img.url}]`;
+        }
+        return `[USER UPLOADED IMAGE "${img.name}" - USE THIS URL: ${img.url}]`;
+      }).join('\n');
+      enhancedIdea = `${ideaToUse}\n\n${imageInstructions}`;
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: ideaToUse,
+      content: ideaToUse, // Display original text to user
       attachments: attachmentData.length > 0 ? attachmentData : undefined,
     };
     setMessages((prev) => [...prev, userMessage]);
@@ -402,7 +451,7 @@ export function BuilderShell() {
           return {
             role: m.role,
             content: [
-              { type: 'text', text: m.content },
+              { type: 'text', text: enhancedIdea }, // Use enhanced idea with image URLs
               ...imageDataForApi,
             ],
           };
