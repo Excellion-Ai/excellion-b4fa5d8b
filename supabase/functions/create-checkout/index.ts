@@ -12,6 +12,10 @@ const PRICE_IDS = {
   starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",  // $15/mo - 50 credits
   pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",       // $29/mo - 100 credits
   agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",   // $129/mo - 500 credits
+  // Annual prices
+  starter_annual: "price_1SgKPjPCTHzXvqDgQP63Wygw",  // $156/year
+  pro_annual: "price_1SgKQHPCTHzXvqDgNxuBVF8D",       // $288/year
+  agency_annual: "price_1SgKQdPCTHzXvqDgCsz1sXw5",   // $1,296/year
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
