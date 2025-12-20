@@ -94,22 +94,7 @@ const Checkout = () => {
     fetchClientSecret();
   }, [fetchClientSecret]);
 
-  const options = clientSecret ? { 
-    clientSecret,
-    appearance: {
-      theme: 'night' as const,
-      variables: {
-        colorPrimary: '#a855f7',
-        colorBackground: '#1a1a1a',
-        colorText: '#ffffff',
-        colorDanger: '#ef4444',
-        fontFamily: 'system-ui, sans-serif',
-        borderRadius: '8px',
-        colorTextSecondary: '#a1a1aa',
-        colorTextPlaceholder: '#71717a',
-      }
-    }
-  } : undefined;
+  const options = clientSecret ? { clientSecret } : undefined;
 
   return (
     <div className="min-h-screen bg-background">
