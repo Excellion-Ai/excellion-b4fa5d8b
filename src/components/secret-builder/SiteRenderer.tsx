@@ -500,30 +500,44 @@ export function SiteRenderer({
           borderBottom: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
         }}
       >
-        {onUpdateSiteName ? (
-          <EditableText
-            value={siteSpec.name}
-            onSave={onUpdateSiteName}
-            as="span"
-            className="font-bold text-lg"
-            style={{ 
-              fontFamily: theme.fontHeading,
-              color: theme.primaryColor
-            }}
-          />
-        ) : (
-          <span 
-            className="font-bold text-lg"
-            style={{ 
-              fontFamily: theme.fontHeading,
-              color: theme.primaryColor
-            }}
-          >
-            {siteSpec.name}
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {/* Check for logo in navigation or site level */}
+          {(() => {
+            const navWithLogo = navigation?.find((n) => (n as any).logo);
+            const logoUrl = (navWithLogo as any)?.logo || (siteSpec as any).logo;
+            return logoUrl ? (
+              <img 
+                src={logoUrl} 
+                alt={`${siteSpec.name} logo`}
+                className="w-8 h-8 object-contain"
+              />
+            ) : null;
+          })()}
+          {onUpdateSiteName ? (
+            <EditableText
+              value={siteSpec.name}
+              onSave={onUpdateSiteName}
+              as="span"
+              className="font-bold text-lg"
+              style={{ 
+                fontFamily: theme.fontHeading,
+                color: theme.primaryColor
+              }}
+            />
+          ) : (
+            <span 
+              className="font-bold text-lg"
+              style={{ 
+                fontFamily: theme.fontHeading,
+                color: theme.primaryColor
+              }}
+            >
+              {siteSpec.name}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-6">
-          {navigation?.map((item, index) => (
+          {navigation?.filter((item: any) => item.label && !item.logo).map((item, index) => (
             onUpdateNavItem ? (
               <EditableText
                 key={index}
