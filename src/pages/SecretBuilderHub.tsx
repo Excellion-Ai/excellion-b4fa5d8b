@@ -69,7 +69,19 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
 } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
@@ -189,6 +201,21 @@ export default function SecretBuilderHub() {
   const [projectsFolderOpen, setProjectsFolderOpen] = useState(true);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Settings dialogs state
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [notificationsDialogOpen, setNotificationsDialogOpen] = useState(false);
+  const [workspaceDialogOpen, setWorkspaceDialogOpen] = useState(false);
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  const [domainsDialogOpen, setDomainsDialogOpen] = useState(false);
+  const [themeDialogOpen, setThemeDialogOpen] = useState(false);
+  const [aiModelDialogOpen, setAiModelDialogOpen] = useState(false);
+  const [shortcutsDialogOpen, setShortcutsDialogOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(false);
+  const [preferredAiModel, setPreferredAiModel] = useState<'fast' | 'quality'>('fast');
+  
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isSubmittingRef = useRef(false);
@@ -498,6 +525,37 @@ export default function SecretBuilderHub() {
   const lastProject = projects[0];
   const selectedThemeOption = THEME_OPTIONS.find((t) => t.id === selectedTheme);
 
+  // Settings handlers
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({ title: 'Signed out', description: 'You have been signed out successfully.' });
+      navigate('/');
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to sign out.', variant: 'destructive' });
+    }
+  };
+
+  const handleToggleTheme = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    document.documentElement.classList.toggle('dark', newMode);
+    localStorage.setItem('theme', newMode ? 'dark' : 'light');
+    toast({ title: newMode ? 'Dark mode enabled' : 'Light mode enabled' });
+  };
+
+  const handleOpenDocs = () => {
+    window.open('https://docs.excellion.dev', '_blank');
+  };
+
+  const handleContactSupport = () => {
+    navigate('/contact');
+  };
+
+  const handleBillingClick = () => {
+    navigate('/builder-pricing');
+  };
+
   return (
     <div className="min-h-screen flex bg-background">
       {/* Hidden file input */}
@@ -706,62 +764,62 @@ export default function SecretBuilderHub() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64 bg-popover">
               <DropdownMenuLabel className="text-xs text-muted-foreground">Account</DropdownMenuLabel>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setProfileDialogOpen(true)}>
                 <User className="w-4 h-4" />
                 <span>Profile Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={handleBillingClick}>
                 <CreditCard className="w-4 h-4" />
                 <span>Billing & Credits</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setNotificationsDialogOpen(true)}>
                 <Bell className="w-4 h-4" />
                 <span>Notifications</span>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-xs text-muted-foreground">Workspace</DropdownMenuLabel>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setWorkspaceDialogOpen(true)}>
                 <FolderKanban className="w-4 h-4" />
                 <span>Workspace Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setTeamDialogOpen(true)}>
                 <Users className="w-4 h-4" />
                 <span>Team Members</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setDomainsDialogOpen(true)}>
                 <Globe className="w-4 h-4" />
                 <span>Custom Domains</span>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-xs text-muted-foreground">Preferences</DropdownMenuLabel>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setThemeDialogOpen(true)}>
                 <Palette className="w-4 h-4" />
                 <span>Theme & Appearance</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setAiModelDialogOpen(true)}>
                 <Zap className="w-4 h-4" />
                 <span>AI Model Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setShortcutsDialogOpen(true)}>
                 <Keyboard className="w-4 h-4" />
                 <span>Keyboard Shortcuts</span>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-xs text-muted-foreground">Support</DropdownMenuLabel>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={handleOpenDocs}>
                 <HelpCircle className="w-4 h-4" />
                 <span>Help & Documentation</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={handleContactSupport}>
                 <MessageSquare className="w-4 h-4" />
                 <span>Contact Support</span>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+              <DropdownMenuItem className="gap-2 cursor-pointer text-destructive focus:text-destructive" onClick={handleSignOut}>
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>
               </DropdownMenuItem>
@@ -1324,6 +1382,272 @@ export default function SecretBuilderHub() {
 
         </div>
       </main>
+
+      {/* Profile Settings Dialog */}
+      <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Profile Settings
+            </DialogTitle>
+            <DialogDescription>
+              Manage your account profile and preferences.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Display Name</Label>
+              <input 
+                type="text" 
+                placeholder="Your name"
+                className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <input 
+                type="email" 
+                placeholder="your@email.com"
+                className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm"
+                disabled
+              />
+            </div>
+            <Button className="w-full">Save Changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notifications Dialog */}
+      <Dialog open={notificationsDialogOpen} onOpenChange={setNotificationsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Notification Preferences
+            </DialogTitle>
+            <DialogDescription>
+              Configure how you receive notifications.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm">Email Notifications</p>
+                <p className="text-xs text-muted-foreground">Receive updates via email</p>
+              </div>
+              <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm">Push Notifications</p>
+                <p className="text-xs text-muted-foreground">Browser push notifications</p>
+              </div>
+              <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Workspace Settings Dialog */}
+      <Dialog open={workspaceDialogOpen} onOpenChange={setWorkspaceDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderKanban className="w-5 h-5" />
+              Workspace Settings
+            </DialogTitle>
+            <DialogDescription>
+              Manage your workspace configuration.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Workspace Name</Label>
+              <input 
+                type="text" 
+                defaultValue="My Workspace"
+                className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Default Project Visibility</Label>
+              <select className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm">
+                <option value="private">Private</option>
+                <option value="public">Public</option>
+              </select>
+            </div>
+            <Button className="w-full">Save Settings</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Team Members Dialog */}
+      <Dialog open={teamDialogOpen} onOpenChange={setTeamDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Team Members
+            </DialogTitle>
+            <DialogDescription>
+              Invite and manage team members.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Invite by Email</Label>
+              <div className="flex gap-2">
+                <input 
+                  type="email" 
+                  placeholder="teammate@email.com"
+                  className="flex-1 px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm"
+                />
+                <Button size="sm">Invite</Button>
+              </div>
+            </div>
+            <div className="border-t border-border pt-4">
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No team members yet. Invite someone to collaborate!
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Domains Dialog */}
+      <Dialog open={domainsDialogOpen} onOpenChange={setDomainsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe className="w-5 h-5" />
+              Custom Domains
+            </DialogTitle>
+            <DialogDescription>
+              Connect your custom domain to your projects.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Add Domain</Label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="yourdomain.com"
+                  className="flex-1 px-3 py-2 bg-secondary/50 border border-border rounded-lg text-sm"
+                />
+                <Button size="sm">Add</Button>
+              </div>
+            </div>
+            <div className="border-t border-border pt-4">
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No custom domains configured yet.
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Theme & Appearance Dialog */}
+      <Dialog open={themeDialogOpen} onOpenChange={setThemeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Palette className="w-5 h-5" />
+              Theme & Appearance
+            </DialogTitle>
+            <DialogDescription>
+              Customize the look and feel of the builder.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                <div>
+                  <p className="font-medium text-sm">Dark Mode</p>
+                  <p className="text-xs text-muted-foreground">Toggle dark/light theme</p>
+                </div>
+              </div>
+              <Switch checked={isDarkMode} onCheckedChange={handleToggleTheme} />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Model Settings Dialog */}
+      <Dialog open={aiModelDialogOpen} onOpenChange={setAiModelDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              AI Model Settings
+            </DialogTitle>
+            <DialogDescription>
+              Choose your preferred AI model for generation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div 
+              className={`p-4 rounded-lg border cursor-pointer transition-colors ${preferredAiModel === 'fast' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
+              onClick={() => setPreferredAiModel('fast')}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-4 h-4 text-yellow-500" />
+                <span className="font-medium">Fast Mode</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Gemini Flash - quicker responses, lower cost</p>
+            </div>
+            <div 
+              className={`p-4 rounded-lg border cursor-pointer transition-colors ${preferredAiModel === 'quality' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
+              onClick={() => setPreferredAiModel('quality')}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4 text-purple-500" />
+                <span className="font-medium">Quality Mode</span>
+              </div>
+              <p className="text-xs text-muted-foreground">GPT-5 - higher quality output, slower</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Keyboard Shortcuts Dialog */}
+      <Dialog open={shortcutsDialogOpen} onOpenChange={setShortcutsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Keyboard className="w-5 h-5" />
+              Keyboard Shortcuts
+            </DialogTitle>
+            <DialogDescription>
+              Quick actions for faster navigation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm">Open Search</span>
+              <kbd className="px-2 py-1 bg-secondary rounded text-xs font-mono">⌘ K</kbd>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm">New Project</span>
+              <kbd className="px-2 py-1 bg-secondary rounded text-xs font-mono">⌘ N</kbd>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm">Generate Site</span>
+              <kbd className="px-2 py-1 bg-secondary rounded text-xs font-mono">⌘ Enter</kbd>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm">Open Settings</span>
+              <kbd className="px-2 py-1 bg-secondary rounded text-xs font-mono">⌘ ,</kbd>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm">Toggle Theme</span>
+              <kbd className="px-2 py-1 bg-secondary rounded text-xs font-mono">⌘ D</kbd>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
