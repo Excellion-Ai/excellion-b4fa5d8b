@@ -323,6 +323,20 @@ export function BuilderShell() {
     return () => window.removeEventListener('keydown', handleKeyboard);
   }, [canUndo, canRedo, undo, redo]);
 
+  // Warn users if they try to leave during generation
+  useEffect(() => {
+    if (!isGenerating) return;
+    
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'Website generation is in progress. Are you sure you want to leave?';
+      return e.returnValue;
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isGenerating]);
+
   const handleGenerate = async (inputIdea?: string) => {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
@@ -661,11 +675,18 @@ export function BuilderShell() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate('/secret-builder-hub')}
+                  onClick={() => {
+                    if (isGenerating) {
+                      toast.warning('Please wait for generation to complete before leaving.');
+                      return;
+                    }
+                    navigate('/secret-builder-hub');
+                  }}
                   className="gap-1.5 text-xs shrink-0"
+                  disabled={isGenerating}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
-                  Studio
+                  {isGenerating ? 'Generating...' : 'Studio'}
                 </Button>
                 <div className="h-4 w-px bg-border" />
                 <button
