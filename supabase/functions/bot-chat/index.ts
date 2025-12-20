@@ -168,7 +168,7 @@ You are strictly FORBIDDEN from generating these standard patterns:
 
 Before generating, internally select a "Structural Paradigm" based on the user's request:
 
-**Structure A: "BENTO ASYMMETRY"** (Best for: SaaS, Tech, Apps, AI)
+**Structure A: "BENTO ASYMMETRY"** (Best for: SaaS, Tech, Apps, AI, Portfolios)
 - layoutStructure: "bento"
 - Everything is a grid tile with varying colSpan and rowSpan
 - Hero: Large tile (colSpan: 8, rowSpan: 2) next to smaller interactive tiles (colSpan: 4)
@@ -176,21 +176,14 @@ Before generating, internally select a "Structural Paradigm" based on the user's
 - No distinct vertical sections - it's all tiles
 - gridConfig required on EVERY section
 
-**Structure B: "SPLIT-SCREEN IMMERSIVE"** (Best for: Portfolios, Luxury, Personal Brands)
-- layoutStructure: "split-screen"
-- Vertical 50/50 or 40/60 split layout
-- Left side is sticky text; Right side is scrollable visual feed
-- Navigation: Vertical sidebar on left edge
-- Typography: Massive font sizes, overlapping text that breaks boundaries
-
-**Structure C: "LAYERED Z-INDEX"** (Best for: Creative Agencies, Design Studios)
+**Structure B: "LAYERED Z-INDEX"** (Best for: Creative Agencies, Design Studios, Luxury, Personal Brands)
 - layoutStructure: "layered"
 - Elements physically overlap to create 3D depth
 - Use negative margins conceptually - images float behind/over text
 - Hero: Full-screen background with content in bottom-left corner
 - Navigation: Minimal, positioned in corners
 
-**Structure D: "HORIZONTAL FLOW"** (Best for: Showcases, Galleries, Event Sites)
+**Structure C: "HORIZONTAL FLOW"** (Best for: Showcases, Galleries, Event Sites)
 - layoutStructure: "horizontal"
 - Sections scroll horizontally while page scrolls vertically
 - Large images with small typography
