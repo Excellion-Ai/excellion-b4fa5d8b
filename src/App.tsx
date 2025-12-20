@@ -17,6 +17,7 @@ const ThankYou = lazy(() => import("./pages/ThankYou"));
 const MaintenanceRequest = lazy(() => import("./pages/MaintenanceRequest"));
 const SecretBuilder = lazy(() => import("./pages/SecretBuilder"));
 const SecretBuilderHub = lazy(() => import("./pages/SecretBuilderHub"));
+const Billing = lazy(() => import("./pages/Billing"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // HIDDEN - Legacy pages kept for potential future use
@@ -55,6 +56,7 @@ const App = () => (
         <Route path="/maintenance-request" element={<MaintenanceRequest />} />
         <Route path="/secret-builder-hub" element={<SecretBuilderHub />} />
         <Route path="/secret-builder" element={<SecretBuilder />} />
+        <Route path="/billing" element={<Billing />} />
         {/* Legacy routes - kept commented for potential future use */}
         {/* <Route path="/web-builder" element={<WebBuilderHome />} /> */}
         {/* <Route path="/dfy" element={<DFY />} /> */}
