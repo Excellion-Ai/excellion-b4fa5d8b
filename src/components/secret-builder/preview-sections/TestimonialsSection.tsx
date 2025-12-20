@@ -45,13 +45,13 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
   return (
     <section 
       id={section.id}
-      className="py-16 md:py-20 px-4 md:px-8 w-full"
+      className="py-10 md:py-14 px-4 md:px-8 w-full"
       style={{ 
         backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
       }}
     >
-      <div className="w-full max-w-7xl mx-auto">
-        <div className="text-center mb-10 md:mb-12">
+      <div className="w-full">
+        <div className="text-center mb-6 md:mb-8">
           <ScrollAnimation animation="fade-up">
             <h2 
               className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"

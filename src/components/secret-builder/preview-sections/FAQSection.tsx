@@ -39,13 +39,13 @@ export function FAQSection({ section, theme }: FAQSectionProps) {
   return (
     <section 
       id={section.id}
-      className="py-20 px-6"
+      className="py-10 md:py-14 px-6 w-full"
       style={{ 
         backgroundColor: isDark ? '#111111' : '#ffffff'
       }}
     >
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="text-center mb-8">
           <ScrollAnimation animation="fade-up">
             <h2 
               className="text-3xl md:text-4xl font-bold mb-4"

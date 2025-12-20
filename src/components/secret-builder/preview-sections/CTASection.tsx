@@ -16,12 +16,12 @@ export function CTASection({ section, theme }: CTASectionProps) {
   return (
     <section 
       id={section.id}
-      className="py-20 px-6"
+      className="py-10 md:py-14 px-6 w-full"
       style={{ 
         background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`
       }}
     >
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="w-full text-center">
         <ScrollAnimation animation="fade-up">
           <h2 
             className="text-3xl md:text-4xl font-bold mb-4 text-white"

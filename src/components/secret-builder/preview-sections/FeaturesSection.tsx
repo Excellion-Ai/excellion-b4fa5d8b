@@ -128,13 +128,13 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
   return (
     <section 
       id={section.id}
-      className="py-20 px-6"
+      className="py-10 md:py-14 px-6 w-full"
       style={{ 
         backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
       }}
     >
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
+      <div className="w-full">
+        <div className="text-center mb-8">
           <ScrollAnimation animation="fade-up">
             {onUpdateContent ? (
               <EditableText
