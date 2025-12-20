@@ -331,6 +331,7 @@ export function SiteRenderer({
   };
 
   // Render Split-Screen Immersive Layout (Portfolio/Luxury)
+  // Hero uses split layout, content sections use full width below
   const renderSplitScreenLayout = () => {
     const sections = currentPage?.sections || [];
     const heroSection = sections.find(s => s.type === 'hero');
@@ -339,24 +340,57 @@ export function SiteRenderer({
     
     return (
       <div 
-        className="min-h-screen flex relative"
+        className="min-h-screen relative"
         style={{ 
           backgroundColor: theme.backgroundColor,
           fontFamily: theme.fontBody,
         }}
       >
-        {/* Vertical Sidebar Navigation */}
-        <SplitSidebarNav
-          siteName={siteSpec.name}
-          navigation={navigation || []}
-          theme={theme}
-        />
+        {/* Floating Pill Navigation (like Bento) instead of sidebar */}
+        <nav 
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full backdrop-blur-md flex items-center gap-6"
+          style={{ 
+            backgroundColor: theme.darkMode ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.85)',
+            border: `1px solid ${theme.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+          }}
+        >
+          <span 
+            className="font-bold text-lg"
+            style={{ 
+              fontFamily: theme.fontHeading,
+              color: theme.primaryColor 
+            }}
+          >
+            {siteSpec.name}
+          </span>
+          <div className="hidden md:flex items-center gap-4">
+            {navigation?.slice(0, 4).map((item, index) => (
+              <a
+                key={index}
+                href={item.href}
+                className="text-sm font-medium transition-colors hover:opacity-80"
+                style={{ color: theme.darkMode ? '#d1d5db' : '#4b5563' }}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+          <button
+            className="px-4 py-1.5 rounded-full text-sm font-medium transition-transform hover:scale-105"
+            style={{ 
+              backgroundColor: theme.primaryColor,
+              color: '#ffffff',
+            }}
+          >
+            Get Started
+          </button>
+        </nav>
 
-        {/* Main Split Container */}
-        <div className="flex-1 ml-16 lg:ml-20 flex min-h-screen">
-          {/* Left Panel - Sticky Hero */}
+        {/* Split Hero Section - Takes up first viewport */}
+        <div className="min-h-screen flex">
+          {/* Left Panel - Hero Visual */}
           <div 
-            className="w-[45%] lg:w-[40%] sticky top-0 h-screen overflow-hidden"
+            className="w-1/2 relative overflow-hidden"
             style={{
               backgroundColor: theme.backgroundColor || (theme.darkMode ? '#0f0f0f' : '#f8f8f8'),
             }}
@@ -370,14 +404,23 @@ export function SiteRenderer({
               />
             ) : (
               <div 
-                className="h-full w-full flex items-center justify-center p-8"
+                className="h-full w-full flex items-center justify-center p-8 relative overflow-hidden"
                 style={{
-                  background: `linear-gradient(135deg, ${theme.primaryColor}30, ${theme.secondaryColor}30, ${theme.backgroundColor || (theme.darkMode ? '#0f0f0f' : '#f8f8f8')})`,
+                  background: `linear-gradient(135deg, ${theme.primaryColor}20, ${theme.secondaryColor}15, ${theme.backgroundColor || (theme.darkMode ? '#0f0f0f' : '#f8f8f8')})`,
                   backgroundColor: theme.backgroundColor || (theme.darkMode ? '#0f0f0f' : '#f8f8f8'),
                 }}
               >
+                {/* Decorative elements */}
+                <div 
+                  className="absolute -top-20 -right-20 w-[300px] h-[300px] rounded-full blur-3xl"
+                  style={{ backgroundColor: theme.primaryColor, opacity: 0.15 }}
+                />
+                <div 
+                  className="absolute -bottom-20 -left-20 w-[250px] h-[250px] rounded-full blur-3xl"
+                  style={{ backgroundColor: theme.secondaryColor, opacity: 0.12 }}
+                />
                 <h1 
-                  className="text-4xl lg:text-6xl font-bold"
+                  className="text-4xl lg:text-6xl font-bold relative z-10"
                   style={{ 
                     fontFamily: theme.fontHeading,
                     color: theme.darkMode ? '#ffffff' : '#111111',
@@ -389,54 +432,105 @@ export function SiteRenderer({
             )}
           </div>
 
-          {/* Right Panel - Scrollable Content */}
+          {/* Right Panel - Hero Text/CTA */}
           <div 
-            className="w-[55%] lg:w-[60%] overflow-y-auto"
-            style={{
-              backgroundColor: theme.backgroundColor,
+            className="w-1/2 flex items-center justify-center p-12 lg:p-16"
+            style={{ backgroundColor: theme.backgroundColor }}
+          >
+            <div className="max-w-lg">
+              <h2 
+                className="text-3xl lg:text-5xl font-bold mb-6"
+                style={{ 
+                  fontFamily: theme.fontHeading,
+                  color: theme.darkMode ? '#ffffff' : '#111111',
+                }}
+              >
+                {heroContent?.headline || 'Transform Your Vision'}
+              </h2>
+              <p 
+                className="text-lg mb-8 opacity-80"
+                style={{ 
+                  fontFamily: theme.fontBody,
+                  color: theme.darkMode ? '#d1d5db' : '#4b5563',
+                }}
+              >
+                {heroContent?.subheadline || 'We create exceptional digital experiences that drive results.'}
+              </p>
+              <div className="flex gap-4">
+                <button
+                  className="px-8 py-4 rounded-full font-semibold text-white transition-transform hover:scale-105"
+                  style={{ backgroundColor: theme.primaryColor }}
+                >
+                  {heroContent?.ctaText || 'Get Started'}
+                </button>
+                <button
+                  className="px-8 py-4 rounded-full font-semibold border-2 transition-transform hover:scale-105"
+                  style={{ 
+                    borderColor: theme.primaryColor,
+                    color: theme.primaryColor,
+                    backgroundColor: 'transparent',
+                  }}
+                >
+                  Learn More
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Full-Width Content Sections Below */}
+        <div style={{ backgroundColor: theme.backgroundColor }}>
+          {isEditable && onReorderSections ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext 
+                items={otherSections.map(s => s.id)} 
+                strategy={verticalListSortingStrategy}
+              >
+                {otherSections.map((section) => (
+                  <div key={section.id}>
+                    {renderSection(section, false)}
+                  </div>
+                ))}
+              </SortableContext>
+            </DndContext>
+          ) : (
+            otherSections.map((section) => (
+              <div key={section.id}>
+                {renderSection(section, false)}
+              </div>
+            ))
+          )}
+          
+          {/* Footer */}
+          <footer 
+            className="py-16 px-8"
+            style={{ 
+              backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
+              borderTop: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
             }}
           >
-            {isEditable && onReorderSections ? (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+              <span 
+                className="text-xl font-bold"
+                style={{ 
+                  fontFamily: theme.fontHeading,
+                  color: theme.primaryColor 
+                }}
               >
-                <SortableContext 
-                  items={otherSections.map(s => s.id)} 
-                  strategy={verticalListSortingStrategy}
-                >
-                  {otherSections.map((section) => (
-                    <div key={section.id} className="border-b border-border/10 last:border-0">
-                      {renderSection(section, false)}
-                    </div>
-                  ))}
-                </SortableContext>
-              </DndContext>
-            ) : (
-              otherSections.map((section) => (
-                <div key={section.id} className="border-b border-border/10 last:border-0">
-                  {renderSection(section, false)}
-                </div>
-              ))
-            )}
-            
-            {/* Footer */}
-            <footer 
-              className="py-12 px-8 text-center"
-              style={{ 
-                backgroundColor: theme.darkMode ? '#0a0a0a' : '#f9fafb',
-                borderTop: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
-              }}
-            >
+                {siteSpec.name}
+              </span>
               <p 
                 className="text-sm"
                 style={{ color: theme.darkMode ? '#6b7280' : '#9ca3af' }}
               >
                 {footer?.copyright || `© ${new Date().getFullYear()} ${siteSpec.name}. All rights reserved.`}
               </p>
-            </footer>
-          </div>
+            </div>
+          </footer>
         </div>
       </div>
     );
