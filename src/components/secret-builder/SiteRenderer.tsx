@@ -235,8 +235,8 @@ export function SiteRenderer({
           onUpdateNavItem={onUpdateNavItem}
         />
 
-        {/* Bento Grid */}
-        <main className="p-4 lg:p-8 pb-24">
+        {/* Sections - no extra card wrappers, sections flow edge-to-edge */}
+        <main>
           {isEditable && onReorderSections ? (
             <DndContext
               sensors={sensors}
@@ -244,69 +244,11 @@ export function SiteRenderer({
               onDragEnd={handleDragEnd}
             >
               <SortableContext items={sectionIds} strategy={verticalListSortingStrategy}>
-                <div className="grid grid-cols-12 gap-4 lg:gap-6 auto-rows-min">
-                  {sections.map((section) => {
-                    const gridConfig = section.gridConfig || getDefaultGridConfig(section);
-                    const colSpan = gridConfig.colSpan || 12;
-                    const rowSpan = gridConfig.rowSpan || 1;
-                    // Only use tile mode for sections explicitly configured as small tiles
-                    const useTileMode = colSpan < 12;
-                    
-                    return (
-                      <div 
-                        key={section.id}
-                        className="transition-all duration-300"
-                        style={{
-                          gridColumn: `span ${colSpan} / span ${colSpan}`,
-                          gridRow: `span ${rowSpan} / span ${rowSpan}`,
-                        }}
-                      >
-                        <div 
-                          className="h-full rounded-2xl overflow-hidden"
-                          style={{
-                            backgroundColor: theme.darkMode ? '#111111' : '#ffffff',
-                            border: `1px solid ${theme.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                          }}
-                        >
-                          {renderSection(section, useTileMode)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                {sections.map((section) => renderSection(section, false))}
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="grid grid-cols-12 gap-4 lg:gap-6 auto-rows-min">
-              {sections.map((section) => {
-                const gridConfig = section.gridConfig || getDefaultGridConfig(section);
-                const colSpan = gridConfig.colSpan || 12;
-                const rowSpan = gridConfig.rowSpan || 1;
-                // Only use tile mode for sections explicitly configured as small tiles
-                const useTileMode = colSpan < 12;
-                
-                return (
-                  <div 
-                    key={section.id}
-                    className="transition-all duration-300"
-                    style={{
-                      gridColumn: `span ${colSpan} / span ${colSpan}`,
-                      gridRow: `span ${rowSpan} / span ${rowSpan}`,
-                    }}
-                  >
-                    <div 
-                      className="h-full rounded-2xl overflow-hidden"
-                      style={{
-                        backgroundColor: theme.darkMode ? '#111111' : '#ffffff',
-                        border: `1px solid ${theme.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                      }}
-                    >
-                      {renderSection(section, useTileMode)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            sections.map((section) => renderSection(section, false))
           )}
         </main>
 
