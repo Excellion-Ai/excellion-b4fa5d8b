@@ -19,6 +19,7 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
   const ctaText = content?.ctaText || 'Get Started';
   const secondaryCtaText = content?.secondaryCtaText || 'Learn More';
   const backgroundImage = content?.backgroundImage;
+  const logo = (content as any)?.logo;
 
   const backgroundStyle = backgroundImage
     ? {
@@ -124,7 +125,16 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
       style={backgroundStyle}
     >
       <div className="max-w-4xl mx-auto text-center">
-        <ScrollAnimation animation="fade-down" duration={1000}>
+        {logo && (
+          <ScrollAnimation animation="fade-down" duration={800}>
+            <img 
+              src={logo} 
+              alt={`${siteName} logo`}
+              className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 object-contain"
+            />
+          </ScrollAnimation>
+        )}
+        <ScrollAnimation animation="fade-down" delay={logo ? 150 : 0} duration={1000}>
           {onUpdateContent ? (
             <EditableText
               value={headline}
