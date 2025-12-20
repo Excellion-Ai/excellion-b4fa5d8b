@@ -183,7 +183,7 @@ function suggestLayout(businessModel: string): string {
   switch (businessModel) {
     case "RETAIL_COMMERCE": return "horizontal";
     case "HOSPITALITY": return "layered";
-    case "PORTFOLIO_IDENTITY": return "split-screen";
+    case "PORTFOLIO_IDENTITY": return "layered";
     default: return "bento";
   }
 }

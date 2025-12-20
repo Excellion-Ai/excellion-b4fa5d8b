@@ -7,7 +7,6 @@ export type BusinessModel = 'SERVICE_BASED' | 'RETAIL_COMMERCE' | 'HOSPITALITY' 
 export type LayoutStructure = 
   | 'standard'      // Traditional vertical stack (backwards compatible)
   | 'bento'         // CSS Grid asymmetric tiles (SaaS/Tech)
-  | 'split-screen'  // 50/50 or 40/60 vertical splits (Portfolio/Luxury)
   | 'layered'       // Z-index overlapping elements (Creative/Agency)
   | 'horizontal';   // Horizontal scroll sections (Showcases)
 

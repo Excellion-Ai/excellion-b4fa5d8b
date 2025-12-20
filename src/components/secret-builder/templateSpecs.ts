@@ -183,7 +183,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
     name: 'Creative Portfolio',
     description: 'Professional portfolio showcase',
     businessModel: 'PORTFOLIO_IDENTITY',
-    layoutStructure: 'split-screen',
+    layoutStructure: 'layered',
     theme: {
       primaryColor: '#f59e0b',
       secondaryColor: '#eab308',
