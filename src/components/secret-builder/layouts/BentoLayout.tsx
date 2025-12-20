@@ -31,8 +31,8 @@ export function BentoLayout({ children, theme, sections }: BentoLayoutProps) {
   const childArray = React.Children.toArray(children);
   
   return (
-    <div className="min-h-screen" style={{ backgroundColor: theme.backgroundColor }}>
-      {/* Navigation is rendered by parent - NOT at the bottom */}
+    <div className="min-h-screen relative" style={{ backgroundColor: theme.backgroundColor }}>
+      {/* Navigation is rendered by parent - uses sticky positioning within the preview container */}
 
       {/* Bento Grid Container - with top padding for nav */}
       <main className="p-4 lg:p-8 pt-20">
@@ -84,7 +84,7 @@ export function BentoPillNav({
   
   return (
     <nav 
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full backdrop-blur-xl shadow-2xl flex items-center gap-6"
+      className="sticky top-0 left-0 right-0 z-40 mx-auto mt-4 mb-0 w-fit px-6 py-3 rounded-full backdrop-blur-xl shadow-lg flex items-center gap-6"
       style={{ 
         backgroundColor: isDark ? 'rgba(17, 17, 17, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
