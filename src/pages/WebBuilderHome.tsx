@@ -165,7 +165,7 @@ const WebBuilderHome = () => {
               <span className="text-accent">seconds.</span>
             </h1>
             <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold">
-              From a simple text prompt to a live, multi-page website in minutes. No templates, no coding, just results.
+              An AI website builder that generates a complete site in seconds. Make changes by chat, customize pages, and publish with your own domain.
             </p>
 
             {/* Prompt Input */}
