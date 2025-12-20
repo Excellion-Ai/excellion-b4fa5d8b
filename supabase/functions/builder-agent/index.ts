@@ -44,7 +44,8 @@ NEVER use "Lorem Ipsum" or generic placeholders. Generate industry-specific cont
 - Designer → "Crafting Digital Experiences", button: "View Work"
 
 PHASE 3: SITE DEFINITION OUTPUT
-You MUST include a "siteDefinition" object that drives the live preview:
+You MUST include a "siteDefinition" object that drives the live preview.
+IMPORTANT: Always use layoutStructure: "standard" - sections flow vertically with no gaps.
 
 OUTPUT FORMAT (JSON):
 {
@@ -63,11 +64,15 @@ OUTPUT FORMAT (JSON):
   "integrations": ["Supabase", "Stripe"],
   "siteDefinition": {
     "name": "Business Name",
+    "layoutStructure": "standard",
     "theme": {
       "primaryColor": "#hex based on industry",
       "secondaryColor": "#complementary hex",
       "accentColor": "#accent hex",
-      "backgroundStyle": "dark | light"
+      "backgroundColor": "#0a0a0a",
+      "textColor": "#f3f4f6",
+      "darkMode": true,
+      "backgroundStyle": "dark"
     },
     "navigation": [
       {"label": "Home", "href": "#hero"},
@@ -87,13 +92,15 @@ OUTPUT FORMAT (JSON):
       },
       {
         "id": "services",
-        "type": "feature-grid",
+        "type": "features",
         "label": "Services",
         "content": {
           "title": "Our Services",
           "items": [
             {"title": "Service 1", "description": "Description", "icon": "Wrench"},
-            {"title": "Service 2", "description": "Description", "icon": "Clock"}
+            {"title": "Service 2", "description": "Description", "icon": "Clock"},
+            {"title": "Service 3", "description": "Description", "icon": "Shield"},
+            {"title": "Service 4", "description": "Description", "icon": "Star"}
           ]
         }
       },

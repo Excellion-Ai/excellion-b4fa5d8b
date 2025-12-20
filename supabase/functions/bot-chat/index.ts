@@ -163,31 +163,18 @@ You are strictly FORBIDDEN from generating these standard patterns:
 *If you generate these structures, the output is a failure.*
 
 ====================================
-## 2. DYNAMIC LAYOUT ENGINE
+## 2. LAYOUT STRUCTURE
 ====================================
 
-Before generating, internally select a "Structural Paradigm" based on the user's request:
+ALWAYS use layoutStructure: "standard" - this creates clean, full-width sections that flow vertically.
 
-**Structure A: "BENTO ASYMMETRY"** (Best for: SaaS, Tech, Apps, AI, Portfolios)
-- layoutStructure: "bento"
-- Everything is a grid tile with varying colSpan and rowSpan
-- Hero: Large tile (colSpan: 8, rowSpan: 2) next to smaller interactive tiles (colSpan: 4)
-- Navigation: Floating pill navbar (fixed bottom or top-center)
-- No distinct vertical sections - it's all tiles
-- gridConfig required on EVERY section
+DO NOT use "bento", "layered", or "horizontal" layouts - they create visual problems with blank spaces.
 
-**Structure B: "LAYERED Z-INDEX"** (Best for: Creative Agencies, Design Studios, Luxury, Personal Brands)
-- layoutStructure: "layered"
-- Elements physically overlap to create 3D depth
-- Use negative margins conceptually - images float behind/over text
-- Hero: Full-screen background with content in bottom-left corner
-- Navigation: Minimal, positioned in corners
-
-**Structure C: "HORIZONTAL FLOW"** (Best for: Showcases, Galleries, Event Sites)
-- layoutStructure: "horizontal"
-- Sections scroll horizontally while page scrolls vertically
-- Large images with small typography
-- Off-center alignment throughout
+The standard layout:
+- Sections stack vertically with no gaps
+- Each section fills the full width
+- Clean, professional appearance
+- No card wrappers or grid tiles
 
 ====================================
 ## 3. VISUAL STYLE DICTIONARY
@@ -269,7 +256,7 @@ Format:
   "name": "Business Name",
   "description": "Brief description",
   "businessModel": "SERVICE_BASED|RETAIL_COMMERCE|HOSPITALITY|PORTFOLIO_IDENTITY",
-  "layoutStructure": "bento|split-screen|layered|horizontal",
+  "layoutStructure": "standard",
   "theme": {
     "primaryColor": "#hex",
     "secondaryColor": "#hex",
@@ -292,7 +279,6 @@ Format:
         "id": "hero",
         "type": "hero",
         "label": "Hero",
-        "gridConfig": { "colSpan": 8, "rowSpan": 2 },
         "content": {
           "headline": "Main headline here",
           "subheadline": "Supporting text",
@@ -302,12 +288,15 @@ Format:
         }
       },
       {
-        "id": "stats",
-        "type": "stats",
-        "label": "Stats",
-        "gridConfig": { "colSpan": 4, "rowSpan": 1 },
+        "id": "features",
+        "type": "features",
+        "label": "Features",
         "content": {
-          "items": [{ "value": "500+", "label": "Clients" }]
+          "title": "What We Offer",
+          "items": [
+            { "title": "Feature 1", "description": "Description", "icon": "Star" },
+            { "title": "Feature 2", "description": "Description", "icon": "Zap" }
+          ]
         }
       }
     ]
@@ -398,13 +387,12 @@ Use 4-6 FAQs
 
 Before outputting, run this silent checklist:
 
-1. Did I use a standard 3-column grid? → If YES, DELETE and switch to Bento Grid
-2. Is the background plain white? → If YES, add a subtle gradient or texture (dark mode preferred)
+1. Did I use layoutStructure: "standard"? → MUST be "standard"
+2. Is the background plain white? → If YES, consider dark mode (dark mode preferred)
 3. Are the buttons boring? → If YES, add variant styling
 4. Did I use 3 or 5 cards? → If YES, change to 4 or 6
-5. Is the layout "centered → centered → centered"? → If YES, add asymmetry
-6. Did I default to purple? → If NOT matching industry, change color
-7. Did I include gridConfig for bento layouts? → Must be present
+5. Did I default to purple? → If NOT matching industry, change color
+6. Did I include gridConfig? → REMOVE any gridConfig - not needed for standard layout
 
 ====================================
 ## EXCELLION SERVICE CONTEXT
