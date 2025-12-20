@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Sparkles, Building2, GraduationCap, LayoutDashboard, Users, Calendar, ShoppingCart } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ChevronDown, Sparkles, Building2, GraduationCap, LayoutDashboard, Users, Calendar, ShoppingCart, Paperclip, Camera, FileText, Link2, MoreHorizontal } from 'lucide-react';
 import { BuilderConfig, BuilderTarget, Complexity, PRESETS, TARGETS, COMPLEXITIES } from '@/types/app-spec';
 
 const iconMap = {
@@ -35,12 +36,29 @@ export function IdeaInputPanel({
   isGenerating,
 }: IdeaInputPanelProps) {
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePresetClick = (presetId: string) => {
     const preset = PRESETS.find(p => p.id === presetId);
     if (preset) {
       onIdeaChange(`I want to build a ${preset.label.toLowerCase()}`);
     }
+  };
+
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+    setAttachOpen(false);
+  };
+
+  const handleScreenshot = () => {
+    // Placeholder for screenshot functionality
+    setAttachOpen(false);
+  };
+
+  const handlePasteUrl = () => {
+    // Placeholder for URL paste functionality
+    setAttachOpen(false);
   };
 
   return (
@@ -78,17 +96,70 @@ export function IdeaInputPanel({
           </div>
         </div>
 
-        {/* Main Input */}
+        {/* Main Input with Attach Menu */}
         <div className="space-y-3">
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Your Idea
           </label>
-          <Textarea
-            placeholder="I want a site where users can..."
-            value={idea}
-            onChange={(e) => onIdeaChange(e.target.value)}
-            className="min-h-[160px] bg-card/50 border-border/50 resize-none text-foreground placeholder:text-muted-foreground/50"
-          />
+          <div className="relative">
+            <Textarea
+              placeholder="Describe your app idea..."
+              value={idea}
+              onChange={(e) => onIdeaChange(e.target.value)}
+              className="min-h-[160px] bg-card/50 border-border/50 resize-none text-foreground placeholder:text-muted-foreground/50 pl-12"
+            />
+            
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept="image/*,.pdf,.doc,.docx,.txt"
+              multiple
+            />
+            
+            {/* Attach Button with Popover */}
+            <Popover open={attachOpen} onOpenChange={setAttachOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-2 top-2 h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                side="top" 
+                align="start" 
+                className="w-48 p-2 bg-card border-border/50"
+              >
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={handleFileSelect}
+                    className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors text-left"
+                  >
+                    <FileText className="h-4 w-4 text-primary/70" />
+                    Attach File
+                  </button>
+                  <button
+                    onClick={handleScreenshot}
+                    className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors text-left"
+                  >
+                    <Camera className="h-4 w-4 text-primary/70" />
+                    Screenshot
+                  </button>
+                  <button
+                    onClick={handlePasteUrl}
+                    className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors text-left"
+                  >
+                    <Link2 className="h-4 w-4 text-primary/70" />
+                    Paste URL
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
         {/* Advanced Toggles */}
