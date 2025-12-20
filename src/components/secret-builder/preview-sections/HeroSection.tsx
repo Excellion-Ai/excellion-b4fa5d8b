@@ -120,7 +120,7 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
   return (
     <section 
       id={section.id}
-      className="min-h-[70vh] flex items-center justify-center px-6 py-16 relative"
+      className="flex items-center justify-center px-6 py-12 md:py-16 relative"
       style={backgroundStyle}
     >
       <div className="max-w-4xl mx-auto text-center">
