@@ -492,7 +492,17 @@ END OF KNOWLEDGE BASE
     let urlContext = "";
     
     if (lastUserMessage?.content) {
-      const urls = lastUserMessage.content.match(URL_REGEX);
+      // Handle both string content and multimodal array content
+      let textContent = "";
+      if (typeof lastUserMessage.content === "string") {
+        textContent = lastUserMessage.content;
+      } else if (Array.isArray(lastUserMessage.content)) {
+        // Extract text from multimodal content array
+        const textPart = lastUserMessage.content.find((part: any) => part.type === "text");
+        textContent = textPart?.text || "";
+      }
+      
+      const urls = textContent.match(URL_REGEX);
       if (urls && urls.length > 0) {
         console.log("Found URLs in message, using deep extractor:", urls);
         const extraction = await extractFromUrl(urls[0]);
