@@ -4,14 +4,25 @@ import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
+// Price IDs for annual plans
+const ANNUAL_PRICE_IDS = {
+  starter: "price_1SgKPjPCTHzXvqDgQP63Wygw", // $156/year
+  pro: "price_1SgKQHPCTHzXvqDgNxuBVF8D",     // $288/year  
+  agency: "price_1SgKQdPCTHzXvqDgCsz1sXw5",  // $1,296/year
+};
 
 const Pricing = () => {
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("yearly");
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const plans = [
     {
       name: "Free",
+      id: "free",
       credits: "10 credits",
       monthlyPrice: "Free",
       yearlyPrice: "Free",
@@ -22,47 +33,67 @@ const Pricing = () => {
         "Basic templates",
         "Community support",
         "SSL included"
-      ]
+      ],
+      annualPriceId: null,
+      annualSavings: null,
     },
     {
-      name: "Builder",
-      credits: "100 credits",
-      monthlyPrice: 20,
-      yearlyPrice: 192,
+      name: "Starter",
+      id: "starter",
+      credits: "50 credits",
+      monthlyPrice: 15,
+      yearlyPrice: 156,
       description: "For small businesses building their own site",
       features: [
-        "100 credits per month",
-        "Coming soon"
-      ]
+        "50 credits per month",
+        "Private projects",
+        "Premium templates",
+        "Email support",
+        "Custom domain"
+      ],
+      annualPriceId: ANNUAL_PRICE_IDS.starter,
+      annualSavings: 24,
     },
     {
-      name: "Groups",
-      credits: "200 credits",
-      monthlyPrice: 40,
-      yearlyPrice: 384,
+      name: "Pro",
+      id: "pro",
+      credits: "100 credits",
+      monthlyPrice: 29,
+      yearlyPrice: 288,
       description: "For teams and growing businesses",
       features: [
-        "200 credits per month",
-        "Coming soon"
-      ]
+        "100 credits per month",
+        "Everything in Starter",
+        "Priority support",
+        "Advanced analytics",
+        "Team collaboration"
+      ],
+      annualPriceId: ANNUAL_PRICE_IDS.pro,
+      annualSavings: 60,
+      popular: true,
     },
     {
       name: "Agency",
-      credits: "400 credits",
-      monthlyPrice: 80,
-      yearlyPrice: 768,
+      id: "agency",
+      credits: "500 credits",
+      monthlyPrice: 129,
+      yearlyPrice: 1296,
       description: "For agencies and power users",
       features: [
-        "400 credits per month",
-        "Coming soon"
-      ]
+        "500 credits per month",
+        "Everything in Pro",
+        "White-label option",
+        "Dedicated support",
+        "Custom integrations"
+      ],
+      annualPriceId: ANNUAL_PRICE_IDS.agency,
+      annualSavings: 252,
     }
   ];
 
   const getPrice = (plan: typeof plans[0]) => {
     if (plan.monthlyPrice === "Free") return "Free";
     if (billingPeriod === "yearly" && typeof plan.yearlyPrice === "number") {
-      // Show monthly equivalent for yearly plans
       const monthlyEquivalent = Math.floor(plan.yearlyPrice / 12);
       return `$${monthlyEquivalent}`;
     }
@@ -74,12 +105,37 @@ const Pricing = () => {
     return "/ month";
   };
 
-  const getYearlyTotal = (plan: typeof plans[0]) => {
-    if (plan.monthlyPrice === "Free" || billingPeriod === "monthly") return null;
-    if (typeof plan.yearlyPrice === "number") {
-      return `$${plan.yearlyPrice}/year total`;
+  const handleCheckout = async (plan: typeof plans[0]) => {
+    if (!plan.annualPriceId || billingPeriod !== "yearly") {
+      toast({
+        title: "Coming Soon",
+        description: "Monthly billing is coming soon. Please select yearly billing.",
+        variant: "destructive",
+      });
+      return;
     }
-    return null;
+
+    setLoadingPlan(plan.id);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: plan.annualPriceId },
+      });
+
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Checkout Error",
+        description: error.message || "Failed to create checkout session",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingPlan(null);
+    }
   };
 
   return (
@@ -97,19 +153,27 @@ const Pricing = () => {
             </p>
 
             {/* Billing Toggle */}
-            <div className="inline-flex items-center gap-3 p-1 bg-secondary rounded-lg opacity-50 cursor-not-allowed">
+            <div className="inline-flex items-center gap-3 p-1 bg-secondary rounded-lg">
               <button
-                disabled
-                className="px-6 py-2 rounded-md text-sm font-medium bg-accent text-accent-foreground shadow-sm cursor-not-allowed"
+                onClick={() => setBillingPeriod("monthly")}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                  billingPeriod === "monthly"
+                    ? "bg-accent text-accent-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 Monthly
               </button>
               <button
-                disabled
-                className="px-6 py-2 rounded-md text-sm font-medium text-muted-foreground flex items-center gap-2 cursor-not-allowed"
+                onClick={() => setBillingPeriod("yearly")}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                  billingPeriod === "yearly"
+                    ? "bg-accent text-accent-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 Yearly
-                <span className="text-xs bg-accent/20 px-2 py-0.5 rounded-full">Save 20%</span>
+                <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Save up to 16%</span>
               </button>
             </div>
           </div>
@@ -119,8 +183,17 @@ const Pricing = () => {
             {plans.map((plan) => (
               <Card 
                 key={plan.name}
-                className="relative flex flex-col bg-background/10 backdrop-blur-md border-white/20"
+                className={`relative flex flex-col bg-background/10 backdrop-blur-md border-white/20 ${
+                  plan.popular ? "ring-2 ring-accent" : ""
+                }`}
               >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-full">
+                      MOST POPULAR
+                    </span>
+                  </div>
+                )}
                 
                 <CardHeader>
                   <CardTitle className="text-2xl text-foreground">{plan.name}</CardTitle>
@@ -131,20 +204,15 @@ const Pricing = () => {
                         <span className="text-4xl font-bold text-accent">{getPrice(plan)}</span>
                         <span className="text-foreground/70 ml-2">{getPeriodText(plan)}</span>
                       </div>
-                      {billingPeriod === "monthly" && plan.monthlyPrice !== "Free" && (
-                        <span className="text-xs font-bold text-accent bg-accent/10 px-2 py-1 rounded">
-                          COMING SOON!
+                      {billingPeriod === "yearly" && plan.annualSavings && (
+                        <span className="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded">
+                          SAVE ${plan.annualSavings}
                         </span>
                       )}
                     </div>
-                    {plan.monthlyPrice !== "Free" && typeof plan.yearlyPrice === "number" && (
+                    {plan.monthlyPrice !== "Free" && typeof plan.yearlyPrice === "number" && billingPeriod === "yearly" && (
                       <p className="text-sm text-foreground/50 mt-1">
                         ${plan.yearlyPrice}/year billed annually
-                      </p>
-                    )}
-                    {getYearlyTotal(plan) && (
-                      <p className="text-xs text-foreground/60 mt-2">
-                        {getYearlyTotal(plan)}
                       </p>
                     )}
                   </div>
@@ -152,16 +220,6 @@ const Pricing = () => {
                 </CardHeader>
 
                 <CardContent className="flex-grow">
-                  {plan.monthlyPrice !== "Free" && (
-                    <div className="mb-6 pb-6 border-b border-white/20">
-                      <p className="text-sm font-medium text-foreground mb-2">Super Credits Add-on</p>
-                      <p className="text-xs text-foreground/60 mb-3">For video generation (recurring monthly)</p>
-                      <select disabled className="w-full px-3 py-2 bg-background/20 border border-white/20 rounded-md text-sm text-foreground opacity-50 cursor-not-allowed">
-                        <option>None</option>
-                      </select>
-                    </div>
-                  )}
-
                   <div className="space-y-3">
                     <p className="text-sm font-semibold text-foreground mb-3">What you get:</p>
                     {plan.features.map((feature, idx) => (
@@ -174,12 +232,29 @@ const Pricing = () => {
                 </CardContent>
 
                 <CardFooter>
-                  <Button 
-                    disabled 
-                    className="w-full bg-accent/50 text-accent-foreground cursor-not-allowed hover:bg-accent/50"
-                  >
-                    Coming Soon
-                  </Button>
+                  {plan.monthlyPrice === "Free" ? (
+                    <Button 
+                      className="w-full"
+                      variant="outline"
+                    >
+                      Get Started
+                    </Button>
+                  ) : billingPeriod === "yearly" ? (
+                    <Button 
+                      className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                      onClick={() => handleCheckout(plan)}
+                      disabled={loadingPlan === plan.id}
+                    >
+                      {loadingPlan === plan.id ? "Loading..." : "Subscribe Now"}
+                    </Button>
+                  ) : (
+                    <Button 
+                      disabled 
+                      className="w-full bg-accent/50 text-accent-foreground cursor-not-allowed hover:bg-accent/50"
+                    >
+                      Coming Soon
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}
