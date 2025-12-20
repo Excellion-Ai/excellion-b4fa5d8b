@@ -565,7 +565,7 @@ export default function SecretBuilderHub() {
   };
 
   const handleBillingClick = () => {
-    navigate('/builder-pricing');
+    navigate('/billing');
   };
 
   return (
