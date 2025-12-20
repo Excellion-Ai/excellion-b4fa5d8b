@@ -885,41 +885,7 @@ export function BuilderShell() {
               <Smartphone className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Model Mode Selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                {modelMode === 'fast' ? (
-                  <>
-                    <Zap className="h-3.5 w-3.5 text-yellow-500" />
-                    Fast
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-                    Quality
-                  </>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center">
-              <DropdownMenuItem onClick={() => setModelMode('fast')} className="gap-2">
-                <Zap className="h-4 w-4 text-yellow-500" />
-                <div>
-                  <div className="font-medium">Fast Mode</div>
-                  <div className="text-xs text-muted-foreground">Gemini Flash - quicker, cheaper</div>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setModelMode('quality')} className="gap-2">
-                <Sparkles className="h-4 w-4 text-purple-500" />
-                <div>
-                  <div className="font-medium">Quality Mode</div>
-                  <div className="text-xs text-muted-foreground">GPT-5 - better output, slower</div>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Model is auto-selected by the bot based on prompt complexity */}
 
           {/* Undo/Redo buttons */}
           <div className="flex items-center gap-1">
