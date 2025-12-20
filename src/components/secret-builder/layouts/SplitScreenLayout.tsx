@@ -104,18 +104,19 @@ export function SplitScreenLayout({ children, theme, sections, siteName, navigat
         <div 
           className="w-[45%] lg:w-[40%] sticky top-0 h-screen overflow-hidden"
           style={{
-            backgroundColor: isDark ? '#0f0f0f' : '#f8f8f8',
+            backgroundColor: theme.backgroundColor || (isDark ? '#0f0f0f' : '#f8f8f8'),
           }}
         >
           {heroChild ? (
-            <div className="h-full">
+            <div className="h-full w-full">
               {heroChild}
             </div>
           ) : (
             <div 
-              className="h-full flex items-center justify-center p-8"
+              className="h-full w-full flex items-center justify-center p-8"
               style={{
-                background: `linear-gradient(135deg, ${theme.primaryColor}30, ${theme.secondaryColor}30)`,
+                background: `linear-gradient(135deg, ${theme.primaryColor}30, ${theme.secondaryColor}30, ${theme.backgroundColor || (isDark ? '#0f0f0f' : '#f8f8f8')})`,
+                backgroundColor: theme.backgroundColor || (isDark ? '#0f0f0f' : '#f8f8f8'),
               }}
             >
               <h1 
@@ -175,20 +176,23 @@ interface SplitHeroProps {
 
 export function SplitHero({ headline, subheadline, theme, backgroundImage }: SplitHeroProps) {
   const isDark = theme.darkMode;
+  const fallbackBg = theme.backgroundColor || (isDark ? '#0f0f0f' : '#f8f8f8');
   
   const backgroundStyle = backgroundImage
     ? {
         backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${backgroundImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundColor: fallbackBg,
       }
     : {
-        background: `linear-gradient(160deg, ${theme.primaryColor}40, ${theme.secondaryColor}20, transparent)`,
+        background: `linear-gradient(160deg, ${theme.primaryColor}40, ${theme.secondaryColor}20, ${fallbackBg})`,
+        backgroundColor: fallbackBg,
       };
 
   return (
     <div 
-      className="h-full flex flex-col justify-end p-8 lg:p-12"
+      className="h-full w-full flex flex-col justify-end p-8 lg:p-12"
       style={backgroundStyle}
     >
       <div className="max-w-md">

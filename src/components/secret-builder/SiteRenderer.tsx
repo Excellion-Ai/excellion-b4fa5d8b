@@ -358,7 +358,7 @@ export function SiteRenderer({
           <div 
             className="w-[45%] lg:w-[40%] sticky top-0 h-screen overflow-hidden"
             style={{
-              backgroundColor: theme.darkMode ? '#0f0f0f' : '#f8f8f8',
+              backgroundColor: theme.backgroundColor || (theme.darkMode ? '#0f0f0f' : '#f8f8f8'),
             }}
           >
             {heroSection ? (
@@ -370,9 +370,10 @@ export function SiteRenderer({
               />
             ) : (
               <div 
-                className="h-full flex items-center justify-center p-8"
+                className="h-full w-full flex items-center justify-center p-8"
                 style={{
-                  background: `linear-gradient(135deg, ${theme.primaryColor}30, ${theme.secondaryColor}30)`,
+                  background: `linear-gradient(135deg, ${theme.primaryColor}30, ${theme.secondaryColor}30, ${theme.backgroundColor || (theme.darkMode ? '#0f0f0f' : '#f8f8f8')})`,
+                  backgroundColor: theme.backgroundColor || (theme.darkMode ? '#0f0f0f' : '#f8f8f8'),
                 }}
               >
                 <h1 
