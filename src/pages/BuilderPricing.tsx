@@ -200,29 +200,19 @@ const BuilderPricing = () => {
       
       if (!session) {
         toast.error("Please sign in to subscribe");
-        navigate("/auth");
+        navigate("/auth?redirect=/checkout?plan=" + planName.toLowerCase());
         return;
       }
 
       const planType = planName.toLowerCase() as keyof typeof PRICE_IDS;
-      const priceId = PRICE_IDS[planType];
       
-      if (!priceId) {
+      if (!PRICE_IDS[planType]) {
         toast.error("Invalid plan selected");
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId, planType },
-      });
-
-      if (error) throw error;
-      
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      } else {
-        throw new Error("No checkout URL received");
-      }
+      // Navigate to embedded checkout page
+      navigate(`/checkout?plan=${planType}`);
     } catch (error) {
       console.error("Checkout error:", error);
       toast.error("Failed to start checkout. Please try again.");
