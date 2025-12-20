@@ -36,19 +36,25 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
   const subtitle = content?.subtitle || section.description || 'Trusted by thousands of happy customers';
   const items = content?.items || defaultTestimonials;
 
+  // Determine optimal column count based on number of items
+  const itemCount = items.length;
+  const gridCols = itemCount === 1 ? 'grid-cols-1' 
+    : itemCount === 2 ? 'grid-cols-1 md:grid-cols-2' 
+    : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
+
   return (
     <section 
       id={section.id}
-      className="py-20 px-6"
+      className="py-16 md:py-20 px-4 md:px-8 w-full"
       style={{ 
         backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
       }}
     >
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
+      <div className="w-full max-w-7xl mx-auto">
+        <div className="text-center mb-10 md:mb-12">
           <ScrollAnimation animation="fade-up">
             <h2 
-              className="text-3xl md:text-4xl font-bold mb-4"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
               style={{ 
                 fontFamily: theme.fontHeading || 'system-ui',
                 color: isDark ? '#ffffff' : '#111827'
@@ -59,7 +65,7 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
           </ScrollAnimation>
           <ScrollAnimation animation="fade-up" delay={100}>
             <p 
-              className="text-lg max-w-2xl mx-auto"
+              className="text-base md:text-lg max-w-2xl mx-auto px-4"
               style={{ 
                 fontFamily: theme.fontBody || 'system-ui',
                 color: isDark ? '#9ca3af' : '#6b7280'
@@ -70,7 +76,13 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
           </ScrollAnimation>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Use CSS Grid with proper min-width to prevent narrow cards */}
+        <div 
+          className="grid gap-6 md:gap-8 w-full"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))'
+          }}
+        >
           {items.slice(0, 6).map((testimonial, index) => (
             <ScrollAnimation 
               key={index} 
@@ -78,10 +90,11 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
               delay={index * 100}
             >
               <div 
-                className="p-6 rounded-xl h-full"
+                className="p-6 md:p-8 rounded-xl h-full flex flex-col"
                 style={{ 
                   backgroundColor: isDark ? '#1f1f1f' : '#ffffff',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  minWidth: '280px'
                 }}
               >
                 {testimonial.rating && (
@@ -96,7 +109,7 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
                   </div>
                 )}
                 <p 
-                  className="text-base mb-6"
+                  className="text-base md:text-lg mb-6 flex-grow leading-relaxed"
                   style={{ 
                     fontFamily: theme.fontBody || 'system-ui',
                     color: isDark ? '#d1d5db' : '#4b5563'
@@ -104,16 +117,16 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
                 >
                   "{testimonial.quote}"
                 </p>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mt-auto pt-4 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}>
                   <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0"
                     style={{ backgroundColor: theme.primaryColor }}
                   >
                     {testimonial.name.charAt(0)}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p 
-                      className="font-semibold text-sm"
+                      className="font-semibold text-sm truncate"
                       style={{ 
                         fontFamily: theme.fontHeading || 'system-ui',
                         color: isDark ? '#ffffff' : '#111827'
@@ -122,7 +135,7 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
                       {testimonial.name}
                     </p>
                     <p 
-                      className="text-xs"
+                      className="text-xs truncate"
                       style={{ 
                         color: isDark ? '#9ca3af' : '#6b7280'
                       }}
