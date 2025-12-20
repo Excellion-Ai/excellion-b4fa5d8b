@@ -137,6 +137,11 @@ const Pricing = () => {
                         </span>
                       )}
                     </div>
+                    {plan.monthlyPrice !== "Free" && typeof plan.yearlyPrice === "number" && (
+                      <p className="text-sm text-foreground/50 mt-1">
+                        ${plan.yearlyPrice}/year billed annually
+                      </p>
+                    )}
                     {getYearlyTotal(plan) && (
                       <p className="text-xs text-foreground/60 mt-2">
                         {getYearlyTotal(plan)}
