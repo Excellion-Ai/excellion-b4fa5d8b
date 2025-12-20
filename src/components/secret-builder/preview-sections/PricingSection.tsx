@@ -73,7 +73,16 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
           </ScrollAnimation>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+        <div 
+          className="grid gap-6 md:gap-8 justify-center"
+          style={{
+            gridTemplateColumns: items.length <= 2 
+              ? 'repeat(auto-fit, minmax(280px, 1fr))' 
+              : 'repeat(auto-fit, minmax(280px, 360px))',
+            maxWidth: items.length <= 2 ? '800px' : '100%',
+            margin: items.length <= 2 ? '0 auto' : undefined
+          }}
+        >
           {items.slice(0, 4).map((plan, index) => (
             <ScrollAnimation 
               key={index} 
@@ -81,14 +90,15 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
               delay={index * 150}
             >
               <div 
-                className="p-8 rounded-2xl transition-all hover:scale-105 h-full"
+                className="p-6 md:p-8 rounded-2xl transition-all hover:scale-105 h-full flex flex-col"
                 style={{ 
                   backgroundColor: plan.highlighted ? theme.primaryColor : (isDark ? '#1f1f1f' : '#f9fafb'),
-                  boxShadow: plan.highlighted ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  boxShadow: plan.highlighted ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  minWidth: '260px'
                 }}
               >
                 <h3 
-                  className="text-xl font-semibold mb-2"
+                  className="text-lg md:text-xl font-semibold mb-2"
                   style={{ 
                     fontFamily: theme.fontHeading || 'system-ui',
                     color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
@@ -96,9 +106,9 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
                 >
                   {plan.name}
                 </h3>
-                <div className="mb-6">
+                <div className="mb-4 md:mb-6">
                   <span 
-                    className="text-4xl font-bold"
+                    className="text-3xl md:text-4xl font-bold"
                     style={{ 
                       color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
                     }}
@@ -106,6 +116,7 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
                     {plan.price}
                   </span>
                   <span 
+                    className="text-sm md:text-base"
                     style={{ 
                       color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (isDark ? '#9ca3af' : '#6b7280')
                     }}
@@ -113,15 +124,15 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
                     {plan.period}
                   </span>
                 </div>
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 flex-grow">
                   {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center gap-2">
+                    <li key={featureIndex} className="flex items-start gap-2">
                       <Check 
-                        className="w-5 h-5 flex-shrink-0" 
+                        className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" 
                         style={{ color: plan.highlighted ? '#ffffff' : theme.primaryColor }}
                       />
                       <span 
-                        className="text-sm"
+                        className="text-xs md:text-sm leading-relaxed"
                         style={{ 
                           fontFamily: theme.fontBody || 'system-ui',
                           color: plan.highlighted ? 'rgba(255,255,255,0.9)' : (isDark ? '#d1d5db' : '#4b5563')
@@ -133,7 +144,7 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
                   ))}
                 </ul>
                 <button
-                  className="w-full py-3 rounded-lg font-semibold transition-all hover:opacity-90"
+                  className="w-full py-2.5 md:py-3 rounded-lg font-semibold transition-all hover:opacity-90 text-sm md:text-base mt-auto"
                   style={{ 
                     backgroundColor: plan.highlighted ? '#ffffff' : theme.primaryColor,
                     color: plan.highlighted ? theme.primaryColor : '#ffffff'
