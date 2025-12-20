@@ -350,8 +350,9 @@ export function BuilderShell() {
     setIdea('');
 
     setIsGenerating(true);
+    // Don't clear the existing preview - keep it visible until new one is ready
     setGeneratedHtml(null);
-    resetSiteSpec(null);
+    // resetSiteSpec removed: Keep existing preview during generation
     setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: 'pending' })));
 
     const hasUrl = containsUrl(ideaToUse);
