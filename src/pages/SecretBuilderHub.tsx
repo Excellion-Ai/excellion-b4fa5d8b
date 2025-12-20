@@ -38,7 +38,19 @@ import {
   Globe,
   Folder,
   ChevronUp,
-  Menu
+  Menu,
+  Settings,
+  CreditCard,
+  Bell,
+  Shield,
+  Keyboard,
+  HelpCircle,
+  MessageSquare,
+  Zap,
+  Moon,
+  Sun,
+  LogOut,
+  User
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -46,6 +58,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import {
   Collapsible,
@@ -684,12 +697,74 @@ export default function SecretBuilderHub() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="w-full justify-between">
-                <span className="text-xs">Settings</span>
+                <div className="flex items-center gap-2">
+                  <Settings className="w-3 h-3" />
+                  <span className="text-xs">Settings</span>
+                </div>
                 <ChevronDown className="w-3 h-3 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem>Workspace Settings</DropdownMenuItem>
+            <DropdownMenuContent align="start" className="w-64 bg-popover">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Account</DropdownMenuLabel>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <User className="w-4 h-4" />
+                <span>Profile Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <CreditCard className="w-4 h-4" />
+                <span>Billing & Credits</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <Bell className="w-4 h-4" />
+                <span>Notifications</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Workspace</DropdownMenuLabel>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <FolderKanban className="w-4 h-4" />
+                <span>Workspace Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <Users className="w-4 h-4" />
+                <span>Team Members</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <Globe className="w-4 h-4" />
+                <span>Custom Domains</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Preferences</DropdownMenuLabel>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <Palette className="w-4 h-4" />
+                <span>Theme & Appearance</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <Zap className="w-4 h-4" />
+                <span>AI Model Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <Keyboard className="w-4 h-4" />
+                <span>Keyboard Shortcuts</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Support</DropdownMenuLabel>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <HelpCircle className="w-4 h-4" />
+                <span>Help & Documentation</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer">
+                <MessageSquare className="w-4 h-4" />
+                <span>Contact Support</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
