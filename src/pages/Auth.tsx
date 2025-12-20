@@ -172,20 +172,22 @@ const Auth = () => {
         if (error) {
           recordFailedAttempt(email);
           
-          // Log failed authentication
-          await supabase.from('auth_activity').insert({
-            email,
-            event_type: 'login',
-            success: false,
-          });
-          
           const updatedLockout = getLockoutInfo(email);
           if (updatedLockout.isLocked) {
             setLockoutTime(updatedLockout.remainingTime);
           }
           const remainingAttempts = MAX_ATTEMPTS - (updatedLockout.attemptCount % MAX_ATTEMPTS);
+          
+          // Handle specific error messages
+          let errorMessage = error.message;
+          if (error.message.includes("Invalid login credentials")) {
+            errorMessage = "Invalid email or password";
+          } else if (error.message.includes("Email not confirmed")) {
+            errorMessage = "Please check your email to confirm your account";
+          }
+          
           throw new Error(
-            error.message + 
+            errorMessage + 
             (remainingAttempts > 0 && remainingAttempts < MAX_ATTEMPTS 
               ? ` (${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining)` 
               : '')
@@ -193,17 +195,9 @@ const Auth = () => {
         }
         
         clearLoginAttempts(email);
-        
-        // Log successful authentication
-        await supabase.from('auth_activity').insert({
-          email,
-          event_type: 'login',
-          success: true,
-        });
-        
         toast.success("Logged in successfully!");
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -212,23 +206,22 @@ const Auth = () => {
         });
 
         if (error) {
-          // Log failed signup
-          await supabase.from('auth_activity').insert({
-            email,
-            event_type: 'signup',
-            success: false,
-          });
-          throw error;
+          // Handle specific signup errors
+          let errorMessage = error.message;
+          if (error.message.includes("User already registered")) {
+            errorMessage = "An account with this email already exists. Please sign in instead.";
+          }
+          throw new Error(errorMessage);
         }
         
-        // Log successful signup
-        await supabase.from('auth_activity').insert({
-          email,
-          event_type: 'signup',
-          success: true,
-        });
-        
-        toast.success("Account created successfully!");
+        // Check if user was created (auto-confirm enabled means they're logged in)
+        if (data.user && data.session) {
+          toast.success("Account created successfully!");
+        } else if (data.user && !data.session) {
+          toast.success("Account created! Please check your email to confirm.");
+        } else {
+          toast.success("Account created successfully!");
+        }
       }
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
