@@ -1005,7 +1005,7 @@ export default function SecretBuilderHub() {
       {/* Main Content */}
       <main className="flex-1 md:ml-64 min-h-screen overflow-y-auto relative pt-16 md:pt-0">
         {/* Subtle purple gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-transparent to-purple-800/20 dark:from-purple-950/20 dark:via-transparent dark:to-purple-900/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/20 via-transparent to-purple-900/10 pointer-events-none" />
         
         <div className="relative max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-16">
           
