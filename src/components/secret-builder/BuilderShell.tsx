@@ -257,7 +257,9 @@ export function BuilderShell() {
   };
 
   const saveProject = async (html: string | null, allMessages: Message[], ideaText: string, currentSiteSpec: SiteSpec | null) => {
-    const name = projectName !== 'New Project' ? projectName : ideaText.slice(0, 50);
+    // Use AI-generated site name if available, otherwise fall back to idea text
+    const aiGeneratedName = currentSiteSpec?.name;
+    const name = projectName !== 'New Project' ? projectName : (aiGeneratedName || ideaText.slice(0, 50));
     
     const projectData = {
       name,
@@ -523,11 +525,21 @@ export function BuilderShell() {
         newSiteSpec = parsedSpec;
         setSiteSpec(parsedSpec);
         setGeneratedHtml(null); // Use SiteSpec rendering instead of raw HTML
+        
+        // Set project name from AI-generated site name
+        if (parsedSpec.name && projectName === 'New Project') {
+          setProjectName(parsedSpec.name);
+        }
       } else {
         // Fallback to rule-based generation if AI didn't return valid JSON
         console.warn('AI did not return valid JSON, using fallback generator');
         newSiteSpec = specFromChat(ideaToUse);
         setSiteSpec(newSiteSpec);
+        
+        // Set project name from fallback spec
+        if (newSiteSpec.name && projectName === 'New Project') {
+          setProjectName(newSiteSpec.name);
+        }
       }
       
       updateStep(4, 'complete');

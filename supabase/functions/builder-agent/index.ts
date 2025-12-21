@@ -353,6 +353,29 @@ OUTPUT FORMAT (JSON):
 }
 
 ====================================
+## PROJECT NAME EXTRACTION
+====================================
+
+CRITICAL: Extract a proper BUSINESS NAME from the user's prompt for the project name.
+
+**RULES:**
+1. If user mentions a company name (e.g., "Peak Riders", "Joe's Plumbing", "Bella Salon"), use that EXACT name
+2. If no company name given, create a realistic business name based on the niche:
+   - "Snowboard shop" → "Peak Boards" or "Summit Snow Co."
+   - "Car dealership" → "Prestige Auto Group" or "Elite Motors"
+   - "Yoga studio" → "Zen Flow Yoga" or "Harmony Studio"
+   - "3D printing service" → "Precision 3D" or "MakeSpace Printing"
+   - "Tax preparation" → "TaxPro Solutions" or "Accurate Tax Services"
+3. The name should be 2-4 words, professional, and memorable
+4. Store this in siteDefinition.name - this becomes the PROJECT NAME
+
+**Examples:**
+- Input: "make a snowboard shop store" → name: "Peak Riders"
+- Input: "website for my plumbing company called Fast Flow" → name: "Fast Flow"
+- Input: "coffee shop in Seattle" → name: "Seattle Roast Cafe"
+- Input: "AI consulting firm" → name: "Nexus AI Consulting"
+
+====================================
 ## CRITICAL RULES
 ====================================
 
