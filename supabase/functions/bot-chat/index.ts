@@ -413,6 +413,130 @@ Once you detect the industry, USE THESE EXACT TEMPLATES for content generation:
 - **Theme**: primaryColor: "#7c3aed" (purple), secondaryColor: "#f59e0b" (gold)
 
 ====================================
+## 2B. INDUSTRY-SPECIFIC PLACEHOLDER IMAGES
+====================================
+
+CRITICAL: Always include realistic placeholder images for each industry. Use these Unsplash URLs:
+
+### AUTOMOTIVE (Car Dealership)
+- Hero Background: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920&q=80" (luxury car showroom)
+- Inventory Items:
+  - "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80" (sports car)
+  - "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80" (sedan front)
+  - "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800&q=80" (SUV)
+  - "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80" (truck)
+  - "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80" (BMW)
+  - "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80" (Mercedes)
+
+### LAWN CARE & LANDSCAPING
+- Hero Background: "https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1920&q=80" (beautiful lawn)
+- Gallery Items:
+  - "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&q=80" (manicured garden)
+  - "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&q=80" (lawn mower)
+  - "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80" (landscaping)
+  - "https://images.unsplash.com/photo-1598902108854-10e335adac99?w=800&q=80" (garden design)
+
+### CLOTHING & FASHION
+- Hero Background: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80" (fashion store)
+- Product Items:
+  - "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&q=80" (clothing rack)
+  - "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&q=80" (t-shirts)
+  - "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80" (jeans)
+  - "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80" (accessories)
+
+### RESTAURANT & FOOD SERVICE
+- Hero Background: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&q=80" (restaurant interior)
+- Menu Items:
+  - "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80" (salad dish)
+  - "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80" (pizza)
+  - "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80" (gourmet plate)
+  - "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80" (burger)
+
+### FITNESS & GYM
+- Hero Background: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&q=80" (gym interior)
+- Gallery Items:
+  - "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80" (workout area)
+  - "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80" (group class)
+  - "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&q=80" (weights)
+  - "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&q=80" (trainer)
+
+### MEDICAL & DENTAL
+- Hero Background: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1920&q=80" (medical office)
+- Gallery Items:
+  - "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&q=80" (doctor)
+  - "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80" (dental chair)
+  - "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80" (medical equipment)
+  - "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&q=80" (consultation)
+
+### LEGAL SERVICES
+- Hero Background: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1920&q=80" (law office)
+- Gallery Items:
+  - "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" (professional attorney)
+  - "https://images.unsplash.com/photo-1436450412740-6b988f486c6b?w=800&q=80" (law books)
+  - "https://images.unsplash.com/photo-1521791055366-0d553872125f?w=800&q=80" (courtroom)
+
+### REAL ESTATE
+- Hero Background: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&q=80" (modern home)
+- Property Items:
+  - "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80" (house exterior)
+  - "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" (luxury home)
+  - "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80" (modern house)
+  - "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&q=80" (suburban home)
+
+### SALON & SPA
+- Hero Background: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1920&q=80" (salon interior)
+- Gallery Items:
+  - "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=80" (haircut)
+  - "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=800&q=80" (spa treatment)
+  - "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=800&q=80" (nail salon)
+  - "https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=800&q=80" (hair styling)
+
+### PLUMBING & HVAC
+- Hero Background: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" (plumber working)
+- Gallery Items:
+  - "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&q=80" (plumbing work)
+  - "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80" (HVAC unit)
+  - "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80" (service van)
+
+### PHOTOGRAPHY
+- Hero Background: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1920&q=80" (photography studio)
+- Portfolio Items:
+  - "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" (wedding photo)
+  - "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=800&q=80" (portrait)
+  - "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80" (wedding couple)
+  - "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80" (family portrait)
+
+### CONSTRUCTION & CONTRACTOR
+- Hero Background: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80" (construction site)
+- Project Items:
+  - "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80" (building project)
+  - "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80" (construction work)
+  - "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80" (renovation)
+  - "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=800&q=80" (contractor)
+
+### CLEANING SERVICES
+- Hero Background: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1920&q=80" (clean home)
+- Gallery Items:
+  - "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800&q=80" (cleaning supplies)
+  - "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&q=80" (professional cleaner)
+  - "https://images.unsplash.com/photo-1527515545081-5db817172677?w=800&q=80" (sparkling kitchen)
+
+### PET SERVICES
+- Hero Background: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1920&q=80" (pet shop)
+- Gallery Items:
+  - "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&q=80" (happy dog)
+  - "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80" (dogs playing)
+  - "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80" (cat)
+  - "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=800&q=80" (pet grooming)
+
+**IMPORTANT IMAGE RULES:**
+1. For INVENTORY/PRODUCT sections (cars, homes, products), always include image URLs in the items array
+2. Use the pattern: { "title": "Item Name", "description": "...", "image": "https://images.unsplash.com/..." }
+3. Hero sections should use backgroundImage property with the industry hero URL
+4. Gallery/portfolio sections must include image arrays
+5. NEVER leave image slots empty - always use industry-appropriate stock photos
+
+====================================
 ## 3. THE "NO-GO" ZONE (STRICT CONSTRAINTS)
 ====================================
 
