@@ -238,15 +238,42 @@ PORTFOLIO_IDENTITY (Designers, Artists, Personal Brands, Agencies, NGOs)
 
 IMPORTANT: Always use layoutStructure: "standard" - sections flow vertically with no gaps.
 
+**CRITICAL: GENERATE MULTIPLE PAGES** - Every site MUST have 3-5 pages generated on initial creation:
+
+REQUIRED PAGES BY BUSINESS MODEL:
+
+**SERVICE_BASED** (Plumbers, Dentists, Lawyers, Consultants):
+1. Home - Hero, Features/Services, Stats, Testimonials, CTA
+2. Services - Detailed service descriptions with pricing hints
+3. About - Company story, team, values, mission
+4. Contact - Contact form, location map, hours, phone/email
+
+**RETAIL_COMMERCE** (Shops, E-commerce):
+1. Home - Hero, Featured Products, Categories, Testimonials, CTA
+2. Products/Shop - Product grid with categories
+3. About - Brand story, values, craftsmanship
+4. Contact - Contact form, location, support info
+
+**HOSPITALITY** (Restaurants, Hotels, Venues):
+1. Home - Hero, Menu highlights, Ambiance, Testimonials, CTA
+2. Menu - Full menu with categories and prices
+3. About - Story, chef/team, history
+4. Catering/Events - Event packages, booking info
+5. Contact - Reservations, location, hours
+
+**PORTFOLIO_IDENTITY** (Designers, Artists, Agencies):
+1. Home - Hero, Featured Work, Services, Testimonials, CTA
+2. Portfolio/Work - Gallery of projects with case studies
+3. Services - Detailed service offerings
+4. About - Bio, process, clients
+5. Contact - Contact form, availability
+
 OUTPUT FORMAT (JSON):
 {
   "businessModel": "SERVICE_BASED | RETAIL_COMMERCE | HOSPITALITY | PORTFOLIO_IDENTITY",
   "summary": ["Industry-specific bullet 1", "bullet 2", "bullet 3"],
   "appType": "Industry-specific site type",
   "targetStack": "Next.js 14 + Supabase + Stripe + Tailwind + shadcn",
-  "pages": [
-    {"name": "Home", "description": "Landing page with industry-appropriate sections"}
-  ],
   "coreFeatures": ["Industry Feature 1", "Industry Feature 2"],
   "dataModel": [
     {"entity": "items", "fields": ["id", "type", "title", "description", "price", "image_url", "category", "is_featured", "metadata"]},
@@ -266,84 +293,200 @@ OUTPUT FORMAT (JSON):
       "backgroundStyle": "dark"
     },
     "navigation": [
-      {"label": "Home", "href": "#hero"},
-      {"label": "Industry-Specific Nav", "href": "#section"}
+      {"label": "Home", "href": "#home"},
+      {"label": "Services", "href": "#services-page"},
+      {"label": "About", "href": "#about-page"},
+      {"label": "Contact", "href": "#contact-page"}
     ],
-    "sections": [
+    "pages": [
       {
-        "id": "hero",
-        "type": "hero",
-        "label": "Hero",
-        "content": {
-          "headline": "Industry-specific headline from templates",
-          "subheadline": "Industry-specific subtext",
-          "ctaText": "Industry-specific CTA",
-          "ctaLink": "#contact"
-        }
+        "title": "Home",
+        "slug": "home",
+        "sections": [
+          {
+            "id": "hero",
+            "type": "hero",
+            "label": "Hero",
+            "content": {
+              "headline": "Industry-specific headline",
+              "subheadline": "Industry-specific subtext",
+              "ctaText": "Industry-specific CTA",
+              "ctaLink": "#contact"
+            }
+          },
+          {
+            "id": "services",
+            "type": "features",
+            "label": "Services",
+            "content": {
+              "title": "Industry-Appropriate Title",
+              "items": [
+                {"title": "Service 1", "description": "Description", "icon": "UniqueIcon1"},
+                {"title": "Service 2", "description": "Description", "icon": "UniqueIcon2"},
+                {"title": "Service 3", "description": "Description", "icon": "UniqueIcon3"},
+                {"title": "Service 4", "description": "Description", "icon": "UniqueIcon4"}
+              ]
+            }
+          },
+          {
+            "id": "stats",
+            "type": "stats",
+            "label": "Stats",
+            "content": {
+              "items": [
+                {"value": "Industry Stat", "label": "Industry Metric"},
+                {"value": "Industry Stat", "label": "Industry Metric"},
+                {"value": "Industry Stat", "label": "Industry Metric"},
+                {"value": "Industry Stat", "label": "Industry Metric"}
+              ]
+            }
+          },
+          {
+            "id": "testimonials",
+            "type": "testimonials",
+            "label": "Reviews",
+            "content": {
+              "title": "What Customers Say",
+              "items": [
+                {"name": "Realistic Name", "role": "Role", "quote": "Testimonial", "rating": 5},
+                {"name": "Realistic Name", "role": "Role", "quote": "Testimonial", "rating": 5}
+              ]
+            }
+          },
+          {
+            "id": "cta",
+            "type": "cta",
+            "label": "CTA",
+            "content": {
+              "headline": "Ready to get started?",
+              "subheadline": "Contact us today",
+              "ctaText": "Get in Touch",
+              "ctaLink": "#contact-page"
+            }
+          }
+        ]
       },
       {
-        "id": "services",
-        "type": "features",
-        "label": "Services",
-        "content": {
-          "title": "Industry-Appropriate Title",
-          "items": [
-            {"title": "Service 1 from template", "description": "Description", "icon": "Industry-appropriate"},
-            {"title": "Service 2 from template", "description": "Description", "icon": "Industry-appropriate"},
-            {"title": "Service 3 from template", "description": "Description", "icon": "Industry-appropriate"},
-            {"title": "Service 4 from template", "description": "Description", "icon": "Industry-appropriate"}
-          ]
-        }
+        "title": "Services",
+        "slug": "services-page",
+        "sections": [
+          {
+            "id": "services-hero",
+            "type": "hero",
+            "label": "Services Hero",
+            "content": {
+              "headline": "Our Services",
+              "subheadline": "What we offer",
+              "ctaText": "Get a Quote",
+              "ctaLink": "#contact-page"
+            }
+          },
+          {
+            "id": "services-list",
+            "type": "features",
+            "label": "All Services",
+            "content": {
+              "title": "Complete Service Offerings",
+              "items": [
+                {"title": "Service 1", "description": "Detailed description", "icon": "UniqueIcon1"},
+                {"title": "Service 2", "description": "Detailed description", "icon": "UniqueIcon2"},
+                {"title": "Service 3", "description": "Detailed description", "icon": "UniqueIcon3"},
+                {"title": "Service 4", "description": "Detailed description", "icon": "UniqueIcon4"},
+                {"title": "Service 5", "description": "Detailed description", "icon": "UniqueIcon5"},
+                {"title": "Service 6", "description": "Detailed description", "icon": "UniqueIcon6"}
+              ]
+            }
+          },
+          {
+            "id": "services-faq",
+            "type": "faq",
+            "label": "FAQ",
+            "content": {
+              "title": "Common Questions",
+              "items": [
+                {"question": "FAQ 1?", "answer": "Answer"},
+                {"question": "FAQ 2?", "answer": "Answer"},
+                {"question": "FAQ 3?", "answer": "Answer"}
+              ]
+            }
+          }
+        ]
       },
       {
-        "id": "stats",
-        "type": "stats",
-        "label": "Stats",
-        "content": {
-          "items": [
-            {"value": "Industry Stat", "label": "Industry Metric"},
-            {"value": "Industry Stat", "label": "Industry Metric"},
-            {"value": "Industry Stat", "label": "Industry Metric"},
-            {"value": "Industry Stat", "label": "Industry Metric"}
-          ]
-        }
+        "title": "About",
+        "slug": "about-page",
+        "sections": [
+          {
+            "id": "about-hero",
+            "type": "hero",
+            "label": "About Hero",
+            "content": {
+              "headline": "About Us",
+              "subheadline": "Our story and mission",
+              "ctaText": "Meet the Team",
+              "ctaLink": "#team"
+            }
+          },
+          {
+            "id": "about-story",
+            "type": "features",
+            "label": "Our Story",
+            "content": {
+              "title": "Why Choose Us",
+              "items": [
+                {"title": "Our Mission", "description": "Mission description", "icon": "Target"},
+                {"title": "Our Values", "description": "Values description", "icon": "Heart"},
+                {"title": "Our Experience", "description": "Experience description", "icon": "Award"},
+                {"title": "Our Promise", "description": "Promise description", "icon": "Shield"}
+              ]
+            }
+          },
+          {
+            "id": "about-stats",
+            "type": "stats",
+            "label": "Company Stats",
+            "content": {
+              "items": [
+                {"value": "10+", "label": "Years Experience"},
+                {"value": "500+", "label": "Happy Clients"},
+                {"value": "1000+", "label": "Projects Completed"},
+                {"value": "24/7", "label": "Support Available"}
+              ]
+            }
+          }
+        ]
       },
       {
-        "id": "testimonials",
-        "type": "testimonials",
-        "label": "Reviews",
-        "content": {
-          "title": "What [Industry Term] Say",
-          "items": [
-            {"name": "Realistic Name", "role": "Industry-relevant role", "quote": "Industry-relevant testimonial", "rating": 5},
-            {"name": "Realistic Name", "role": "Industry-relevant role", "quote": "Industry-relevant testimonial", "rating": 5}
-          ]
-        }
-      },
-      {
-        "id": "faq",
-        "type": "faq",
-        "label": "FAQ",
-        "content": {
-          "title": "Frequently Asked Questions",
-          "items": [
-            {"question": "Industry FAQ 1?", "answer": "Answer from template."},
-            {"question": "Industry FAQ 2?", "answer": "Answer from template."},
-            {"question": "Industry FAQ 3?", "answer": "Answer from template."},
-            {"question": "Industry FAQ 4?", "answer": "Answer from template."}
-          ]
-        }
-      },
-      {
-        "id": "contact",
-        "type": "contact",
-        "label": "Contact",
-        "content": {
-          "title": "Industry-Appropriate Contact Title",
-          "subtitle": "Industry-specific subtitle",
-          "email": "hello@business.com",
-          "phone": "(555) 123-4567"
-        }
+        "title": "Contact",
+        "slug": "contact-page",
+        "sections": [
+          {
+            "id": "contact-main",
+            "type": "contact",
+            "label": "Contact",
+            "content": {
+              "title": "Get in Touch",
+              "subtitle": "We'd love to hear from you",
+              "email": "hello@business.com",
+              "phone": "(555) 123-4567",
+              "address": "123 Main Street, City, State 12345"
+            }
+          },
+          {
+            "id": "contact-faq",
+            "type": "faq",
+            "label": "FAQ",
+            "content": {
+              "title": "Frequently Asked Questions",
+              "items": [
+                {"question": "What are your hours?", "answer": "Industry-specific hours"},
+                {"question": "How do I get started?", "answer": "Getting started info"},
+                {"question": "What areas do you serve?", "answer": "Service area info"},
+                {"question": "What payment methods?", "answer": "Payment info"}
+              ]
+            }
+          }
+        ]
       }
     ]
   },
