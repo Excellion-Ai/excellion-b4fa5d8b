@@ -176,7 +176,6 @@ const QUICK_PROMPTS = [
 // Templates now imported from templateSpecs.ts
 
 const NAV_ITEMS = [
-  { icon: Home, label: 'Home', action: 'home' },
   { icon: BookOpen, label: 'Resources', action: 'resources' },
 ] as const;
 
@@ -649,29 +648,19 @@ export default function SecretBuilderHub() {
                     <span className="text-sm">Landing Page</span>
                   </Button>
                   
-                  {NAV_ITEMS.map((item) => {
-                    const isActive = item.action === 'home';
-                    return (
+                  {NAV_ITEMS.map((item) => (
                       <Button
                         key={item.label}
                         variant="ghost"
-                        className={`w-full justify-start gap-2 h-9 ${
-                          isActive 
-                            ? 'bg-secondary text-foreground' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                        }`}
+                        className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                         onClick={() => {
-                          if (item.action === 'home') {
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                          }
                           setMobileMenuOpen(false);
                         }}
                       >
                         <item.icon className="w-4 h-4" />
                         <span className="text-sm">{item.label}</span>
                       </Button>
-                    );
-                  })}
+                    ))}
 
                   {/* Projects List */}
                   <Collapsible open={projectsFolderOpen} onOpenChange={setProjectsFolderOpen}>
@@ -862,29 +851,19 @@ export default function SecretBuilderHub() {
             <span className="text-sm">Landing Page</span>
           </Button>
           
-          {NAV_ITEMS.map((item) => {
-            const isActive = item.action === 'home';
-            return (
+          {NAV_ITEMS.map((item) => (
               <Button
                 key={item.label}
                 variant="ghost"
-                className={`w-full justify-start gap-2 h-9 ${
-                  isActive 
-                    ? 'bg-secondary text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                }`}
+                className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 onClick={() => {
-                  if (item.action === 'home') {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }
                   // Resources action - no external link
                 }}
               >
                 <item.icon className="w-4 h-4" />
                 <span className="text-sm">{item.label}</span>
               </Button>
-            );
-          })}
+            ))}
 
           {/* Projects Folder Collapsible */}
           <Collapsible open={projectsFolderOpen} onOpenChange={setProjectsFolderOpen}>
