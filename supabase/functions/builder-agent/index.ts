@@ -386,6 +386,12 @@ CRITICAL: Extract a proper BUSINESS NAME from the user's prompt for the project 
 5. ALWAYS use industry-specific CTAs, not generic "Get Started"
 6. ALWAYS include industry-specific FAQs
 7. ALWAYS use layoutStructure: "standard"
+8. **ICONS MUST BE UNIQUE** - NEVER repeat the same icon across feature cards. Each feature MUST have a DIFFERENT, contextually-relevant icon:
+   - Restaurant/Food: "UtensilsCrossed", "ChefHat", "Salad", "Clock", "MapPin", "Truck", "Users", "Leaf"
+   - Automotive: "Car", "Wrench", "Shield", "DollarSign", "Calendar", "CheckCircle", "Award", "Gauge"
+   - Health/Medical: "Stethoscope", "Heart", "Activity", "Shield", "Clock", "Users", "Award", "Pill"
+   - Tech/SaaS: "Cpu", "Cloud", "Lock", "Zap", "BarChart", "Globe", "Code", "Layers"
+   - Choose icons that MATCH the specific feature content, not random selections
 
 ====================================
 ## STYLE
