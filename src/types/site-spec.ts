@@ -153,6 +153,70 @@ export type CustomContent = {
   body?: string;
 };
 
+// Gallery content type
+export type GalleryItem = {
+  image: string;
+  caption?: string;
+  category?: string;
+};
+
+export type GalleryContent = {
+  title: string;
+  subtitle?: string;
+  items: GalleryItem[];
+};
+
+// Services content type
+export type ServiceItem = {
+  title: string;
+  description: string;
+  price?: string;
+  duration?: string;
+  icon?: string;
+  image?: string;
+};
+
+export type ServicesContent = {
+  title: string;
+  subtitle?: string;
+  items: ServiceItem[];
+};
+
+// Team content type
+export type TeamMember = {
+  name: string;
+  role: string;
+  bio?: string;
+  avatar?: string;
+  social?: {
+    twitter?: string;
+    linkedin?: string;
+    email?: string;
+  };
+};
+
+export type TeamContent = {
+  title: string;
+  subtitle?: string;
+  items: TeamMember[];
+};
+
+// Portfolio content type
+export type PortfolioItem = {
+  title: string;
+  description?: string;
+  image: string;
+  category?: string;
+  link?: string;
+  tags?: string[];
+};
+
+export type PortfolioContent = {
+  title: string;
+  subtitle?: string;
+  items: PortfolioItem[];
+};
+
 // Union of all content types
 export type SectionContent = 
   | HeroContent 
@@ -163,7 +227,11 @@ export type SectionContent =
   | ContactContent
   | CTAContent
   | StatsContent
-  | CustomContent;
+  | CustomContent
+  | GalleryContent
+  | ServicesContent
+  | TeamContent
+  | PortfolioContent;
 
 // Animation configuration for sections
 export type AnimationType = 
