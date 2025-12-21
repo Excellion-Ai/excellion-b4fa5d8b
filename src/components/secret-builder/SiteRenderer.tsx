@@ -104,18 +104,20 @@ export function SiteRenderer({
     mobile: 'w-[375px]',
   };
 
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center bg-muted/20">
-        <div className="text-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground">Generating site...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Only show loading screen if there's no existing site to display
+  // Keep showing the current preview while generating updates
   if (!siteSpec) {
+    if (isLoading) {
+      return (
+        <div className="h-full flex items-center justify-center bg-muted/20">
+          <div className="text-center space-y-3">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+            <p className="text-sm text-muted-foreground">Generating site...</p>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="h-full flex items-center justify-center bg-muted/20">
         <div className="text-center text-muted-foreground max-w-xs">
