@@ -17,7 +17,7 @@ interface PortfolioContent {
 }
 
 interface PortfolioSectionProps {
-  section: { id: string; content?: PortfolioContent };
+  section: { id: string; content?: any };
   theme: SiteTheme;
   asTile?: boolean;
 }

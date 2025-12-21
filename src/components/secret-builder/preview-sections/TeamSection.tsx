@@ -19,7 +19,7 @@ interface TeamContent {
 }
 
 interface TeamSectionProps {
-  section: { id: string; content?: TeamContent };
+  section: { id: string; content?: any };
   theme: SiteTheme;
   asTile?: boolean;
 }

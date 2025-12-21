@@ -27,6 +27,10 @@ import {
   CTASection,
   CustomSection,
   StatsSection,
+  GallerySection,
+  ServicesSection,
+  TeamSection,
+  PortfolioSection,
 } from './preview-sections';
 import { EditableText } from './EditableText';
 import { DraggableSection } from './DraggableSection';
@@ -201,6 +205,18 @@ export function SiteRenderer({
             asTile={asTile}
           />
         );
+        break;
+      case 'gallery':
+        sectionContent = <GallerySection {...commonProps} />;
+        break;
+      case 'services':
+        sectionContent = <ServicesSection {...commonProps} />;
+        break;
+      case 'team':
+        sectionContent = <TeamSection {...commonProps} />;
+        break;
+      case 'portfolio':
+        sectionContent = <PortfolioSection {...commonProps} />;
         break;
       default:
         sectionContent = <CustomSection {...commonProps} />;
