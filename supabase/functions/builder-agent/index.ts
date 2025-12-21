@@ -91,6 +91,13 @@ Use these templates based on detected industry:
 - FAQs: Reservations, dietary options, parking, group accommodations
 - Stats: "Est. 20XX", "4.8★ Rating", "Fresh Daily", "Private Events"
 
+### SANDWICH SHOP / DELI / SUB SHOP
+- Headline: "Fresh Subs & Sandwiches Made Your Way" / "Stacked High, Made Right" / "Your Neighborhood Deli"
+- CTA: "View Menu", "Order Now", "Find a Location", "Catering Menu", "Order Pickup"
+- Features: "Made Fresh Daily", "Build Your Own", "Catering Services", "Quick & Convenient", "Local Ingredients"
+- FAQs: Do you offer catering?, Can I customize my order?, Do you have gluten-free options?, How do I order ahead?
+- Stats: "Est. 20XX", "4.9★ Rating", "1000+ Sandwiches Daily", "Fresh Ingredients"
+
 ### FITNESS & GYM
 - Headline: "Transform Your Body, Transform Your Life" / "No Excuses, Just Results"
 - CTA: "Start Free Trial", "Join Today", "Book Class", "See Memberships"
@@ -175,6 +182,10 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
 - Hero: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&q=80"
 - Menu Items: ["https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80", "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80", "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80"]
 
+### SANDWICH SHOP / DELI / SUB SHOP
+- Hero: "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=1920&q=80"
+- Menu Items: ["https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&q=80", "https://images.unsplash.com/photo-1553909489-cd47e0907980?w=800&q=80", "https://images.unsplash.com/photo-1485963631004-f2f00b1d6571?w=800&q=80", "https://images.unsplash.com/photo-1626078299034-59c6dc0de225?w=800&q=80"]
+
 ### FITNESS & GYM
 - Hero: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&q=80"
 - Gallery: ["https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80", "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80"]
@@ -240,6 +251,12 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
 6. **CRITICAL: NEVER use code/programming/tech images for non-tech businesses** - code screenshots, programming interfaces, or tech imagery should ONLY be used for software/tech companies
 7. If unsure about the business type, use a neutral professional image like office space or abstract gradient - NEVER default to code/tech imagery
 8. Match the IMAGE to the EXACT business type - tattoo shops get tattoo images, bakeries get bread/pastry images, etc.
+
+**MANDATORY CROSS-INDUSTRY IMAGE PREVENTION:**
+9. **NEVER use automotive/car images for non-automotive businesses** - This is a critical error. Food businesses, salons, etc. must NEVER show car images.
+10. **Food businesses get ONLY food images** - Restaurants, cafes, delis, sandwich shops, bakeries must ONLY use food-related imagery.
+11. **When business type is unclear, use NEUTRAL images** - Abstract gradients, professional workspaces, or geometric patterns. NEVER default to cars or tech.
+12. **Double-check gallery sections** - These are the most common places where mismatched images appear.
 
 ====================================
 ## PHASE 3: BUSINESS MODEL CLASSIFICATION
