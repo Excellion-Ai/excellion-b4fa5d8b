@@ -82,7 +82,23 @@ const ALLOWED_ICONS = new Set([
 // Fallback icons when AI generates invalid ones
 const FALLBACK_ICONS = ['Zap', 'Star', 'Shield', 'Heart', 'Award', 'Target', 'Sparkles', 'Rocket'];
 
+// Validate Unsplash URL format
+function isValidImageUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  // Allow Unsplash, placeholder, and storage URLs
+  return url.startsWith('https://images.unsplash.com/') || 
+         url.startsWith('https://source.unsplash.com/') ||
+         url.startsWith('https://') && url.includes('supabase');
+}
+
+// Default fallback image for invalid URLs
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop';
+
 function normalizeSpec(spec: any): any {
+  // GLOBAL icon tracking across all pages
+  const globalUsedIcons = new Set<string>();
+  let fallbackIndex = 0;
+  
   // Normalize pages: convert slug to path if needed
   if (spec.pages && Array.isArray(spec.pages)) {
     spec.pages = spec.pages.map((page: any) => {
@@ -93,29 +109,60 @@ function normalizeSpec(spec: any): any {
         delete page.slug;
       }
       
-      // Validate and fix icons in sections
+      // Validate and fix icons/images in sections
       if (page.sections && Array.isArray(page.sections)) {
-        let usedIcons = new Set<string>();
         page.sections = page.sections.map((section: any) => {
+          // Fix hero background images
+          if (section.type === 'hero' && section.content?.backgroundImage) {
+            if (!isValidImageUrl(section.content.backgroundImage)) {
+              section.content.backgroundImage = FALLBACK_IMAGE;
+            }
+          }
+          
+          // Fix items with icons and images
           if (section.content?.items && Array.isArray(section.content.items)) {
             section.content.items = section.content.items.map((item: any, idx: number) => {
+              // Validate and dedupe icons GLOBALLY
               if (item.icon) {
                 // Check if icon is valid
                 if (!ALLOWED_ICONS.has(item.icon)) {
-                  // Replace with fallback
-                  item.icon = FALLBACK_ICONS[idx % FALLBACK_ICONS.length];
-                }
-                // Check for duplicates and replace if needed
-                if (usedIcons.has(item.icon)) {
-                  for (const fallback of FALLBACK_ICONS) {
-                    if (!usedIcons.has(fallback)) {
-                      item.icon = fallback;
+                  // Find an unused fallback
+                  let foundIcon = false;
+                  for (let i = 0; i < FALLBACK_ICONS.length; i++) {
+                    const fi = FALLBACK_ICONS[(fallbackIndex + i) % FALLBACK_ICONS.length];
+                    if (!globalUsedIcons.has(fi)) {
+                      item.icon = fi;
+                      foundIcon = true;
                       break;
                     }
                   }
+                  if (!foundIcon) {
+                    item.icon = FALLBACK_ICONS[fallbackIndex % FALLBACK_ICONS.length];
+                  }
+                  fallbackIndex++;
                 }
-                usedIcons.add(item.icon);
+                // Check for duplicates globally
+                if (globalUsedIcons.has(item.icon)) {
+                  for (let i = 0; i < FALLBACK_ICONS.length; i++) {
+                    const fi = FALLBACK_ICONS[(fallbackIndex + i) % FALLBACK_ICONS.length];
+                    if (!globalUsedIcons.has(fi)) {
+                      item.icon = fi;
+                      break;
+                    }
+                  }
+                  fallbackIndex++;
+                }
+                globalUsedIcons.add(item.icon);
               }
+              
+              // Validate image URLs
+              if (item.image && !isValidImageUrl(item.image)) {
+                item.image = FALLBACK_IMAGE;
+              }
+              if (item.avatar && !isValidImageUrl(item.avatar)) {
+                item.avatar = undefined; // Remove invalid avatars
+              }
+              
               return item;
             });
           }
