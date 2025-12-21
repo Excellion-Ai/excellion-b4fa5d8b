@@ -121,6 +121,47 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_transactions: {
+        Row: {
+          action_type: string | null
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          project_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_type?: string | null
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          project_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string | null
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          project_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "builder_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_domains: {
         Row: {
           created_at: string
@@ -420,6 +461,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_credits: {
+        Row: {
+          balance: number
+          current_plan: string
+          total_earned: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          current_plan?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          current_plan?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
