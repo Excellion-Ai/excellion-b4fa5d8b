@@ -1105,22 +1105,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   disabled={isGenerating}
                   attachmentCount={attachments.length}
                 />
-                <Button
-                  variant={visualEditsEnabled ? "default" : "ghost"}
-                  size="icon"
-                  className={`h-8 w-8 shrink-0 transition-all duration-300 ${
-                    visualEditsEnabled 
-                      ? 'bg-primary text-primary-foreground animate-pulse shadow-lg shadow-primary/30' 
-                      : ''
-                  }`}
-                  onClick={() => {
-                    setVisualEditsEnabled(!visualEditsEnabled);
-                    toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
-                  }}
-                  title={visualEditsEnabled ? 'Disable visual edits' : 'Enable visual edits'}
-                >
-                  <MousePointer2 className={`h-4 w-4 transition-transform duration-300 ${visualEditsEnabled ? 'scale-110' : ''}`} />
-                </Button>
                 <Input
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
