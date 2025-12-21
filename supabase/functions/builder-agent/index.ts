@@ -332,7 +332,7 @@ OUTPUT FORMAT (JSON):
     "pages": [
       {
         "title": "Home",
-        "slug": "home",
+        "path": "/",
         "sections": [
           {
             "id": "hero",
@@ -399,7 +399,7 @@ OUTPUT FORMAT (JSON):
       },
       {
         "title": "Services",
-        "slug": "services-page",
+        "path": "/services",
         "sections": [
           {
             "id": "services-hero",
@@ -445,7 +445,7 @@ OUTPUT FORMAT (JSON):
       },
       {
         "title": "About",
-        "slug": "about-page",
+        "path": "/about",
         "sections": [
           {
             "id": "about-hero",
@@ -489,7 +489,7 @@ OUTPUT FORMAT (JSON):
       },
       {
         "title": "Contact",
-        "slug": "contact-page",
+        "path": "/contact",
         "sections": [
           {
             "id": "contact-main",
@@ -560,12 +560,27 @@ CRITICAL: Extract a proper BUSINESS NAME from the user's prompt for the project 
 5. ALWAYS use industry-specific CTAs, not generic "Get Started"
 6. ALWAYS include industry-specific FAQs
 7. ALWAYS use layoutStructure: "standard"
-8. **ICONS MUST BE UNIQUE** - NEVER repeat the same icon across feature cards. Each feature MUST have a DIFFERENT, contextually-relevant icon:
-   - Restaurant/Food: "UtensilsCrossed", "ChefHat", "Salad", "Clock", "MapPin", "Truck", "Users", "Leaf"
-   - Automotive: "Car", "Wrench", "Shield", "DollarSign", "Calendar", "CheckCircle", "Award", "Gauge"
-   - Health/Medical: "Stethoscope", "Heart", "Activity", "Shield", "Clock", "Users", "Award", "Pill"
-   - Tech/SaaS: "Cpu", "Cloud", "Lock", "Zap", "BarChart", "Globe", "Code", "Layers"
-   - Choose icons that MATCH the specific feature content, not random selections
+8. **ICONS MUST BE UNIQUE AND FROM ALLOWED LIST** - NEVER repeat the same icon across feature cards. Each feature MUST have a DIFFERENT icon from this EXACT list:
+   
+   ALLOWED ICONS (use ONLY these exact names):
+   - Core: "Zap", "Shield", "Clock", "Star", "Wrench", "Heart", "Users", "Award", "Target", "Truck", "CheckCircle", "Settings", "Sparkles", "Lightbulb", "Rocket", "Gift", "ThumbsUp", "Crown"
+   - Service: "Scissors", "Hammer", "PaintBucket", "Droplets", "Flame", "Snowflake", "Plug", "Key"
+   - Food: "UtensilsCrossed", "Coffee", "Wine", "Pizza", "Cake", "Cookie", "Soup", "ChefHat"
+   - Auto: "Car", "Gauge", "Fuel"
+   - Health: "Stethoscope", "Pill", "Activity", "HeartPulse", "Brain", "Eye", "Smile"
+   - Professional: "Briefcase", "Scale", "FileText", "Calculator", "Building", "Landmark"
+   - Creative: "Palette", "Camera", "Pen", "Brush", "Film", "Music", "Mic"
+   - Fitness: "Dumbbell", "Leaf", "Apple", "Bike", "Timer"
+   - Pet: "Dog", "Cat", "PawPrint"
+   - Fashion: "Shirt", "Diamond", "Flower2", "Gem"
+   - Home: "Home", "Bed", "Sofa", "Bath", "Trees"
+   - Tech: "Monitor", "Code", "Cpu", "Wifi", "Database", "Cloud", "Globe"
+   - Travel: "Plane", "MapPin", "Compass", "Ship", "Train"
+   - Education: "GraduationCap", "BookOpen", "Pencil"
+   - Security: "Lock", "ShieldCheck", "Fingerprint"
+   - Communication: "Phone", "Mail", "MessageCircle", "Send"
+
+9. **PAGES MUST USE "path" NOT "slug"** - Each page object must have a "path" property (e.g., "path": "/services"), NOT "slug"
 
 ====================================
 ## STYLE

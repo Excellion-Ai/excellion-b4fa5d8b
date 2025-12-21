@@ -63,16 +63,82 @@ const INITIAL_STEPS: GenerationStep[] = [
   { id: 4, label: 'Building preview', status: 'pending' },
 ];
 
+// Allowed icon names that exist in FeaturesSection
+const ALLOWED_ICONS = new Set([
+  'Zap', 'Shield', 'Clock', 'Star', 'Wrench', 'Heart', 'Users', 'Award', 'Target', 'Truck',
+  'CheckCircle', 'Settings', 'Sparkles', 'Lightbulb', 'Rocket', 'Gift', 'ThumbsUp', 'Crown',
+  'Scissors', 'Hammer', 'PaintBucket', 'Droplets', 'Flame', 'Snowflake', 'Plug', 'Key',
+  'UtensilsCrossed', 'Coffee', 'Wine', 'Pizza', 'Cake', 'Cookie', 'Soup', 'ChefHat',
+  'Car', 'Gauge', 'Fuel', 'Stethoscope', 'Pill', 'Activity', 'HeartPulse', 'Brain', 'Eye', 'Smile',
+  'Briefcase', 'Scale', 'FileText', 'Calculator', 'Building', 'Landmark',
+  'Palette', 'Camera', 'Pen', 'Brush', 'Film', 'Music', 'Mic',
+  'Dumbbell', 'Leaf', 'Apple', 'Bike', 'Timer', 'Dog', 'Cat', 'PawPrint', 'Paw',
+  'Shirt', 'Diamond', 'Flower2', 'Gem', 'Home', 'Bed', 'Sofa', 'Bath', 'Trees',
+  'Monitor', 'Code', 'Cpu', 'Wifi', 'Database', 'Cloud', 'Globe',
+  'Plane', 'MapPin', 'Compass', 'Ship', 'Train', 'GraduationCap', 'BookOpen', 'Pencil',
+  'Lock', 'ShieldCheck', 'Fingerprint', 'Phone', 'Mail', 'MessageCircle', 'Send'
+]);
+
+// Fallback icons when AI generates invalid ones
+const FALLBACK_ICONS = ['Zap', 'Star', 'Shield', 'Heart', 'Award', 'Target', 'Sparkles', 'Rocket'];
+
+function normalizeSpec(spec: any): any {
+  // Normalize pages: convert slug to path if needed
+  if (spec.pages && Array.isArray(spec.pages)) {
+    spec.pages = spec.pages.map((page: any) => {
+      if (page.slug && !page.path) {
+        // Convert slug to path
+        const slug = page.slug;
+        page.path = slug === 'home' ? '/' : `/${slug.replace(/-page$/, '')}`;
+        delete page.slug;
+      }
+      
+      // Validate and fix icons in sections
+      if (page.sections && Array.isArray(page.sections)) {
+        let usedIcons = new Set<string>();
+        page.sections = page.sections.map((section: any) => {
+          if (section.content?.items && Array.isArray(section.content.items)) {
+            section.content.items = section.content.items.map((item: any, idx: number) => {
+              if (item.icon) {
+                // Check if icon is valid
+                if (!ALLOWED_ICONS.has(item.icon)) {
+                  // Replace with fallback
+                  item.icon = FALLBACK_ICONS[idx % FALLBACK_ICONS.length];
+                }
+                // Check for duplicates and replace if needed
+                if (usedIcons.has(item.icon)) {
+                  for (const fallback of FALLBACK_ICONS) {
+                    if (!usedIcons.has(fallback)) {
+                      item.icon = fallback;
+                      break;
+                    }
+                  }
+                }
+                usedIcons.add(item.icon);
+              }
+              return item;
+            });
+          }
+          return section;
+        });
+      }
+      return page;
+    });
+  }
+  return spec;
+}
+
 function extractJsonFromResponse(text: string): { message: string; siteSpec: SiteSpec | null } {
   // Try to find JSON code block
   const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
   if (jsonMatch) {
     try {
-      const parsed = JSON.parse(jsonMatch[1].trim());
+      let parsed = JSON.parse(jsonMatch[1].trim());
       const message = text.replace(/```json[\s\S]*?```/, '').trim();
       
       // Validate it has the required structure
       if (parsed.name && parsed.pages && Array.isArray(parsed.pages)) {
+        parsed = normalizeSpec(parsed);
         return { message, siteSpec: parsed as SiteSpec };
       }
     } catch (e) {
@@ -84,9 +150,10 @@ function extractJsonFromResponse(text: string): { message: string; siteSpec: Sit
   const rawJsonMatch = text.match(/\{[\s\S]*"name"[\s\S]*"pages"[\s\S]*\}/);
   if (rawJsonMatch) {
     try {
-      const parsed = JSON.parse(rawJsonMatch[0]);
+      let parsed = JSON.parse(rawJsonMatch[0]);
       if (parsed.name && parsed.pages) {
         const message = text.replace(rawJsonMatch[0], '').trim();
+        parsed = normalizeSpec(parsed);
         return { message, siteSpec: parsed as SiteSpec };
       }
     } catch (e) {
