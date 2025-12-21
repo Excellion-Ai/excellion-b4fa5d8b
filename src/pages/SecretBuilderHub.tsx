@@ -645,7 +645,7 @@ export default function SecretBuilderHub() {
                     onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
                   >
                     <ExternalLink className="w-4 h-4" />
-                    <span className="text-sm">Landing Page</span>
+                    <span className="text-sm">Excellion Homepage</span>
                   </Button>
                   
                   {NAV_ITEMS.map((item) => (
@@ -848,7 +848,7 @@ export default function SecretBuilderHub() {
             onClick={() => navigate('/')}
           >
             <ExternalLink className="w-4 h-4" />
-            <span className="text-sm">Landing Page</span>
+            <span className="text-sm">Excellion Homepage</span>
           </Button>
           
           {NAV_ITEMS.map((item) => (
