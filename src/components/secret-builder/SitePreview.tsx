@@ -132,6 +132,7 @@ export function SitePreview({ siteDefinition, isLoading }: SitePreviewProps) {
       {/* Preview content - pure React rendering, no iframe */}
       <div className="flex-1 overflow-auto bg-[#1a1a1a] flex justify-center p-4">
         <div 
+          data-preview-panel
           className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300`}
           style={{ 
             backgroundColor: theme.darkMode ? '#0a0a0a' : '#ffffff',

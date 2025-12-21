@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
 import {
   Popover,
   PopoverContent,
@@ -100,33 +101,36 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0 
   const handleTakeScreenshot = async () => {
     setOpen(false);
     
-    if (!navigator.mediaDevices?.getDisplayMedia) {
+    // Look for the preview panel element by common identifiers
+    const previewElement = 
+      document.querySelector('[data-preview-panel]') ||
+      document.querySelector('.site-preview-container') ||
+      document.querySelector('#site-preview') ||
+      document.querySelector('[class*="preview"]');
+
+    if (!previewElement) {
       toast({
-        title: 'Not supported',
-        description: 'Screen capture is not supported in your browser. Please upload an image instead.',
+        title: 'Preview not found',
+        description: 'Could not find the preview panel to capture. Please upload an image instead.',
         variant: 'destructive',
       });
       fileInputRef.current?.click();
       return;
     }
 
+    toast({
+      title: 'Capturing...',
+      description: 'Taking screenshot of your preview.',
+    });
+
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: 'window' } as any,
+      const canvas = await html2canvas(previewElement as HTMLElement, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        scale: 2, // Higher quality
+        logging: false,
       });
-
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      await video.play();
-
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(video, 0, 0);
-      
-      stream.getTracks().forEach((track) => track.stop());
 
       canvas.toBlob((blob) => {
         if (blob) {
@@ -134,19 +138,24 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0 
           onAddAttachment({
             id: generateId(),
             type: 'screenshot',
-            name: 'Screenshot',
+            name: 'Preview Screenshot',
             data: file,
             mimeType: 'image/png',
           });
           toast({
             title: 'Screenshot captured',
-            description: 'Your screenshot has been added as context.',
+            description: 'Your preview screenshot has been added as context.',
           });
         }
       }, 'image/png');
     } catch (error) {
-      // User cancelled or error occurred
-      console.log('Screenshot cancelled or failed:', error);
+      console.error('Screenshot failed:', error);
+      toast({
+        title: 'Screenshot failed',
+        description: 'Could not capture the preview. Please upload an image instead.',
+        variant: 'destructive',
+      });
+      fileInputRef.current?.click();
     }
   };
 
