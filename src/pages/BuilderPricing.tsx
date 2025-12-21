@@ -28,7 +28,7 @@ const PRICE_IDS = {
   starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",
   pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",
   agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",
-  sprint: "price_sprint_placeholder", // TODO: Add Sprint Pass price ID
+  sprint: "price_1SgsMOPCTHzXvqDg7Q23a28h",
 };
 
 const aiBuilderPlans = [

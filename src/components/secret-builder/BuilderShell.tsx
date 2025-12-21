@@ -69,14 +69,21 @@ const ALLOWED_ICONS = new Set([
   'CheckCircle', 'Settings', 'Sparkles', 'Lightbulb', 'Rocket', 'Gift', 'ThumbsUp', 'Crown',
   'Scissors', 'Hammer', 'PaintBucket', 'Droplets', 'Flame', 'Snowflake', 'Plug', 'Key',
   'UtensilsCrossed', 'Coffee', 'Wine', 'Pizza', 'Cake', 'Cookie', 'Soup', 'ChefHat',
-  'Car', 'Gauge', 'Fuel', 'Stethoscope', 'Pill', 'Activity', 'HeartPulse', 'Brain', 'Eye', 'Smile',
-  'Briefcase', 'Scale', 'FileText', 'Calculator', 'Building', 'Landmark',
-  'Palette', 'Camera', 'Pen', 'Brush', 'Film', 'Music', 'Mic',
-  'Dumbbell', 'Leaf', 'Apple', 'Bike', 'Timer', 'Dog', 'Cat', 'PawPrint', 'Paw',
-  'Shirt', 'Diamond', 'Flower2', 'Gem', 'Home', 'Bed', 'Sofa', 'Bath', 'Trees',
-  'Monitor', 'Code', 'Cpu', 'Wifi', 'Database', 'Cloud', 'Globe',
-  'Plane', 'MapPin', 'Compass', 'Ship', 'Train', 'GraduationCap', 'BookOpen', 'Pencil',
-  'Lock', 'ShieldCheck', 'Fingerprint', 'Phone', 'Mail', 'MessageCircle', 'Send'
+  'Car', 'Gauge', 'Fuel', 'CarFront', 'Stethoscope', 'Pill', 'Activity', 'HeartPulse', 'Brain', 'Eye', 'Smile', 'Syringe', 'Ambulance',
+  'Briefcase', 'Scale', 'FileText', 'Calculator', 'Building', 'Landmark', 'Gavel', 'FileSignature',
+  'Palette', 'Camera', 'Pen', 'Brush', 'Film', 'Music', 'Mic', 'Aperture', 'ImagePlus',
+  'Dumbbell', 'Leaf', 'Apple', 'Bike', 'Timer', 'Footprints', 'HeartHandshake',
+  'Dog', 'Cat', 'PawPrint', 'Paw', 'Bird', 'Fish', 'Rabbit',
+  'Shirt', 'Diamond', 'Flower2', 'Gem', 'Watch', 'Glasses', 'Handbag',
+  'Home', 'Bed', 'Sofa', 'Bath', 'Trees', 'Armchair', 'Lamp', 'DoorOpen',
+  'Monitor', 'Code', 'Cpu', 'Wifi', 'Database', 'Cloud', 'Globe', 'Server', 'BrainCircuit', 'Binary',
+  'Plane', 'MapPin', 'Compass', 'Ship', 'Train', 'Luggage', 'Mountain', 'Palmtree',
+  'GraduationCap', 'BookOpen', 'Pencil', 'Library', 'School', 'NotebookPen',
+  'Lock', 'ShieldCheck', 'Fingerprint', 'ScanFace', 'KeyRound',
+  'Phone', 'Mail', 'MessageCircle', 'Send', 'AtSign', 'Megaphone',
+  'Trophy', 'Medal', 'Volleyball', 'Gamepad2', 'Swords', 'Flag', 'CircleDot',
+  'Wheat', 'Tractor', 'Sprout', 'Flower', 'TreeDeciduous', 'Grape',
+  'Clapperboard', 'Popcorn', 'Ticket', 'PartyPopper', 'Dice', 'Theater'
 ]);
 
 // Fallback icons when AI generates invalid ones

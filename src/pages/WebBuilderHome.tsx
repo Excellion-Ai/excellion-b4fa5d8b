@@ -14,13 +14,15 @@ import {
   AlertCircle,
   ChevronRight,
   Phone,
-  Mail
+  Mail,
+  Loader2
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
 import { AnimatedPlaceholder } from "@/components/AnimatedPlaceholder";
-
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 const placeholderSuggestions = [
   "A local restaurant with online ordering and menu...",
   "A roofing contractor website with quote forms...",
@@ -54,6 +56,7 @@ const notMagicItems = [
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -108,11 +111,30 @@ const WebBuilderHome = () => {
     setPrompt(`Create a website for a ${suggestion.toLowerCase()}`);
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Wire to existing email capture mechanism
-    console.log("Email submitted:", email);
-    setEmail("");
+    if (!email.trim() || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from("quote_requests").insert({
+        name: "Email Capture",
+        email: email.trim(),
+        project_type: "email_capture",
+        source: "web_builder_home",
+        description: "User signed up for examples and guide",
+      });
+      
+      if (error) throw error;
+      
+      toast.success("Thanks! We'll send you examples and tips soon.");
+      setEmail("");
+    } catch (error) {
+      console.error("Email capture error:", error);
+      toast.error("Failed to sign up. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -411,9 +433,17 @@ const WebBuilderHome = () => {
               placeholder="you@example.com"
               className="flex-1"
               required
+              disabled={isSubmitting}
             />
-            <Button type="submit">
-              Send me examples
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send me examples"
+              )}
             </Button>
           </form>
         </div>
