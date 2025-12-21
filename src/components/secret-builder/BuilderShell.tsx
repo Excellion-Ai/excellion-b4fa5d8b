@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2, GitCompare, Users, Database, Box, Shield } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -32,6 +32,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
+import { useCredits, CREDIT_COSTS, CreditActionType } from '@/hooks/useCredits';
 import type { Json } from '@/integrations/supabase/types';
 
 type GenerationStep = {
@@ -276,6 +277,16 @@ export function BuilderShell() {
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
   
+  // Credits system
+  const { 
+    balance: creditBalance, 
+    checkCredits, 
+    getCost, 
+    deductLocal, 
+    authenticated: isAuthenticated,
+    fetchCredits 
+  } = useCredits();
+  
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
     if (typeof value === 'function') {
@@ -463,9 +474,43 @@ export function BuilderShell() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isGenerating]);
 
+  // Helper to deduct credits via edge function
+  const deductCredits = async (action: CreditActionType, description?: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return true; // Allow anonymous users (no credit tracking)
+      
+      const { data, error } = await supabase.functions.invoke('deduct-credits', {
+        body: { userId: user.id, action, description, projectId }
+      });
+      
+      if (error || !data?.success) {
+        if (data?.insufficient) {
+          toast.error(`Not enough credits. Need ${data?.required || getCost(action)}, have ${data?.balance || 0}. Add more credits to continue.`);
+          return false;
+        }
+        console.error('Credit deduction error:', error || data?.error);
+        return true; // Continue on error to not block users
+      }
+      
+      deductLocal(action);
+      return true;
+    } catch (err) {
+      console.error('Credit deduction failed:', err);
+      return true; // Continue on error
+    }
+  };
+
   const handleGenerate = async (inputIdea?: string) => {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
+
+    // Check credits before generation (5 credits for generation, 1 for chat)
+    const actionType: CreditActionType = messages.length === 0 ? 'generation' : 'chat';
+    if (isAuthenticated && !checkCredits(actionType)) {
+      toast.error(`Not enough credits. Need ${getCost(actionType)} for ${actionType}. Add more credits to continue.`);
+      return;
+    }
 
     // Convert attachments to base64 for API and upload to storage for actual use
     const currentAttachments = [...attachments];
@@ -638,6 +683,9 @@ export function BuilderShell() {
       }
 
       updateStep(3, 'complete');
+      
+      // Deduct credits after successful AI call
+      await deductCredits(actionType, `AI ${actionType} for project`);
 
       updateStep(4, 'active');
       
@@ -702,8 +750,20 @@ export function BuilderShell() {
       return;
     }
 
+    // Check credits for image generation (2 credits)
+    if (isAuthenticated && !checkCredits('image')) {
+      toast.error(`Not enough credits. Need ${getCost('image')} for image generation.`);
+      return;
+    }
+
     setIsGeneratingImage(true);
     try {
+      // Deduct credits before image generation
+      const canProceed = await deductCredits('image', 'AI image generation');
+      if (!canProceed) {
+        setIsGeneratingImage(false);
+        return;
+      }
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
         method: 'POST',
         headers: {

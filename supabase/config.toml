@@ -53,3 +53,9 @@ verify_jwt = false
 
 [functions.generate-hero-image]
 verify_jwt = false
+
+[functions.check-credits]
+verify_jwt = false
+
+[functions.deduct-credits]
+verify_jwt = false
