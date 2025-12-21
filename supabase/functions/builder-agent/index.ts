@@ -203,12 +203,43 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
 - Hero: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1920&q=80"
 - Gallery: ["https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&q=80", "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80"]
 
+### TATTOO SHOP / BODY ART
+- Hero: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?w=800&q=80", "https://images.unsplash.com/photo-1590246814883-57764abad3de?w=800&q=80", "https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?w=800&q=80"]
+
+### BARBERSHOP / HAIR SALON
+- Hero: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&q=80", "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=800&q=80"]
+
+### COFFEE SHOP / CAFE
+- Hero: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80", "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80"]
+
+### BAKERY
+- Hero: "https://images.unsplash.com/photo-1517433670267-30f41c098585?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=800&q=80", "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80"]
+
+### AUTO REPAIR / MECHANIC
+- Hero: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1625047509168-a7026f36de04?w=800&q=80", "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80"]
+
+### FLORIST / FLOWER SHOP
+- Hero: "https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=800&q=80", "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=800&q=80"]
+
+### JEWELRY STORE
+- Hero: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800&q=80", "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80"]
+
 **IMAGE RULES:**
 1. For INVENTORY/PRODUCT sections (cars, homes, products), ALWAYS include image URLs in items
 2. Use pattern: { "title": "...", "description": "...", "image": "https://images.unsplash.com/..." }
 3. Hero sections should use backgroundImage property with industry hero URL
 4. Gallery/portfolio sections must include image arrays
 5. NEVER leave image slots empty - always use industry-appropriate stock photos
+6. **CRITICAL: NEVER use code/programming/tech images for non-tech businesses** - code screenshots, programming interfaces, or tech imagery should ONLY be used for software/tech companies
+7. If unsure about the business type, use a neutral professional image like office space or abstract gradient - NEVER default to code/tech imagery
+8. Match the IMAGE to the EXACT business type - tattoo shops get tattoo images, bakeries get bread/pastry images, etc.
 
 ====================================
 ## PHASE 3: BUSINESS MODEL CLASSIFICATION
