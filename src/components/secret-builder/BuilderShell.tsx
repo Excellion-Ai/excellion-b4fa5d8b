@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, Paperclip, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard } from 'lucide-react';
+import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -266,12 +267,11 @@ export function BuilderShell() {
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string }[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
-  const [attachments, setAttachments] = useState<{ file?: File; name: string; url?: string }[]>([]);
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [visualEditsEnabled, setVisualEditsEnabled] = useState(false);
   const [showDiffViewer, setShowDiffViewer] = useState(false);
   const [pendingSpec, setPendingSpec] = useState<SiteSpec | null>(null);
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   
   // Multiplayer presence
@@ -524,60 +524,104 @@ export function BuilderShell() {
     const attachmentData: { name: string; url: string; type: string }[] = [];
     const imageDataForApi: { type: 'image_url'; image_url: { url: string } }[] = [];
     const uploadedImageUrls: { name: string; url: string; purpose?: string }[] = [];
+    
+    // Build enhanced idea with attachment context
+    let enhancedIdea = ideaToUse;
 
     for (const att of currentAttachments) {
-      if (att.file && att.file.type.startsWith('image/')) {
-        // Convert to base64 for multimodal AI context
+      // Handle file attachments
+      if (att.type === 'file' && att.data instanceof File) {
+        const file = att.data as File;
+        if (file.type.startsWith('image/')) {
+          // Convert to base64 for multimodal AI context
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          
+          // Upload to Supabase storage so AI can reference it in the site
+          try {
+            const fileExt = att.name.split('.').pop() || 'png';
+            const fileName = `builder-uploads/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('builder-images')
+              .upload(fileName, file, { 
+                contentType: file.type,
+                upsert: false 
+              });
+            
+            if (!uploadError && uploadData) {
+              const { data: urlData } = supabase.storage
+                .from('builder-images')
+                .getPublicUrl(uploadData.path);
+              
+              if (urlData?.publicUrl) {
+                uploadedImageUrls.push({ 
+                  name: att.name, 
+                  url: urlData.publicUrl,
+                  purpose: att.name.toLowerCase().includes('logo') ? 'logo' : 'image'
+                });
+                attachmentData.push({ name: att.name, url: urlData.publicUrl, type: file.type });
+              } else {
+                attachmentData.push({ name: att.name, url: base64, type: file.type });
+              }
+            } else {
+              console.error('Upload error:', uploadError);
+              attachmentData.push({ name: att.name, url: base64, type: file.type });
+            }
+          } catch (uploadErr) {
+            console.error('Failed to upload image:', uploadErr);
+            const base64Fallback = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.readAsDataURL(file);
+            });
+            attachmentData.push({ name: att.name, url: base64Fallback, type: file.type });
+          }
+          
+          imageDataForApi.push({ type: 'image_url', image_url: { url: base64 } });
+        } else {
+          attachmentData.push({ name: att.name, url: '', type: file.type });
+        }
+      }
+      // Handle screenshot attachments (also files)
+      else if (att.type === 'screenshot' && att.data instanceof File) {
+        const file = att.data as File;
         const base64 = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(att.file!);
+          reader.readAsDataURL(file);
         });
-        
-        // Upload to Supabase storage so AI can reference it in the site
-        try {
-          const fileExt = att.name.split('.').pop() || 'png';
-          const fileName = `builder-uploads/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-          
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('builder-images')
-            .upload(fileName, att.file, { 
-              contentType: att.file.type,
-              upsert: false 
-            });
-          
-          if (!uploadError && uploadData) {
-            const { data: urlData } = supabase.storage
-              .from('builder-images')
-              .getPublicUrl(uploadData.path);
-            
-            if (urlData?.publicUrl) {
-              uploadedImageUrls.push({ 
-                name: att.name, 
-                url: urlData.publicUrl,
-                purpose: att.name.toLowerCase().includes('logo') ? 'logo' : 'image'
-              });
-              attachmentData.push({ name: att.name, url: urlData.publicUrl, type: att.file.type });
-            } else {
-              attachmentData.push({ name: att.name, url: base64, type: att.file.type });
-            }
-          } else {
-            console.error('Upload error:', uploadError);
-            attachmentData.push({ name: att.name, url: base64, type: att.file.type });
-          }
-        } catch (uploadErr) {
-          console.error('Failed to upload image:', uploadErr);
-          attachmentData.push({ name: att.name, url: base64, type: att.file.type });
-        }
-        
         imageDataForApi.push({ type: 'image_url', image_url: { url: base64 } });
-      } else if (att.file) {
-        attachmentData.push({ name: att.name, url: '', type: att.file.type });
+        attachmentData.push({ name: att.name, url: base64, type: 'image/png' });
+      }
+      // Handle text attachments
+      else if (att.type === 'text' && typeof att.data === 'string') {
+        attachmentData.push({ name: att.name, url: '', type: 'text/plain' });
+        enhancedIdea = `${enhancedIdea}\n\n[ADDITIONAL CONTEXT - "${att.name}"]: ${att.data}`;
+      }
+      // Handle link attachments
+      else if (att.type === 'link' && att.url) {
+        attachmentData.push({ name: att.name, url: att.url, type: 'link' });
+        enhancedIdea = `${enhancedIdea}\n\n[REFERENCE LINK: ${att.url}]`;
+      }
+      // Handle brand kit attachments
+      else if (att.type === 'brandkit' && att.brandKit) {
+        const bk = att.brandKit;
+        const brandContext = `[BRAND KIT - Apply these brand guidelines:
+- Primary Color: ${bk.primaryColor}
+- Secondary Color: ${bk.secondaryColor}  
+- Font: ${bk.font}
+- Tone: ${bk.tone}
+${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
+        enhancedIdea = `${enhancedIdea}\n\n${brandContext}`;
+        attachmentData.push({ name: 'Brand Kit', url: '', type: 'brandkit' });
       }
     }
 
     // If images were uploaded, append instructions to the user's message
-    let enhancedIdea = ideaToUse;
     if (uploadedImageUrls.length > 0) {
       const imageInstructions = uploadedImageUrls.map(img => {
         if (img.purpose === 'logo') {
@@ -585,7 +629,7 @@ export function BuilderShell() {
         }
         return `[USER UPLOADED IMAGE "${img.name}" - USE THIS URL: ${img.url}]`;
       }).join('\n');
-      enhancedIdea = `${ideaToUse}\n\n${imageInstructions}`;
+      enhancedIdea = `${enhancedIdea}\n\n${imageInstructions}`;
     }
 
     const userMessage: Message = {
@@ -823,28 +867,12 @@ export function BuilderShell() {
     }
   };
 
-  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const newAttachments: { file: File; name: string; url: string }[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file.size <= 10 * 1024 * 1024) {
-        // Create a preview URL for images
-        const url = file.type.startsWith('image/') ? URL.createObjectURL(file) : '';
-        newAttachments.push({ file, name: file.name, url });
-      } else {
-        toast.error(`${file.name} exceeds 10MB limit`);
-      }
-    }
-    
-    setAttachments(prev => [...prev, ...newAttachments].slice(0, 5));
-    e.target.value = '';
+  const handleAddAttachment = (attachment: AttachmentItem) => {
+    setAttachments(prev => [...prev, attachment].slice(0, 10));
   };
 
-  const removeAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+  const removeAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(a => a.id !== id));
   };
 
   const handleImageAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1030,7 +1058,7 @@ export function BuilderShell() {
                                 />
                               ) : (
                                 <div className="flex items-center gap-1 bg-black/20 rounded px-2 py-1 text-xs">
-                                  <Paperclip className="h-3 w-3" />
+                                  <Upload className="h-3 w-3" />
                                   <span className="truncate max-w-[100px]">{att.name}</span>
                                 </div>
                               )}
@@ -1063,46 +1091,20 @@ export function BuilderShell() {
               </div>
             )}
 
-            {/* Hidden file input for attachments */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,.pdf"
-              multiple
-              className="hidden"
-              onChange={handleFileAttach}
-            />
 
             <div className="border-t border-border p-4">
               {/* Attachments preview */}
-              {attachments.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {attachments.map((att, idx) => (
-                    <div key={idx} className="flex items-center gap-1 bg-muted rounded-md px-2 py-1 text-xs">
-                      {att.url ? (
-                        <img src={att.url} alt={att.name} className="h-6 w-6 rounded object-cover" />
-                      ) : (
-                        <Paperclip className="h-3 w-3" />
-                      )}
-                      <span className="truncate max-w-[100px]">{att.name}</span>
-                      <button onClick={() => removeAttachment(idx)} className="hover:text-destructive">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <AttachmentChips 
+                attachments={attachments} 
+                onRemove={removeAttachment} 
+              />
               
               <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  onClick={() => fileInputRef.current?.click()}
+                <AttachmentMenu
+                  onAddAttachment={handleAddAttachment}
                   disabled={isGenerating}
-                >
-                  <Paperclip className="h-4 w-4" />
-                </Button>
+                  attachmentCount={attachments.length}
+                />
                 <Button
                   variant={visualEditsEnabled ? "default" : "ghost"}
                   size="icon"
@@ -1543,7 +1545,7 @@ export function BuilderShell() {
                   asChild
                 >
                   <span>
-                    <Paperclip className="h-4 w-4" />
+                    <Upload className="h-4 w-4" />
                   </span>
                 </Button>
               </label>
@@ -1594,7 +1596,12 @@ export function BuilderShell() {
                         key={image.name}
                         className="relative group aspect-square rounded-md overflow-hidden border border-border hover:border-primary transition-colors"
                         onClick={() => {
-                          setAttachments(prev => [...prev, { name: image.name, url: image.url }].slice(0, 5));
+                          handleAddAttachment({
+                            id: Math.random().toString(36).substring(2, 9),
+                            type: 'file',
+                            name: image.name,
+                            url: image.url,
+                          });
                           setShowImageDialog(false);
                           toast.success('Image added to prompt');
                         }}
