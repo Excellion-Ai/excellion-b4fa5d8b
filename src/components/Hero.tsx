@@ -82,7 +82,7 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 md:px-6 py-8 md:py-24 animate-fade-in">
         <div className="max-w-4xl mx-auto text-center space-y-4 md:space-y-8">
           {/* Headline and Subheadline */}
-          <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-5 md:py-8 rounded-lg border border-border/50 max-w-4xl mx-auto text-center will-change-transform">
+          <div className="bg-background/90 dark:bg-background/50 backdrop-blur-md px-4 md:px-8 py-5 md:py-8 rounded-lg border border-border max-w-4xl mx-auto text-center will-change-transform shadow-lg">
             <h1 className="text-3xl md:text-7xl font-bold text-foreground leading-tight">
               Review Your Website Design <span className="text-accent">Before You Pay</span>
             </h1>
@@ -91,7 +91,7 @@ const Hero = () => {
               Tell us about your business on a short call. We'll design a mockup and send you clear pricing before you commit—and once you approve the mockup, sites go live within 24 hours.
             </p>
 
-            <p className="text-xs text-foreground/60 mt-3 md:mt-6 font-light">
+            <p className="text-xs text-foreground/80 dark:text-foreground/60 mt-3 md:mt-6 font-light">
               No credit card. No obligation. 100% free consultation.
             </p>
 
