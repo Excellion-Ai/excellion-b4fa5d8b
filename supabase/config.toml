@@ -47,3 +47,9 @@ verify_jwt = false
 
 [functions.create-checkout]
 verify_jwt = false
+
+[functions.create-embedded-checkout]
+verify_jwt = false
+
+[functions.generate-hero-image]
+verify_jwt = false
