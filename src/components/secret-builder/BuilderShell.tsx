@@ -505,8 +505,15 @@ export function BuilderShell() {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
 
-    // Check credits before generation (5 credits for generation, 1 for chat)
-    const actionType: CreditActionType = messages.length === 0 ? 'generation' : 'chat';
+    // Determine credit action type:
+    // - 'generation' (5 credits): First message (initial site generation)
+    // - 'edit' (3 credits): Follow-up messages that request site changes (detected by keywords)
+    // - 'chat' (1 credit): Simple chat/questions without site modifications
+    const isFirstMessage = messages.length === 0;
+    const editKeywords = /\b(change|update|edit|modify|replace|add|remove|make|regenerate|rebuild|redesign|redo|adjust|fix|improve|enhance|different|new|another)\b/i;
+    const isEditRequest = !isFirstMessage && editKeywords.test(ideaToUse);
+    const actionType: CreditActionType = isFirstMessage ? 'generation' : (isEditRequest ? 'edit' : 'chat');
+    
     if (isAuthenticated && !checkCredits(actionType)) {
       toast.error(`Not enough credits. Need ${getCost(actionType)} for ${actionType}. Add more credits to continue.`);
       return;
@@ -1239,8 +1246,11 @@ export function BuilderShell() {
               }}
             />
             
-            {/* PWA Export - hidden but code preserved */}
-            {/* <PWAExport siteSpec={siteSpec} projectName={projectName} /> */}
+            {/* PWA Export */}
+            <PWAExport siteSpec={siteSpec} projectName={projectName} onExport={async () => {
+              const success = await deductCredits('export', 'PWA export');
+              return success;
+            }} />
             
             {/* Knowledge Base */}
             <KnowledgePanel projectId={projectId} />

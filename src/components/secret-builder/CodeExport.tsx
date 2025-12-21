@@ -10,6 +10,7 @@ interface CodeExportProps {
   siteSpec?: SiteSpec | null;
   projectName?: string;
   generatedCode?: GeneratedCode | null;
+  onExport?: () => Promise<boolean>; // Credit check callback - returns false if insufficient credits
 }
 
 export function generateHtmlFromSpec(spec: SiteSpec): string {
@@ -319,9 +320,9 @@ ${footerHtml}
 </html>`;
 }
 
-export function CodeExport({ siteSpec, projectName, generatedCode }: CodeExportProps) {
+export function CodeExport({ siteSpec, projectName, generatedCode, onExport }: CodeExportProps) {
   const [copied, setCopied] = useState(false);
-  
+  const [isExporting, setIsExporting] = useState(false);
   // Support legacy generatedCode prop for BotExperiment
   if (generatedCode) {
     const handleCopyLegacy = async () => {
@@ -332,8 +333,13 @@ export function CodeExport({ siteSpec, projectName, generatedCode }: CodeExportP
       setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleDownloadLegacy = () => {
+    const handleDownloadLegacy = async () => {
       if (!generatedCode.reactCode) return;
+      // Check credits before export
+      if (onExport) {
+        const success = await onExport();
+        if (!success) return;
+      }
       const blob = new Blob([generatedCode.reactCode], { type: 'text/javascript' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -383,7 +389,17 @@ export function CodeExport({ siteSpec, projectName, generatedCode }: CodeExportP
 
   const html = generateHtmlFromSpec(siteSpec);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    // Check credits before export
+    if (onExport) {
+      setIsExporting(true);
+      try {
+        const success = await onExport();
+        if (!success) return;
+      } finally {
+        setIsExporting(false);
+      }
+    }
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

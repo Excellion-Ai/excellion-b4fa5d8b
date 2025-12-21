@@ -12,6 +12,7 @@ import { generateHtmlFromSpec } from './CodeExport';
 interface PWAExportProps {
   siteSpec: SiteSpec | null;
   projectName: string;
+  onExport?: () => Promise<boolean>; // Credit check callback - returns false if insufficient credits
 }
 
 interface PWAConfig {
@@ -222,7 +223,7 @@ async function downloadZip(files: { name: string; content: string }[], zipName: 
   URL.revokeObjectURL(url);
 }
 
-export function PWAExport({ siteSpec, projectName }: PWAExportProps) {
+export function PWAExport({ siteSpec, projectName, onExport }: PWAExportProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [config, setConfig] = useState<PWAConfig>({
@@ -237,6 +238,12 @@ export function PWAExport({ siteSpec, projectName }: PWAExportProps) {
     if (!siteSpec) {
       toast.error('No site to export');
       return;
+    }
+
+    // Check credits before export
+    if (onExport) {
+      const success = await onExport();
+      if (!success) return;
     }
 
     setIsExporting(true);
