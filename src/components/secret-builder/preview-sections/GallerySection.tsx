@@ -14,7 +14,7 @@ interface GalleryContent {
 }
 
 interface GallerySectionProps {
-  section: { id: string; content?: GalleryContent };
+  section: { id: string; content?: any };
   theme: SiteTheme;
   asTile?: boolean;
 }

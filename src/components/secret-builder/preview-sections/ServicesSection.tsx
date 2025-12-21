@@ -17,7 +17,7 @@ interface ServicesContent {
 }
 
 interface ServicesSectionProps {
-  section: { id: string; content?: ServicesContent };
+  section: { id: string; content?: any };
   theme: SiteTheme;
   asTile?: boolean;
 }

@@ -7,3 +7,7 @@ export { ContactSection } from './ContactSection';
 export { CTASection } from './CTASection';
 export { CustomSection } from './CustomSection';
 export { StatsSection } from './StatsSection';
+export { GallerySection } from './GallerySection';
+export { ServicesSection } from './ServicesSection';
+export { TeamSection } from './TeamSection';
+export { PortfolioSection } from './PortfolioSection';
