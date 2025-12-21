@@ -275,6 +275,20 @@ Once you detect the industry, USE THESE EXACT TEMPLATES for content generation:
 - **Testimonials Context**: Food quality, ambiance, service, memorable experiences
 - **Theme**: primaryColor: "#dc2626" (warm red), secondaryColor: "#f59e0b" (amber)
 
+### SANDWICH SHOP / DELI / SUB SHOP
+- **Headlines**: "Fresh Subs & Sandwiches Made Your Way", "Stacked High, Made Right", "Your Neighborhood Deli", "Crafted Fresh Daily", "Handcrafted Sandwiches, Unforgettable Taste"
+- **CTAs**: "View Menu", "Order Now", "Find a Location", "Catering Menu", "Order Pickup"
+- **Features/Services**:
+  - "Made Fresh Daily" - "Quality ingredients prepared fresh every morning"
+  - "Build Your Own" - "Customize your perfect sandwich"
+  - "Catering Services" - "Feed your office or event"
+  - "Quick & Convenient" - "Ready in minutes, not hours"
+  - "Local Ingredients" - "We partner with local suppliers"
+  - "Group Orders" - "Easy ordering for any size group"
+- **FAQs**: "Do you offer catering?", "Can I customize my order?", "Do you have gluten-free options?", "How do I order ahead?", "Do you deliver?"
+- **Testimonials Context**: Sandwich quality, fresh ingredients, fast service, generous portions
+- **Theme**: primaryColor: "#16a34a" (fresh green), secondaryColor: "#f59e0b" (mustard yellow)
+
 ### FITNESS & GYM
 - **Headlines**: "Transform Your Body, Transform Your Life", "Your Fitness Journey Starts Here", "No Excuses, Just Results", "Stronger Every Day"
 - **CTAs**: "Start Free Trial", "Join Today", "Book Class", "See Memberships", "Schedule Tour"
@@ -459,6 +473,16 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
   - "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80" (gourmet plate)
   - "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80" (burger)
 
+### SANDWICH SHOP / DELI / SUB SHOP
+- Hero Background: "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=1920&q=80" (deli counter)
+- Menu Items:
+  - "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&q=80" (sub sandwich)
+  - "https://images.unsplash.com/photo-1553909489-cd47e0907980?w=800&q=80" (deli sandwich)
+  - "https://images.unsplash.com/photo-1485963631004-f2f00b1d6571?w=800&q=80" (stacked sandwich)
+  - "https://images.unsplash.com/photo-1626078299034-59c6dc0de225?w=800&q=80" (fresh ingredients)
+  - "https://images.unsplash.com/photo-1550507992-eb63ffee0847?w=800&q=80" (hoagie)
+  - "https://images.unsplash.com/photo-1521390188846-e2a3a97453a0?w=800&q=80" (deli meat)
+
 ### FITNESS & GYM
 - Hero Background: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&q=80" (gym interior)
 - Gallery Items:
@@ -542,6 +566,13 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
 3. Hero sections should use backgroundImage property with the industry hero URL
 4. Gallery/portfolio sections must include image arrays
 5. NEVER leave image slots empty - always use industry-appropriate stock photos
+
+**CRITICAL IMAGE VALIDATION RULES - MANDATORY:**
+6. **NEVER use automotive/car images for non-automotive businesses** - This is a common error. Food businesses, salons, fitness centers, etc. must NEVER show car images.
+7. **ALWAYS match images to the exact business type** - A sandwich shop MUST use sandwich images, not generic restaurant or car images.
+8. **When unsure about the business type, use NEUTRAL professional images** - Use abstract gradients, office spaces, or professional meeting images instead of defaulting to automotive.
+9. **Double-check gallery/portfolio sections** - These are the most common places where wrong images appear. Verify every image URL matches the business.
+10. **Food businesses get food images ONLY** - Restaurants, cafes, delis, sandwich shops, bakeries, etc. must ONLY use food-related imagery.
 
 ====================================
 ## 3. THE "NO-GO" ZONE (STRICT CONSTRAINTS)

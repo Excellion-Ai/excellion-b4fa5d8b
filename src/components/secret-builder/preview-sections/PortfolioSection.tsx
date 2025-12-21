@@ -1,4 +1,4 @@
-import { SiteTheme } from '@/types/app-spec';
+import { SiteTheme, BusinessModel } from '@/types/app-spec';
 import { ScrollAnimation, StaggerContainer } from '../animations/ScrollAnimations';
 import { ExternalLink } from 'lucide-react';
 
@@ -20,54 +20,61 @@ interface PortfolioSectionProps {
   section: { id: string; content?: any };
   theme: SiteTheme;
   asTile?: boolean;
+  businessModel?: BusinessModel;
 }
 
+// Industry-specific portfolio defaults - NEVER use cross-industry images
+const industryPortfolio: Record<string, PortfolioItem[]> = {
+  HOSPITALITY: [
+    { title: 'Fresh Menu', description: 'Seasonal favorites made fresh daily', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80', category: 'Menu' },
+    { title: 'Signature Dish', description: 'Our chef\'s special creation', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80', category: 'Featured' },
+    { title: 'Deli Selection', description: 'Fresh sandwiches made to order', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&q=80', category: 'Sandwiches' },
+    { title: 'Catering Service', description: 'Events and group orders', image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80', category: 'Catering' },
+  ],
+  RETAIL_COMMERCE: [
+    { title: 'New Collection', description: 'Latest arrivals in store', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80', category: 'Featured' },
+    { title: 'Best Sellers', description: 'Customer favorites', image: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&q=80', category: 'Popular' },
+    { title: 'Accessories', description: 'Complete your look', image: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80', category: 'Accessories' },
+    { title: 'Sale Items', description: 'Limited time offers', image: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800&q=80', category: 'Sale' },
+  ],
+  SERVICE_BASED: [
+    { title: 'Client Project', description: 'Successful partnership', image: 'https://images.unsplash.com/photo-1521791055366-0d553872125f?w=800&q=80', category: 'Client Work' },
+    { title: 'Team Excellence', description: 'Dedicated professionals', image: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80', category: 'Team' },
+    { title: 'Consultation', description: 'Expert guidance', image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80', category: 'Services' },
+    { title: 'Results', description: 'Proven track record', image: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80', category: 'Results' },
+  ],
+  PORTFOLIO_IDENTITY: [
+    { title: 'Brand Design', description: 'Complete identity system', image: 'https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&q=80', category: 'Branding' },
+    { title: 'Web Project', description: 'Custom web development', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80', category: 'Web' },
+    { title: 'Photography', description: 'Creative visual work', image: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&q=80', category: 'Photo' },
+    { title: 'Art Direction', description: 'Creative campaign', image: 'https://images.unsplash.com/photo-1523726491678-bf852e717f6a?w=800&q=80', category: 'Creative' },
+  ],
+};
+
+// Neutral professional fallback
 const defaultPortfolio: PortfolioItem[] = [
-  {
-    title: 'Project Alpha',
-    description: 'Complete brand redesign and web development',
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
-    category: 'Web Design',
-  },
-  {
-    title: 'Project Beta',
-    description: 'E-commerce platform with custom features',
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
-    category: 'E-commerce',
-  },
-  {
-    title: 'Project Gamma',
-    description: 'Mobile app UI/UX design',
-    image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80',
-    category: 'Mobile',
-  },
-  {
-    title: 'Project Delta',
-    description: 'Corporate identity and marketing materials',
-    image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&q=80',
-    category: 'Branding',
-  },
-  {
-    title: 'Project Epsilon',
-    description: 'SaaS dashboard interface',
-    image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80',
-    category: 'Web App',
-  },
-  {
-    title: 'Project Zeta',
-    description: 'Marketing campaign and landing pages',
-    image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80',
-    category: 'Marketing',
-  },
+  { title: 'Project Alpha', description: 'Complete solution delivered', image: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80', category: 'Featured' },
+  { title: 'Project Beta', description: 'Innovative approach', image: 'https://images.unsplash.com/photo-1557683311-eac922347aa1?w=800&q=80', category: 'Innovation' },
+  { title: 'Project Gamma', description: 'Client success story', image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&q=80', category: 'Success' },
+  { title: 'Project Delta', description: 'Award-winning work', image: 'https://images.unsplash.com/photo-1553356084-58ef4a67b2a7?w=800&q=80', category: 'Awards' },
 ];
 
-export function PortfolioSection({ section, theme, asTile = false }: PortfolioSectionProps) {
+// Get appropriate portfolio based on business model
+function getDefaultPortfolio(businessModel?: BusinessModel): PortfolioItem[] {
+  if (businessModel && industryPortfolio[businessModel]) {
+    return industryPortfolio[businessModel];
+  }
+  return defaultPortfolio;
+}
+
+export function PortfolioSection({ section, theme, asTile = false, businessModel }: PortfolioSectionProps) {
   const content = section.content;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
   const title = content?.title || 'Our Work';
   const subtitle = content?.subtitle || 'Explore our latest projects and case studies';
-  const items = content?.items || defaultPortfolio;
+  // Use content items if provided, otherwise use business-appropriate defaults
+  const items = content?.items?.length > 0 ? content.items : getDefaultPortfolio(businessModel);
 
   if (asTile) {
     return (
