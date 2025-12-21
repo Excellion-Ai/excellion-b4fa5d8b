@@ -200,6 +200,69 @@ Use these templates based on detected industry:
 - Stats: "500+ Projects", "25+ Years", "Licensed & Bonded", "On-Time Guarantee"
 
 ====================================
+## PHASE 2B: INDUSTRY-SPECIFIC PLACEHOLDER IMAGES
+====================================
+
+CRITICAL: Always include realistic placeholder images for each industry. Use these Unsplash URLs:
+
+### AUTOMOTIVE (Car Dealership)
+- Hero Background: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920&q=80"
+- Inventory Items:
+  - "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80" (sports car)
+  - "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80" (sedan)
+  - "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800&q=80" (SUV)
+  - "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80" (truck)
+  - "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80" (BMW)
+  - "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80" (Mercedes)
+
+### LAWN CARE & LANDSCAPING
+- Hero: "https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&q=80", "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&q=80", "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80"]
+
+### CLOTHING & FASHION
+- Hero: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80"
+- Products: ["https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&q=80", "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&q=80", "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80"]
+
+### RESTAURANT & FOOD SERVICE
+- Hero: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&q=80"
+- Menu Items: ["https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80", "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80", "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80"]
+
+### FITNESS & GYM
+- Hero: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80", "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80"]
+
+### MEDICAL & DENTAL
+- Hero: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&q=80", "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80"]
+
+### REAL ESTATE
+- Hero: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&q=80"
+- Listings: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80", "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80", "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80"]
+
+### SALON & SPA
+- Hero: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=80", "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=800&q=80"]
+
+### PHOTOGRAPHY
+- Hero: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1920&q=80"
+- Portfolio: ["https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80", "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=800&q=80"]
+
+### CONSTRUCTION & CONTRACTOR
+- Hero: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80"
+- Projects: ["https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80", "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80"]
+
+### PET SERVICES
+- Hero: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1920&q=80"
+- Gallery: ["https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&q=80", "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80"]
+
+**IMAGE RULES:**
+1. For INVENTORY/PRODUCT sections (cars, homes, products), ALWAYS include image URLs in items
+2. Use pattern: { "title": "...", "description": "...", "image": "https://images.unsplash.com/..." }
+3. Hero sections should use backgroundImage property with industry hero URL
+4. Gallery/portfolio sections must include image arrays
+5. NEVER leave image slots empty - always use industry-appropriate stock photos
+
+====================================
 ## PHASE 3: BUSINESS MODEL CLASSIFICATION
 ====================================
 
