@@ -1,5 +1,39 @@
 import { SiteSection, SiteTheme, FeaturesContent, FeatureItem } from '@/types/app-spec';
-import { Zap, Shield, Clock, Star, Wrench, Heart, Users, Award, Target, Truck } from 'lucide-react';
+import { 
+  // Core/Generic
+  Zap, Shield, Clock, Star, Wrench, Heart, Users, Award, Target, Truck,
+  CheckCircle, Settings, Sparkles, Lightbulb, Rocket, Gift, ThumbsUp, Crown,
+  // Service/Trade
+  Scissors, Hammer, PaintBucket, Droplets, Flame, Snowflake, Plug, Key, 
+  // Food/Hospitality
+  UtensilsCrossed, Coffee, Wine, Pizza, Cake, Cookie, Soup, ChefHat,
+  // Automotive
+  Car, Gauge, Fuel,
+  // Health/Medical
+  Stethoscope, Pill, Activity, HeartPulse, Brain, Eye, Smile,
+  // Professional
+  Briefcase, Scale, FileText, Calculator, Building, Landmark,
+  // Creative/Design
+  Palette, Camera, Pen, Brush, Film, Music, Mic,
+  // Fitness/Wellness
+  Dumbbell, Leaf, Apple, Bike, Timer,
+  // Pet/Animal
+  Dog, Cat, PawPrint,
+  // Beauty/Fashion
+  Shirt, Diamond, Flower2, Gem,
+  // Home/Real Estate
+  Home, Bed, Sofa, Bath, Trees,
+  // Technology
+  Monitor, Code, Cpu, Wifi, Database, Cloud, Globe,
+  // Travel/Transport
+  Plane, MapPin, Compass, Ship, Train,
+  // Education
+  GraduationCap, BookOpen, Pencil,
+  // Security
+  Lock, ShieldCheck, Fingerprint,
+  // Communication
+  Phone, Mail, MessageCircle, Send
+} from 'lucide-react';
 import { EditableText } from '../EditableText';
 import { ScrollAnimation, StaggerContainer } from '../animations/ScrollAnimations';
 
@@ -11,8 +45,41 @@ interface FeaturesSectionProps {
   onUpdateItem?: (index: number, field: keyof FeatureItem, value: string) => void;
 }
 
+// 80+ industry-specific icons for dynamic feature rendering
 const iconComponents: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
-  Zap, Shield, Clock, Star, Wrench, Heart, Users, Award, Target, Truck
+  // Core/Generic
+  Zap, Shield, Clock, Star, Wrench, Heart, Users, Award, Target, Truck,
+  CheckCircle, Settings, Sparkles, Lightbulb, Rocket, Gift, ThumbsUp, Crown,
+  // Service/Trade
+  Scissors, Hammer, PaintBucket, Droplets, Flame, Snowflake, Plug, Key,
+  // Food/Hospitality  
+  UtensilsCrossed, Coffee, Wine, Pizza, Cake, Cookie, Soup, ChefHat,
+  // Automotive
+  Car, Gauge, Fuel,
+  // Health/Medical
+  Stethoscope, Pill, Activity, HeartPulse, Brain, Eye, Smile,
+  // Professional
+  Briefcase, Scale, FileText, Calculator, Building, Landmark,
+  // Creative/Design
+  Palette, Camera, Pen, Brush, Film, Music, Mic,
+  // Fitness/Wellness
+  Dumbbell, Leaf, Apple, Bike, Timer,
+  // Pet/Animal
+  Dog, Cat, PawPrint, Paw: PawPrint,
+  // Beauty/Fashion
+  Shirt, Diamond, Flower2, Gem,
+  // Home/Real Estate
+  Home, Bed, Sofa, Bath, Trees,
+  // Technology
+  Monitor, Code, Cpu, Wifi, Database, Cloud, Globe,
+  // Travel/Transport
+  Plane, MapPin, Compass, Ship, Train,
+  // Education
+  GraduationCap, BookOpen, Pencil,
+  // Security
+  Lock, ShieldCheck, Fingerprint,
+  // Communication
+  Phone, Mail, MessageCircle, Send
 };
 
 const defaultFeatures: FeatureItem[] = [
