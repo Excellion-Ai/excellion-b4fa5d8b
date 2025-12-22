@@ -1122,6 +1122,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   onAddAttachment={handleAddAttachment}
                   disabled={isGenerating}
                   attachmentCount={attachments.length}
+                  previewRef={previewContainerRef as React.RefObject<HTMLElement>}
                 />
                 <Button
                   variant={visualEditsEnabled ? "default" : "ghost"}

@@ -11,7 +11,7 @@ import {
   Upload, 
   FileText, 
   Link, 
-  Camera, 
+  Scissors, 
   Palette,
   Database 
 } from 'lucide-react';
@@ -21,21 +21,24 @@ import { PasteTextModal } from './PasteTextModal';
 import { AddLinkModal } from './AddLinkModal';
 import { BrandKitModal } from './BrandKitModal';
 import { ConnectSourcesModal } from './ConnectSourcesModal';
+import { SnippingTool } from './SnippingTool';
 
 interface AttachmentMenuProps {
   onAddAttachment: (attachment: AttachmentItem) => void;
   disabled?: boolean;
   attachmentCount?: number;
+  previewRef?: React.RefObject<HTMLElement>;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0 }: AttachmentMenuProps) {
+export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0, previewRef }: AttachmentMenuProps) {
   const [open, setOpen] = useState(false);
   const [pasteTextOpen, setPasteTextOpen] = useState(false);
   const [addLinkOpen, setAddLinkOpen] = useState(false);
   const [brandKitOpen, setBrandKitOpen] = useState(false);
   const [connectSourcesOpen, setConnectSourcesOpen] = useState(false);
+  const [snippingToolOpen, setSnippingToolOpen] = useState(false);
   const [existingBrandKit, setExistingBrandKit] = useState<BrandKit | undefined>();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -97,57 +100,33 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0 
     }
   };
 
-  const handleTakeScreenshot = async () => {
+  const handleTakeScreenshot = () => {
     setOpen(false);
     
-    if (!navigator.mediaDevices?.getDisplayMedia) {
+    if (!previewRef?.current) {
       toast({
-        title: 'Not supported',
-        description: 'Screen capture is not supported in your browser. Please upload an image instead.',
+        title: 'No preview available',
+        description: 'Generate a site first to capture a screenshot.',
         variant: 'destructive',
       });
-      fileInputRef.current?.click();
       return;
     }
+    
+    setSnippingToolOpen(true);
+  };
 
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: 'window' } as any,
-      });
-
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      await video.play();
-
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(video, 0, 0);
-      
-      stream.getTracks().forEach((track) => track.stop());
-
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const file = new File([blob], `screenshot-${Date.now()}.png`, { type: 'image/png' });
-          onAddAttachment({
-            id: generateId(),
-            type: 'screenshot',
-            name: 'Screenshot',
-            data: file,
-            mimeType: 'image/png',
-          });
-          toast({
-            title: 'Screenshot captured',
-            description: 'Your screenshot has been added as context.',
-          });
-        }
-      }, 'image/png');
-    } catch (error) {
-      // User cancelled or error occurred
-      console.log('Screenshot cancelled or failed:', error);
-    }
+  const handleSnippingCapture = (file: File) => {
+    onAddAttachment({
+      id: generateId(),
+      type: 'screenshot',
+      name: 'Screenshot',
+      data: file,
+      mimeType: 'image/png',
+    });
+    toast({
+      title: 'Screenshot captured',
+      description: 'Your screenshot has been added as context.',
+    });
   };
 
   const handleBrandKitSave = (brandKit: BrandKit) => {
@@ -181,8 +160,8 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0 
       onClick: () => { setOpen(false); setAddLinkOpen(true); },
     },
     {
-      icon: Camera,
-      label: 'Take screenshot…',
+      icon: Scissors,
+      label: 'Snip preview…',
       onClick: handleTakeScreenshot,
     },
   ];
@@ -288,6 +267,15 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0 
         open={connectSourcesOpen}
         onOpenChange={setConnectSourcesOpen}
       />
+
+      {previewRef && (
+        <SnippingTool
+          open={snippingToolOpen}
+          onOpenChange={setSnippingToolOpen}
+          onCapture={handleSnippingCapture}
+          previewRef={previewRef}
+        />
+      )}
     </>
   );
 }
