@@ -1382,7 +1382,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           />
           
           <div className={`h-full mx-auto ${getPreviewWidth()} transition-all duration-300`}>
-            <div className="h-full bg-background rounded-xl shadow-lg overflow-hidden border border-border">
+            <div data-preview-panel className="h-full bg-background rounded-xl shadow-lg overflow-hidden border border-border">
               {generatedHtml ? (
                 <iframe
                   srcDoc={generatedHtml}
