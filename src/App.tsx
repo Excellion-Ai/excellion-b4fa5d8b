@@ -34,7 +34,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
-// Minimal loading component
+// Minimal loading component for lazy routes
 const PageLoader = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
