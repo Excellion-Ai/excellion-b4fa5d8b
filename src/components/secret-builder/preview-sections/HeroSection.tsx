@@ -41,25 +41,27 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
         className="h-full min-h-[300px] flex flex-col justify-end p-6 lg:p-8 relative"
         style={backgroundStyle}
       >
-        <div className="max-w-xl">
+        <div className="max-w-xl overflow-hidden">
           <ScrollAnimation animation="fade-up" duration={800}>
             {onUpdateContent ? (
               <EditableText
                 value={headline}
                 onSave={(val) => onUpdateContent('headline', val)}
                 as="h1"
-                className="text-2xl lg:text-4xl font-bold mb-3"
+                className="text-2xl lg:text-4xl font-bold mb-3 break-words"
                 style={{ 
                   fontFamily: theme.fontHeading || 'system-ui',
-                  color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor)
+                  color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
+                  overflowWrap: 'anywhere'
                 }}
               />
             ) : (
               <h1 
-                className="text-2xl lg:text-4xl font-bold mb-3"
+                className="text-2xl lg:text-4xl font-bold mb-3 break-words"
                 style={{ 
                   fontFamily: theme.fontHeading || 'system-ui',
-                  color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor)
+                  color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
+                  overflowWrap: 'anywhere'
                 }}
               >
                 {headline}
@@ -74,18 +76,20 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
                 onSave={(val) => onUpdateContent('subheadline', val)}
                 as="p"
                 multiline
-                className="text-sm lg:text-base mb-5 opacity-80"
+                className="text-sm lg:text-base mb-5 opacity-80 break-words"
                 style={{ 
                   fontFamily: theme.fontBody || 'system-ui',
-                  color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563')
+                  color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
+                  overflowWrap: 'anywhere'
                 }}
               />
             ) : (
               <p 
-                className="text-sm lg:text-base mb-5 opacity-80"
+                className="text-sm lg:text-base mb-5 opacity-80 break-words"
                 style={{ 
                   fontFamily: theme.fontBody || 'system-ui',
-                  color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563')
+                  color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
+                  overflowWrap: 'anywhere'
                 }}
               >
                 {subheadline}
@@ -124,13 +128,13 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
       className="flex items-center justify-center px-6 py-12 md:py-16 relative"
       style={backgroundStyle}
     >
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="max-w-4xl mx-auto text-center overflow-hidden">
         {logo && (
           <ScrollAnimation animation="fade-down" duration={800}>
             <img 
               src={logo} 
               alt={`${siteName} logo`}
-              className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 object-contain"
+              className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 object-contain aspect-square"
             />
           </ScrollAnimation>
         )}
@@ -140,18 +144,20 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
               value={headline}
               onSave={(val) => onUpdateContent('headline', val)}
               as="h1"
-              className="text-4xl md:text-6xl font-bold mb-6"
+              className="text-4xl md:text-6xl font-bold mb-6 break-words"
               style={{ 
                 fontFamily: theme.fontHeading || 'system-ui',
-                color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor)
+                color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
+                overflowWrap: 'anywhere'
               }}
             />
           ) : (
             <h1 
-              className="text-4xl md:text-6xl font-bold mb-6"
+              className="text-4xl md:text-6xl font-bold mb-6 break-words"
               style={{ 
                 fontFamily: theme.fontHeading || 'system-ui',
-                color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor)
+                color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
+                overflowWrap: 'anywhere'
               }}
             >
               {headline}
@@ -166,18 +172,20 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
               onSave={(val) => onUpdateContent('subheadline', val)}
               as="p"
               multiline
-              className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
+              className="text-lg md:text-xl mb-8 max-w-2xl mx-auto break-words"
               style={{ 
                 fontFamily: theme.fontBody || 'system-ui',
-                color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563')
+                color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
+                overflowWrap: 'anywhere'
               }}
             />
           ) : (
             <p 
-              className="text-lg md:text-xl mb-8 max-w-2xl mx-auto"
+              className="text-lg md:text-xl mb-8 max-w-2xl mx-auto break-words"
               style={{ 
                 fontFamily: theme.fontBody || 'system-ui',
-                color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563')
+                color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
+                overflowWrap: 'anywhere'
               }}
             >
               {subheadline}

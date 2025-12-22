@@ -114,6 +114,44 @@ All colors MUST be HSL.
   }
 }
 
+/* ===== Global Stability Fixes ===== */
+@layer utilities {
+  /* Z-Index Hierarchy */
+  .z-base { z-index: 0; }
+  .z-floating { z-index: 30; }
+  .z-sticky-header { z-index: 40; }
+  .z-modal { z-index: 50; }
+  .z-toast { z-index: 100; }
+  .z-cursor { z-index: 9999; }
+  
+  /* Button Group Defense */
+  .btn-group {
+    @apply flex flex-wrap gap-2 items-center;
+  }
+  
+  /* Text Overflow Protection for Generated Content */
+  .text-safe {
+    @apply break-words overflow-hidden;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  
+  /* Image Safety for Generated Content */
+  .img-safe {
+    @apply object-cover w-full h-full;
+  }
+  
+  /* Collapsible Smooth Transitions */
+  .collapse-transition {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  /* Prevent Layout Shift */
+  .no-cls {
+    contain: layout;
+  }
+}
+
 @layer utilities {
   /* Icon Animations */
   @keyframes lightning-flash {

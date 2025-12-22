@@ -263,7 +263,7 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
                 delay={index * 100}
               >
                 <div 
-                  className="p-6 rounded-xl transition-all hover:scale-105 h-full"
+                  className="p-6 rounded-xl transition-all hover:scale-105 h-full overflow-hidden"
                   style={{ 
                     backgroundColor: isDark ? '#1f1f1f' : '#ffffff',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
@@ -283,18 +283,20 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
                       value={feature.title}
                       onSave={(val) => onUpdateItem(index, 'title', val)}
                       as="h3"
-                      className="text-lg font-semibold mb-2"
+                      className="text-lg font-semibold mb-2 break-words"
                       style={{ 
                         fontFamily: theme.fontHeading || 'system-ui',
-                        color: isDark ? '#ffffff' : '#111827'
+                        color: isDark ? '#ffffff' : '#111827',
+                        overflowWrap: 'anywhere'
                       }}
                     />
                   ) : (
                     <h3 
-                      className="text-lg font-semibold mb-2"
+                      className="text-lg font-semibold mb-2 break-words"
                       style={{ 
                         fontFamily: theme.fontHeading || 'system-ui',
-                        color: isDark ? '#ffffff' : '#111827'
+                        color: isDark ? '#ffffff' : '#111827',
+                        overflowWrap: 'anywhere'
                       }}
                     >
                       {feature.title}
@@ -305,18 +307,20 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
                       value={feature.description}
                       onSave={(val) => onUpdateItem(index, 'description', val)}
                       as="p"
-                      className="text-sm"
+                      className="text-sm break-words"
                       style={{ 
                         fontFamily: theme.fontBody || 'system-ui',
-                        color: isDark ? '#9ca3af' : '#6b7280'
+                        color: isDark ? '#9ca3af' : '#6b7280',
+                        overflowWrap: 'anywhere'
                       }}
                     />
                   ) : (
                     <p 
-                      className="text-sm"
+                      className="text-sm break-words"
                       style={{ 
                         fontFamily: theme.fontBody || 'system-ui',
-                        color: isDark ? '#9ca3af' : '#6b7280'
+                        color: isDark ? '#9ca3af' : '#6b7280',
+                        overflowWrap: 'anywhere'
                       }}
                     >
                       {feature.description}
