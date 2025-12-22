@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn } from 'lucide-react';
+import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
@@ -475,10 +476,19 @@ export function BuilderShell() {
   }, [isGenerating]);
 
   // Helper to deduct credits via edge function
-  const deductCredits = async (action: CreditActionType, description?: string) => {
+  const deductCredits = async (action: CreditActionType, description?: string): Promise<boolean> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return true; // Allow anonymous users (no credit tracking)
+      if (!user) {
+        // Anonymous users must sign in to use AI features
+        toast.error('Please sign in to use AI features', {
+          action: {
+            label: 'Sign In',
+            onClick: () => navigate('/auth'),
+          },
+        });
+        return false;
+      }
       
       const { data, error } = await supabase.functions.invoke('deduct-credits', {
         body: { userId: user.id, action, description, projectId }
@@ -486,14 +496,21 @@ export function BuilderShell() {
       
       if (error || !data?.success) {
         if (data?.insufficient) {
-          toast.error(`Not enough credits. Need ${data?.required || getCost(action)}, have ${data?.balance || 0}. Add more credits to continue.`);
+          toast.error(`Not enough credits. Need ${data?.required || getCost(action)}, have ${data?.balance || 0}`, {
+            action: {
+              label: 'Get Credits',
+              onClick: () => navigate('/billing'),
+            },
+          });
           return false;
         }
         console.error('Credit deduction error:', error || data?.error);
-        return true; // Continue on error to not block users
+        // On other errors, still allow operation to not block users
+        return true;
       }
       
       deductLocal(action);
+      fetchCredits(); // Refresh credit balance after deduction
       return true;
     } catch (err) {
       console.error('Credit deduction failed:', err);
@@ -514,9 +531,10 @@ export function BuilderShell() {
     const isEditRequest = !isFirstMessage && editKeywords.test(ideaToUse);
     const actionType: CreditActionType = isFirstMessage ? 'generation' : (isEditRequest ? 'edit' : 'chat');
     
-    if (isAuthenticated && !checkCredits(actionType)) {
-      toast.error(`Not enough credits. Need ${getCost(actionType)} for ${actionType}. Add more credits to continue.`);
-      return;
+    // Deduct credits BEFORE making AI call (not after)
+    const canProceed = await deductCredits(actionType, `AI ${actionType} for project`);
+    if (!canProceed) {
+      return; // User either not authenticated or insufficient credits
     }
 
     // Convert attachments to base64 for API and upload to storage for actual use
@@ -734,9 +752,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       }
 
       updateStep(3, 'complete');
-      
-      // Deduct credits after successful AI call
-      await deductCredits(actionType, `AI ${actionType} for project`);
+      // Credits already deducted before AI call
 
       updateStep(4, 'active');
       
@@ -1021,6 +1037,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     <path d="m15 5 4 4"/>
                   </svg>
                 </button>
+                <div className="h-4 w-px bg-border ml-auto" />
+                <CreditBalance />
               </div>
             </div>
             
