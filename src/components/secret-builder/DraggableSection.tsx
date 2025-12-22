@@ -31,17 +31,17 @@ export function DraggableSection({ id, children, isEditable = false }: Draggable
 
   return (
     <div ref={setNodeRef} style={style} className="relative group">
-      {/* Drag handle */}
+      {/* Drag handle - using z-floating from hierarchy */}
       <div
         {...attributes}
         {...listeners}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-50 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-border"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing bg-background/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-border"
       >
         <GripVertical className="w-5 h-5 text-muted-foreground" />
       </div>
       
-      {/* Section outline on hover */}
-      <div className="group-hover:ring-2 group-hover:ring-primary/30 group-hover:ring-offset-2 rounded-lg transition-all">
+      {/* Section outline on hover - no CLS */}
+      <div className="group-hover:ring-2 group-hover:ring-primary/30 group-hover:ring-offset-2 rounded-lg transition-all duration-200">
         {children}
       </div>
     </div>

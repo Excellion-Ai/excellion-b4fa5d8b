@@ -21,27 +21,27 @@ export function CTASection({ section, theme }: CTASectionProps) {
         background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`
       }}
     >
-      <div className="w-full text-center">
+      <div className="w-full text-center overflow-hidden">
         <ScrollAnimation animation="fade-up">
           <h2 
-            className="text-3xl md:text-4xl font-bold mb-4 text-white"
-            style={{ fontFamily: theme.fontHeading }}
+            className="text-3xl md:text-4xl font-bold mb-4 text-white break-words"
+            style={{ fontFamily: theme.fontHeading, overflowWrap: 'anywhere' }}
           >
             {headline}
           </h2>
         </ScrollAnimation>
         <ScrollAnimation animation="fade-up" delay={150}>
           <p 
-            className="text-lg mb-8 text-white/90 max-w-2xl mx-auto"
-            style={{ fontFamily: theme.fontBody }}
+            className="text-lg mb-8 text-white/90 max-w-2xl mx-auto break-words"
+            style={{ fontFamily: theme.fontBody, overflowWrap: 'anywhere' }}
           >
             {subheadline}
           </p>
         </ScrollAnimation>
         <ScrollAnimation animation="scale-up" delay={300}>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center">
             <button
-              className="px-8 py-3 rounded-lg font-semibold transition-all hover:scale-105"
+              className="px-8 py-3 rounded-lg font-semibold transition-all hover:scale-105 shrink-0"
               style={{ 
                 backgroundColor: '#ffffff',
                 color: theme.primaryColor
@@ -50,7 +50,7 @@ export function CTASection({ section, theme }: CTASectionProps) {
               {ctaText}
             </button>
             <button
-              className="px-8 py-3 rounded-lg font-semibold border-2 border-white text-white transition-all hover:bg-white/10"
+              className="px-8 py-3 rounded-lg font-semibold border-2 border-white text-white transition-all hover:bg-white/10 shrink-0"
             >
               Contact Sales
             </button>

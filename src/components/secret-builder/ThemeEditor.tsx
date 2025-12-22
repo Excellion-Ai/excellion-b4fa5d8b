@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SiteTheme } from '@/types/site-spec';
-
+import { motion, AnimatePresence } from 'framer-motion';
 interface ThemeEditorProps {
   theme: SiteTheme;
   onUpdateTheme: (updates: Partial<SiteTheme>) => void;
@@ -110,129 +110,139 @@ export function ThemeEditor({ theme, onUpdateTheme }: ThemeEditorProps) {
         )}
       </button>
 
-      {isExpanded && (
-        <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
-          {/* Color Presets */}
-          <div className="space-y-2">
-            <Label className="text-xs">Quick Presets</Label>
-            <div className="grid grid-cols-4 gap-2">
-              {PRESET_COLORS.map((preset) => (
-                <button
-                  key={preset.name}
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
+              {/* Color Presets */}
+              <div className="space-y-2">
+                <Label className="text-xs">Quick Presets</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {PRESET_COLORS.map((preset) => (
+                    <button
+                      key={preset.name}
+                      onClick={() => onUpdateTheme({ 
+                        primaryColor: preset.primary, 
+                        secondaryColor: preset.secondary 
+                      })}
+                      className="flex flex-col items-center gap-1 p-2 rounded-md border border-border hover:border-primary/50 transition-colors"
+                      title={preset.name}
+                    >
+                      <div className="flex">
+                        <div 
+                          className="w-4 h-4 rounded-l"
+                          style={{ backgroundColor: preset.primary }}
+                        />
+                        <div 
+                          className="w-4 h-4 rounded-r"
+                          style={{ backgroundColor: preset.secondary }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">{preset.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Colors */}
+              <div className="grid grid-cols-2 gap-3">
+                <ColorPicker
+                  label="Primary Color"
+                  color={theme.primaryColor}
+                  onChange={(color) => onUpdateTheme({ primaryColor: color })}
+                />
+                <ColorPicker
+                  label="Secondary Color"
+                  color={theme.secondaryColor}
+                  onChange={(color) => onUpdateTheme({ secondaryColor: color })}
+                />
+              </div>
+
+              <ColorPicker
+                label="Background Color"
+                color={theme.backgroundColor}
+                onChange={(color) => onUpdateTheme({ backgroundColor: color })}
+              />
+
+              {/* Dark Mode Toggle */}
+              <div className="flex items-center justify-between">
+                <Label className="text-xs">Dark Mode</Label>
+                <Button
+                  variant={theme.darkMode ? 'default' : 'outline'}
+                  size="sm"
                   onClick={() => onUpdateTheme({ 
-                    primaryColor: preset.primary, 
-                    secondaryColor: preset.secondary 
+                    darkMode: !theme.darkMode,
+                    backgroundColor: !theme.darkMode ? '#0a0a0a' : '#ffffff',
+                    textColor: !theme.darkMode ? '#ffffff' : '#1f2937',
                   })}
-                  className="flex flex-col items-center gap-1 p-2 rounded-md border border-border hover:border-primary/50 transition-colors"
-                  title={preset.name}
                 >
-                  <div className="flex">
-                    <div 
-                      className="w-4 h-4 rounded-l"
-                      style={{ backgroundColor: preset.primary }}
-                    />
-                    <div 
-                      className="w-4 h-4 rounded-r"
-                      style={{ backgroundColor: preset.secondary }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">{preset.name}</span>
-                </button>
-              ))}
+                  {theme.darkMode ? 'On' : 'Off'}
+                </Button>
+              </div>
+
+              {/* Fonts */}
+              <div className="space-y-3 pt-2 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Type className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">Typography</span>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Heading Font</Label>
+                  <Select
+                    value={theme.fontHeading}
+                    onValueChange={(value) => onUpdateTheme({ fontHeading: value })}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-modal bg-popover">
+                      {FONT_OPTIONS.map((font) => (
+                        <SelectItem 
+                          key={font.value} 
+                          value={font.value}
+                          style={{ fontFamily: font.value }}
+                        >
+                          {font.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Body Font</Label>
+                  <Select
+                    value={theme.fontBody}
+                    onValueChange={(value) => onUpdateTheme({ fontBody: value })}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-modal bg-popover">
+                      {FONT_OPTIONS.map((font) => (
+                        <SelectItem 
+                          key={font.value} 
+                          value={font.value}
+                          style={{ fontFamily: font.value }}
+                        >
+                          {font.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
-          </div>
-
-          {/* Custom Colors */}
-          <div className="grid grid-cols-2 gap-3">
-            <ColorPicker
-              label="Primary Color"
-              color={theme.primaryColor}
-              onChange={(color) => onUpdateTheme({ primaryColor: color })}
-            />
-            <ColorPicker
-              label="Secondary Color"
-              color={theme.secondaryColor}
-              onChange={(color) => onUpdateTheme({ secondaryColor: color })}
-            />
-          </div>
-
-          <ColorPicker
-            label="Background Color"
-            color={theme.backgroundColor}
-            onChange={(color) => onUpdateTheme({ backgroundColor: color })}
-          />
-
-          {/* Dark Mode Toggle */}
-          <div className="flex items-center justify-between">
-            <Label className="text-xs">Dark Mode</Label>
-            <Button
-              variant={theme.darkMode ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onUpdateTheme({ 
-                darkMode: !theme.darkMode,
-                backgroundColor: !theme.darkMode ? '#0a0a0a' : '#ffffff',
-                textColor: !theme.darkMode ? '#ffffff' : '#1f2937',
-              })}
-            >
-              {theme.darkMode ? 'On' : 'Off'}
-            </Button>
-          </div>
-
-          {/* Fonts */}
-          <div className="space-y-3 pt-2 border-t border-border">
-            <div className="flex items-center gap-2">
-              <Type className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Typography</span>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs">Heading Font</Label>
-              <Select
-                value={theme.fontHeading}
-                onValueChange={(value) => onUpdateTheme({ fontHeading: value })}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FONT_OPTIONS.map((font) => (
-                    <SelectItem 
-                      key={font.value} 
-                      value={font.value}
-                      style={{ fontFamily: font.value }}
-                    >
-                      {font.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs">Body Font</Label>
-              <Select
-                value={theme.fontBody}
-                onValueChange={(value) => onUpdateTheme({ fontBody: value })}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FONT_OPTIONS.map((font) => (
-                    <SelectItem 
-                      key={font.value} 
-                      value={font.value}
-                      style={{ fontFamily: font.value }}
-                    >
-                      {font.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

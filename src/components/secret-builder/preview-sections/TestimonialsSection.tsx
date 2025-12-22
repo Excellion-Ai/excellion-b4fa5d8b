@@ -109,10 +109,11 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
                   </div>
                 )}
                 <p 
-                  className="text-base md:text-lg mb-6 flex-grow leading-relaxed"
+                  className="text-base md:text-lg mb-6 flex-grow leading-relaxed break-words"
                   style={{ 
                     fontFamily: theme.fontBody || 'system-ui',
-                    color: isDark ? '#d1d5db' : '#4b5563'
+                    color: isDark ? '#d1d5db' : '#4b5563',
+                    overflowWrap: 'anywhere'
                   }}
                 >
                   "{testimonial.quote}"
