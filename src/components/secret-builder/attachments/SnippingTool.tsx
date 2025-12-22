@@ -25,6 +25,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: S
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
+  // Reset crop area when dialog closes
   useEffect(() => {
     if (!open) {
       setCropArea(null);
@@ -76,6 +77,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: S
     const img = imageRef.current;
     const container = containerRef.current;
     
+    // Calculate scale between displayed image and actual image
     const scaleX = img.naturalWidth / container.clientWidth;
     const scaleY = img.naturalHeight / container.clientHeight;
     
@@ -85,6 +87,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: S
     if (!ctx) return;
     
     if (cropArea && cropArea.width > 10 && cropArea.height > 10) {
+      // Crop to selected area
       const cropX = cropArea.x * scaleX;
       const cropY = cropArea.y * scaleY;
       const cropWidth = cropArea.width * scaleX;
@@ -99,6 +102,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: S
         0, 0, cropWidth, cropHeight
       );
     } else {
+      // Use full image
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       ctx.drawImage(img, 0, 0);
@@ -148,8 +152,10 @@ export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: S
                 draggable={false}
               />
               
+              {/* Crop overlay */}
               {cropArea && cropArea.width > 0 && cropArea.height > 0 && (
                 <>
+                  {/* Dark overlay */}
                   <div 
                     className="absolute inset-0 bg-black/50 pointer-events-none"
                     style={{
@@ -164,6 +170,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: S
                     }}
                   />
                   
+                  {/* Selection border */}
                   <div 
                     className="absolute border-2 border-primary border-dashed pointer-events-none"
                     style={{
@@ -173,11 +180,13 @@ export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: S
                       height: cropArea.height,
                     }}
                   >
+                    {/* Corner handles */}
                     <div className="absolute -top-1 -left-1 w-2 h-2 bg-primary rounded-full" />
                     <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
                     <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-primary rounded-full" />
                     <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary rounded-full" />
                     
+                    {/* Size indicator */}
                     <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[10px] bg-primary text-primary-foreground rounded whitespace-nowrap">
                       {Math.round(cropArea.width)} × {Math.round(cropArea.height)}
                     </div>
@@ -185,6 +194,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: S
                 </>
               )}
               
+              {/* Instruction overlay when no crop */}
               {!cropArea && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="bg-background/80 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
