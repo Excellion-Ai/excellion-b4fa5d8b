@@ -7,7 +7,7 @@ interface SnippingToolProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCapture: (file: File) => void;
-  previewRef: React.RefObject<HTMLElement>;
+  capturedImage: string | null;
 }
 
 interface CropArea {
@@ -17,85 +17,24 @@ interface CropArea {
   height: number;
 }
 
-export function SnippingTool({ open, onOpenChange, onCapture, previewRef }: SnippingToolProps) {
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
+export function SnippingTool({ open, onOpenChange, onCapture, capturedImage }: SnippingToolProps) {
   const [isCropping, setIsCropping] = useState(false);
   const [cropStart, setCropStart] = useState<{ x: number; y: number } | null>(null);
   const [cropArea, setCropArea] = useState<CropArea | null>(null);
-  const [isCapturing, setIsCapturing] = useState(false);
   
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // Capture the preview when dialog opens
+  // Reset crop area when dialog closes
   useEffect(() => {
-    if (open && previewRef.current) {
-      capturePreview();
+    if (!open) {
+      setCropArea(null);
+      setIsCropping(false);
     }
-    return () => {
-      if (!open) {
-        setImageSrc(null);
-        setCropArea(null);
-        setIsCropping(false);
-      }
-    };
   }, [open]);
 
-  const capturePreview = async () => {
-    if (!previewRef.current) return;
-    
-    setIsCapturing(true);
-    
-    try {
-      // Import html2canvas dynamically
-      const { default: html2canvas } = await import('html2canvas');
-      
-      const canvas = await html2canvas(previewRef.current, {
-        backgroundColor: null,
-        scale: 2, // Higher quality
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-      });
-      
-      const dataUrl = canvas.toDataURL('image/png');
-      setImageSrc(dataUrl);
-    } catch (error) {
-      console.error('Failed to capture preview:', error);
-      // Fallback: try to get a basic screenshot using canvas
-      try {
-        const element = previewRef.current;
-        const rect = element.getBoundingClientRect();
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = rect.width * 2;
-        canvas.height = rect.height * 2;
-        
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.scale(2, 2);
-          ctx.fillStyle = '#1a1a1a';
-          ctx.fillRect(0, 0, rect.width, rect.height);
-          
-          // Create a simple placeholder
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '16px Inter, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('Preview captured - select area to crop', rect.width / 2, rect.height / 2);
-          
-          setImageSrc(canvas.toDataURL('image/png'));
-        }
-      } catch (e) {
-        console.error('Fallback capture also failed:', e);
-      }
-    }
-    
-    setIsCapturing(false);
-  };
-
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!containerRef.current || !imageSrc) return;
+    if (!containerRef.current || !capturedImage) return;
     
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -104,7 +43,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, previewRef }: Snip
     setCropStart({ x, y });
     setCropArea({ x, y, width: 0, height: 0 });
     setIsCropping(true);
-  }, [imageSrc]);
+  }, [capturedImage]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isCropping || !cropStart || !containerRef.current) return;
@@ -133,7 +72,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, previewRef }: Snip
   };
 
   const handleConfirm = useCallback(() => {
-    if (!imageSrc || !imageRef.current || !containerRef.current) return;
+    if (!capturedImage || !imageRef.current || !containerRef.current) return;
     
     const img = imageRef.current;
     const container = containerRef.current;
@@ -176,7 +115,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, previewRef }: Snip
         onOpenChange(false);
       }
     }, 'image/png');
-  }, [imageSrc, cropArea, onCapture, onOpenChange]);
+  }, [capturedImage, cropArea, onCapture, onOpenChange]);
 
   const handleCancel = () => {
     onOpenChange(false);
@@ -196,14 +135,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, previewRef }: Snip
         </DialogHeader>
         
         <div className="p-4 flex-1 overflow-hidden">
-          {isCapturing ? (
-            <div className="h-[60vh] flex items-center justify-center">
-              <div className="text-center space-y-2">
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-sm text-muted-foreground">Capturing preview...</p>
-              </div>
-            </div>
-          ) : imageSrc ? (
+          {capturedImage ? (
             <div 
               ref={containerRef}
               className="relative h-[60vh] overflow-hidden rounded-lg bg-muted/30 cursor-crosshair select-none"
@@ -214,7 +146,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, previewRef }: Snip
             >
               <img
                 ref={imageRef}
-                src={imageSrc}
+                src={capturedImage}
                 alt="Preview capture"
                 className="w-full h-full object-contain pointer-events-none"
                 draggable={false}
@@ -304,7 +236,7 @@ export function SnippingTool({ open, onOpenChange, onCapture, previewRef }: Snip
             <Button
               size="sm"
               onClick={handleConfirm}
-              disabled={!imageSrc}
+              disabled={!capturedImage}
               className="gap-1.5"
             >
               <Check className="w-3.5 h-3.5" />
