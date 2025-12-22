@@ -1007,8 +1007,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
           <div className="h-full border-r border-border flex flex-col bg-card/30">
             {/* Header with Studio button and Project Name */}
-            <div className="border-b border-border px-3 py-2.5 bg-card/50">
-              <div className="flex items-center gap-3">
+            <div className="border-b border-border px-2 sm:px-3 py-2 sm:py-2.5 bg-card/50">
+              <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
                 <Button
                   variant="outline"
                   size="sm"
@@ -1019,26 +1019,26 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     }
                     navigate('/secret-builder-hub');
                   }}
-                  className="gap-1.5 text-xs shrink-0"
+                  className="gap-1 sm:gap-1.5 text-xs shrink-0 px-2 sm:px-3"
                   disabled={isGenerating}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
-                  {isGenerating ? 'Generating...' : 'Studio'}
+                  <span className="hidden sm:inline">{isGenerating ? 'Generating...' : 'Studio'}</span>
                 </Button>
-                <div className="h-4 w-px bg-border" />
+                <div className="h-4 w-px bg-border shrink-0 hidden sm:block" />
                 <button
                   onClick={() => setShowRenameDialog(true)}
-                  className="flex items-center gap-1.5 text-sm text-foreground hover:text-primary px-1.5 py-0.5 rounded transition-colors group min-w-0 flex-1"
+                  className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-foreground hover:text-primary px-1 sm:px-1.5 py-0.5 rounded transition-colors group min-w-0 flex-1"
                   title="Click to rename project"
                 >
-                  <span className="truncate">{projectName || 'Untitled Project'}</span>
+                  <span className="truncate max-w-[80px] sm:max-w-[150px] md:max-w-none">{projectName || 'Untitled Project'}</span>
                   <svg className="h-3 w-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                     <path d="m15 5 4 4"/>
                   </svg>
                 </button>
-                <div className="h-4 w-px bg-border ml-auto" />
-                <CreditBalance />
+                <div className="h-4 w-px bg-border ml-auto shrink-0" />
+                <CreditBalance className="shrink-0" />
               </div>
             </div>
             
@@ -1170,8 +1170,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         {/* Right Panel - Preview + Tabs */}
         <ResizablePanel defaultSize={70} minSize={40}>
           <div className="h-full flex flex-col">
-        <div className="h-12 border-b border-border flex items-center justify-between px-4 bg-card/30">
-          <div className="flex items-center gap-3">
+        <div className="h-12 border-b border-border flex items-center justify-between px-2 sm:px-4 bg-card/30 gap-1 sm:gap-2 overflow-x-auto">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             {/* Presence Avatars */}
             <PresenceAvatars users={otherUsers} />
             
@@ -1192,59 +1192,59 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             )}
           </div>
 
-          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-muted/50 rounded-lg p-0.5 sm:p-1 shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className={`h-7 w-7 ${previewMode === 'desktop' ? 'bg-background shadow-sm' : ''}`}
+              className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'desktop' ? 'bg-background shadow-sm' : ''}`}
               onClick={() => setPreviewMode('desktop')}
             >
-              <Monitor className="h-4 w-4" />
+              <Monitor className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className={`h-7 w-7 ${previewMode === 'tablet' ? 'bg-background shadow-sm' : ''}`}
+              className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'tablet' ? 'bg-background shadow-sm' : ''}`}
               onClick={() => setPreviewMode('tablet')}
             >
-              <Tablet className="h-4 w-4" />
+              <Tablet className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className={`h-7 w-7 ${previewMode === 'mobile' ? 'bg-background shadow-sm' : ''}`}
+              className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'mobile' ? 'bg-background shadow-sm' : ''}`}
               onClick={() => setPreviewMode('mobile')}
             >
-              <Smartphone className="h-4 w-4" />
+              <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
           {/* Model is auto-selected by the bot based on prompt complexity */}
 
           {/* Undo/Redo buttons */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-7 w-7 sm:h-8 sm:w-8"
               onClick={undo}
               disabled={!canUndo}
               title="Undo (Ctrl+Z)"
             >
-              <Undo2 className="h-4 w-4" />
+              <Undo2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-7 w-7 sm:h-8 sm:w-8"
               onClick={redo}
               disabled={!canRedo}
               title="Redo (Ctrl+Y)"
             >
-              <Redo2 className="h-4 w-4" />
+              <Redo2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* SectionLibrary hidden but code preserved */}
             {/* {siteSpec && siteSpec.pages[currentPageIndex] && (
               <SectionLibrary
@@ -1279,7 +1279,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               variant="outline"
               size="sm"
               onClick={() => setShowImageDialog(true)}
-              className="gap-1.5 text-xs"
+              className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
               disabled={isGeneratingImage}
             >
               {isGeneratingImage ? (
@@ -1287,7 +1287,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               ) : (
                 <ImagePlus className="h-3.5 w-3.5" />
               )}
-              AI Image
+              <span className="hidden md:inline">AI Image</span>
             </Button>
             
             {/* Domains button - hidden, moved to publish dropdown */}
@@ -1306,10 +1306,10 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               variant="outline"
               size="sm"
               onClick={() => setShowSchemaDialog(true)}
-              className="gap-1.5 text-xs"
+              className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
             >
               <Database className="h-3.5 w-3.5" />
-              Database
+              <span className="hidden md:inline">Database</span>
             </Button>
             
             {/* 3D Button - hidden but code preserved */}
@@ -1338,11 +1338,11 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               variant="outline"
               size="sm"
               onClick={() => setShowAnalyticsDialog(true)}
-              className="gap-1.5 text-xs"
+              className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
               disabled={!projectId}
             >
               <BarChart3 className="h-3.5 w-3.5" />
-              Analytics
+              <span className="hidden md:inline">Analytics</span>
             </Button>
             
             {/* Publish dropdown with Domains and Security */}
@@ -1351,14 +1351,14 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                 <Button
                   size="sm"
                   disabled={!siteSpec || isPublishing}
-                  className="gap-1.5 bg-primary hover:bg-primary/90"
+                  className="gap-1 sm:gap-1.5 bg-primary hover:bg-primary/90 px-2 sm:px-3"
                 >
                   {isPublishing ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
                     <Upload className="h-3.5 w-3.5" />
                   )}
-                  {isPublishing ? 'Publishing...' : 'Publish'}
+                  <span className="hidden sm:inline">{isPublishing ? 'Publishing...' : 'Publish'}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
