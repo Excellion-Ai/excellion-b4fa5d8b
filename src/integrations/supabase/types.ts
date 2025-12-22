@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_usage_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          function_name: string
+          id: string
+          response_time_ms: number | null
+          status_code: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          function_name: string
+          id?: string
+          response_time_ms?: number | null
+          status_code?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          function_name?: string
+          id?: string
+          response_time_ms?: number | null
+          status_code?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       auth_activity: {
         Row: {
           created_at: string

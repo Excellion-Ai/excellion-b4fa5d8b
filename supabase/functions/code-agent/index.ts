@@ -36,6 +36,31 @@ setInterval(() => {
   }
 }, 60000);
 
+// API Usage logging
+async function logApiUsage(
+  userId: string,
+  functionName: string,
+  statusCode: number,
+  responseTimeMs: number,
+  errorMessage?: string
+) {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceKey);
+    
+    await supabase.from("api_usage_logs").insert({
+      user_id: userId,
+      function_name: functionName,
+      status_code: statusCode,
+      response_time_ms: responseTimeMs,
+      error_message: errorMessage || null,
+    });
+  } catch (err) {
+    console.error("Failed to log API usage:", err);
+  }
+}
+
 const SYSTEM_PROMPT = `You are an expert React/Tailwind code generator. You convert app specifications into clean, production-ready React components.
 
 OUTPUT REQUIREMENTS:
@@ -90,6 +115,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
+  let userId: string | null = null;
+
   try {
     // Verify authentication
     const authHeader = req.headers.get("Authorization");
@@ -114,10 +142,13 @@ serve(async (req) => {
       );
     }
 
+    userId = user.id;
+
     // Check rate limit for this user
     const rateLimitResult = checkRateLimit(user.id);
     if (!rateLimitResult.allowed) {
       console.log(`Rate limit exceeded for user: ${user.id}`);
+      await logApiUsage(user.id, "code-agent", 429, Date.now() - startTime, "Rate limit exceeded");
       return new Response(
         JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
         {
@@ -269,6 +300,11 @@ export default GeneratedSite;`;
 
     console.log('Code generated successfully');
 
+    // Log successful API usage
+    if (userId) {
+      await logApiUsage(userId, "code-agent", 200, Date.now() - startTime);
+    }
+
     return new Response(
       JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -276,6 +312,10 @@ export default GeneratedSite;`;
 
   } catch (error) {
     console.error('Code agent error:', error);
+    // Log error API usage
+    if (userId) {
+      await logApiUsage(userId, "code-agent", 500, Date.now() - startTime, error instanceof Error ? error.message : 'Unknown error');
+    }
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
