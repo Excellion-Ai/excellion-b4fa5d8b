@@ -39,6 +39,7 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0,
   const [brandKitOpen, setBrandKitOpen] = useState(false);
   const [connectSourcesOpen, setConnectSourcesOpen] = useState(false);
   const [snippingToolOpen, setSnippingToolOpen] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [existingBrandKit, setExistingBrandKit] = useState<BrandKit | undefined>();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +101,7 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0,
     }
   };
 
-  const handleTakeScreenshot = () => {
+  const handleTakeScreenshot = async () => {
     setOpen(false);
     
     if (!previewRef?.current) {
@@ -112,7 +113,29 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0,
       return;
     }
     
-    setSnippingToolOpen(true);
+    // Capture the screenshot BEFORE opening the dialog
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      
+      const canvas = await html2canvas(previewRef.current, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+      });
+      
+      const dataUrl = canvas.toDataURL('image/png');
+      setCapturedImage(dataUrl);
+      setSnippingToolOpen(true);
+    } catch (error) {
+      console.error('Failed to capture preview:', error);
+      toast({
+        title: 'Capture failed',
+        description: 'Unable to capture the preview. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSnippingCapture = (file: File) => {
@@ -268,14 +291,15 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0,
         onOpenChange={setConnectSourcesOpen}
       />
 
-      {previewRef && (
-        <SnippingTool
-          open={snippingToolOpen}
-          onOpenChange={setSnippingToolOpen}
-          onCapture={handleSnippingCapture}
-          previewRef={previewRef}
-        />
-      )}
+      <SnippingTool
+        open={snippingToolOpen}
+        onOpenChange={(open) => {
+          setSnippingToolOpen(open);
+          if (!open) setCapturedImage(null);
+        }}
+        onCapture={handleSnippingCapture}
+        capturedImage={capturedImage}
+      />
     </>
   );
 }
