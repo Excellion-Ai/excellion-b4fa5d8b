@@ -36,6 +36,31 @@ setInterval(() => {
   }
 }, 60000);
 
+// API Usage logging
+async function logApiUsage(
+  userId: string,
+  functionName: string,
+  statusCode: number,
+  responseTimeMs: number,
+  errorMessage?: string
+) {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceKey);
+    
+    await supabase.from("api_usage_logs").insert({
+      user_id: userId,
+      function_name: functionName,
+      status_code: statusCode,
+      response_time_ms: responseTimeMs,
+      error_message: errorMessage || null,
+    });
+  } catch (err) {
+    console.error("Failed to log API usage:", err);
+  }
+}
+
 const SYSTEM_PROMPT = `You are Excellion's Builder-of-Builders, an expert system that converts vague app ideas into production-ready blueprints with INDUSTRY-SPECIFIC content for ANY business type.
 
 ====================================
@@ -647,6 +672,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
+  let userId: string | null = null;
+
   try {
     // Verify authentication
     const authHeader = req.headers.get("Authorization");
@@ -671,10 +699,13 @@ serve(async (req) => {
       );
     }
 
+    userId = user.id;
+
     // Check rate limit for this user
     const rateLimitResult = checkRateLimit(user.id);
     if (!rateLimitResult.allowed) {
       console.log(`Rate limit exceeded for user: ${user.id}`);
+      await logApiUsage(user.id, "builder-agent", 429, Date.now() - startTime, "Rate limit exceeded");
       return new Response(
         JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
         {
@@ -768,6 +799,11 @@ Generate the complete blueprint and build prompt. Return ONLY valid JSON matchin
 
     console.log('Parsed spec successfully');
 
+    // Log successful API usage
+    if (userId) {
+      await logApiUsage(userId, "builder-agent", 200, Date.now() - startTime);
+    }
+
     return new Response(
       JSON.stringify(spec),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -775,6 +811,10 @@ Generate the complete blueprint and build prompt. Return ONLY valid JSON matchin
 
   } catch (error) {
     console.error('Builder agent error:', error);
+    // Log error API usage
+    if (userId) {
+      await logApiUsage(userId, "builder-agent", 500, Date.now() - startTime, error instanceof Error ? error.message : 'Unknown error');
+    }
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

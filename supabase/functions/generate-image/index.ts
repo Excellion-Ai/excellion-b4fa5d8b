@@ -36,10 +36,38 @@ setInterval(() => {
   }
 }, 60000);
 
+// API Usage logging
+async function logApiUsage(
+  userId: string,
+  functionName: string,
+  statusCode: number,
+  responseTimeMs: number,
+  errorMessage?: string
+) {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceKey);
+    
+    await supabase.from("api_usage_logs").insert({
+      user_id: userId,
+      function_name: functionName,
+      status_code: statusCode,
+      response_time_ms: responseTimeMs,
+      error_message: errorMessage || null,
+    });
+  } catch (err) {
+    console.error("Failed to log API usage:", err);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const startTime = Date.now();
+  let userId: string | null = null;
 
   try {
     // Verify authentication
@@ -65,10 +93,13 @@ serve(async (req) => {
       );
     }
 
+    userId = user.id;
+
     // Check rate limit for this user
     const rateLimitResult = checkRateLimit(user.id);
     if (!rateLimitResult.allowed) {
       console.log(`Rate limit exceeded for user: ${user.id}`);
+      await logApiUsage(user.id, "generate-image", 429, Date.now() - startTime, "Rate limit exceeded");
       return new Response(
         JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
         {
@@ -204,6 +235,11 @@ serve(async (req) => {
       // Continue with base64 image
     }
 
+    // Log successful API usage
+    if (userId) {
+      await logApiUsage(userId, "generate-image", 200, Date.now() - startTime);
+    }
+
     return new Response(
       JSON.stringify({
         imageUrl: publicUrl,
@@ -213,6 +249,10 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Generate image error:", error);
+    // Log error API usage
+    if (userId) {
+      await logApiUsage(userId, "generate-image", 500, Date.now() - startTime, error instanceof Error ? error.message : "Unknown error");
+    }
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
