@@ -870,7 +870,15 @@ If users ask about Excellion services:
 Only mention if relevant. Focus on building their site.`;
 
 serve(async (req) => {
+  const requestId = crypto.randomUUID().slice(0, 8);
+  const startTime = Date.now();
+  
+  console.log(`[BOT-CHAT:${requestId}] ========== REQUEST START ==========`);
+  console.log(`[BOT-CHAT:${requestId}] Method: ${req.method}`);
+  console.log(`[BOT-CHAT:${requestId}] Timestamp: ${new Date().toISOString()}`);
+
   if (req.method === "OPTIONS") {
+    console.log(`[BOT-CHAT:${requestId}] CORS preflight request`);
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -878,11 +886,13 @@ serve(async (req) => {
     // Verify authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.log(`[BOT-CHAT:${requestId}] ERROR: No auth header provided`);
       return new Response(
         JSON.stringify({ error: "Authentication required" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    console.log(`[BOT-CHAT:${requestId}] Auth header present`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -892,20 +902,23 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await authClient.auth.getUser();
     if (authError || !user) {
+      console.log(`[BOT-CHAT:${requestId}] ERROR: Auth failed -`, authError?.message || "No user");
       return new Response(
         JSON.stringify({ error: "Invalid authentication" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("Authenticated user:", user.id);
+    console.log(`[BOT-CHAT:${requestId}] User authenticated: ${user.id}`);
+    console.log(`[BOT-CHAT:${requestId}] User email: ${user.email}`);
 
     const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
                      req.headers.get("cf-connecting-ip") || "unknown";
+    console.log(`[BOT-CHAT:${requestId}] Client IP: ${clientIP}`);
     
     const rateLimitResult = checkRateLimit(clientIP);
     if (!rateLimitResult.allowed) {
-      console.log(`Rate limit exceeded for IP: ${clientIP}`);
+      console.log(`[BOT-CHAT:${requestId}] ERROR: Rate limit exceeded - retry after ${rateLimitResult.retryAfter}s`);
       return new Response(
         JSON.stringify({ error: "Too many requests. Please wait before trying again." }),
         {
@@ -914,13 +927,37 @@ serve(async (req) => {
         }
       );
     }
+    console.log(`[BOT-CHAT:${requestId}] Rate limit check passed`);
 
-    const { messages, context, modelMode, projectId } = await req.json();
+    const body = await req.json();
+    const { messages, context, modelMode, projectId } = body;
+    
+    console.log(`[BOT-CHAT:${requestId}] Request body parsed:`);
+    console.log(`[BOT-CHAT:${requestId}]   - Messages count: ${messages?.length || 0}`);
+    console.log(`[BOT-CHAT:${requestId}]   - Model mode: ${modelMode || 'default'}`);
+    console.log(`[BOT-CHAT:${requestId}]   - Project ID: ${projectId || 'none'}`);
+    console.log(`[BOT-CHAT:${requestId}]   - Has context: ${!!context}`);
+    
+    // Log first user message for debugging
+    const firstUserMsg = messages?.find((m: any) => m.role === 'user');
+    if (firstUserMsg) {
+      const content = typeof firstUserMsg.content === 'string' 
+        ? firstUserMsg.content.slice(0, 100) 
+        : '[multimodal content]';
+      console.log(`[BOT-CHAT:${requestId}]   - First user message: "${content}${content.length >= 100 ? '...' : ''}"`);
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
+    console.log(`[BOT-CHAT:${requestId}] Environment check:`);
+    console.log(`[BOT-CHAT:${requestId}]   - LOVABLE_API_KEY: ${LOVABLE_API_KEY ? 'SET' : 'MISSING'}`);
+    console.log(`[BOT-CHAT:${requestId}]   - SUPABASE_URL: ${SUPABASE_URL ? 'SET' : 'MISSING'}`);
+    console.log(`[BOT-CHAT:${requestId}]   - SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'MISSING'}`);
+    
     if (!LOVABLE_API_KEY) {
+      console.log(`[BOT-CHAT:${requestId}] ERROR: LOVABLE_API_KEY not configured`);
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
@@ -928,7 +965,7 @@ serve(async (req) => {
     let knowledgeContext = "";
     if (projectId && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
       try {
-        console.log("Fetching knowledge base for project:", projectId);
+        console.log(`[BOT-CHAT:${requestId}] Fetching knowledge base for project: ${projectId}`);
         const kbResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/knowledge_base?project_id=eq.${projectId}&select=name,content`,
           {
@@ -941,8 +978,8 @@ serve(async (req) => {
         
         if (kbResponse.ok) {
           const kbEntries = await kbResponse.json();
+          console.log(`[BOT-CHAT:${requestId}] Knowledge base entries found: ${kbEntries?.length || 0}`);
           if (kbEntries && kbEntries.length > 0) {
-            console.log(`Found ${kbEntries.length} knowledge base entries`);
             knowledgeContext = `
 ====================================
 ## PROJECT KNOWLEDGE BASE
@@ -961,11 +998,15 @@ END OF KNOWLEDGE BASE
 ====================================
 `;
           }
+        } else {
+          console.log(`[BOT-CHAT:${requestId}] Knowledge base fetch failed: ${kbResponse.status}`);
         }
       } catch (kbError) {
-        console.error("Error fetching knowledge base:", kbError);
+        console.error(`[BOT-CHAT:${requestId}] Error fetching knowledge base:`, kbError);
         // Continue without knowledge base
       }
+    } else {
+      console.log(`[BOT-CHAT:${requestId}] Skipping knowledge base fetch (no projectId or missing env vars)`);
     }
 
     // Check for URLs in the most recent user message - use deep extraction
@@ -998,24 +1039,30 @@ END OF KNOWLEDGE BASE
     // Add knowledge base context first (higher priority)
     if (knowledgeContext) {
       enhancedPrompt += `\n${knowledgeContext}`;
+      console.log(`[BOT-CHAT:${requestId}] Added knowledge base context to prompt`);
     }
     
     if (urlContext) {
       enhancedPrompt += `\n${urlContext}`;
+      console.log(`[BOT-CHAT:${requestId}] Added URL extraction context to prompt`);
     }
     
     if (context?.businessName || context?.industry) {
       enhancedPrompt += `\n\nProject Context:`;
       if (context.businessName) enhancedPrompt += `\n- Business Name: ${context.businessName}`;
       if (context.industry) enhancedPrompt += `\n- Industry: ${context.industry}`;
+      console.log(`[BOT-CHAT:${requestId}] Added business context: ${context.businessName || ''} / ${context.industry || ''}`);
     }
 
-    console.log("Processing chat request with", messages.length, "messages");
+    console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
+    console.log(`[BOT-CHAT:${requestId}] Total messages to send: ${messages.length + 1}`);
 
     // Select model based on mode (quality = gpt-5-mini for streaming, fast = gemini flash)
     const selectedModel = modelMode === 'quality' ? 'openai/gpt-5-mini' : 'google/gemini-2.5-flash';
-    console.log("Using model:", selectedModel);
+    console.log(`[BOT-CHAT:${requestId}] Selected model: ${selectedModel}`);
+    console.log(`[BOT-CHAT:${requestId}] Calling Lovable AI Gateway...`);
 
+    const aiStartTime = Date.now();
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -1032,33 +1079,45 @@ END OF KNOWLEDGE BASE
       }),
     });
 
+    const aiResponseTime = Date.now() - aiStartTime;
+    console.log(`[BOT-CHAT:${requestId}] AI Gateway response: ${response.status} (${aiResponseTime}ms to first byte)`);
+
     if (!response.ok) {
       if (response.status === 429) {
+        console.log(`[BOT-CHAT:${requestId}] ERROR: AI Gateway rate limit (429)`);
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
+        console.log(`[BOT-CHAT:${requestId}] ERROR: AI Gateway payment required (402)`);
         return new Response(JSON.stringify({ error: "Usage limit reached. Please add credits." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error(`[BOT-CHAT:${requestId}] ERROR: AI gateway error ${response.status}:`, errorText);
       return new Response(JSON.stringify({ error: "AI service error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const totalTime = Date.now() - startTime;
+    console.log(`[BOT-CHAT:${requestId}] SUCCESS: Streaming response started`);
+    console.log(`[BOT-CHAT:${requestId}] Total processing time: ${totalTime}ms`);
+    console.log(`[BOT-CHAT:${requestId}] ========== REQUEST STREAMING ==========`);
+
     return new Response(response.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
-    console.error("bot-chat error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error(`[BOT-CHAT] ERROR: Unhandled exception:`, errorMessage);
+    console.error(`[BOT-CHAT] Stack:`, error instanceof Error ? error.stack : 'N/A');
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
