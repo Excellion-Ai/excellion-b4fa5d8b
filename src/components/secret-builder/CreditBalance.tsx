@@ -48,18 +48,19 @@ export function CreditBalance({ className }: CreditBalanceProps) {
             size="sm"
             onClick={() => navigate('/billing')}
             className={cn(
-              "text-xs gap-1.5 font-medium",
+              "text-xs gap-1 sm:gap-1.5 font-medium px-2 sm:px-3",
               isEmpty && "animate-pulse",
               isLow && !isEmpty && "border-yellow-500/50 text-yellow-600 dark:text-yellow-400",
               className
             )}
           >
             {isEmpty ? (
-              <AlertCircle className="h-3.5 w-3.5" />
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
             ) : (
-              <Coins className="h-3.5 w-3.5" />
+              <Coins className="h-3.5 w-3.5 shrink-0" />
             )}
-            <span>{balance} credits</span>
+            <span className="hidden sm:inline">{balance} credits</span>
+            <span className="sm:hidden">{balance}</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="max-w-xs">
