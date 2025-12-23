@@ -23,6 +23,7 @@ import Navigation from "@/components/Navigation";
 import { AnimatedPlaceholder } from "@/components/AnimatedPlaceholder";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { User } from "@supabase/supabase-js";
 const placeholderSuggestions = [
   "A local restaurant with online ordering and menu...",
   "A roofing contractor website with quote forms...",
@@ -57,8 +58,21 @@ const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -335,7 +349,10 @@ const WebBuilderHome = () => {
               <p className="text-xs text-muted-foreground mt-4 mb-4">
                 Start free with a draft site. Only pay when you're ready to launch.
               </p>
-              <Button onClick={() => navigate("/secret-builder-hub")} className="w-full">
+              <Button 
+                onClick={() => user ? navigate("/secret-builder-hub") : navigate("/auth?redirect=/secret-builder-hub")} 
+                className="w-full"
+              >
                 Studio
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
