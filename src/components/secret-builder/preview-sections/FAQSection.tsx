@@ -1,40 +1,36 @@
-import { useState } from 'react';
-import { SiteSection, SiteTheme, FAQContent, FAQItem } from '@/types/app-spec';
-import { ChevronDown } from 'lucide-react';
+import { SiteSection, SiteTheme, FAQContent } from '@/types/app-spec';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
+import { Download, Shield, Headphones } from 'lucide-react';
 
 interface FAQSectionProps {
   section: SiteSection;
   theme: SiteTheme;
 }
 
-const defaultFAQs: FAQItem[] = [
-  { 
-    question: 'How do I get started?', 
-    answer: "Simply sign up for an account and follow our quick onboarding process. You'll be up and running in minutes."
+const trustBlocks = [
+  {
+    icon: Download,
+    title: 'Ownership & Export',
+    description: 'You own 100% of your code. Export your full project anytime as a ZIP or push directly to GitHub.',
   },
-  { 
-    question: 'What payment methods do you accept?', 
-    answer: 'We accept all major credit cards, PayPal, and bank transfers for enterprise customers.'
+  {
+    icon: Shield,
+    title: 'Security & Uptime',
+    description: 'Enterprise-grade hosting with 99.9% uptime SLA. SSL certificates and DDoS protection included.',
   },
-  { 
-    question: 'Can I cancel my subscription anytime?', 
-    answer: 'Yes, you can cancel your subscription at any time with no questions asked. We offer a 30-day money-back guarantee.'
-  },
-  { 
-    question: 'Do you offer customer support?', 
-    answer: 'Absolutely! Our support team is available 24/7 via email, chat, and phone for Pro and Enterprise customers.'
+  {
+    icon: Headphones,
+    title: 'Support Response',
+    description: 'Priority support with <4 hour response times. Live chat available for Pro and Enterprise plans.',
   },
 ];
 
 export function FAQSection({ section, theme }: FAQSectionProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
   const content = section.content as FAQContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
-  const title = content?.title || section.label || 'Frequently Asked Questions';
-  const subtitle = content?.subtitle || section.description || 'Find answers to common questions';
-  const items = content?.items || defaultFAQs;
+  const title = content?.title || 'Why Trust Us';
+  const subtitle = content?.subtitle || section.description || 'Built for reliability and peace of mind';
 
   return (
     <section 
@@ -44,8 +40,8 @@ export function FAQSection({ section, theme }: FAQSectionProps) {
         backgroundColor: isDark ? '#111111' : '#ffffff'
       }}
     >
-      <div className="w-full max-w-3xl mx-auto">
-        <div className="text-center mb-8">
+      <div className="w-full max-w-5xl mx-auto">
+        <div className="text-center mb-10">
           <ScrollAnimation animation="fade-up">
             <h2 
               className="text-3xl md:text-4xl font-bold mb-4"
@@ -70,54 +66,49 @@ export function FAQSection({ section, theme }: FAQSectionProps) {
           </ScrollAnimation>
         </div>
         
-        <div className="space-y-4">
-          {items.slice(0, 8).map((faq, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {trustBlocks.map((block, index) => (
             <ScrollAnimation 
               key={index} 
               animation="fade-up" 
-              delay={index * 75}
+              delay={index * 100}
             >
               <div 
-                className="rounded-xl overflow-hidden"
+                className="rounded-xl p-6 h-full flex flex-col items-center text-center"
                 style={{ 
                   backgroundColor: isDark ? '#1f1f1f' : '#f9fafb',
+                  border: `1px solid ${isDark ? '#2a2a2a' : '#e5e7eb'}`
                 }}
               >
-                <button
-                  className="w-full px-6 py-4 text-left flex items-center justify-between"
-                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                >
-                  <span 
-                    className="font-semibold"
-                    style={{ 
-                      fontFamily: theme.fontHeading || 'system-ui',
-                      color: isDark ? '#ffffff' : '#111827'
-                    }}
-                  >
-                    {faq.question}
-                  </span>
-                  <ChevronDown 
-                    className={`w-5 h-5 transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`}
-                    style={{ color: theme.primaryColor }}
-                  />
-                </button>
                 <div 
-                  className="overflow-hidden transition-all duration-300"
+                  className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
                   style={{ 
-                    maxHeight: openIndex === index ? '200px' : '0',
-                    opacity: openIndex === index ? 1 : 0
+                    backgroundColor: `${theme.primaryColor}20`,
                   }}
                 >
-                  <div 
-                    className="px-6 pb-4"
-                    style={{ 
-                      fontFamily: theme.fontBody || 'system-ui',
-                      color: isDark ? '#d1d5db' : '#4b5563'
-                    }}
-                  >
-                    {faq.answer}
-                  </div>
+                  <block.icon 
+                    className="w-6 h-6"
+                    style={{ color: theme.primaryColor }}
+                  />
                 </div>
+                <h3 
+                  className="text-lg font-semibold mb-2"
+                  style={{ 
+                    fontFamily: theme.fontHeading || 'system-ui',
+                    color: isDark ? '#ffffff' : '#111827'
+                  }}
+                >
+                  {block.title}
+                </h3>
+                <p 
+                  className="text-sm leading-relaxed"
+                  style={{ 
+                    fontFamily: theme.fontBody || 'system-ui',
+                    color: isDark ? '#9ca3af' : '#6b7280'
+                  }}
+                >
+                  {block.description}
+                </p>
               </div>
             </ScrollAnimation>
           ))}
