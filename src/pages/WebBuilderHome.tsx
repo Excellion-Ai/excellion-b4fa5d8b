@@ -317,48 +317,37 @@ const WebBuilderHome = () => {
       </section>
 
 
-      {/* Two Ways to Launch / Pricing Section */}
+      {/* AI Builder Section */}
       <section id="pricing" className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-foreground text-center mb-4">
-            Two ways to launch with Excellion
-          </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Choose the path that fits your style
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* AI Builder Card */}
-            <div className="p-6 rounded-xl bg-card border border-border flex flex-col">
-              <span className="text-xs font-medium text-primary uppercase tracking-wide mb-2">AI Builder</span>
-              <h3 className="text-xl font-semibold text-foreground mb-4">Build with Excellion AI</h3>
-              <ul className="space-y-3 flex-1">
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  Best if you want to stay hands-on without starting from a blank page.
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  Answer a few questions and get a full site draft in minutes.
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  Edit pages, sections, and copy directly inside the builder.
-                </li>
-              </ul>
-              <p className="text-xs text-muted-foreground mt-4 mb-4">
-                Start free with a draft site. Only pay when you're ready to launch.
-              </p>
-              <Button 
-                onClick={() => user ? navigate("/secret-builder-hub") : navigate("/auth?redirect=/secret-builder-hub")} 
-                className="w-full"
-              >
-                Studio
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-
-            {/* DFY card removed - data archived in database */}
+        <div className="max-w-3xl mx-auto">
+          <div className="p-8 rounded-xl bg-card border border-border">
+            <span className="text-xs font-medium text-primary uppercase tracking-wide mb-2 block">AI Builder</span>
+            <h3 className="text-2xl font-semibold text-foreground mb-6">Build with Excellion AI</h3>
+            <ul className="space-y-4 mb-6">
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                Best if you want to stay hands-on without starting from a blank page.
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                Answer a few questions and get a full site draft in minutes.
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                Edit pages, sections, and copy directly inside the builder.
+              </li>
+            </ul>
+            <p className="text-sm text-muted-foreground mb-6">
+              Start free with a draft site. Only pay when you're ready to launch.
+            </p>
+            <Button 
+              onClick={() => user ? navigate("/secret-builder-hub") : navigate("/auth?redirect=/secret-builder-hub")} 
+              className="w-full max-w-md mx-auto block"
+              size="lg"
+            >
+              Studio
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
         </div>
       </section>
