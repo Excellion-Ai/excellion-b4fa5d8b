@@ -103,7 +103,7 @@ export function IdeaInputPanel({
           </label>
           <div className="relative">
             <Textarea
-              placeholder="Describe your app idea..."
+              placeholder="Describe your website idea..."
               value={idea}
               onChange={(e) => onIdeaChange(e.target.value)}
               className="min-h-[160px] bg-card/50 border-border/50 resize-none text-foreground placeholder:text-muted-foreground/50 pl-12"
