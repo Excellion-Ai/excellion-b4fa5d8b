@@ -1118,6 +1118,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               />
               
               <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 py-2">
+                <AttachmentMenu
+                  onAddAttachment={handleAddAttachment}
+                  disabled={isGenerating}
+                  attachmentCount={attachments.length}
+                  previewRef={previewContainerRef as React.RefObject<HTMLElement>}
+                />
                 <Button
                   variant="ghost"
                   size="icon"
