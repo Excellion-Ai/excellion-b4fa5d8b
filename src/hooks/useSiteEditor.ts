@@ -137,6 +137,10 @@ export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSite
     setSiteSpec((prev) => prev ? { ...prev, name } : prev);
   }, [setSiteSpec]);
 
+  const updateLogo = useCallback((logo: string | undefined) => {
+    setSiteSpec((prev) => prev ? { ...prev, logo } : prev);
+  }, [setSiteSpec]);
+
   const updateNavItem = useCallback((index: number, label: string) => {
     setSiteSpec((prev) => {
       if (!prev) return prev;
@@ -239,6 +243,7 @@ export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSite
     updateCTAContent,
     updateSectionAnimation,
     updateSiteName,
+    updateLogo,
     updateNavItem,
     addSection,
     removeSection,

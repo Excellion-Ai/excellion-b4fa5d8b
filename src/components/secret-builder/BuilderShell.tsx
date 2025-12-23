@@ -1116,7 +1116,9 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               <div className="border-t border-border p-3">
                 <ThemeEditor 
                   theme={siteSpec.theme} 
-                  onUpdateTheme={editor.updateTheme} 
+                  onUpdateTheme={editor.updateTheme}
+                  logo={siteSpec.logo}
+                  onUpdateLogo={editor.updateLogo}
                 />
               </div>
             )}
