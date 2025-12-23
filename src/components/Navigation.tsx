@@ -53,6 +53,14 @@ const Navigation = () => {
     }
   };
 
+  const handleStartBuilding = () => {
+    if (user) {
+      navigate("/secret-builder-hub");
+    } else {
+      navigate("/auth?redirect=/secret-builder-hub");
+    }
+  };
+
   const UserMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -126,11 +134,13 @@ const Navigation = () => {
                 </Link>
               )
             )}
-            <Link to="/secret-builder-hub">
-              <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                Start Building
-              </Button>
-            </Link>
+            <Button 
+              size="sm" 
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+              onClick={handleStartBuilding}
+            >
+              Start Building
+            </Button>
           </div>
 
           <Sheet>
@@ -198,11 +208,13 @@ const Navigation = () => {
                       </Link>
                     )
                   )}
-                  <Link to="/secret-builder-hub">
-                    <Button size="sm" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                      Start Building
-                    </Button>
-                  </Link>
+                  <Button 
+                    size="sm" 
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                    onClick={handleStartBuilding}
+                  >
+                    Start Building
+                  </Button>
                 </div>
               </div>
             </SheetContent>
