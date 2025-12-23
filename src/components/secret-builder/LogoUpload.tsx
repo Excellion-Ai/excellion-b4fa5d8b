@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface LogoUploadProps {
   logo?: string;
@@ -196,56 +196,101 @@ export function LogoUpload({ logo, onUpdateLogo }: LogoUploadProps) {
         </AnimatePresence>
       </div>
 
-      {/* Generate Logo Dialog */}
+      {/* Generate Logo Dialog - Excellion/Google Style */}
       <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Generate Logo
-            </DialogTitle>
-            <DialogDescription>
-              Describe the logo you want to create for your brand.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="logo-prompt">Logo description</Label>
-              <Input
-                id="logo-prompt"
-                placeholder="e.g., A modern tech company logo with geometric shapes"
-                value={logoPrompt}
-                onChange={(e) => setLogoPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleGenerateLogo()}
-              />
+        <DialogContent className="sm:max-w-[480px] p-0 gap-0 border-0 bg-transparent shadow-none overflow-visible">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="bg-background rounded-2xl shadow-2xl border border-border/50 overflow-hidden"
+          >
+            {/* Header with gradient accent */}
+            <div className="relative px-6 pt-6 pb-4">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+              <div className="relative flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-semibold text-foreground tracking-tight">
+                    Create your logo
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                    Describe your brand and let AI design a unique logo for you
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
+
+            {/* Input Section */}
+            <div className="px-6 pb-4">
+              <div className="space-y-2">
+                <Label 
+                  htmlFor="logo-prompt" 
+                  className="text-sm font-medium text-foreground/80"
+                >
+                  Brand description
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="logo-prompt"
+                    placeholder="A modern tech company with geometric shapes..."
+                    value={logoPrompt}
+                    onChange={(e) => setLogoPrompt(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && !isGenerating && handleGenerateLogo()}
+                    className="h-12 px-4 text-base bg-muted/30 border-border/50 rounded-xl placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
+                    disabled={isGenerating}
+                  />
+                </div>
+                
+                {/* Example chips */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {['Minimalist', 'Tech startup', 'Creative agency', 'E-commerce'].map((example) => (
+                    <button
+                      key={example}
+                      type="button"
+                      onClick={() => setLogoPrompt(prev => prev ? `${prev}, ${example.toLowerCase()}` : example)}
+                      className="px-2.5 py-1 text-xs font-medium rounded-full bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      disabled={isGenerating}
+                    >
+                      {example}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-muted/20 border-t border-border/30 flex items-center justify-end gap-3">
               <Button
-                variant="outline"
-                className="flex-1"
+                variant="ghost"
                 onClick={() => setShowGenerateDialog(false)}
+                disabled={isGenerating}
+                className="h-10 px-5 rounded-xl text-muted-foreground hover:text-foreground"
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 gap-2"
                 onClick={handleGenerateLogo}
                 disabled={isGenerating || !logoPrompt.trim()}
+                className="h-10 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all disabled:shadow-none"
               >
                 {isGenerating ? (
-                  <>
+                  <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating...
-                  </>
+                    <span>Creating...</span>
+                  </div>
                 ) : (
-                  <>
+                  <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    Generate
-                  </>
+                    <span>Generate</span>
+                  </div>
                 )}
               </Button>
             </div>
-          </div>
+          </motion.div>
         </DialogContent>
       </Dialog>
     </>
