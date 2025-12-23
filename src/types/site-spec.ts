@@ -282,6 +282,7 @@ export type SitePage = {
 export type SiteSpec = {
   name: string;
   description?: string;
+  logo?: string;  // Logo URL for the site
   businessModel: BusinessModel;
   layoutStructure?: LayoutStructure;  // Layout paradigm for the site
   theme: SiteTheme;
