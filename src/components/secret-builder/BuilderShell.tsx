@@ -1118,12 +1118,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               />
               
               <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 py-2">
-                <AttachmentMenu
-                  onAddAttachment={handleAddAttachment}
-                  disabled={isGenerating}
-                  attachmentCount={attachments.length}
-                  previewRef={previewContainerRef as React.RefObject<HTMLElement>}
-                />
                 <Button
                   variant="ghost"
                   size="icon"
@@ -1134,7 +1128,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   }}
                   title={visualEditsEnabled ? 'Disable visual edits' : 'Enable visual edits'}
                 >
-                  <Send className={`h-4 w-4 ${visualEditsEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <MousePointer2 className={`h-4 w-4 ${visualEditsEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
                 </Button>
                 <Input
                   value={idea}
@@ -1148,12 +1142,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   size="icon"
                   onClick={() => handleGenerate()}
                   disabled={!idea.trim() || isGenerating}
-                  className="h-8 w-8 rounded-full bg-amber-600 hover:bg-amber-700 text-white"
+                  className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
                 >
                   {isGenerating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Send className="h-4 w-4 -rotate-45" />
+                    <Send className="h-4 w-4" />
                   )}
                 </Button>
               </div>
