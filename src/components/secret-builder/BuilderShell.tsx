@@ -1292,6 +1292,24 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               <span className="hidden md:inline">AI Image</span>
             </Button>
             
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const layouts: Array<'standard' | 'bento' | 'layered' | 'horizontal'> = ['standard', 'bento', 'layered', 'horizontal'];
+                const currentLayout = siteSpec.layoutStructure || 'standard';
+                const currentIndex = layouts.indexOf(currentLayout);
+                const nextIndex = (currentIndex + 1) % layouts.length;
+                const nextLayout = layouts[nextIndex];
+                setSiteSpec({ ...siteSpec, layoutStructure: nextLayout });
+                toast.success(`Layout: ${nextLayout.charAt(0).toUpperCase() + nextLayout.slice(1)}`);
+              }}
+              className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Layout</span>
+            </Button>
+            
             {/* Bookmarks */}
             <BookmarksPanel
               projectId={projectId}
