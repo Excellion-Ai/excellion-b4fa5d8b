@@ -1139,7 +1139,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Describe your app idea..."
+                  placeholder="Describe your website idea..."
                   className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
                   disabled={isGenerating}
                 />

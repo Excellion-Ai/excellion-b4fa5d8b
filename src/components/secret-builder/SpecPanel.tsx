@@ -32,7 +32,7 @@ export function SpecPanel({ spec, isLoading }: SpecPanelProps) {
           <div>
             <h3 className="text-lg font-medium text-foreground/80">No Spec Yet</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Describe your app idea on the left and hit Generate to see the structured spec here.
+              Describe your website idea on the left and hit Generate to see the structured spec here.
             </p>
           </div>
         </div>
