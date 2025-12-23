@@ -1120,7 +1120,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
 
             {/* Theme Editor - show when site exists */}
             {siteSpec && (
-              <div className="border-t border-border p-3 space-y-2">
+              <div className="border-t border-border p-3 flex gap-2">
                 <ThemeEditor 
                   theme={siteSpec.theme} 
                   onUpdateTheme={editor.updateTheme}
