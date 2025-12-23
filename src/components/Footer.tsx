@@ -75,17 +75,6 @@ const Footer = () => {
                   Maintenance
                 </Link>
               </li>
-              <li>
-                <a 
-                  href="https://discord.gg/tmDTkwVY9u" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-accent transition-colors"
-                  aria-label="Join Excellion Discord community (opens in new tab)"
-                >
-                  Discord
-                </a>
-              </li>
             </ul>
           </nav>
 
