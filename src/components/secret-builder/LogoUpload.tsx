@@ -3,17 +3,25 @@ import { Image, ChevronDown, ChevronUp, X, Sparkles, Paperclip, Loader2 } from '
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
+interface GeneratedImage {
+  name: string;
+  url: string;
+}
+
 interface LogoUploadProps {
   logo?: string;
   onUpdateLogo: (logo: string | undefined) => void;
+  generatedImages?: GeneratedImage[];
+  isLoadingImages?: boolean;
 }
 
-export function LogoUpload({ logo, onUpdateLogo }: LogoUploadProps) {
+export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoadingImages = false }: LogoUploadProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -99,6 +107,12 @@ export function LogoUpload({ logo, onUpdateLogo }: LogoUploadProps) {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleSelectFromLibrary = (imageUrl: string) => {
+    onUpdateLogo(imageUrl);
+    setShowGenerateDialog(false);
+    toast.success('Logo selected from library!');
   };
 
   return (
@@ -198,16 +212,16 @@ export function LogoUpload({ logo, onUpdateLogo }: LogoUploadProps) {
 
       {/* Generate Logo Dialog - Excellion/Google Style */}
       <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
-        <DialogContent className="sm:max-w-[480px] p-0 gap-0 border-0 bg-transparent shadow-none overflow-visible">
+        <DialogContent className="sm:max-w-[520px] p-0 gap-0 border-0 bg-transparent shadow-none overflow-visible max-h-[85vh]">
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-background rounded-2xl shadow-2xl border border-border/50 overflow-hidden"
+            className="bg-background rounded-2xl shadow-2xl border border-border/50 overflow-hidden flex flex-col max-h-[85vh]"
           >
             {/* Header with gradient accent */}
-            <div className="relative px-6 pt-6 pb-4">
+            <div className="relative px-6 pt-6 pb-4 flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
               <div className="relative flex items-start gap-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
@@ -225,7 +239,7 @@ export function LogoUpload({ logo, onUpdateLogo }: LogoUploadProps) {
             </div>
 
             {/* Input Section */}
-            <div className="px-6 pb-4">
+            <div className="px-6 pb-4 flex-shrink-0">
               <div className="space-y-2">
                 <Label 
                   htmlFor="logo-prompt" 
@@ -260,35 +274,73 @@ export function LogoUpload({ logo, onUpdateLogo }: LogoUploadProps) {
                   ))}
                 </div>
               </div>
+
+              {/* Generate Button */}
+              <div className="flex items-center justify-end gap-3 mt-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowGenerateDialog(false)}
+                  disabled={isGenerating}
+                  className="h-10 px-5 rounded-xl text-muted-foreground hover:text-foreground"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleGenerateLogo}
+                  disabled={isGenerating || !logoPrompt.trim()}
+                  className="h-10 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all disabled:shadow-none"
+                >
+                  {isGenerating ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Creating...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      <span>Generate</span>
+                    </div>
+                  )}
+                </Button>
+              </div>
             </div>
 
-            {/* Footer */}
-            <div className="px-6 py-4 bg-muted/20 border-t border-border/30 flex items-center justify-end gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => setShowGenerateDialog(false)}
-                disabled={isGenerating}
-                className="h-10 px-5 rounded-xl text-muted-foreground hover:text-foreground"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleGenerateLogo}
-                disabled={isGenerating || !logoPrompt.trim()}
-                className="h-10 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all disabled:shadow-none"
-              >
-                {isGenerating ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Creating...</span>
+            {/* Image Library Section */}
+            <div className="px-6 py-4 border-t border-border/30 bg-muted/10 flex-1 overflow-hidden flex flex-col min-h-0">
+              <p className="text-sm font-medium text-muted-foreground mb-3 flex-shrink-0">
+                Or select from library
+              </p>
+              {isLoadingImages ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : generatedImages.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  No images generated yet
+                </p>
+              ) : (
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="grid grid-cols-5 gap-2 pb-2">
+                    {generatedImages.map((image) => (
+                      <button
+                        key={image.name}
+                        className="relative group aspect-square rounded-lg overflow-hidden border border-border hover:border-primary hover:ring-2 hover:ring-primary/20 transition-all"
+                        onClick={() => handleSelectFromLibrary(image.url)}
+                        title="Click to use as logo"
+                      >
+                        <img
+                          src={image.url}
+                          alt={image.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="text-xs text-white font-medium">Use</span>
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    <span>Generate</span>
-                  </div>
-                )}
-              </Button>
+                </ScrollArea>
+              )}
             </div>
           </motion.div>
         </DialogContent>

@@ -1128,6 +1128,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                 <LogoUpload 
                   logo={siteSpec.logo}
                   onUpdateLogo={editor.updateLogo}
+                  generatedImages={generatedImages}
+                  isLoadingImages={isLoadingImages}
                 />
               </div>
             )}
