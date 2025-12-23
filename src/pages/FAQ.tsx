@@ -40,15 +40,15 @@ const FAQ = () => {
     },
     {
       question: "Do I own the code?",
-      answer: "Yes! With both DIY and DFY, you own all the code and assets. We believe in full transparency and client ownership."
+      answer: "Yes! You own all the code and assets from websites you create. We believe in full transparency and client ownership."
     },
     {
       question: "What if I need custom features?",
-      answer: "We love custom work! Our DFY service includes custom feature development. Just describe what you need and we'll make it happen."
+      answer: "Our AI builder can help create custom features. Just describe what you need in the chat and we'll help make it happen."
     },
     {
       question: "Do you offer refunds?",
-      answer: "We stand behind our work. If you're not satisfied with a DFY project, contact us within 7 days of delivery to discuss options. DIY template purchases are non-refundable once accessed."
+      answer: "We stand behind our work. If you're not satisfied, contact us within 7 days to discuss options."
     }
   ];
 

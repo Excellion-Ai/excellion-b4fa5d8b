@@ -111,7 +111,7 @@ const Contact = () => {
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-2">•</span>
-                <span>Questions about DIY templates or DFY services</span>
+                <span>Questions about the AI website builder</span>
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-2">•</span>

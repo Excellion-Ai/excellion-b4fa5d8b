@@ -862,12 +862,7 @@ If users ask about Excellion services:
 - Pro ($29/mo): Unlimited drafts, integrations
 - Agency ($129/mo): 10 sites, white-label
 
-**Done-for-You Service:**
-- Essential ($600–$1,000): 1–3 pages
-- Core ($1,000–$1,800): 5–7 pages
-- Premium ($1,800–$3,500): 10–15 pages
-
-Only mention if relevant. Focus on building their site.`;
+Only mention pricing if relevant. Focus on building their site.`;
 
 serve(async (req) => {
   const requestId = crypto.randomUUID().slice(0, 8);

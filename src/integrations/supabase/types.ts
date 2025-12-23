@@ -44,6 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      archived_pricing_tiers: {
+        Row: {
+          archived_at: string
+          created_at: string
+          description: string | null
+          display_order: number | null
+          features: Json
+          id: string
+          is_highlighted: boolean | null
+          name: string
+          price_range: string
+          tier_type: string
+        }
+        Insert: {
+          archived_at?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          features?: Json
+          id?: string
+          is_highlighted?: boolean | null
+          name: string
+          price_range: string
+          tier_type: string
+        }
+        Update: {
+          archived_at?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          features?: Json
+          id?: string
+          is_highlighted?: boolean | null
+          name?: string
+          price_range?: string
+          tier_type?: string
+        }
+        Relationships: []
+      }
       auth_activity: {
         Row: {
           created_at: string

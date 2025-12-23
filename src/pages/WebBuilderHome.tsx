@@ -358,32 +358,7 @@ const WebBuilderHome = () => {
               </Button>
             </div>
 
-            {/* Done-For-You Card */}
-            <div className="p-6 rounded-xl bg-card border border-border flex flex-col">
-              <span className="text-xs font-medium text-primary uppercase tracking-wide mb-2">Done-for-you</span>
-              <h3 className="text-xl font-semibold text-foreground mb-4">Have our team build it</h3>
-              <ul className="space-y-3 flex-1">
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  Best if you want us to handle the heavy lifting end-to-end.
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  We design, refine, and launch your site based on a quick call.
-                </li>
-                <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  Perfect for busy owners who want a polished, ready-to-go result.
-                </li>
-              </ul>
-              <p className="text-xs text-muted-foreground mt-4 mb-4">
-                Most projects land between $600–$3,500 depending on pages and features.
-              </p>
-              <Button variant="outline" onClick={() => navigate("/book-call")} className="w-full">
-                Book a 15-minute call
-                <Phone className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+            {/* DFY card removed - data archived in database */}
           </div>
         </div>
       </section>
