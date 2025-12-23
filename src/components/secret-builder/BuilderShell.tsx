@@ -701,10 +701,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         };
       });
 
-      // Get user session token for authenticated request
+      // Refresh session to ensure valid token (getUser() validates and refreshes if needed)
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+      if (userError || !currentUser) {
+        throw new Error('Please sign in to use AI features');
+      }
+      
+      // Get the refreshed session with valid access token
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('Please sign in to use AI features');
+        throw new Error('Session expired. Please sign in again.');
       }
       
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`, {
@@ -712,6 +718,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ messages: chatMessages, modelMode, projectId }),
       });
