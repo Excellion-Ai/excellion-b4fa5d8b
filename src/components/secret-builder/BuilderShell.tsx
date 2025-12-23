@@ -1117,7 +1117,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                 onRemove={removeAttachment} 
               />
               
-              <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-2">
+              <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 py-2">
                 <AttachmentMenu
                   onAddAttachment={handleAddAttachment}
                   disabled={isGenerating}
@@ -1125,20 +1125,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   previewRef={previewContainerRef as React.RefObject<HTMLElement>}
                 />
                 <Button
-                  variant={visualEditsEnabled ? "default" : "ghost"}
+                  variant="ghost"
                   size="icon"
-                  className={`h-8 w-8 shrink-0 transition-all duration-300 ${
-                    visualEditsEnabled 
-                      ? 'bg-primary text-primary-foreground animate-pulse shadow-lg shadow-primary/30' 
-                      : ''
-                  }`}
+                  className="h-8 w-8 shrink-0"
                   onClick={() => {
                     setVisualEditsEnabled(!visualEditsEnabled);
                     toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
                   }}
                   title={visualEditsEnabled ? 'Disable visual edits' : 'Enable visual edits'}
                 >
-                  <MousePointer2 className={`h-4 w-4 transition-transform duration-300 ${visualEditsEnabled ? 'scale-110' : ''}`} />
+                  <Send className={`h-4 w-4 ${visualEditsEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
                 </Button>
                 <Input
                   value={idea}
@@ -1152,12 +1148,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   size="icon"
                   onClick={() => handleGenerate()}
                   disabled={!idea.trim() || isGenerating}
-                  className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
+                  className="h-8 w-8 rounded-full bg-amber-600 hover:bg-amber-700 text-white"
                 >
                   {isGenerating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <Send className="h-4 w-4 -rotate-45" />
                   )}
                 </Button>
               </div>
