@@ -14,10 +14,16 @@ interface LayeredNavProps {
   siteName: string;
   navigation: NavItem[];
   theme: SiteTheme;
+  onPageChange?: (href: string) => void;
 }
 
-export function LayeredNav({ siteName, navigation, theme }: LayeredNavProps) {
+export function LayeredNav({ siteName, navigation, theme, onPageChange }: LayeredNavProps) {
   const isDark = theme.darkMode;
+  
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    onPageChange?.(href);
+  };
   
   return (
     <>
@@ -41,10 +47,10 @@ export function LayeredNav({ siteName, navigation, theme }: LayeredNavProps) {
         className="absolute top-6 right-6 z-40 flex items-center gap-6"
       >
         {navigation?.slice(0, 4).map((item, index) => (
-          <a
+          <button
             key={index}
-            href={item.href}
-            className="text-sm font-medium transition-all hover:opacity-60 relative group"
+            onClick={(e) => handleNavClick(e, item.href)}
+            className="text-sm font-medium transition-all hover:opacity-60 relative group bg-transparent border-none cursor-pointer"
             style={{ 
               color: isDark ? '#ffffff' : '#111111',
             }}
@@ -54,7 +60,7 @@ export function LayeredNav({ siteName, navigation, theme }: LayeredNavProps) {
               className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full"
               style={{ backgroundColor: theme.primaryColor }}
             />
-          </a>
+          </button>
         ))}
         <button
           className="px-5 py-2 rounded-full text-sm font-semibold text-white transition-transform hover:scale-105"
@@ -299,14 +305,13 @@ export function LayeredLayout({ children, theme, sections, siteName, navigation 
           
           <div className="flex gap-8">
             {navigation?.slice(0, 4).map((item, i) => (
-              <a 
+              <span 
                 key={i}
-                href={item.href}
-                className="text-sm transition-opacity hover:opacity-60"
+                className="text-sm transition-opacity hover:opacity-60 cursor-pointer"
                 style={{ color: isDark ? '#d1d5db' : '#4b5563' }}
               >
                 {item.label}
-              </a>
+              </span>
             ))}
           </div>
           

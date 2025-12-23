@@ -157,16 +157,16 @@ export function SitePreview({ siteDefinition, isLoading }: SitePreviewProps) {
             </span>
             <div className="flex items-center gap-6">
               {siteDefinition.navigation?.map((item, index) => (
-                <a
+                <button
                   key={index}
-                  href={item.href}
-                  className="text-sm font-medium transition-colors hover:opacity-80"
+                  onClick={(e) => e.preventDefault()}
+                  className="text-sm font-medium transition-colors hover:opacity-80 bg-transparent border-none cursor-pointer"
                   style={{ 
                     color: theme.darkMode ? '#d1d5db' : '#4b5563'
                   }}
                 >
                   {item.label}
-                </a>
+                </button>
               ))}
             </div>
           </nav>

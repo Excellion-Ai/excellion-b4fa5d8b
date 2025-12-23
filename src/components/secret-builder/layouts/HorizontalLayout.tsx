@@ -17,10 +17,16 @@ interface HorizontalNavProps {
   theme: SiteTheme;
   currentIndex: number;
   totalSections: number;
+  onPageChange?: (href: string) => void;
 }
 
-export function HorizontalNav({ siteName, navigation, theme, currentIndex, totalSections }: HorizontalNavProps) {
+export function HorizontalNav({ siteName, navigation, theme, currentIndex, totalSections, onPageChange }: HorizontalNavProps) {
   const isDark = theme.darkMode;
+  
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    onPageChange?.(href);
+  };
   
   return (
     <nav 
@@ -56,16 +62,16 @@ export function HorizontalNav({ siteName, navigation, theme, currentIndex, total
       
       <div className="flex items-center gap-6">
         {navigation?.slice(0, 3).map((item, index) => (
-          <a
+          <button
             key={index}
-            href={item.href}
-            className="text-sm font-medium transition-opacity hover:opacity-60 hidden lg:block"
+            onClick={(e) => handleNavClick(e, item.href)}
+            className="text-sm font-medium transition-opacity hover:opacity-60 hidden lg:block bg-transparent border-none cursor-pointer"
             style={{ 
               color: isDark ? '#d1d5db' : '#4b5563',
             }}
           >
             {item.label}
-          </a>
+          </button>
         ))}
         <button
           className="px-4 py-2 rounded-full text-sm font-semibold text-white transition-transform hover:scale-105"
@@ -374,14 +380,13 @@ export function HorizontalLayout({ children, theme, sections, siteName, navigati
             
             <div className="flex gap-8">
               {navigation?.map((item, i) => (
-                <a 
+                <span 
                   key={i}
-                  href={item.href}
-                  className="text-sm transition-opacity hover:opacity-60"
+                  className="text-sm transition-opacity hover:opacity-60 cursor-pointer"
                   style={{ color: isDark ? '#d1d5db' : '#4b5563' }}
                 >
                   {item.label}
-                </a>
+                </span>
               ))}
             </div>
             
