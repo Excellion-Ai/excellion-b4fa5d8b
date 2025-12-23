@@ -1,5 +1,5 @@
 
-import { X, FileText, Home, Info, Mail, Briefcase } from 'lucide-react';
+import { FileText, Home, Info, Mail, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SitePage, SiteSection } from '@/types/site-spec';
 
@@ -139,35 +139,24 @@ export function PageManager({
 
   return (
     <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-      {pages.filter((page) => page.path !== '/').map((page, filteredIndex) => {
+      {pages.filter((page) => page.path !== '/').map((page) => {
         const originalIndex = pages.findIndex(p => p.path === page.path);
         return (
-          <div key={page.path} className="relative group">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`h-7 px-2 text-xs gap-1 ${
-                currentPageIndex === originalIndex ? 'bg-background shadow-sm' : ''
-              }`}
-              onClick={() => onSelectPage(originalIndex)}
-              title={page.title}
-            >
-              {PAGE_ICONS[page.path] || <FileText className="h-3.5 w-3.5" />}
-              <span className="max-w-[80px] truncate">{page.title}</span>
-            </Button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemovePage(originalIndex);
-              }}
-              className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <X className="h-2.5 w-2.5" />
-            </button>
-          </div>
+          <Button
+            key={page.path}
+            variant="ghost"
+            size="sm"
+            className={`h-7 px-2 text-xs gap-1 ${
+              currentPageIndex === originalIndex ? 'bg-background shadow-sm' : ''
+            }`}
+            onClick={() => onSelectPage(originalIndex)}
+            title={page.title}
+          >
+            {PAGE_ICONS[page.path] || <FileText className="h-3.5 w-3.5" />}
+            <span className="max-w-[80px] truncate">{page.title}</span>
+          </Button>
         );
       })}
-
     </div>
   );
 }
