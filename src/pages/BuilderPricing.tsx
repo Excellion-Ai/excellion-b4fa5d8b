@@ -99,42 +99,7 @@ const aiBuilderPlans = [
   },
 ];
 
-const dfyPlans = [
-  {
-    name: "Essential",
-    priceRange: "$600 – $1,000",
-    description: "Perfect for simple landing pages",
-    features: [
-      "1–3 pages",
-      "1 revision round",
-      "Basic SEO setup",
-      "Full launch support",
-    ],
-  },
-  {
-    name: "Core",
-    priceRange: "$1,000 – $1,800",
-    description: "For growing businesses",
-    features: [
-      "5–7 pages",
-      "2 revision rounds",
-      "Booking OR payments integration",
-      "Enhanced SEO",
-    ],
-    highlighted: true,
-  },
-  {
-    name: "Premium",
-    priceRange: "$1,800 – $3,500",
-    description: "Full-featured professional sites",
-    features: [
-      "10–15 pages",
-      "3 revision rounds",
-      "Automations & integrations",
-      "Advanced SEO & analytics",
-    ],
-  },
-];
+// DFY plans archived to database table: archived_pricing_tiers
 
 const faqItems = [
   {
@@ -497,63 +462,7 @@ const BuilderPricing = () => {
           </div>
         </section>
 
-        {/* Done-for-you Pricing */}
-        <section id="done-for-you" className="mb-24 scroll-mt-24">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-2">Done-for-you Pricing</h2>
-            <p className="text-muted-foreground">We design, build, and launch it for you</p>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {dfyPlans.map((plan) => (
-              <Card 
-                key={plan.name}
-                className={`relative flex flex-col ${
-                  plan.highlighted 
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary' 
-                    : 'border-border bg-card'
-                }`}
-              >
-                {plan.highlighted && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                
-                <CardHeader className="pb-4">
-                  <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground">{plan.description}</p>
-                  <div className="mt-4">
-                    <span className="text-2xl font-bold text-accent">{plan.priceRange}</span>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="flex-grow">
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5">
-                        <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                        <span className="text-sm text-foreground/80">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-
-                <CardFooter className="pt-4">
-                  <Button 
-                    className="w-full"
-                    variant={plan.highlighted ? 'default' : 'outline'}
-                    onClick={() => navigate("/book-call")}
-                  >
-                    Book a 15-minute call
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </section>
+        {/* DFY Pricing section removed - data archived in database */}
 
         {/* FAQ Section */}
         <section id="faq" className="max-w-3xl mx-auto scroll-mt-24">

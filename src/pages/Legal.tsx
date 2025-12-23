@@ -100,8 +100,7 @@ const Legal = () => {
 
               <h2 className="text-2xl font-semibold text-foreground mt-8 mb-4">Services Description</h2>
               <p>
-                Excellion provides web development services including DIY website builder templates and Done-For-You (DFY) 
-                custom development services. We reserve the right to modify, suspend, or discontinue any service at any time.
+                Excellion provides AI-powered website builder services. We reserve the right to modify, suspend, or discontinue any service at any time.
               </p>
 
               <h2 className="text-2xl font-semibold text-foreground mt-8 mb-4">User Responsibilities</h2>
@@ -113,8 +112,7 @@ const Legal = () => {
 
               <h2 className="text-2xl font-semibold text-foreground mt-8 mb-4">Payment Terms</h2>
               <p>
-                For DFY services, payment terms will be specified in your project quote. DIY templates and subscriptions 
-                are billed as indicated at the time of purchase. All payments are non-refundable unless otherwise stated.
+                Subscriptions are billed as indicated at the time of purchase. All payments are non-refundable unless otherwise stated.
               </p>
 
               <h2 className="text-2xl font-semibold text-foreground mt-8 mb-4">Intellectual Property</h2>
