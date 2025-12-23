@@ -330,7 +330,7 @@ const WebBuilderHome = () => {
               </li>
               <li className="flex items-start gap-3 text-muted-foreground">
                 <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                Answer a few questions and get a full site draft in minutes.
+                Describe what you want and Excellion generates a full site draft in seconds.
               </li>
               <li className="flex items-start gap-3 text-muted-foreground">
                 <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
