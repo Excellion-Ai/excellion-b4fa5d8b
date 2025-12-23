@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
 import { ThemeEditor } from './ThemeEditor';
+import { LogoUpload } from './LogoUpload';
 import { CodeExport, generateHtmlFromSpec } from './CodeExport';
 import { SectionLibrary } from './SectionLibrary';
 import { PageManager } from './PageManager';
@@ -1114,10 +1115,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
 
             {/* Theme Editor - show when site exists */}
             {siteSpec && (
-              <div className="border-t border-border p-3">
+              <div className="border-t border-border p-3 space-y-2">
                 <ThemeEditor 
                   theme={siteSpec.theme} 
                   onUpdateTheme={editor.updateTheme}
+                />
+                <LogoUpload 
                   logo={siteSpec.logo}
                   onUpdateLogo={editor.updateLogo}
                 />

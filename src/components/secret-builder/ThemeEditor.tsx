@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Palette, Type, ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
+import { useState } from 'react';
+import { Palette, Type, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,14 +7,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SiteTheme } from '@/types/site-spec';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 interface ThemeEditorProps {
   theme: SiteTheme;
   onUpdateTheme: (updates: Partial<SiteTheme>) => void;
-  logo?: string;
-  onUpdateLogo?: (logo: string | undefined) => void;
 }
 
 const FONT_OPTIONS = [
@@ -95,55 +91,8 @@ function ColorPicker({
   );
 }
 
-export function ThemeEditor({ theme, onUpdateTheme, logo, onUpdateLogo }: ThemeEditorProps) {
+export function ThemeEditor({ theme, onUpdateTheme }: ThemeEditorProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !onUpdateLogo) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image must be less than 2MB');
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `logo-${Date.now()}.${fileExt}`;
-      const filePath = `logos/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('builder-images')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('builder-images')
-        .getPublicUrl(filePath);
-
-      onUpdateLogo(publicUrl);
-      toast.success('Logo uploaded!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload logo');
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -172,68 +121,6 @@ export function ThemeEditor({ theme, onUpdateTheme, logo, onUpdateLogo }: ThemeE
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
-              {/* Logo Upload */}
-              {onUpdateLogo && (
-                <div className="space-y-2">
-                  <Label className="text-xs">Logo</Label>
-                  <div className="flex items-center gap-3">
-                    {logo ? (
-                      <div className="relative group">
-                        <img 
-                          src={logo} 
-                          alt="Site logo" 
-                          className="w-12 h-12 object-contain rounded-md border border-border bg-background"
-                        />
-                        <button
-                          onClick={() => onUpdateLogo(undefined)}
-                          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-2 h-2 text-destructive-foreground" />
-                        </button>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-10 gap-2 border-dashed"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                      >
-                        {isUploading ? (
-                          <>
-                            <span className="animate-spin">⏳</span>
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4" />
-                            Add logo
-                          </>
-                        )}
-                      </Button>
-                    )}
-                    {logo && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-xs"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                      >
-                        Replace
-                      </Button>
-                    )}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleLogoUpload}
-                    />
-                  </div>
-                </div>
-              )}
-
               {/* Color Presets */}
               <div className="space-y-2">
                 <Label className="text-xs">Quick Presets</Label>
