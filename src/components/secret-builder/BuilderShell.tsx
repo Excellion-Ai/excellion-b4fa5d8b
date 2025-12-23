@@ -1,3 +1,4 @@
+// BuilderShell - Main component for secret builder
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
