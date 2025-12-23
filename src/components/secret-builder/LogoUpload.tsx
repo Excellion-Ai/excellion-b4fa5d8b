@@ -72,7 +72,8 @@ export function LogoUpload({ logo, onUpdateLogo }: LogoUploadProps) {
 
     setIsGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-hero-image', {
+      // Use generate-image function which saves to the generated/ folder for the library
+      const { data, error } = await supabase.functions.invoke('generate-image', {
         body: { 
           prompt: `Minimalist professional logo design: ${logoPrompt}. Simple, clean, iconic, suitable for a brand logo, white or transparent background, vector-style.`,
           width: 512,
@@ -84,9 +85,11 @@ export function LogoUpload({ logo, onUpdateLogo }: LogoUploadProps) {
       
       if (data?.imageUrl) {
         onUpdateLogo(data.imageUrl);
-        toast.success('Logo generated!');
+        toast.success('Logo generated and saved to library!');
         setShowGenerateDialog(false);
         setLogoPrompt('');
+        // Dispatch event to refresh the image library
+        window.dispatchEvent(new CustomEvent('refresh-image-library'));
       } else {
         throw new Error('No image returned');
       }

@@ -326,6 +326,11 @@ export function BuilderShell() {
   // Load generated images on mount so library is always available
   useEffect(() => {
     fetchGeneratedImages();
+    
+    // Listen for refresh events from LogoUpload
+    const handleRefresh = () => fetchGeneratedImages();
+    window.addEventListener('refresh-image-library', handleRefresh);
+    return () => window.removeEventListener('refresh-image-library', handleRefresh);
   }, []);
 
   const loadProjectAndMaybeGenerate = async (id: string) => {
