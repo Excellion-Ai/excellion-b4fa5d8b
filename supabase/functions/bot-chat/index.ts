@@ -890,12 +890,20 @@ serve(async (req) => {
     console.log(`[BOT-CHAT:${requestId}] Auth header present`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    // Extract token from Bearer header
+    const token = authHeader.replace("Bearer ", "");
+    
+    // Use service role key to verify the user token server-side
+    const authClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
     });
 
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    const { data: { user }, error: authError } = await authClient.auth.getUser(token);
     if (authError || !user) {
       console.log(`[BOT-CHAT:${requestId}] ERROR: Auth failed -`, authError?.message || "No user");
       return new Response(
