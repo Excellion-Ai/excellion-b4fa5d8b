@@ -22,7 +22,6 @@ import { AnalyticsPanel } from './AnalyticsPanel';
 import { CustomDomainsPanel } from './CustomDomainsPanel';
 import { DiffViewer } from './DiffViewer';
 import { BookmarksPanel } from './BookmarksPanel';
-import { PWAExport } from './PWAExport';
 import { KnowledgePanel } from './KnowledgePanel';
 import { PresenceAvatars } from './PresenceAvatars';
 import { PresenceCursor } from './PresenceCursor';
@@ -1263,11 +1262,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               }}
             />
             
-            {/* PWA Export */}
-            <PWAExport siteSpec={siteSpec} projectName={projectName} onExport={async () => {
-              const success = await deductCredits('export', 'PWA export');
-              return success;
-            }} />
             
             {/* Knowledge Base */}
             <KnowledgePanel projectId={projectId} />
