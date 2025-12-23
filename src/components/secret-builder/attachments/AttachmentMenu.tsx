@@ -184,7 +184,7 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0,
     },
     {
       icon: Scissors,
-      label: 'Snip preview…',
+      label: 'Screenshot',
       onClick: handleTakeScreenshot,
     },
   ];
