@@ -78,6 +78,13 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
       return;
     }
 
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error('Please log in to generate logos');
+      return;
+    }
+
     setIsGenerating(true);
     try {
       // Use generate-image function which saves to the generated/ folder for the library
@@ -89,7 +96,16 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Generation error:', error);
+        // If auth error, show specific message
+        if (error.message?.includes('401') || error.message?.includes('authentication')) {
+          toast.error('Session expired. Please refresh and try again.');
+        } else {
+          toast.error(error.message || 'Failed to generate logo');
+        }
+        return;
+      }
       
       if (data?.imageUrl) {
         onUpdateLogo(data.imageUrl);
@@ -98,6 +114,8 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
         setLogoPrompt('');
         // Dispatch event to refresh the image library
         window.dispatchEvent(new CustomEvent('refresh-image-library'));
+      } else if (data?.error) {
+        toast.error(data.error);
       } else {
         throw new Error('No image returned');
       }
