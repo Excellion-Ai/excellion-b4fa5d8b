@@ -342,11 +342,11 @@ const WebBuilderHome = () => {
             </p>
             <Button 
               onClick={() => user ? navigate("/secret-builder-hub") : navigate("/auth?redirect=/secret-builder-hub")} 
-              className="w-full max-w-md mx-auto block"
+              className="w-full max-w-md mx-auto flex items-center justify-center gap-2"
               size="lg"
             >
-              Studio
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-4 h-4" />
+              <span>Studio</span>
             </Button>
           </div>
         </div>
