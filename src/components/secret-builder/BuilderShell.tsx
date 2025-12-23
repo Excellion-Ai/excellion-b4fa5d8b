@@ -1277,21 +1277,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               />
             )} */}
             
-            {/* Bookmarks */}
-            <BookmarksPanel
-              projectId={projectId}
-              currentSpec={siteSpec}
-              onRestoreBookmark={(spec) => {
-                setPreviousSpecForDiff(siteSpec);
-                setPendingSpec(spec);
-                setShowDiffViewer(true);
-              }}
-            />
-            
-            
-            {/* Knowledge Base */}
-            <KnowledgePanel projectId={projectId} />
-            
             <Button
               variant="outline"
               size="sm"
@@ -1306,6 +1291,20 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               )}
               <span className="hidden md:inline">AI Image</span>
             </Button>
+            
+            {/* Bookmarks */}
+            <BookmarksPanel
+              projectId={projectId}
+              currentSpec={siteSpec}
+              onRestoreBookmark={(spec) => {
+                setPreviousSpecForDiff(siteSpec);
+                setPendingSpec(spec);
+                setShowDiffViewer(true);
+              }}
+            />
+            
+            {/* Knowledge Base */}
+            <KnowledgePanel projectId={projectId} />
             
             {/* Domains button - hidden, moved to publish dropdown */}
             {/* <Button
