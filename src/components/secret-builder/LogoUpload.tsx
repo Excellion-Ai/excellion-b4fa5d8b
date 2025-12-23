@@ -93,9 +93,6 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
           prompt: `Minimalist professional logo design: ${logoPrompt}. Simple, clean, iconic, suitable for a brand logo, white or transparent background, vector-style.`,
           width: 512,
           height: 512
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
         }
       });
 
