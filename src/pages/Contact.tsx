@@ -38,7 +38,35 @@ const Contact = () => {
 
         {/* Contact Options */}
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-          {/* Discord Card */}
+          {/* Email Card - Now First */}
+          <div className="bg-card border border-border rounded-2xl p-8 hover:border-accent transition-colors">
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
+                <Mail className="w-8 h-8 text-accent" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground mb-2">
+                  Email Support
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Prefer email? Send us a message and we'll get back to you within 24 hours.
+                </p>
+              </div>
+              <a 
+                href="mailto:Excellionai@gmail.com"
+                className="w-full"
+              >
+                <Button 
+                  size="lg" 
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                >
+                  Excellionai@gmail.com
+                </Button>
+              </a>
+            </div>
+          </div>
+
+          {/* Discord Card - Now Second */}
           <div className="bg-card border border-border rounded-2xl p-8 hover:border-accent transition-colors">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
@@ -60,38 +88,10 @@ const Contact = () => {
               >
                 <Button 
                   size="lg" 
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
-                >
-                  Join Discord Server
-                </Button>
-              </a>
-            </div>
-          </div>
-
-          {/* Email Card */}
-          <div className="bg-card border border-border rounded-2xl p-8 hover:border-accent transition-colors">
-            <div className="flex flex-col items-center text-center space-y-6">
-              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
-                <Mail className="w-8 h-8 text-accent" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">
-                  Email Support
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  Prefer email? Send us a message and we'll get back to you within 24 hours.
-                </p>
-              </div>
-              <a 
-                href="mailto:Excellionai@gmail.com"
-                className="w-full"
-              >
-                <Button 
-                  size="lg" 
                   variant="outline"
                   className="w-full font-semibold"
                 >
-                  Excellionai@gmail.com
+                  Join Discord Server
                 </Button>
               </a>
             </div>
