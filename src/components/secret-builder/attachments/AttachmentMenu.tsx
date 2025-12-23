@@ -217,14 +217,13 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0,
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
-            size="sm"
-            className="h-8 text-muted-foreground hover:text-foreground hover:bg-secondary/50 focus-visible:ring-primary/50"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-secondary/50 focus-visible:ring-primary/50"
             disabled={disabled}
           >
-            <Paperclip className="w-4 h-4 mr-1.5" />
-            Add context
+            <Paperclip className="w-4 h-4" />
             {attachmentCount > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-primary/20 text-primary">
+              <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-primary/20 text-primary">
                 {attachmentCount}
               </span>
             )}
