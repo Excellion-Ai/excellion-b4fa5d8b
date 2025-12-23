@@ -1423,6 +1423,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
                   onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
                   onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
+                  onPageChange={setCurrentPageIndex}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center">

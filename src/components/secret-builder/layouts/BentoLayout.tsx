@@ -71,6 +71,7 @@ interface BentoPillNavProps {
   theme: SiteTheme;
   onUpdateSiteName?: (name: string) => void;
   onUpdateNavItem?: (index: number, label: string) => void;
+  onPageChange?: (href: string) => void;
 }
 
 export function BentoPillNav({ 
@@ -79,8 +80,14 @@ export function BentoPillNav({
   theme,
   onUpdateSiteName,
   onUpdateNavItem,
+  onPageChange,
 }: BentoPillNavProps) {
   const isDark = theme.darkMode;
+  
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    onPageChange?.(href);
+  };
   
   return (
     <nav 
@@ -104,16 +111,16 @@ export function BentoPillNav({
       <div className="h-4 w-px bg-current opacity-20" />
       
       {navigation?.slice(0, 4).map((item, index) => (
-        <a
+        <button
           key={index}
-          href={item.href}
-          className="text-xs font-medium transition-colors hover:opacity-80"
+          onClick={(e) => handleNavClick(e, item.href)}
+          className="text-xs font-medium transition-colors hover:opacity-80 bg-transparent border-none cursor-pointer"
           style={{ 
             color: isDark ? '#d1d5db' : '#4b5563'
           }}
         >
           {item.label}
-        </a>
+        </button>
       ))}
       
       <button

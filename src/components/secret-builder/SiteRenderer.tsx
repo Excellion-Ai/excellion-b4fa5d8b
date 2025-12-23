@@ -53,6 +53,7 @@ interface SiteRendererProps {
   onUpdateSiteName?: (name: string) => void;
   onUpdateNavItem?: (index: number, label: string) => void;
   onReorderSections?: (oldIndex: number, newIndex: number) => void;
+  onPageChange?: (pageIndex: number) => void;
 }
 
 // Convert SiteSpec theme to app-spec compatible theme
@@ -88,6 +89,7 @@ export function SiteRenderer({
   onUpdateSiteName,
   onUpdateNavItem,
   onReorderSections,
+  onPageChange,
 }: SiteRendererProps) {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
   const [horizontalScrollIndex, setHorizontalScrollIndex] = useState(0);
@@ -138,6 +140,27 @@ export function SiteRenderer({
   const currentPage = pages[pageIndex] || pages[0];
   const legacyTheme = toSectionTheme(theme);
   const isEditable = !!onUpdateHeroContent;
+
+  // Helper to handle navigation clicks - finds matching page and switches to it
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    if (!onPageChange) return;
+    
+    // Find the page index that matches this href
+    const targetIndex = pages.findIndex(page => page.path === href);
+    if (targetIndex !== -1) {
+      onPageChange(targetIndex);
+    }
+  };
+
+  // Handler for layout nav components (receives just href, not event)
+  const handleLayoutNavChange = (href: string) => {
+    if (!onPageChange) return;
+    const targetIndex = pages.findIndex(page => page.path === href);
+    if (targetIndex !== -1) {
+      onPageChange(targetIndex);
+    }
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -251,6 +274,7 @@ export function SiteRenderer({
           theme={theme}
           onUpdateSiteName={onUpdateSiteName}
           onUpdateNavItem={onUpdateNavItem}
+          onPageChange={handleLayoutNavChange}
         />
 
         {/* Sections - no extra card wrappers, sections flow edge-to-edge */}
@@ -310,6 +334,7 @@ export function SiteRenderer({
           siteName={siteSpec.name}
           navigation={navigation || []}
           theme={theme}
+          onPageChange={handleLayoutNavChange}
         />
 
         {/* Layered Hero */}
@@ -411,6 +436,7 @@ export function SiteRenderer({
           theme={theme}
           currentIndex={horizontalScrollIndex}
           totalSections={otherSections.length + 1}
+          onPageChange={handleLayoutNavChange}
         />
 
         {/* Main Content */}
@@ -568,16 +594,16 @@ export function SiteRenderer({
                 }}
               />
             ) : (
-              <a
+              <button
                 key={index}
-                href={item.href}
-                className="text-sm font-medium transition-colors hover:opacity-80"
+                onClick={(e) => handleNavClick(e, item.href)}
+                className="text-sm font-medium transition-colors hover:opacity-80 cursor-pointer bg-transparent border-none"
                 style={{ 
                   color: theme.darkMode ? '#d1d5db' : '#4b5563'
                 }}
               >
                 {item.label}
-              </a>
+              </button>
             )
           ))}
         </div>
