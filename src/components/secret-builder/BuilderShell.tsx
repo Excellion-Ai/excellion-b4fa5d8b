@@ -37,6 +37,7 @@ import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
 import { useCredits, CREDIT_COSTS, CreditActionType } from '@/hooks/useCredits';
+import { detectNiche } from '@/lib/motion/motionEngine';
 import type { Json } from '@/integrations/supabase/types';
 
 type GenerationStep = {
@@ -851,16 +852,40 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         setIsGeneratingImage(false);
         return;
       }
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
+
+      // Detect niche from site info for niche-specific image generation
+      const businessName = siteSpec?.name || 'Business';
+      const businessDescription = siteSpec?.description || '';
+      const detectedNiche = detectNiche({ 
+        businessName, 
+        description: businessDescription 
+      });
+
+      // Use niche-specific image generation when we have a site
+      const endpoint = siteSpec 
+        ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-niche-image`
+        : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`;
+
+      const requestBody = siteSpec 
+        ? {
+            businessName,
+            businessDescription,
+            niche: detectedNiche,
+            imageType: 'hero',
+            customPrompt: imagePrompt,
+          }
+        : { 
+            prompt: imagePrompt,
+            referenceImage: imageAttachment || undefined
+          };
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ 
-          prompt: imagePrompt,
-          referenceImage: imageAttachment || undefined
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -869,7 +894,9 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       }
 
       const data = await response.json();
-      if (data.imageUrl) {
+      const generatedImageUrl = data.imageUrl || data.images?.[0];
+      
+      if (generatedImageUrl) {
         // Update hero section image if site exists
         if (siteSpec) {
           const heroSection = siteSpec.pages[currentPageIndex]?.sections.find(s => s.type === 'hero');
@@ -878,16 +905,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               ...section,
               content: {
                 ...section.content,
-                image: data.imageUrl,
+                backgroundImage: generatedImageUrl,
               },
             }));
-            toast.success('Image applied to hero section!');
+            toast.success(`Unique ${detectedNiche} image applied to hero!`);
           } else {
-            navigator.clipboard.writeText(data.imageUrl);
+            navigator.clipboard.writeText(generatedImageUrl);
             toast.success('Image generated! URL copied to clipboard.');
           }
         } else {
-          navigator.clipboard.writeText(data.imageUrl);
+          navigator.clipboard.writeText(generatedImageUrl);
           toast.success('Image URL copied to clipboard!');
         }
         // Refresh the library to show the new image
@@ -1541,12 +1568,17 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ImagePlus className="h-5 w-5 text-primary" />
-              {imageAttachment ? 'Edit Image with AI' : 'Generate AI Image'}
+              {imageAttachment ? 'Edit Image with AI' : 'Generate Unique AI Image'}
             </DialogTitle>
             <DialogDescription>
-              {imageAttachment 
+              {siteSpec ? (
+                <>
+                  Generating unique images for <span className="font-medium text-primary">{siteSpec.name}</span>
+                  {' '}({detectNiche({ businessName: siteSpec.name, description: siteSpec.description }).toLowerCase().replace('_', ' ')} niche)
+                </>
+              ) : imageAttachment 
                 ? 'Describe how you want to edit the attached image'
-                : 'Describe the image you want to generate, or attach an image to edit it'}
+                : 'Describe the image you want to generate'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1573,7 +1605,13 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               <Input
                 value={imagePrompt}
                 onChange={(e) => setImagePrompt(e.target.value)}
-                placeholder={imageAttachment ? "e.g., Make it more vibrant, add sunset colors" : "e.g., Modern gym interior with equipment"}
+                placeholder={
+                  imageAttachment 
+                    ? "e.g., Make it more vibrant, add sunset colors" 
+                    : siteSpec 
+                      ? `e.g., Professional hero image for ${siteSpec.name}`
+                      : "e.g., Modern business interior with natural lighting"
+                }
                 className="flex-1"
                 disabled={isGeneratingImage}
                 onKeyDown={(e) => {
