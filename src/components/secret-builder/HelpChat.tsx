@@ -331,10 +331,14 @@ export function HelpChat() {
                 animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                className="fixed w-[380px] max-h-[70vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-[9999] flex flex-col"
+                className="fixed bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-[9999] flex flex-col"
                 style={{ 
-                  left: `calc(50% + ${position.x}px)`,
-                  top: `calc(50% + ${position.y}px)`,
+                  width: '380px',
+                  maxHeight: '70vh',
+                  left: '50%',
+                  top: '50%',
+                  marginLeft: `${position.x}px`,
+                  marginTop: `${position.y}px`,
                   transform: 'translate(-50%, -50%)',
                   boxShadow: '0 25px 50px -12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--border))',
                   cursor: isDragging ? 'grabbing' : 'auto'
