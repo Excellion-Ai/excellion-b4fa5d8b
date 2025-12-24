@@ -37,7 +37,40 @@ export function HelpChat() {
   const [isFocused, setIsFocused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [popupPosition, setPopupPosition] = useState({ bottom: 0, left: 0 });
   const prefersReducedMotion = useReducedMotion();
+
+  // Calculate popup position to stay within sidebar
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      // Find the sidebar panel (parent resizable panel)
+      const sidebar = buttonRef.current.closest('[data-panel]') || buttonRef.current.closest('.border-r');
+      const sidebarRect = sidebar?.getBoundingClientRect();
+      
+      const popupWidth = 280;
+      const popupHeight = 320;
+      
+      // Position above the button
+      let bottom = window.innerHeight - rect.top + 8;
+      let left = rect.left;
+      
+      // Ensure popup doesn't overflow to the right of sidebar
+      if (sidebarRect) {
+        const maxLeft = sidebarRect.right - popupWidth - 8;
+        left = Math.min(left, maxLeft);
+        left = Math.max(left, sidebarRect.left + 8);
+      }
+      
+      // Ensure popup doesn't go above viewport
+      if (rect.top - popupHeight < 8) {
+        bottom = window.innerHeight - rect.bottom - popupHeight - 8;
+      }
+      
+      setPopupPosition({ bottom, left });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -140,7 +173,7 @@ export function HelpChat() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={buttonRef}>
       <motion.div 
         className="bg-card border border-border rounded-lg overflow-hidden relative group"
         whileHover={prefersReducedMotion ? {} : { scale: 1.02, boxShadow: '0 0 20px hsl(var(--primary) / 0.15)' }}
@@ -175,8 +208,10 @@ export function HelpChat() {
             animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: 20, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50"
+            className="fixed w-[280px] bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-[100]"
             style={{ 
+              bottom: popupPosition.bottom,
+              left: popupPosition.left,
               boxShadow: '0 25px 50px -12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--border))' 
             }}
           >
