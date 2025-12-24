@@ -331,7 +331,7 @@ export function HelpChat() {
                 animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                className="fixed w-[420px] h-[520px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-[9999] flex flex-col"
+                className="fixed w-[380px] max-h-[70vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-[9999] flex flex-col"
                 style={{ 
                   left: `calc(50% + ${position.x}px)`,
                   top: `calc(50% + ${position.y}px)`,
@@ -486,7 +486,7 @@ export function HelpChat() {
               </AnimatePresence>
 
               {/* Messages Area */}
-              <ScrollArea className="flex-1 min-h-0" ref={scrollRef}>
+              <div className="overflow-y-auto max-h-[300px]" ref={scrollRef}>
                 <motion.div 
                   className="p-3"
                   variants={containerVariants}
@@ -528,7 +528,7 @@ export function HelpChat() {
                     </AnimatePresence>
                   </div>
                 </motion.div>
-              </ScrollArea>
+              </div>
 
               {/* Input Area */}
               <div className="p-3 border-t border-border">
