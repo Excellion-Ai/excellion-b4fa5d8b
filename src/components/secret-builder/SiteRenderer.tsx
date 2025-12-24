@@ -3,6 +3,8 @@ import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure } from '@/types/site-spec';
 import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
+import { MotionIntensity } from '@/lib/motion/types';
+import { MotionProvider, MotionWrapper, SignatureFlourish, BackgroundAccent } from '@/components/motion';
 import {
   DndContext,
   closestCenter,
@@ -54,6 +56,7 @@ interface SiteRendererProps {
   onUpdateNavItem?: (index: number, label: string) => void;
   onReorderSections?: (oldIndex: number, newIndex: number) => void;
   onPageChange?: (pageIndex: number) => void;
+  motionIntensity?: MotionIntensity;
 }
 
 // Convert SiteSpec theme to app-spec compatible theme
@@ -90,6 +93,7 @@ export function SiteRenderer({
   onUpdateNavItem,
   onReorderSections,
   onPageChange,
+  motionIntensity = 'premium',
 }: SiteRendererProps) {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
   const [horizontalScrollIndex, setHorizontalScrollIndex] = useState(0);
@@ -650,63 +654,76 @@ export function SiteRenderer({
     </div>
   );
 
-  return (
-    <div className="h-full flex flex-col">
-      {/* Preview controls */}
-      <div className="h-10 border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
-        <span className="text-xs text-muted-foreground">
-          {siteSpec.name || 'Generated Site'}
-          {layoutStructure && layoutStructure !== 'standard' && (
-            <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-primary/20 text-primary">
-              {layoutStructure.toUpperCase()}
-            </span>
-          )}
-          {isEditable && <span className="ml-2 text-primary">(Click text to edit, drag to reorder)</span>}
-        </span>
-        <div className="flex items-center gap-1">
-          <Button
-            variant={previewMode === 'desktop' ? 'secondary' : 'ghost'}
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setPreviewMode('desktop')}
-          >
-            <Monitor className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            variant={previewMode === 'tablet' ? 'secondary' : 'ghost'}
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setPreviewMode('tablet')}
-          >
-            <Tablet className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            variant={previewMode === 'mobile' ? 'secondary' : 'ghost'}
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setPreviewMode('mobile')}
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-      </div>
+  // Derive services from features/services sections for niche detection
+  const derivedServices = currentPage?.sections
+    ?.filter(s => s.type === 'features' || s.type === 'services')
+    ?.flatMap(s => (s.content as any)?.items?.map((i: any) => i.title || i.name) || [])
+    ?.filter(Boolean) || [];
 
-      {/* Preview content */}
-      <div className="flex-1 overflow-auto bg-[#1a1a1a] flex justify-center p-4">
-        <div 
-          className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300 relative`}
-        >
-          {useBentoLayout 
-            ? renderBentoLayout() 
-            : useLayeredLayout
-              ? renderLayeredLayout()
-              : useHorizontalLayout
-                ? renderHorizontalLayout()
-                : renderStandardLayout()
-          }
+  return (
+    <MotionProvider
+      businessName={siteSpec.name}
+      description={siteSpec.description}
+      services={derivedServices}
+      intensity={motionIntensity}
+    >
+      <div className="h-full flex flex-col">
+        {/* Preview controls */}
+        <div className="h-10 border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
+          <span className="text-xs text-muted-foreground">
+            {siteSpec.name || 'Generated Site'}
+            {layoutStructure && layoutStructure !== 'standard' && (
+              <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-primary/20 text-primary">
+                {layoutStructure.toUpperCase()}
+              </span>
+            )}
+            {isEditable && <span className="ml-2 text-primary">(Click text to edit, drag to reorder)</span>}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant={previewMode === 'desktop' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPreviewMode('desktop')}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant={previewMode === 'tablet' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPreviewMode('tablet')}
+            >
+              <Tablet className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant={previewMode === 'mobile' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPreviewMode('mobile')}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Preview content */}
+        <div className="flex-1 overflow-auto bg-[#1a1a1a] flex justify-center p-4">
+          <div 
+            className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300 relative`}
+          >
+            {useBentoLayout 
+              ? renderBentoLayout() 
+              : useLayeredLayout
+                ? renderLayeredLayout()
+                : useHorizontalLayout
+                  ? renderHorizontalLayout()
+                  : renderStandardLayout()
+            }
+          </div>
         </div>
       </div>
-    </div>
+    </MotionProvider>
   );
 }
 
