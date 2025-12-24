@@ -1,20 +1,21 @@
 import { Variants } from 'framer-motion';
 import { 
   Niche, 
+  EasingType,
   MotionProfile, 
   MotionVariants, 
-  EasingType,
-  MicroEffect,
+  NichePack,
   FlourishId,
   BackgroundAccentStyle,
-  NichePack
+  MicroEffect,
+  MotionIntensity,
 } from './types';
-import { NICHE_PACKS, ALL_NICHES } from './packs';
+import { NICHE_PACKS } from './packs';
 
-// Deterministic seed from string
+// Seeded random number generator for deterministic randomness
 export function createSeed(businessName: string, niche: Niche): number {
-  const str = `${businessName.toLowerCase().trim()}-${niche}`;
   let hash = 0;
+  const str = `${businessName}-${niche}`;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
@@ -23,15 +24,11 @@ export function createSeed(businessName: string, niche: Niche): number {
   return Math.abs(hash);
 }
 
-// Seeded random number generator (mulberry32)
 export function seededRng(seed: number): () => number {
   let state = seed;
-  return function() {
-    state |= 0;
-    state = (state + 0x6D2B79F5) | 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  return () => {
+    state = (state * 1103515245 + 12345) & 0x7fffffff;
+    return state / 0x7fffffff;
   };
 }
 
@@ -39,7 +36,7 @@ export function seededRng(seed: number): () => number {
 export function detectNiche(input: { 
   businessName?: string; 
   description?: string; 
-  services?: string[] 
+  services?: string[];
 }): Niche {
   const text = [
     input.businessName || '',
@@ -47,86 +44,90 @@ export function detectNiche(input: {
     ...(input.services || [])
   ].join(' ').toLowerCase();
 
-  // Score each niche by keyword matches
+  // Score each niche based on keyword matches
   let bestNiche: Niche = 'GENERIC';
   let bestScore = 0;
 
-  for (const niche of ALL_NICHES) {
-    if (niche === 'GENERIC') continue;
-    
-    const pack = NICHE_PACKS[niche];
-    let score = 0;
-    
-    for (const keyword of pack.keywords) {
-      if (text.includes(keyword.toLowerCase())) {
-        score += keyword.length; // Longer keywords = more specific = higher score
-      }
-    }
+  for (const [niche, pack] of Object.entries(NICHE_PACKS)) {
+    const score = pack.keywords.reduce((acc, keyword) => {
+      return acc + (text.includes(keyword.toLowerCase()) ? 1 : 0);
+    }, 0);
     
     if (score > bestScore) {
       bestScore = score;
-      bestNiche = niche;
+      bestNiche = niche as Niche;
     }
   }
 
   return bestNiche;
 }
 
-// Pick items from array using seeded RNG
-function pickFromArray<T>(arr: T[], rng: () => number, count: number): T[] {
-  const shuffled = [...arr].sort(() => rng() - 0.5);
-  return shuffled.slice(0, Math.min(count, arr.length));
+// Get intensity effect counts
+function getIntensityConfig(intensity: MotionIntensity): {
+  minEffects: number;
+  maxEffects: number;
+  showFlourish: boolean;
+  showBackgroundAccent: boolean;
+  durationMultiplier: number;
+} {
+  switch (intensity) {
+    case 'off':
+      return { minEffects: 0, maxEffects: 0, showFlourish: false, showBackgroundAccent: false, durationMultiplier: 1 };
+    case 'subtle':
+      return { minEffects: 3, maxEffects: 6, showFlourish: false, showBackgroundAccent: false, durationMultiplier: 1.2 };
+    case 'premium':
+      return { minEffects: 8, maxEffects: 14, showFlourish: true, showBackgroundAccent: true, durationMultiplier: 1 };
+    case 'wild':
+      return { minEffects: 14, maxEffects: 20, showFlourish: true, showBackgroundAccent: true, durationMultiplier: 0.85 };
+    default:
+      return { minEffects: 8, maxEffects: 14, showFlourish: true, showBackgroundAccent: true, durationMultiplier: 1 };
+  }
 }
 
-// Pick single item from array
-function pickOne<T>(arr: T[], rng: () => number): T {
-  return arr[Math.floor(rng() * arr.length)];
-}
-
-// Slight variation on a number
-function vary(base: number, rng: () => number, variance: number = 0.15): number {
-  const factor = 1 + (rng() - 0.5) * variance * 2;
-  return Math.round(base * factor * 1000) / 1000;
-}
-
-// Create motion profile from niche and seed
-export function pickMotionProfile(niche: Niche, seed: number): MotionProfile {
+// Generate motion profile for a niche with intensity
+export function pickMotionProfile(niche: Niche, seed: number, intensity: MotionIntensity = 'premium'): MotionProfile {
   const pack = NICHE_PACKS[niche];
   const rng = seededRng(seed);
-
-  // Vary durations slightly based on seed
-  const durations = {
-    fast: vary(pack.baseDurations.fast, rng),
-    normal: vary(pack.baseDurations.normal, rng),
-    slow: vary(pack.baseDurations.slow, rng),
-    reveal: vary(pack.baseDurations.reveal, rng),
-  };
-
-  // Vary stagger
-  const staggerBase = pack.staggerRange.min + rng() * (pack.staggerRange.max - pack.staggerRange.min);
-  const stagger = {
-    min: staggerBase * 0.8,
-    max: staggerBase * 1.2,
-  };
-
-  // Pick background accent
-  const backgroundAccentStyle = pickOne(pack.backgroundAccents, rng);
-
-  // Pick signature flourish
-  const signatureFlourishId = pickOne(pack.flourishPool, rng);
-
-  // Pick 10-18 micro effects
-  const effectCount = 10 + Math.floor(rng() * 9);
-  const microEffects = pickFromArray(pack.microEffectPool, rng, effectCount);
-
+  const intensityConfig = getIntensityConfig(intensity);
+  
+  // Pick random flourish from pool using seeded RNG
+  const flourishId: FlourishId = intensityConfig.showFlourish && pack.flourishPool.length > 0
+    ? pack.flourishPool[Math.floor(rng() * pack.flourishPool.length)]
+    : 'none';
+  
+  // Pick background accent style
+  const backgroundAccentStyle: BackgroundAccentStyle = intensityConfig.showBackgroundAccent && pack.backgroundAccents.length > 0
+    ? pack.backgroundAccents[Math.floor(rng() * pack.backgroundAccents.length)]
+    : 'none';
+  
+  // Pick micro effects based on intensity
+  const effectCount = Math.floor(rng() * (intensityConfig.maxEffects - intensityConfig.minEffects + 1)) + intensityConfig.minEffects;
+  const shuffledEffects = [...pack.microEffectPool].sort(() => rng() - 0.5);
+  const microEffects: MicroEffect[] = shuffledEffects.slice(0, Math.min(effectCount, shuffledEffects.length));
+  
+  // Calculate stagger value
+  const staggerValue = pack.staggerRange.min + rng() * (pack.staggerRange.max - pack.staggerRange.min);
+  
+  // Apply duration multiplier based on intensity
+  const dm = intensityConfig.durationMultiplier;
+  
   return {
     packName: pack.packName,
     niche,
+    intensity,
     easing: pack.baseEasing,
-    durations,
-    stagger,
+    durations: {
+      fast: pack.baseDurations.fast * dm,
+      normal: pack.baseDurations.normal * dm,
+      slow: pack.baseDurations.slow * dm,
+      reveal: pack.baseDurations.reveal * dm,
+    },
+    stagger: {
+      min: staggerValue,
+      max: staggerValue + 0.05,
+    },
     backgroundAccentStyle,
-    signatureFlourishId,
+    signatureFlourishId: flourishId,
     microEffects,
     seed,
   };

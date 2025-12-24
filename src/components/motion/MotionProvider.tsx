@@ -2,14 +2,19 @@ import React, { createContext, useContext, useMemo } from 'react';
 import { 
   createMotionSystem, 
   prefersReducedMotion,
-  getReducedMotionVariants 
+  getReducedMotionVariants,
+  detectNiche,
+  createSeed,
+  pickMotionProfile,
+  getVariants,
 } from '@/lib/motion/motionEngine';
-import { MotionProfile, MotionVariants, Niche, FlourishId, BackgroundAccentStyle } from '@/lib/motion/types';
+import { MotionProfile, MotionVariants, Niche, FlourishId, BackgroundAccentStyle, MotionIntensity } from '@/lib/motion/types';
 
 interface MotionContextValue {
   profile: MotionProfile;
   variants: MotionVariants;
   niche: Niche;
+  intensity: MotionIntensity;
   reducedMotion: boolean;
   flourishId: FlourishId;
   backgroundStyle: BackgroundAccentStyle;
@@ -19,6 +24,7 @@ interface MotionContextValue {
 const defaultProfile: MotionProfile = {
   packName: 'Default',
   niche: 'GENERIC',
+  intensity: 'premium',
   easing: 'easeOut',
   durations: { fast: 0.2, normal: 0.4, slow: 0.6, reveal: 0.8 },
   stagger: { min: 0.05, max: 0.12 },
@@ -36,6 +42,7 @@ interface MotionProviderProps {
   description?: string;
   services?: string[];
   niche?: Niche;
+  intensity?: MotionIntensity;
 }
 
 export function MotionProvider({ 
@@ -44,34 +51,40 @@ export function MotionProvider({
   description = '',
   services = [],
   niche: forcedNiche,
+  intensity = 'premium',
 }: MotionProviderProps) {
   const value = useMemo(() => {
     const reducedMotion = prefersReducedMotion();
     
-    const { niche, profile, variants } = createMotionSystem({
-      businessName,
-      description,
-      services,
-    });
-
-    // Override niche if explicitly provided
-    const finalNiche = forcedNiche || niche;
-    const finalProfile = forcedNiche && forcedNiche !== niche
-      ? { ...profile, niche: forcedNiche }
-      : profile;
-
-    const finalVariants = reducedMotion ? getReducedMotionVariants() : variants;
+    // Detect niche from business info
+    const detectedNiche = detectNiche({ businessName, description, services });
+    const finalNiche = forcedNiche || detectedNiche;
+    
+    // Create seed for deterministic randomness
+    const seed = createSeed(businessName, finalNiche);
+    
+    // Apply intensity (if off or reduced motion, use minimal)
+    const effectiveIntensity = reducedMotion ? 'off' : intensity;
+    
+    // Generate profile with intensity
+    const profile = pickMotionProfile(finalNiche, seed, effectiveIntensity);
+    
+    // Get variants (reduced motion gets minimal variants)
+    const variants = reducedMotion || intensity === 'off' 
+      ? getReducedMotionVariants() 
+      : getVariants(profile);
 
     return {
-      profile: finalProfile,
-      variants: finalVariants,
+      profile,
+      variants,
       niche: finalNiche,
+      intensity: effectiveIntensity,
       reducedMotion,
-      flourishId: finalProfile.signatureFlourishId,
-      backgroundStyle: finalProfile.backgroundAccentStyle,
-      hasMicroEffect: (effect: string) => finalProfile.microEffects.includes(effect as any),
+      flourishId: profile.signatureFlourishId,
+      backgroundStyle: profile.backgroundAccentStyle,
+      hasMicroEffect: (effect: string) => profile.microEffects.includes(effect as any),
     };
-  }, [businessName, description, services, forcedNiche]);
+  }, [businessName, description, services, forcedNiche, intensity]);
 
   return (
     <MotionContext.Provider value={value}>
@@ -90,6 +103,7 @@ export function useMotionProfile(): MotionContextValue {
       profile: defaultProfile,
       variants: getReducedMotionVariants(),
       niche: 'GENERIC',
+      intensity: 'premium',
       reducedMotion,
       flourishId: 'none',
       backgroundStyle: 'none',
@@ -110,4 +124,10 @@ export function useMotionVariants() {
 export function useReducedMotion() {
   const { reducedMotion } = useMotionProfile();
   return reducedMotion;
+}
+
+// Hook for checking motion intensity
+export function useMotionIntensity() {
+  const { intensity } = useMotionProfile();
+  return intensity;
 }

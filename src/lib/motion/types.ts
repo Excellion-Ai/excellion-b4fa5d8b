@@ -1,5 +1,7 @@
 import { Variants } from 'framer-motion';
 
+export type MotionIntensity = 'off' | 'subtle' | 'premium' | 'wild';
+
 export type Niche = 
   | 'HOME_SERVICES'
   | 'AGRICULTURE'
@@ -66,11 +68,19 @@ export type FlourishId =
   | 'legalScaleBalance'
   | 'heartbeatPulse'
   | 'creativeBrushStroke'
+  | 'pipeTraceLine'
+  | 'sunburstGlow'
+  | 'circuitGlowTrace'
+  | 'energyRing'
+  | 'trustBadgeShine'
+  | 'confettiSparkle'
+  | 'menuUnderlineSlider'
   | 'none';
 
 export interface MotionProfile {
   packName: string;
   niche: Niche;
+  intensity: MotionIntensity;
   easing: EasingType;
   durations: {
     fast: number;
