@@ -335,11 +335,8 @@ export function HelpChat() {
                 style={{ 
                   width: '380px',
                   maxHeight: '70vh',
-                  left: '50%',
-                  top: '50%',
-                  marginLeft: `${position.x}px`,
-                  marginTop: `${position.y}px`,
-                  transform: 'translate(-50%, -50%)',
+                  left: `calc(50% - 190px + ${position.x}px)`,
+                  top: `calc(50% - 200px + ${position.y}px)`,
                   boxShadow: '0 25px 50px -12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--border))',
                   cursor: isDragging ? 'grabbing' : 'auto'
                 }}
