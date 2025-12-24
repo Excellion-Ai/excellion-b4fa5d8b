@@ -81,9 +81,10 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
   
   // Custom instructions state
   const [customInstructions, setCustomInstructions] = useState('');
+  const [initialInstructions, setInitialInstructions] = useState('');
   const [instructionsSaving, setInstructionsSaving] = useState(false);
   const [instructionsSaved, setInstructionsSaved] = useState(false);
-  const debouncedInstructions = useDebounce(customInstructions, 1000);
+  const hasUnsavedChanges = customInstructions !== initialInstructions;
 
   // Load custom instructions
   const loadCustomInstructions = useCallback(async () => {
@@ -99,59 +100,59 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
       
       if (data) {
         setCustomInstructions(data.content);
+        setInitialInstructions(data.content);
       }
     } catch (error) {
       // No existing instructions - that's fine
     }
   }, [projectId]);
 
-  // Save custom instructions (debounced)
-  useEffect(() => {
-    if (!projectId || debouncedInstructions === '') return;
+  // Manual save function for custom instructions
+  const saveCustomInstructions = async () => {
+    if (!projectId) return;
     
-    const saveInstructions = async () => {
-      setInstructionsSaving(true);
-      try {
-        // Check if entry exists
-        const { data: existing } = await supabase
+    setInstructionsSaving(true);
+    try {
+      // Check if entry exists
+      const { data: existing } = await supabase
+        .from('knowledge_base')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('name', CUSTOM_INSTRUCTIONS_KEY)
+        .single();
+
+      if (existing) {
+        await supabase
           .from('knowledge_base')
-          .select('id')
-          .eq('project_id', projectId)
-          .eq('name', CUSTOM_INSTRUCTIONS_KEY)
-          .single();
-
-        if (existing) {
-          await supabase
-            .from('knowledge_base')
-            .update({
-              content: debouncedInstructions,
-              file_size: new Blob([debouncedInstructions]).size,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', existing.id);
-        } else if (debouncedInstructions.trim()) {
-          await supabase
-            .from('knowledge_base')
-            .insert({
-              project_id: projectId,
-              name: CUSTOM_INSTRUCTIONS_KEY,
-              content: debouncedInstructions,
-              file_type: 'instructions',
-              file_size: new Blob([debouncedInstructions]).size,
-            });
-        }
-        
-        setInstructionsSaved(true);
-        setTimeout(() => setInstructionsSaved(false), 2000);
-      } catch (error) {
-        console.error('Failed to save instructions:', error);
-      } finally {
-        setInstructionsSaving(false);
+          .update({
+            content: customInstructions,
+            file_size: new Blob([customInstructions]).size,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id);
+      } else if (customInstructions.trim()) {
+        await supabase
+          .from('knowledge_base')
+          .insert({
+            project_id: projectId,
+            name: CUSTOM_INSTRUCTIONS_KEY,
+            content: customInstructions,
+            file_type: 'instructions',
+            file_size: new Blob([customInstructions]).size,
+          });
       }
-    };
-
-    saveInstructions();
-  }, [debouncedInstructions, projectId]);
+      
+      setInitialInstructions(customInstructions);
+      setInstructionsSaved(true);
+      toast.success('Knowledge saved!');
+      setTimeout(() => setInstructionsSaved(false), 2000);
+    } catch (error) {
+      console.error('Failed to save instructions:', error);
+      toast.error('Failed to save knowledge');
+    } finally {
+      setInstructionsSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (projectId) {
@@ -369,12 +370,6 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
                 <span className="text-xs font-medium">Custom Instructions</span>
               </div>
-              {instructionsSaving && (
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Saving...
-                </span>
-              )}
               {instructionsSaved && !instructionsSaving && (
                 <span className="text-[10px] text-green-600 flex items-center gap-1">
                   <Check className="h-3 w-3" />
@@ -389,9 +384,27 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
               className="min-h-[100px] text-xs resize-none"
               disabled={!projectId}
             />
-            <p className="text-[10px] text-muted-foreground/70 mt-1">
-              These instructions will be used by the AI when generating your site. Auto-saves as you type.
+            <p className="text-[10px] text-muted-foreground/70 mt-1 mb-2">
+              These instructions will be used by the AI when generating your site.
             </p>
+            <Button
+              onClick={saveCustomInstructions}
+              disabled={!projectId || instructionsSaving || !hasUnsavedChanges}
+              size="sm"
+              className="w-full gap-2"
+            >
+              {instructionsSaving ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  {hasUnsavedChanges ? 'Save Knowledge' : 'Saved'}
+                </>
+              )}
+            </Button>
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
