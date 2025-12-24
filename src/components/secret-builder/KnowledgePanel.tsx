@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Plus, FileText, Trash2, MoreVertical, Loader2, Upload, Check, Eye, X, File, FileCode, FileType } from 'lucide-react';
+import { BookOpen, Plus, FileText, Trash2, MoreVertical, Loader2, Upload, Check, Eye, X, File, FileCode, FileType, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -28,6 +28,7 @@ interface KnowledgePanelProps {
 
 const MAX_FILE_SIZE = 500 * 1024; // 500KB max for text content
 const SUPPORTED_TYPES = ['.txt', '.md', '.json', '.css', '.html', '.xml', '.yaml', '.yml'];
+const CUSTOM_INSTRUCTIONS_KEY = '__custom_instructions__';
 
 function getFileIcon(fileType: string) {
   switch (fileType) {
@@ -53,6 +54,20 @@ function formatFileSize(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
   const [entries, setEntries] = useState<KnowledgeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,12 +78,87 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
   const [newEntry, setNewEntry] = useState({ name: '', content: '' });
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Custom instructions state
+  const [customInstructions, setCustomInstructions] = useState('');
+  const [instructionsSaving, setInstructionsSaving] = useState(false);
+  const [instructionsSaved, setInstructionsSaved] = useState(false);
+  const debouncedInstructions = useDebounce(customInstructions, 1000);
+
+  // Load custom instructions
+  const loadCustomInstructions = useCallback(async () => {
+    if (!projectId) return;
+    
+    try {
+      const { data } = await supabase
+        .from('knowledge_base')
+        .select('content')
+        .eq('project_id', projectId)
+        .eq('name', CUSTOM_INSTRUCTIONS_KEY)
+        .single();
+      
+      if (data) {
+        setCustomInstructions(data.content);
+      }
+    } catch (error) {
+      // No existing instructions - that's fine
+    }
+  }, [projectId]);
+
+  // Save custom instructions (debounced)
+  useEffect(() => {
+    if (!projectId || debouncedInstructions === '') return;
+    
+    const saveInstructions = async () => {
+      setInstructionsSaving(true);
+      try {
+        // Check if entry exists
+        const { data: existing } = await supabase
+          .from('knowledge_base')
+          .select('id')
+          .eq('project_id', projectId)
+          .eq('name', CUSTOM_INSTRUCTIONS_KEY)
+          .single();
+
+        if (existing) {
+          await supabase
+            .from('knowledge_base')
+            .update({
+              content: debouncedInstructions,
+              file_size: new Blob([debouncedInstructions]).size,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existing.id);
+        } else if (debouncedInstructions.trim()) {
+          await supabase
+            .from('knowledge_base')
+            .insert({
+              project_id: projectId,
+              name: CUSTOM_INSTRUCTIONS_KEY,
+              content: debouncedInstructions,
+              file_type: 'instructions',
+              file_size: new Blob([debouncedInstructions]).size,
+            });
+        }
+        
+        setInstructionsSaved(true);
+        setTimeout(() => setInstructionsSaved(false), 2000);
+      } catch (error) {
+        console.error('Failed to save instructions:', error);
+      } finally {
+        setInstructionsSaving(false);
+      }
+    };
+
+    saveInstructions();
+  }, [debouncedInstructions, projectId]);
 
   useEffect(() => {
     if (projectId) {
       fetchEntries();
+      loadCustomInstructions();
     }
-  }, [projectId]);
+  }, [projectId, loadCustomInstructions]);
 
   const fetchEntries = async () => {
     if (!projectId) return;
@@ -79,6 +169,7 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
         .from('knowledge_base')
         .select('*')
         .eq('project_id', projectId)
+        .neq('name', CUSTOM_INSTRUCTIONS_KEY) // Exclude custom instructions from list
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -266,6 +357,40 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
             </p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">
               .txt, .md, .json, .css, .html supported
+            </p>
+          </div>
+          
+          <DropdownMenuSeparator />
+
+          {/* Custom Instructions Section */}
+          <div className="mx-2 my-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-medium">Custom Instructions</span>
+              </div>
+              {instructionsSaving && (
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Saving...
+                </span>
+              )}
+              {instructionsSaved && !instructionsSaving && (
+                <span className="text-[10px] text-green-600 flex items-center gap-1">
+                  <Check className="h-3 w-3" />
+                  Saved
+                </span>
+              )}
+            </div>
+            <Textarea
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder="Add custom instructions for the AI... (e.g., brand voice, design preferences, specific requirements)"
+              className="min-h-[100px] text-xs resize-none"
+              disabled={!projectId}
+            />
+            <p className="text-[10px] text-muted-foreground/70 mt-1">
+              These instructions will be used by the AI when generating your site. Auto-saves as you type.
             </p>
           </div>
           
