@@ -286,6 +286,40 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
 - Hero: "https://images.unsplash.com/photo-1517433670267-30f41c098585?w=1920&q=80"
 - Gallery: ["https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=800&q=80", "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80"]
 
+### PLUMBING (SPECIFIC - NOT HVAC, NOT WELDING, NOT ELECTRICAL)
+- Hero: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" (plumber at work)
+- About Page: "https://images.unsplash.com/photo-1621905251189-9a69c5e7c91f?w=1920&q=80" (plumbing team)
+- Gallery/Services:
+  - "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&q=80" (pipe repair)
+  - "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=800&q=80" (bathroom plumbing)
+  - "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80" (service van)
+  - "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&q=80" (water heater)
+  - "https://images.unsplash.com/photo-1581141849291-1125c7b692b5?w=800&q=80" (plumber with tools)
+
+### ELECTRICAL SERVICES (SPECIFIC - NOT PLUMBING, NOT WELDING)
+- Hero: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1920&q=80" (electrician)
+- About Page: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" (electrical team)
+- Gallery/Services:
+  - "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80" (electrical panel)
+  - "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" (wiring work)
+  - "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80" (electrician at work)
+
+### HVAC / AIR CONDITIONING (SPECIFIC - NOT PLUMBING, NOT WELDING)
+- Hero: "https://images.unsplash.com/photo-1631545806609-6578a0d0d9e9?w=1920&q=80" (HVAC unit)
+- About Page: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1920&q=80" (HVAC technician)
+- Gallery/Services:
+  - "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80" (AC unit)
+  - "https://images.unsplash.com/photo-1631545806609-6578a0d0d9e9?w=800&q=80" (HVAC system)
+  - "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&q=80" (heating system)
+
+### ROOFING (SPECIFIC)
+- Hero: "https://images.unsplash.com/photo-1632759145351-1d592919f522?w=1920&q=80" (roofing work)
+- About Page: "https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=1920&q=80" (roofing crew)
+- Gallery/Services:
+  - "https://images.unsplash.com/photo-1632759145351-1d592919f522?w=800&q=80" (roof installation)
+  - "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" (roof repair)
+  - "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80" (completed roof)
+
 ### AUTO REPAIR / MECHANIC
 - Hero: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1920&q=80"
 - Gallery: ["https://images.unsplash.com/photo-1625047509168-a7026f36de04?w=800&q=80", "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80"]
@@ -313,6 +347,19 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
 10. **Food businesses get ONLY food images** - Restaurants, cafes, delis, sandwich shops, bakeries must ONLY use food-related imagery.
 11. **When business type is unclear, use NEUTRAL images** - Abstract gradients, professional workspaces, or geometric patterns. NEVER default to cars or tech.
 12. **Double-check gallery sections** - These are the most common places where mismatched images appear.
+
+**CRITICAL TRADE-SPECIFIC IMAGE RULES (HOME SERVICES):**
+13. **PLUMBER ≠ WELDER ≠ ELECTRICIAN ≠ HVAC** - These are COMPLETELY DIFFERENT trades. A plumbing company must NEVER show welding, electrical work, or generic construction images.
+14. **Plumbers show: pipes, water heaters, sinks, bathrooms, drain cleaning, plumbing tools, plumbers in blue uniforms**
+15. **Electricians show: electrical panels, wiring, outlets, light fixtures, electricians with voltage testers**
+16. **HVAC technicians show: AC units, furnaces, ductwork, thermostats, HVAC systems**
+17. **Roofers show: roof installation, shingles, ladders on roofs, roofing crews**
+18. **NEVER use welding/metalwork images for home service businesses** - Welding sparks and metalwork are for manufacturing/fabrication businesses ONLY.
+
+**PER-PAGE IMAGE CONTEXT RULES:**
+19. **About Page images MUST show people in the EXACT trade** - A plumbing About page must show plumbers, not welders or generic workers.
+20. **Services Page images MUST match the specific service** - "Drain Cleaning" must show drain/pipe work, not generic construction.
+21. **Team sections MUST use trade-appropriate uniforms/settings** - Plumbers in plumbing contexts, electricians with electrical equipment, etc.
 
 ====================================
 ## PHASE 3: BUSINESS MODEL CLASSIFICATION

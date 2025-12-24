@@ -525,12 +525,42 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
   - "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=800&q=80" (nail salon)
   - "https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=800&q=80" (hair styling)
 
-### PLUMBING & HVAC
-- Hero Background: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" (plumber working)
-- Gallery Items:
-  - "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&q=80" (plumbing work)
-  - "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80" (HVAC unit)
-  - "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80" (service van)
+### PLUMBING (SPECIFIC - NOT HVAC, NOT WELDING, NOT ELECTRICAL)
+- Hero Background: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" (plumber at work with pipes)
+- About Page: "https://images.unsplash.com/photo-1621905251189-9a69c5e7c91f?w=1920&q=80" (plumbing team)
+- Gallery/Service Items:
+  - "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&q=80" (pipe repair)
+  - "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=800&q=80" (bathroom plumbing)
+  - "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80" (plumbing service van)
+  - "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&q=80" (water heater installation)
+  - "https://images.unsplash.com/photo-1581141849291-1125c7b692b5?w=800&q=80" (plumber with wrench)
+  - "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80" (drain cleaning)
+
+### ELECTRICAL SERVICES (SPECIFIC - NOT PLUMBING, NOT WELDING)
+- Hero Background: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1920&q=80" (electrician working)
+- About Page: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" (electrical team)
+- Gallery/Service Items:
+  - "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80" (electrical panel work)
+  - "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" (wiring installation)
+  - "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80" (electrician with tools)
+  - "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80" (lighting installation)
+
+### HVAC / AIR CONDITIONING (SPECIFIC - NOT PLUMBING, NOT WELDING)
+- Hero Background: "https://images.unsplash.com/photo-1631545806609-6578a0d0d9e9?w=1920&q=80" (HVAC system)
+- About Page: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1920&q=80" (HVAC technician)
+- Gallery/Service Items:
+  - "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80" (AC unit installation)
+  - "https://images.unsplash.com/photo-1631545806609-6578a0d0d9e9?w=800&q=80" (HVAC equipment)
+  - "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&q=80" (heating system)
+  - "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80" (service technician)
+
+### ROOFING (SPECIFIC)
+- Hero Background: "https://images.unsplash.com/photo-1632759145351-1d592919f522?w=1920&q=80" (roofing work)
+- About Page: "https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=1920&q=80" (roofing crew)
+- Gallery/Service Items:
+  - "https://images.unsplash.com/photo-1632759145351-1d592919f522?w=800&q=80" (roof installation)
+  - "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" (roof repair)
+  - "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80" (completed roof)
 
 ### PHOTOGRAPHY
 - Hero Background: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1920&q=80" (photography studio)
@@ -547,7 +577,6 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
   - "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80" (construction work)
   - "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80" (renovation)
   - "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=800&q=80" (contractor)
-
 ### CLEANING SERVICES
 - Hero Background: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1920&q=80" (clean home)
 - Gallery Items:
@@ -576,6 +605,17 @@ CRITICAL: Always include realistic placeholder images for each industry. Use the
 8. **When unsure about the business type, use NEUTRAL professional images** - Use abstract gradients, office spaces, or professional meeting images instead of defaulting to automotive.
 9. **Double-check gallery/portfolio sections** - These are the most common places where wrong images appear. Verify every image URL matches the business.
 10. **Food businesses get food images ONLY** - Restaurants, cafes, delis, sandwich shops, bakeries, etc. must ONLY use food-related imagery.
+
+**CRITICAL TRADE-SPECIFIC IMAGE RULES (HOME SERVICES):**
+11. **PLUMBER ≠ WELDER ≠ ELECTRICIAN ≠ HVAC** - These are COMPLETELY DIFFERENT trades with DIFFERENT imagery:
+    - Plumbers: pipes, water heaters, sinks, bathrooms, drain cleaning, wrenches, blue uniforms
+    - Electricians: electrical panels, wiring, outlets, voltage testers, yellow/orange safety gear
+    - HVAC technicians: AC units, furnaces, ductwork, thermostats
+    - Roofers: shingles, ladders, roof installations
+12. **NEVER use welding/metalwork/sparks images for home service businesses** - Welding imagery is for manufacturing/fabrication ONLY. A plumber MUST NOT be shown with welding equipment.
+13. **About Page images MUST show people in the EXACT trade** - A plumbing company's About page must show plumbers working on plumbing, NOT welders, electricians, or generic construction workers.
+14. **Services Page images MUST match the specific service** - "Drain Cleaning" must show actual drain/pipe work, "Water Heater Installation" must show water heaters.
+15. **Team sections MUST use trade-appropriate uniforms and settings** - Plumbers in plumbing contexts with plumbing tools, not generic hard hats at construction sites.
 
 ====================================
 ## 3. THE "NO-GO" ZONE (STRICT CONSTRAINTS)
