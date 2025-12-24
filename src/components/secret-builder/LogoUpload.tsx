@@ -135,21 +135,23 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
 
   return (
     <>
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Image className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Add logo</span>
-          </div>
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
+      <div className="relative">
+        <div className="bg-card border border-border rounded-lg">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors rounded-lg"
+          >
+            <div className="flex items-center gap-2">
+              <Image className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">Add logo</span>
+            </div>
+            {isExpanded ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+        </div>
 
         <AnimatePresence initial={false}>
           {isExpanded && (
@@ -158,9 +160,9 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="overflow-hidden"
+              className="absolute bottom-full left-0 mb-2 w-64 z-50 bg-card border border-border rounded-lg shadow-xl overflow-hidden"
             >
-              <div className="px-4 pb-4 space-y-3 border-t border-border pt-4">
+              <div className="p-4 space-y-3">
                 {logo ? (
                   <div className="flex items-center gap-3">
                     <div className="relative group">
