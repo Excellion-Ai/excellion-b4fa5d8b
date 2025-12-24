@@ -97,25 +97,22 @@ export function HelpChat() {
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!dragRef.current) return;
     setIsDragging(true);
-    const rect = dragRef.current.getBoundingClientRect();
     dragOffset.current = {
-      x: e.clientX - rect.left - rect.width / 2,
-      y: e.clientY - rect.top - rect.height / 2
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
     };
-  }, []);
+  }, [position]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging) return;
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     
-    // Calculate new position relative to center
-    const newX = e.clientX - windowWidth / 2 - dragOffset.current.x;
-    const newY = e.clientY - windowHeight / 2 - dragOffset.current.y;
+    const newX = e.clientX - dragOffset.current.x;
+    const newY = e.clientY - dragOffset.current.y;
     
-    // Clamp to keep within viewport
-    const maxX = windowWidth / 2 - 200;
-    const maxY = windowHeight / 2 - 200;
+    const maxX = windowWidth / 2 - 100;
+    const maxY = windowHeight / 2 - 100;
     
     setPosition({
       x: Math.max(-maxX, Math.min(maxX, newX)),
@@ -327,22 +324,22 @@ export function HelpChat() {
                 onClick={handleClose}
               />
               
-            {/* Draggable Chat Window */}
-            <motion.div
-              ref={dragRef}
-              initial={{ opacity: 0, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="fixed w-[400px] h-[500px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-[9999] flex flex-col"
-              style={{ 
-                left: '50%',
-                top: '50%',
-                transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
-                boxShadow: '0 25px 50px -12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--border))',
-                cursor: isDragging ? 'grabbing' : 'auto'
-              }}
-            >
+              {/* Draggable Chat Window */}
+              <motion.div
+                ref={dragRef}
+                initial={{ opacity: 0, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="fixed w-[420px] h-[520px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-[9999] flex flex-col"
+                style={{ 
+                  left: `calc(50% + ${position.x}px)`,
+                  top: `calc(50% + ${position.y}px)`,
+                  transform: 'translate(-50%, -50%)',
+                  boxShadow: '0 25px 50px -12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--border))',
+                  cursor: isDragging ? 'grabbing' : 'auto'
+                }}
+              >
               {/* Animated gradient background orbs */}
               {!prefersReducedMotion && (
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -489,36 +486,29 @@ export function HelpChat() {
               </AnimatePresence>
 
               {/* Messages Area */}
-              <ScrollArea className="flex-1 relative" ref={scrollRef}>
+              <ScrollArea className="flex-1 min-h-0" ref={scrollRef}>
                 <motion.div 
-                  className="p-4"
+                  className="p-3"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {messages.map((message) => (
                       <motion.div
                         key={message.id}
                         variants={messageVariants}
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <motion.div
-                          className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm relative overflow-hidden ${
+                        <div
+                          className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
                             message.role === 'user'
-                              ? 'bg-primary text-primary-foreground rounded-br-md'
-                              : 'bg-muted text-foreground rounded-bl-md'
+                              ? 'bg-primary text-primary-foreground rounded-br-sm'
+                              : 'bg-muted text-foreground rounded-bl-sm'
                           }`}
-                          whileHover={prefersReducedMotion ? {} : { 
-                            scale: 1.01,
-                            boxShadow: message.role === 'user' 
-                              ? '0 4px 12px hsl(var(--primary) / 0.3)' 
-                              : '0 4px 12px hsl(var(--muted) / 0.5)'
-                          }}
-                          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                         >
                           {message.content}
-                        </motion.div>
+                        </div>
                       </motion.div>
                     ))}
                     <AnimatePresence>
@@ -529,31 +519,9 @@ export function HelpChat() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
                         >
-                          <div className="bg-muted px-4 py-2.5 rounded-2xl rounded-bl-md flex items-center gap-2">
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                            >
-                              <Loader2 className="h-4 w-4 text-muted-foreground" />
-                            </motion.div>
-                            <motion.div className="flex gap-1">
-                              {[0, 1, 2].map((i) => (
-                                <motion.div
-                                  key={i}
-                                  className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full"
-                                  animate={{ 
-                                    y: prefersReducedMotion ? 0 : [-2, 2, -2],
-                                    opacity: [0.5, 1, 0.5]
-                                  }}
-                                  transition={{ 
-                                    duration: 0.6, 
-                                    repeat: Infinity, 
-                                    delay: i * 0.15,
-                                    ease: 'easeInOut'
-                                  }}
-                                />
-                              ))}
-                            </motion.div>
+                          <div className="bg-muted px-3 py-2 rounded-xl rounded-bl-sm flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+                            <span className="text-xs text-muted-foreground">Thinking...</span>
                           </div>
                         </motion.div>
                       )}
@@ -563,58 +531,29 @@ export function HelpChat() {
               </ScrollArea>
 
               {/* Input Area */}
-              <motion.div 
-                className="p-4 border-t border-border relative"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <motion.div 
-                  className="flex items-center gap-3 relative"
-                  animate={isFocused && !prefersReducedMotion ? {
-                    boxShadow: ['0 0 0 0 hsl(var(--primary) / 0)', '0 0 0 3px hsl(var(--primary) / 0.1)', '0 0 0 0 hsl(var(--primary) / 0)']
-                  } : {}}
-                  transition={{ duration: 1.5, repeat: isFocused ? Infinity : 0 }}
-                  style={{ borderRadius: '0.75rem' }}
-                >
-                  <div className="relative flex-1">
-                    <Input
-                      ref={inputRef}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      onFocus={() => setIsFocused(true)}
-                      onBlur={() => setIsFocused(false)}
-                      placeholder="Ask a question..."
-                      className={`flex-1 h-11 text-sm rounded-xl transition-all duration-300 ${
-                        isFocused ? 'ring-2 ring-primary/20 border-primary/50' : ''
-                      }`}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <motion.div
-                    whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
-                    whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
+              <div className="p-3 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder="Ask a question..."
+                    className="flex-1 h-10 text-sm rounded-lg"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    size="icon"
+                    className="h-10 w-10 shrink-0 rounded-lg"
+                    onClick={sendMessage}
+                    disabled={!input.trim() || isLoading}
                   >
-                    <Button
-                      size="icon"
-                      className="h-11 w-11 shrink-0 rounded-xl relative overflow-hidden"
-                      onClick={sendMessage}
-                      disabled={!input.trim() || isLoading}
-                    >
-                      <motion.div
-                        animate={input.trim() && !prefersReducedMotion ? { 
-                          x: [0, 2, 0],
-                          y: [0, -2, 0]
-                        } : {}}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                      >
-                        <Send className="h-4 w-4" />
-                      </motion.div>
-                    </Button>
-                  </motion.div>
-                </motion.div>
-              </motion.div>
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           </>
         )}
