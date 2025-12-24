@@ -57,6 +57,16 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -180,6 +190,9 @@ export default function SecretBuilderHub() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [projectToRename, setProjectToRename] = useState<BuilderProject | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<BuilderProject | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [projectsFolderOpen, setProjectsFolderOpen] = useState(true);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -246,23 +259,33 @@ export default function SecretBuilderHub() {
     fetchProjects();
   }, []);
 
-  const handleDeleteProject = async (projectId: string, e: React.MouseEvent) => {
+  const handleDeleteClick = (project: BuilderProject, e: React.MouseEvent) => {
     e.stopPropagation();
+    setProjectToDelete(project);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!projectToDelete) return;
+    
+    setIsDeleting(true);
     const { error } = await supabase
       .from('builder_projects')
       .delete()
-      .eq('id', projectId);
+      .eq('id', projectToDelete.id);
 
     if (error) {
       toast({ title: 'Error', description: 'Failed to delete project', variant: 'destructive' });
     } else {
-      setProjects((prev) => prev.filter((p) => p.id !== projectId));
-      // Clear last project if it was deleted
-      if (localStorage.getItem(LS_LAST_PROJECT_ID) === projectId) {
+      setProjects((prev) => prev.filter((p) => p.id !== projectToDelete.id));
+      if (localStorage.getItem(LS_LAST_PROJECT_ID) === projectToDelete.id) {
         localStorage.removeItem(LS_LAST_PROJECT_ID);
       }
       toast({ title: 'Project deleted' });
     }
+    setIsDeleting(false);
+    setDeleteDialogOpen(false);
+    setProjectToDelete(null);
   };
 
   const handleRenameProject = async (newName: string) => {
@@ -864,7 +887,7 @@ export default function SecretBuilderHub() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
                               className="text-destructive"
-                              onClick={(e) => handleDeleteProject(project.id, e as unknown as React.MouseEvent)}
+                              onClick={(e) => handleDeleteClick(project, e as unknown as React.MouseEvent)}
                             >
                               <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
                             </DropdownMenuItem>
@@ -1161,7 +1184,7 @@ export default function SecretBuilderHub() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 className="text-destructive"
-                                onClick={(e) => handleDeleteProject(project.id, e as unknown as React.MouseEvent)}
+                                onClick={(e) => handleDeleteClick(project, e as unknown as React.MouseEvent)}
                               >
                                 <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
                               </DropdownMenuItem>
@@ -1257,6 +1280,39 @@ export default function SecretBuilderHub() {
         </div>
       </main>
 
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you 100% sure?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                This will permanently delete <strong>"{projectToDelete?.name}"</strong> from your projects folder.
+              </p>
+              <p className="text-destructive font-medium">
+                This action cannot be undone. All associated data including custom domains, bookmarks, and knowledge base entries will also be deleted.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Yes, delete project'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
