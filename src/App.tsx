@@ -22,7 +22,18 @@ const Checkout = lazy(() => import("./pages/Checkout"));
 const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// HIDDEN - Legacy pages kept for potential future use
+// Settings pages
+const Settings = lazy(() => import("./pages/Settings"));
+const ProfileSettings = lazy(() => import("./pages/settings/ProfileSettings"));
+const BillingSettings = lazy(() => import("./pages/settings/BillingSettings"));
+const NotificationsSettings = lazy(() => import("./pages/settings/NotificationsSettings"));
+const WorkspaceSettings = lazy(() => import("./pages/settings/WorkspaceSettings"));
+const TeamSettings = lazy(() => import("./pages/settings/TeamSettings"));
+const DomainsSettings = lazy(() => import("./pages/settings/DomainsSettings"));
+const AppearanceSettings = lazy(() => import("./pages/settings/AppearanceSettings"));
+const ShortcutsSettings = lazy(() => import("./pages/settings/ShortcutsSettings"));
+const HelpSettings = lazy(() => import("./pages/settings/HelpSettings"));
+const SupportSettings = lazy(() => import("./pages/settings/SupportSettings"));
 // const Index = lazy(() => import("./pages/Index"));
 // const DFY = lazy(() => import("./pages/DFY"));
 // const BookCall = lazy(() => import("./pages/BookCall"));
@@ -61,11 +72,22 @@ const App = () => (
         <Route path="/billing" element={<Billing />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
-        {/* Legacy routes - kept commented for potential future use */}
-        {/* <Route path="/web-builder" element={<WebBuilderHome />} /> */}
-        {/* <Route path="/dfy" element={<DFY />} /> */}
-        {/* <Route path="/book-call" element={<BookCall />} /> */}
-        {/* <Route path="/survey" element={<Survey />} /> */}
+        
+        {/* Settings routes */}
+        <Route path="/settings" element={<Settings />}>
+          <Route index element={<ProfileSettings />} />
+          <Route path="profile" element={<ProfileSettings />} />
+          <Route path="billing" element={<BillingSettings />} />
+          <Route path="notifications" element={<NotificationsSettings />} />
+          <Route path="workspace" element={<WorkspaceSettings />} />
+          <Route path="team" element={<TeamSettings />} />
+          <Route path="domains" element={<DomainsSettings />} />
+          <Route path="appearance" element={<AppearanceSettings />} />
+          <Route path="shortcuts" element={<ShortcutsSettings />} />
+          <Route path="help" element={<HelpSettings />} />
+          <Route path="support" element={<SupportSettings />} />
+        </Route>
+        
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
