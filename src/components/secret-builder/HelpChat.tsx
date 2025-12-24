@@ -175,7 +175,7 @@ export function HelpChat() {
             animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: 20, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="absolute bottom-full right-full mr-2 mb-2 w-80 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50"
             style={{ 
               boxShadow: '0 25px 50px -12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--border))' 
             }}
@@ -241,9 +241,9 @@ export function HelpChat() {
               </motion.div>
             </motion.div>
 
-            <ScrollArea className="h-64 relative" ref={scrollRef}>
+            <ScrollArea className="max-h-48 relative" ref={scrollRef}>
               <motion.div 
-                className="flex flex-col justify-end min-h-full p-3"
+                className="p-3"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
