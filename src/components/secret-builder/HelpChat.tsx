@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -313,18 +314,19 @@ export function HelpChat() {
         </motion.button>
       </motion.div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[90]"
-              onClick={handleClose}
-            />
-            
+      {isOpen && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[9990]"
+                onClick={handleClose}
+              />
+              
             {/* Draggable Chat Window */}
             <motion.div
               ref={dragRef}
@@ -332,7 +334,7 @@ export function HelpChat() {
               animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
               exit={{ opacity: 0, scale: 0.9, filter: prefersReducedMotion ? 'none' : 'blur(8px)' }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="fixed w-[400px] h-[500px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-[100] flex flex-col"
+              className="fixed w-[400px] h-[500px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-[9999] flex flex-col"
               style={{ 
                 left: '50%',
                 top: '50%',
@@ -616,7 +618,9 @@ export function HelpChat() {
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }
