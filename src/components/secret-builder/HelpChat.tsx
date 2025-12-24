@@ -110,13 +110,10 @@ export function HelpChat() {
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          className="w-full px-4 py-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
         >
-          <div className="flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">Chat</span>
-          </div>
-          <Sparkles className="w-4 h-4 text-muted-foreground" />
+          <MessageCircle className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium">Chat</span>
         </button>
       </div>
 
@@ -127,7 +124,7 @@ export function HelpChat() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute bottom-full left-0 mb-2 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50"
+            className="absolute bottom-full right-full mr-2 mb-2 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
               <div className="flex items-center gap-2">
