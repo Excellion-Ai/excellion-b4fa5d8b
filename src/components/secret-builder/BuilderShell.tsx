@@ -38,6 +38,7 @@ import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
 import { useCredits, CREDIT_COSTS, CreditActionType } from '@/hooks/useCredits';
 import { detectNiche } from '@/lib/motion/motionEngine';
+import { MotionIntensity } from '@/lib/motion/types';
 import type { Json } from '@/integrations/supabase/types';
 
 type GenerationStep = {
@@ -273,6 +274,13 @@ export function BuilderShell() {
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [visualEditsEnabled, setVisualEditsEnabled] = useState(false);
+  const [motionIntensity, setMotionIntensity] = useState<MotionIntensity>(() => {
+    // Load from localStorage, default to 'premium'
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('excellion-motion-intensity') as MotionIntensity) || 'premium';
+    }
+    return 'premium';
+  });
   const [showDiffViewer, setShowDiffViewer] = useState(false);
   const [pendingSpec, setPendingSpec] = useState<SiteSpec | null>(null);
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
@@ -1339,6 +1347,39 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               <span className="hidden md:inline">Layout</span>
             </Button>
             
+            {/* Motion Intensity Toggle */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline capitalize">{motionIntensity}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                {(['off', 'subtle', 'premium', 'wild'] as MotionIntensity[]).map((level) => (
+                  <DropdownMenuItem
+                    key={level}
+                    onClick={() => {
+                      setMotionIntensity(level);
+                      localStorage.setItem('excellion-motion-intensity', level);
+                      toast.success(`Motion: ${level.charAt(0).toUpperCase() + level.slice(1)}`);
+                    }}
+                    className={`gap-2 capitalize ${motionIntensity === level ? 'bg-accent' : ''}`}
+                  >
+                    {level === 'off' && '⏸️'}
+                    {level === 'subtle' && '✨'}
+                    {level === 'premium' && '💫'}
+                    {level === 'wild' && '🔥'}
+                    {level}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             {/* Bookmarks */}
             <BookmarksPanel
               projectId={projectId}
@@ -1483,6 +1524,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
                   onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
                   onPageChange={setCurrentPageIndex}
+                  motionIntensity={motionIntensity}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center">

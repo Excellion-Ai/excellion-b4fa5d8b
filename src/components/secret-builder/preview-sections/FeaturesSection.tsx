@@ -1,38 +1,18 @@
 import { SiteSection, SiteTheme, FeaturesContent, FeatureItem } from '@/types/app-spec';
+import { MotionWrapper, MotionStaggerContainer, useMotionProfile } from '@/components/motion';
 import { 
-  // Core/Generic
   Zap, Shield, Clock, Star, Wrench, Heart, Users, Award, Target, Truck,
   CheckCircle, Settings, Sparkles, Lightbulb, Rocket, Gift, ThumbsUp, Crown,
-  // Service/Trade
   Scissors, Hammer, PaintBucket, Droplets, Flame, Snowflake, Plug, Key, 
-  // Food/Hospitality
   UtensilsCrossed, Coffee, Wine, Pizza, Cake, Cookie, Soup, ChefHat,
-  // Automotive
-  Car, Gauge, Fuel,
-  // Health/Medical
-  Stethoscope, Pill, Activity, HeartPulse, Brain, Eye, Smile,
-  // Professional
+  Car, Gauge, Fuel, Stethoscope, Pill, Activity, HeartPulse, Brain, Eye, Smile,
   Briefcase, Scale, FileText, Calculator, Building, Landmark,
-  // Creative/Design
   Palette, Camera, Pen, Brush, Film, Music, Mic,
-  // Fitness/Wellness
-  Dumbbell, Leaf, Apple, Bike, Timer,
-  // Pet/Animal
-  Dog, Cat, PawPrint,
-  // Beauty/Fashion
-  Shirt, Diamond, Flower2, Gem,
-  // Home/Real Estate
-  Home, Bed, Sofa, Bath, Trees,
-  // Technology
+  Dumbbell, Leaf, Apple, Bike, Timer, Dog, Cat, PawPrint,
+  Shirt, Diamond, Flower2, Gem, Home, Bed, Sofa, Bath, Trees,
   Monitor, Code, Cpu, Wifi, Database, Cloud, Globe,
-  // Travel/Transport
-  Plane, MapPin, Compass, Ship, Train,
-  // Education
-  GraduationCap, BookOpen, Pencil,
-  // Security
-  Lock, ShieldCheck, Fingerprint,
-  // Communication
-  Phone, Mail, MessageCircle, Send
+  Plane, MapPin, Compass, Ship, Train, GraduationCap, BookOpen, Pencil,
+  Lock, ShieldCheck, Fingerprint, Phone, Mail, MessageCircle, Send
 } from 'lucide-react';
 import { EditableText } from '../EditableText';
 import { ScrollAnimation, StaggerContainer } from '../animations/ScrollAnimations';
@@ -92,6 +72,7 @@ const defaultFeatures: FeatureItem[] = [
 export function FeaturesSection({ section, theme, asTile = false, onUpdateContent, onUpdateItem }: FeaturesSectionProps) {
   const content = section.content as FeaturesContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
+  const { intensity, hasMicroEffect } = useMotionProfile();
   
   const title = content?.title || section.label || 'Features';
   const subtitle = content?.subtitle || section.description || 'Everything you need to succeed';
@@ -253,24 +234,24 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
           </ScrollAnimation>
         </div>
         
-        <div className={`grid grid-cols-1 ${gridCols} gap-8`}>
+        <MotionStaggerContainer className={`grid grid-cols-1 ${gridCols} gap-8`}>
           {displayItems.map((feature, index) => {
             const IconComponent = iconComponents[feature.icon || 'Zap'] || Zap;
             return (
-              <ScrollAnimation 
+              <MotionWrapper 
                 key={index} 
-                animation="fade-up" 
-                delay={index * 100}
+                variant="card"
+                delay={index * 0.1}
               >
                 <div 
-                  className="p-6 rounded-xl transition-all hover:scale-105 h-full overflow-hidden"
+                  className={`p-6 rounded-xl transition-all h-full overflow-hidden ${hasMicroEffect('shadowLift') ? 'hover-lift' : 'hover:scale-105'}`}
                   style={{ 
                     backgroundColor: isDark ? '#1f1f1f' : '#ffffff',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
                 >
                   <div 
-                    className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${hasMicroEffect('iconPulse') ? 'animate-icon-pulse' : ''}`}
                     style={{ backgroundColor: `${theme.primaryColor}20` }}
                   >
                     <IconComponent 
@@ -327,10 +308,10 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
                     </p>
                   )}
                 </div>
-              </ScrollAnimation>
+              </MotionWrapper>
             );
           })}
-        </div>
+        </MotionStaggerContainer>
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 import { SiteSection, SiteTheme, HeroContent } from '@/types/app-spec';
 import { EditableText } from '../EditableText';
-import { ScrollAnimation } from '../animations/ScrollAnimations';
+import { MotionWrapper, MotionButton, SignatureFlourish, BackgroundAccent, useMotionProfile } from '@/components/motion';
 
 interface HeroSectionProps {
   section: SiteSection;
@@ -13,6 +13,7 @@ interface HeroSectionProps {
 export function HeroSection({ section, theme, siteName, asTile = false, onUpdateContent }: HeroSectionProps) {
   const content = section.content as HeroContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
+  const { intensity } = useMotionProfile();
   
   const headline = content?.headline || siteName;
   const subheadline = content?.subheadline || section.description || 'Welcome to our website. Discover what we have to offer.';
@@ -41,8 +42,16 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
         className="h-full min-h-[300px] flex flex-col justify-end p-6 lg:p-8 relative"
         style={backgroundStyle}
       >
-        <div className="max-w-xl overflow-hidden">
-          <ScrollAnimation animation="fade-up" duration={800}>
+        {/* Background accent for premium/wild */}
+        {intensity !== 'off' && intensity !== 'subtle' && (
+          <BackgroundAccent position="hero" />
+        )}
+        
+        {/* Signature flourish */}
+        {intensity !== 'off' && <SignatureFlourish position="hero" />}
+        
+        <div className="max-w-xl overflow-hidden relative z-10">
+          <MotionWrapper variant="hero">
             {onUpdateContent ? (
               <EditableText
                 value={headline}
@@ -67,9 +76,9 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
                 {headline}
               </h1>
             )}
-          </ScrollAnimation>
+          </MotionWrapper>
           
-          <ScrollAnimation animation="fade-up" delay={150} duration={800}>
+          <MotionWrapper variant="text" delay={0.15}>
             {onUpdateContent ? (
               <EditableText
                 value={subheadline}
@@ -95,27 +104,27 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
                 {subheadline}
               </p>
             )}
-          </ScrollAnimation>
+          </MotionWrapper>
           
-          <ScrollAnimation animation="fade-up" delay={300} duration={800}>
+          <MotionWrapper variant="section" delay={0.3}>
             <div className="flex flex-wrap gap-3">
-              <button
-                className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all hover:scale-105"
+              <MotionButton
+                className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all"
                 style={{ backgroundColor: theme.primaryColor }}
               >
                 {ctaText}
-              </button>
-              <button
-                className="px-5 py-2 rounded-lg font-semibold border text-sm transition-all hover:scale-105"
+              </MotionButton>
+              <MotionButton
+                className="px-5 py-2 rounded-lg font-semibold border text-sm transition-all"
                 style={{ 
                   borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
                   color: backgroundImage ? '#ffffff' : theme.primaryColor
                 }}
               >
                 {secondaryCtaText}
-              </button>
+              </MotionButton>
             </div>
-          </ScrollAnimation>
+          </MotionWrapper>
         </div>
       </section>
     );
@@ -128,17 +137,25 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
       className="flex items-center justify-center px-6 py-12 md:py-16 relative"
       style={backgroundStyle}
     >
-      <div className="max-w-4xl mx-auto text-center overflow-hidden">
+      {/* Background accent for premium/wild */}
+      {intensity !== 'off' && intensity !== 'subtle' && (
+        <BackgroundAccent position="hero" />
+      )}
+      
+      {/* Signature flourish */}
+      {intensity !== 'off' && <SignatureFlourish position="hero" />}
+      
+      <div className="max-w-4xl mx-auto text-center overflow-hidden relative z-10">
         {logo && (
-          <ScrollAnimation animation="fade-down" duration={800}>
+          <MotionWrapper variant="hero">
             <img 
               src={logo} 
               alt={`${siteName} logo`}
               className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 object-contain aspect-square"
             />
-          </ScrollAnimation>
+          </MotionWrapper>
         )}
-        <ScrollAnimation animation="fade-down" delay={logo ? 150 : 0} duration={1000}>
+        <MotionWrapper variant="hero" delay={logo ? 0.15 : 0}>
           {onUpdateContent ? (
             <EditableText
               value={headline}
@@ -163,9 +180,9 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
               {headline}
             </h1>
           )}
-        </ScrollAnimation>
+        </MotionWrapper>
         
-        <ScrollAnimation animation="fade-up" delay={200} duration={1000}>
+        <MotionWrapper variant="text" delay={0.2}>
           {onUpdateContent ? (
             <EditableText
               value={subheadline}
@@ -191,27 +208,27 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
               {subheadline}
             </p>
           )}
-        </ScrollAnimation>
+        </MotionWrapper>
         
-        <ScrollAnimation animation="scale-up" delay={400} duration={800}>
+        <MotionWrapper variant="section" delay={0.4}>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              className="px-8 py-3 rounded-lg font-semibold text-white transition-all hover:scale-105"
+            <MotionButton
+              className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
               style={{ backgroundColor: theme.primaryColor }}
             >
               {ctaText}
-            </button>
-            <button
-              className="px-8 py-3 rounded-lg font-semibold border-2 transition-all hover:scale-105"
+            </MotionButton>
+            <MotionButton
+              className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
               style={{ 
                 borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
                 color: backgroundImage ? '#ffffff' : theme.primaryColor
               }}
             >
               {secondaryCtaText}
-            </button>
+            </MotionButton>
           </div>
-        </ScrollAnimation>
+        </MotionWrapper>
       </div>
     </section>
   );
