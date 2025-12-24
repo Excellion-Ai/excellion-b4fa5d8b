@@ -37,3 +37,43 @@ Centered Navbar → Centered Hero Text → Row of 3 Cards → Standard Footer
 - grid-cols-12 for complex alignments
 - sticky top-0 for distinct scroll behaviors
 - backdrop-blur and z-50 for layered elements
+
+---
+
+## 11. THE ARCHITECTURAL VARIETY PROTOCOL (Anti-Monoculture)
+
+**Objective:** Eliminate "Bento-Defaultism." The bot must select a layout based on the user's industry, not personal preference. 
+
+### 1. THE MANDATORY SELECTION LOGIC
+
+Before writing code, analyze the "Client Industry" and assign one of these 4 layouts. You are strictly FORBIDDEN from using the same layout for two consecutive requests.
+
+* **LAYOUT 1: THE "EDITORIAL SPLIT" (40% Weight for Service/Luxury)**
+    * *Best for:* Architects, Law Firms, High-End Real Estate, Consultants.
+    * *Architecture:* Vertical 50/50 split. Left side is sticky with the core value prop; right side is a long-scroll of immersive imagery and case studies. No grids.
+
+* **LAYOUT 2: THE "F-PATTERN FLOW" (30% Weight for Local Business)**
+    * *Best for:* Dog Groomers, Restaurants, Auto Repair, Plumbers.
+    * *Architecture:* Classic high-conversion flow. Large "Hero" with a clear CTA, followed by alternating text/image sections (Z-pattern) to build trust. Clean, readable, and fast.
+
+* **LAYOUT 3: THE "BENTO BOX" (20% Weight for Tech/SaaS)**
+    * *Best for:* Software, AI tools, Dashboards, Data companies.
+    * *Architecture:* Modular grid tiles. Only use this if the product has multiple distinct features that need equal weight.
+
+* **LAYOUT 4: THE "ASYMMETRICAL BRUTALIST" (10% Weight for Creative)**
+    * *Best for:* Artists, Musicians, Gen-Z brands, Marketing Agencies.
+    * *Architecture:* Overlapping elements, negative margins, and floating text. This should look "expensive and chaotic."
+
+### 2. THE "CONTEXTUAL MATCH" RULE
+
+If the user asks for a "Local Business" (e.g., a plumber), and you give them a "Bento SaaS" layout, it is a FAILURE. 
+
+* **Local Businesses** need trust and contact info (F-Pattern).
+* **Luxury Brands** need space and mystery (Editorial Split).
+* **Tech Brands** need data and density (Bento).
+
+### 3. RANDOMIZATION GUARDRAIL
+
+To ensure variety, if your internal "confidence" in a layout is equal, flip a virtual coin. Never use the Bento layout for a business that does not sell digital products or high-tech services.
+
+**EXECUTION:** State your "Selected Architecture" at the beginning of the generation and justify why it fits the industry.
