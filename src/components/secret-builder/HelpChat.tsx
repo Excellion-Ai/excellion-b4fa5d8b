@@ -315,15 +315,6 @@ export function HelpChat() {
         <AnimatePresence>
           {isOpen && (
             <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[9990]"
-                onClick={handleClose}
-              />
-              
               {/* Draggable Chat Window */}
               <motion.div
                 ref={dragRef}
