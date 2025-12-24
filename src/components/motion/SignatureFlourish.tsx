@@ -12,6 +12,13 @@ import {
   LegalScaleBalance,
   HeartbeatPulse,
   CreativeBrushStroke,
+  PipeTraceLine,
+  SunburstGlow,
+  CircuitGlowTrace,
+  EnergyRing,
+  TrustBadgeShine,
+  ConfettiSparkle,
+  MenuUnderlineSlider,
 } from './flourishes';
 
 interface SignatureFlourishProps {
@@ -20,9 +27,10 @@ interface SignatureFlourishProps {
 }
 
 export function SignatureFlourish({ position = 'hero', className = '' }: SignatureFlourishProps) {
-  const { flourishId } = useMotionProfile();
+  const { flourishId, intensity } = useMotionProfile();
 
-  if (flourishId === 'none') return null;
+  // Don't render for off intensity
+  if (intensity === 'off' || flourishId === 'none') return null;
 
   const flourishMap: Record<FlourishId, React.ReactNode> = {
     pressurePulseBadge: <PressurePulseBadge className={className} />,
@@ -36,6 +44,14 @@ export function SignatureFlourish({ position = 'hero', className = '' }: Signatu
     legalScaleBalance: <LegalScaleBalance className={className} />,
     heartbeatPulse: <HeartbeatPulse className={className} />,
     creativeBrushStroke: <CreativeBrushStroke className={className} />,
+    // New flourishes
+    pipeTraceLine: <PipeTraceLine className={className} />,
+    sunburstGlow: <SunburstGlow className={className} />,
+    circuitGlowTrace: <CircuitGlowTrace className={className} />,
+    energyRing: <EnergyRing className={className} />,
+    trustBadgeShine: <TrustBadgeShine className={className} />,
+    confettiSparkle: <ConfettiSparkle className={className} />,
+    menuUnderlineSlider: <MenuUnderlineSlider className={className} />,
     none: null,
   };
 
