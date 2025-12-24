@@ -1,4 +1,4 @@
-import { SiteSpec, SiteSection, BusinessModel, SiteTheme } from '@/types/site-spec';
+import { SiteSpec, SiteSection, BusinessModel, SiteTheme, LayoutStructure } from '@/types/site-spec';
 
 // Keyword mappings for business model detection
 const BUSINESS_KEYWORDS: Record<BusinessModel, string[]> = {
@@ -6,6 +6,17 @@ const BUSINESS_KEYWORDS: Record<BusinessModel, string[]> = {
   RETAIL_COMMERCE: ['shop', 'store', 'clothing', 'product', 'ecommerce', 'sell', 'merchandise', 'apparel', 'jewelry', 'electronics'],
   HOSPITALITY: ['restaurant', 'cafe', 'bar', 'hotel', 'food', 'pizza', 'booking', 'reservation', 'menu', 'dining'],
   PORTFOLIO_IDENTITY: ['portfolio', 'designer', 'artist', 'photographer', 'personal', 'freelance', 'creative', 'brand'],
+};
+
+// Technology keywords for special layout handling
+const TECH_KEYWORDS = ['saas', 'software', 'app', 'tech', 'ai', 'startup', 'platform', 'dashboard', 'analytics', 'cloud', 'api'];
+
+// Layout mapping based on business model (Architectural Variety Protocol)
+const LAYOUT_MAP: Record<BusinessModel, LayoutStructure> = {
+  SERVICE_BASED: 'standard',
+  RETAIL_COMMERCE: 'standard',
+  HOSPITALITY: 'standard',
+  PORTFOLIO_IDENTITY: 'layered',
 };
 
 // Color palettes by business type
@@ -46,7 +57,29 @@ function detectBusinessModel(input: string): BusinessModel {
     }
   }
   
-  return 'SERVICE_BASED'; // Default fallback
+  return 'SERVICE_BASED';
+}
+
+// Detect if input is tech-focused for bento layout
+function isTechFocused(input: string): boolean {
+  const lowerInput = input.toLowerCase();
+  return TECH_KEYWORDS.some(kw => lowerInput.includes(kw));
+}
+
+// Get layout based on business model and context
+function getLayoutStructure(input: string, businessModel: BusinessModel): LayoutStructure {
+  // Tech-focused businesses get bento layout
+  if (isTechFocused(input)) {
+    return 'bento';
+  }
+  
+  // Portfolio/creative businesses get layered layout
+  if (businessModel === 'PORTFOLIO_IDENTITY') {
+    return 'layered';
+  }
+  
+  // Default based on business model
+  return LAYOUT_MAP[businessModel];
 }
 
 // Extract a potential business name from input
@@ -190,6 +223,7 @@ export function specFromChat(input: string): SiteSpec {
   const businessModel = detectBusinessModel(input);
   const businessName = extractBusinessName(input);
   const themePalette = THEME_PALETTES[businessModel];
+  const layoutStructure = getLayoutStructure(input, businessModel);
 
   const theme: SiteTheme = {
     primaryColor: themePalette.primaryColor || '#3b82f6',
@@ -221,6 +255,7 @@ export function specFromChat(input: string): SiteSpec {
     name: businessName,
     description: `Website for ${businessName}`,
     businessModel,
+    layoutStructure,
     theme,
     navigation,
     pages: [
