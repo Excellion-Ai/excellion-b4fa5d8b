@@ -1059,7 +1059,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
     <div className="h-screen overflow-hidden bg-background">
       <ResizablePanelGroup direction="horizontal" className="h-full">
         {/* Left Panel - Chat */}
-        <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+        <ResizablePanel defaultSize={38} minSize={25} maxSize={55}>
           <div className="h-full border-r border-border flex flex-col bg-card/30">
             {/* Header with Studio button and Project Name */}
             <div className="border-b border-border px-2 sm:px-3 py-2 sm:py-2.5 bg-card/50">
