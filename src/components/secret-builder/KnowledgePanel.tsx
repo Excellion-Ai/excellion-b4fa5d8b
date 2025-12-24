@@ -400,15 +400,7 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
             <div className="py-6 flex items-center justify-center">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
-          ) : entries.length === 0 ? (
-            <div className="py-6 text-center">
-              <BookOpen className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">No knowledge added</p>
-              <p className="text-xs text-muted-foreground/70 mt-1">
-                Add brand docs, guidelines, or API specs
-              </p>
-            </div>
-          ) : (
+          ) : entries.length > 0 && (
             <ScrollArea className="max-h-64">
               {entries.map((entry) => (
                 <div
@@ -451,7 +443,7 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
                           <MoreVertical className="h-3.5 w-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className="bg-popover">
                         <DropdownMenuItem onClick={() => {
                           setSelectedEntry(entry);
                           setShowViewDialog(true);
