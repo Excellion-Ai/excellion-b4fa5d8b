@@ -1,14 +1,6 @@
 
-import { FileText, Home, Info, Mail, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SitePage, SiteSection } from '@/types/site-spec';
-
-const PAGE_ICONS: Record<string, React.ReactNode> = {
-  '/': <Home className="h-4 w-4" />,
-  '/about': <Info className="h-4 w-4" />,
-  '/contact': <Mail className="h-4 w-4" />,
-  '/services': <Briefcase className="h-4 w-4" />,
-};
 
 const PAGE_TEMPLATES: { title: string; path: string; sections: SiteSection[] }[] = [
   {
@@ -146,13 +138,12 @@ export function PageManager({
             key={page.path}
             variant="ghost"
             size="sm"
-            className={`h-7 px-2 text-xs gap-1 ${
+            className={`h-7 px-2 text-xs ${
               currentPageIndex === originalIndex ? 'bg-background shadow-sm' : ''
             }`}
             onClick={() => onSelectPage(originalIndex)}
             title={page.title}
           >
-            {PAGE_ICONS[page.path] || <FileText className="h-3.5 w-3.5" />}
             <span className="max-w-[80px] truncate">{page.title}</span>
           </Button>
         );
