@@ -340,7 +340,15 @@ PORTFOLIO_IDENTITY (Designers, Artists, Personal Brands, Agencies, NGOs)
 ## PHASE 4: SITE DEFINITION OUTPUT
 ====================================
 
-IMPORTANT: Always use layoutStructure: "standard" - sections flow vertically with no gaps.
+**ARCHITECTURAL VARIETY PROTOCOL - LAYOUT SELECTION:**
+Select layoutStructure based on business model:
+- SERVICE_BASED (Plumbers, Dentists, Lawyers) → "standard" (F-Pattern Flow)
+- RETAIL_COMMERCE (Shops, E-commerce) → "standard" or "bento" based on product focus
+- HOSPITALITY (Restaurants, Hotels) → "standard" (Editorial flow)
+- PORTFOLIO_IDENTITY (Artists, Designers, Agencies) → "layered" or "horizontal"
+- TECHNOLOGY (SaaS, Apps, Tech) → "bento" (Asymmetric tiles)
+
+State your "Selected Architecture" reasoning when generating.
 
 **CRITICAL: GENERATE MULTIPLE PAGES** - Every site MUST have 3-5 pages generated on initial creation:
 
@@ -386,7 +394,7 @@ OUTPUT FORMAT (JSON):
   "integrations": ["Supabase", "Stripe"],
   "siteDefinition": {
     "name": "Business Name",
-    "layoutStructure": "standard",
+    "layoutStructure": "standard|bento|layered|horizontal (based on business model)",
     "theme": {
       "primaryColor": "#hex from industry mapping",
       "secondaryColor": "#hex from industry mapping",
@@ -632,7 +640,7 @@ CRITICAL: Extract a proper BUSINESS NAME from the user's prompt for the project 
 4. ALWAYS use the industry-appropriate colors from Phase 1
 5. ALWAYS use industry-specific CTAs, not generic "Get Started"
 6. ALWAYS include industry-specific FAQs
-7. ALWAYS use layoutStructure: "standard"
+7. ALWAYS select layoutStructure based on the ARCHITECTURAL VARIETY PROTOCOL above (match business model to layout)
 8. **ICONS MUST BE UNIQUE AND FROM ALLOWED LIST** - NEVER repeat the same icon across feature cards. Each feature MUST have a DIFFERENT icon from this EXACT list:
    
    ALLOWED ICONS (use ONLY these exact names):

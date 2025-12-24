@@ -593,12 +593,24 @@ You are strictly FORBIDDEN from generating these standard patterns:
 *If you generate generic content instead of industry-specific content, the output is a failure.*
 
 ====================================
-## 4. LAYOUT STRUCTURE
+## 4. ARCHITECTURAL VARIETY PROTOCOL - LAYOUT SELECTION
 ====================================
 
-ALWAYS use layoutStructure: "standard" - this creates clean, full-width sections that flow vertically.
+Select layoutStructure based on business model - DO NOT default to "standard" for everything:
 
-DO NOT use "bento", "layered", or "horizontal" layouts - they create visual problems with blank spaces.
+- **SERVICE_BASED** (Plumbers, Dentists, Lawyers, Consultants) → "standard" (F-Pattern Flow)
+- **RETAIL_COMMERCE** (Shops, E-commerce, Products) → "standard" or "bento" based on product count
+- **HOSPITALITY** (Restaurants, Hotels, Venues) → "standard" (Editorial flow)
+- **PORTFOLIO_IDENTITY** (Artists, Designers, Agencies, Creatives) → "layered" or "horizontal"
+- **TECHNOLOGY** (SaaS, Apps, AI, Tech Companies) → "bento" (Asymmetric tiles)
+
+**Layout Descriptions:**
+- "standard": Traditional vertical section stack, clean F-Pattern flow
+- "bento": CSS Grid asymmetric tiles with varying col-span/row-span (modern SaaS look)
+- "layered": Z-index overlapping elements for creative depth
+- "horizontal": Horizontal scroll sections for showcases/portfolios
+
+State your "Selected Architecture" and justification when generating.
 
 ====================================
 ## 5. VISUAL STYLE DICTIONARY
@@ -682,7 +694,7 @@ Format:
   "name": "Business Name",
   "description": "Brief description",
   "businessModel": "SERVICE_BASED|RETAIL_COMMERCE|HOSPITALITY|PORTFOLIO_IDENTITY",
-  "layoutStructure": "standard",
+  "layoutStructure": "standard|bento|layered|horizontal (based on ARCHITECTURAL VARIETY PROTOCOL)",
   "theme": {
     "primaryColor": "#hex from industry blueprint",
     "secondaryColor": "#hex from industry blueprint",
