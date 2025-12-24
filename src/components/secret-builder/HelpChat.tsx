@@ -141,31 +141,33 @@ export function HelpChat() {
               </Button>
             </div>
 
-            <ScrollArea className="h-64 p-3" ref={scrollRef}>
-              <div className="space-y-3">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
+            <ScrollArea className="h-64" ref={scrollRef}>
+              <div className="flex flex-col justify-end min-h-full p-3">
+                <div className="space-y-3">
+                  {messages.map((message) => (
                     <div
-                      className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground'
-                      }`}
+                      key={message.id}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      {message.content}
+                      <div
+                        className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
+                          message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-foreground'
+                        }`}
+                      >
+                        {message.content}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted px-3 py-2 rounded-xl">
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ))}
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-muted px-3 py-2 rounded-xl">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </ScrollArea>
 
