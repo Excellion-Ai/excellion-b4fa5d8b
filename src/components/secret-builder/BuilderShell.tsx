@@ -17,6 +17,7 @@ import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
 import { ThemeEditor } from './ThemeEditor';
 import { LogoUpload } from './LogoUpload';
+import { HelpChat } from './HelpChat';
 import { CodeExport, generateHtmlFromSpec } from './CodeExport';
 import { SectionLibrary } from './SectionLibrary';
 import { PageManager } from './PageManager';
@@ -1131,6 +1132,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   generatedImages={generatedImages}
                   isLoadingImages={isLoadingImages}
                 />
+                <HelpChat />
               </div>
             )}
 
