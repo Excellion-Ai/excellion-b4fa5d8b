@@ -350,35 +350,49 @@ Select layoutStructure based on business model:
 
 State your "Selected Architecture" reasoning when generating.
 
-**CRITICAL: GENERATE MULTIPLE PAGES** - Every site MUST have 3-5 pages generated on initial creation:
+**CRITICAL: GENERATE MULTIPLE WORKING PAGES** - Every site MUST have 3-5 separate pages with proper navigation:
+
+**HOME PAGE STRUCTURE (CONDENSED - MAX 4-5 SECTIONS):**
+The home page should be LEAN and focused. Only include:
+1. Hero - Main headline and CTA
+2. Features/Services Preview - 4 items max (tease full content on separate page)
+3. Testimonials OR Stats (pick ONE, not both)
+4. CTA - Final call to action
+
+DO NOT include on home page: FAQ, Contact form, full service lists, team sections - these go on SEPARATE PAGES.
+
+**NAVIGATION MUST USE PAGE PATHS (NOT ANCHOR LINKS):**
+- Use "/" for Home
+- Use "/services" for Services page
+- Use "/about" for About page  
+- Use "/contact" for Contact page
+- NEVER use "#services-page" or "#about-page" - these don't work!
 
 REQUIRED PAGES BY BUSINESS MODEL:
 
 **SERVICE_BASED** (Plumbers, Dentists, Lawyers, Consultants):
-1. Home - Hero, Features/Services, Stats, Testimonials, CTA
-2. Services - Detailed service descriptions with pricing hints
-3. About - Company story, team, values, mission
-4. Contact - Contact form, location map, hours, phone/email
+1. Home (/) - Hero, Services Preview (4 items), Stats, CTA
+2. Services (/services) - Hero, Full Services List, FAQ
+3. About (/about) - Hero, Story, Team, Values
+4. Contact (/contact) - Hero, Contact Form, Location/Hours
 
 **RETAIL_COMMERCE** (Shops, E-commerce):
-1. Home - Hero, Featured Products, Categories, Testimonials, CTA
-2. Products/Shop - Product grid with categories
-3. About - Brand story, values, craftsmanship
-4. Contact - Contact form, location, support info
+1. Home (/) - Hero, Featured Products, Testimonials, CTA
+2. Products (/products) - Hero, Product Grid, Categories
+3. About (/about) - Brand Story, Values
+4. Contact (/contact) - Contact Form, Support Info
 
 **HOSPITALITY** (Restaurants, Hotels, Venues):
-1. Home - Hero, Menu highlights, Ambiance, Testimonials, CTA
-2. Menu - Full menu with categories and prices
-3. About - Story, chef/team, history
-4. Catering/Events - Event packages, booking info
-5. Contact - Reservations, location, hours
+1. Home (/) - Hero, Menu Highlights, Testimonials, CTA
+2. Menu (/menu) - Full Menu with Categories
+3. About (/about) - Story, Chef/Team
+4. Contact (/contact) - Reservations, Location, Hours
 
 **PORTFOLIO_IDENTITY** (Designers, Artists, Agencies):
-1. Home - Hero, Featured Work, Services, Testimonials, CTA
-2. Portfolio/Work - Gallery of projects with case studies
-3. Services - Detailed service offerings
-4. About - Bio, process, clients
-5. Contact - Contact form, availability
+1. Home (/) - Hero, Featured Work (3-4 items), Testimonials, CTA
+2. Portfolio (/portfolio) - Full Gallery
+3. Services (/services) - Service Offerings
+4. Contact (/contact) - Contact Form, Availability
 
 OUTPUT FORMAT (JSON):
 {
@@ -405,10 +419,10 @@ OUTPUT FORMAT (JSON):
       "backgroundStyle": "dark"
     },
     "navigation": [
-      {"label": "Home", "href": "#home"},
-      {"label": "Services", "href": "#services-page"},
-      {"label": "About", "href": "#about-page"},
-      {"label": "Contact", "href": "#contact-page"}
+      {"label": "Home", "href": "/"},
+      {"label": "Services", "href": "/services"},
+      {"label": "About", "href": "/about"},
+      {"label": "Contact", "href": "/contact"}
     ],
     "pages": [
       {
@@ -423,33 +437,20 @@ OUTPUT FORMAT (JSON):
               "headline": "Industry-specific headline",
               "subheadline": "Industry-specific subtext",
               "ctaText": "Industry-specific CTA",
-              "ctaLink": "#contact"
+              "ctaLink": "/contact"
             }
           },
           {
-            "id": "services",
+            "id": "services-preview",
             "type": "features",
-            "label": "Services",
+            "label": "Services Preview",
             "content": {
-              "title": "Industry-Appropriate Title",
+              "title": "What We Offer",
               "items": [
-                {"title": "Service 1", "description": "Description", "icon": "UniqueIcon1"},
-                {"title": "Service 2", "description": "Description", "icon": "UniqueIcon2"},
-                {"title": "Service 3", "description": "Description", "icon": "UniqueIcon3"},
-                {"title": "Service 4", "description": "Description", "icon": "UniqueIcon4"}
-              ]
-            }
-          },
-          {
-            "id": "stats",
-            "type": "stats",
-            "label": "Stats",
-            "content": {
-              "items": [
-                {"value": "Industry Stat", "label": "Industry Metric"},
-                {"value": "Industry Stat", "label": "Industry Metric"},
-                {"value": "Industry Stat", "label": "Industry Metric"},
-                {"value": "Industry Stat", "label": "Industry Metric"}
+                {"title": "Service 1", "description": "Brief description", "icon": "Icon1"},
+                {"title": "Service 2", "description": "Brief description", "icon": "Icon2"},
+                {"title": "Service 3", "description": "Brief description", "icon": "Icon3"},
+                {"title": "Service 4", "description": "Brief description", "icon": "Icon4"}
               ]
             }
           },
@@ -460,8 +461,8 @@ OUTPUT FORMAT (JSON):
             "content": {
               "title": "What Customers Say",
               "items": [
-                {"name": "Realistic Name", "role": "Role", "quote": "Testimonial", "rating": 5},
-                {"name": "Realistic Name", "role": "Role", "quote": "Testimonial", "rating": 5}
+                {"name": "Name", "role": "Role", "quote": "Testimonial", "rating": 5},
+                {"name": "Name", "role": "Role", "quote": "Testimonial", "rating": 5}
               ]
             }
           },
@@ -473,7 +474,7 @@ OUTPUT FORMAT (JSON):
               "headline": "Ready to get started?",
               "subheadline": "Contact us today",
               "ctaText": "Get in Touch",
-              "ctaLink": "#contact-page"
+              "ctaLink": "/contact"
             }
           }
         ]
@@ -490,7 +491,7 @@ OUTPUT FORMAT (JSON):
               "headline": "Our Services",
               "subheadline": "What we offer",
               "ctaText": "Get a Quote",
-              "ctaLink": "#contact-page"
+              "ctaLink": "/contact"
             }
           },
           {
@@ -535,8 +536,8 @@ OUTPUT FORMAT (JSON):
             "content": {
               "headline": "About Us",
               "subheadline": "Our story and mission",
-              "ctaText": "Meet the Team",
-              "ctaLink": "#team"
+              "ctaText": "Contact Us",
+              "ctaLink": "/contact"
             }
           },
           {

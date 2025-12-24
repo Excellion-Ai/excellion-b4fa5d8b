@@ -661,7 +661,35 @@ MATCH COLORS TO INDUSTRY (from blueprints above), then apply style based on vibe
 - NEVER use 3 or 5 cards - it creates awkward layouts
 
 ====================================
-## 7. RESPONSE FORMAT - CRITICAL
+## 7. PAGE STRUCTURE RULES
+====================================
+
+**HOME PAGE - KEEP IT LEAN (MAX 4-5 SECTIONS):**
+Only include on home page:
+1. Hero - Main headline and primary CTA
+2. Features/Services Preview - MAX 4 items (tease content, full list goes on separate page)
+3. Testimonials OR Stats (pick ONE, not both)
+4. CTA - Final call to action
+
+DO NOT put on home page: FAQ, Contact form, full service lists, team sections, pricing details
+These go on SEPARATE dedicated pages.
+
+**NAVIGATION MUST USE PAGE PATHS:**
+- "/" for Home
+- "/services" or "/products" or "/menu" for main offering
+- "/about" for About page
+- "/contact" for Contact page
+- NEVER use "#section" anchor links - they don't work for separate pages!
+
+**GENERATE MULTIPLE WORKING PAGES:**
+Every site needs 3-4 separate pages with full content:
+- Home (/) - Condensed overview with CTAs linking to other pages
+- Services/Products/Menu (/services or /products or /menu) - Full details
+- About (/about) - Company story, team, values
+- Contact (/contact) - Contact form, location, hours
+
+====================================
+## 8. RESPONSE FORMAT - CRITICAL
 ====================================
 
 You MUST respond with TWO parts:
@@ -706,8 +734,10 @@ Format:
     "fontBody": "Inter"
   },
   "navigation": [
-    { "label": "Home", "href": "#" },
-    { "label": "Industry-Specific-Nav", "href": "#section" }
+    { "label": "Home", "href": "/" },
+    { "label": "Services", "href": "/services" },
+    { "label": "About", "href": "/about" },
+    { "label": "Contact", "href": "/contact" }
   ],
   "pages": [{
     "path": "/",
@@ -721,10 +751,13 @@ Format:
           "headline": "Industry-specific headline from blueprint",
           "subheadline": "Supporting text tailored to this business",
           "ctas": [
-            { "label": "Industry-specific CTA", "href": "#contact", "variant": "primary" }
+            { "label": "Industry-specific CTA", "href": "/contact", "variant": "primary" }
           ]
         }
-      }
+      },
+      {"id": "features-preview", "type": "features", "label": "Features", "content": {"title": "What We Offer", "items": [{"title": "Feature 1", "description": "Brief description", "icon": "Star"}, {"title": "Feature 2", "description": "Brief description", "icon": "Zap"}, {"title": "Feature 3", "description": "Brief description", "icon": "Shield"}, {"title": "Feature 4", "description": "Brief description", "icon": "Heart"}]}},
+      {"id": "testimonials", "type": "testimonials", "label": "Reviews", "content": {"title": "What Customers Say", "items": [{"name": "John D.", "role": "Customer", "quote": "Great service!", "rating": 5}]}},
+      {"id": "cta", "type": "cta", "label": "CTA", "content": {"headline": "Ready to get started?", "ctaText": "Contact Us", "ctaLink": "/contact"}}
     ]
   }],
   "footer": {
@@ -856,11 +889,13 @@ Before outputting, run this silent checklist:
 1. Did I detect the industry correctly? → Apply the correct blueprint
 2. Did I use industry-specific headlines and CTAs? → MUST match blueprint
 3. Did I use the correct primary/secondary colors for this industry? → Check blueprint
-4. Did I use layoutStructure: "standard"? → MUST be "standard"
+4. Did I select the correct layoutStructure based on ARCHITECTURAL VARIETY PROTOCOL? → Check business model
 5. Are the buttons using industry-appropriate text? → NOT generic "Get Started"
 6. Did I use 3 or 5 cards? → If YES, change to 4 or 6
 7. Did I include industry-specific FAQs? → Use from blueprint
 8. Are testimonials realistic for this industry? → Match context from blueprint
+9. Does the HOME page have only 4-5 sections? → If more, move to separate pages
+10. Do all navigation links use page paths (/, /services, /about, /contact)? → NO anchor links like #section
 
 ====================================
 ## EXCELLION SERVICE CONTEXT
