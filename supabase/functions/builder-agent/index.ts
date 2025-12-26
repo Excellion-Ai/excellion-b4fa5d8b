@@ -397,7 +397,7 @@ Select layoutStructure based on business model:
 
 State your "Selected Architecture" reasoning when generating.
 
-**CRITICAL: GENERATE MULTIPLE WORKING PAGES** - Every site MUST have 3-5 separate pages with proper navigation:
+**CRITICAL: GENERATE MULTIPLE WORKING PAGES** - Every site MUST have 3-5 separate pages:
 
 **HOME PAGE STRUCTURE (CONDENSED - MAX 4-5 SECTIONS):**
 The home page should be LEAN and focused. Only include:
@@ -408,12 +408,7 @@ The home page should be LEAN and focused. Only include:
 
 DO NOT include on home page: FAQ, Contact form, full service lists, team sections - these go on SEPARATE PAGES.
 
-**NAVIGATION MUST USE PAGE PATHS (NOT ANCHOR LINKS):**
-- Use "/" for Home
-- Use "/services" for Services page
-- Use "/about" for About page  
-- Use "/contact" for Contact page
-- NEVER use "#services-page" or "#about-page" - these don't work!
+**IMPORTANT: DO NOT GENERATE NAVIGATION ITEMS** - Navigation is handled automatically by the system. Set navigation to an empty array.
 
 REQUIRED PAGES BY BUSINESS MODEL:
 
@@ -465,12 +460,7 @@ OUTPUT FORMAT (JSON):
       "darkMode": true,
       "backgroundStyle": "dark"
     },
-    "navigation": [
-      {"label": "Home", "href": "/"},
-      {"label": "Services", "href": "/services"},
-      {"label": "About", "href": "/about"},
-      {"label": "Contact", "href": "/contact"}
-    ],
+    "navigation": [],
     "pages": [
       {
         "title": "Home",
