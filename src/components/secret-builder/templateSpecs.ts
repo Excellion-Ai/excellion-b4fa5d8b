@@ -19,11 +19,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
       fontHeading: 'Inter, sans-serif',
       fontBody: 'Inter, sans-serif',
     },
-    navigation: [
-      { label: 'Features', href: '#features' },
-      { label: 'Pricing', href: '#pricing' },
-      { label: 'Testimonials', href: '#testimonials' },
-    ],
+    navigation: [],
     pages: [{
       path: '/',
       title: 'Home',
@@ -113,11 +109,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
       fontHeading: 'Playfair Display, serif',
       fontBody: 'Inter, sans-serif',
     },
-    navigation: [
-      { label: 'Menu', href: '#menu' },
-      { label: 'About', href: '#about' },
-      { label: 'Reserve', href: '#contact' },
-    ],
+    navigation: [],
     pages: [{
       path: '/',
       title: 'Home',
@@ -194,11 +186,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
       fontHeading: 'Space Grotesk, sans-serif',
       fontBody: 'Inter, sans-serif',
     },
-    navigation: [
-      { label: 'Work', href: '#work' },
-      { label: 'About', href: '#about' },
-      { label: 'Contact', href: '#contact' },
-    ],
+    navigation: [],
     pages: [{
       path: '/',
       title: 'Home',
@@ -284,12 +272,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
       fontHeading: 'Inter, sans-serif',
       fontBody: 'Inter, sans-serif',
     },
-    navigation: [
-      { label: 'Services', href: '#services' },
-      { label: 'About', href: '#about' },
-      { label: 'Reviews', href: '#reviews' },
-      { label: 'Contact', href: '#contact' },
-    ],
+    navigation: [],
     pages: [{
       path: '/',
       title: 'Home',
@@ -395,11 +378,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
       fontHeading: 'Poppins, sans-serif',
       fontBody: 'Inter, sans-serif',
     },
-    navigation: [
-      { label: 'Shop', href: '#shop' },
-      { label: 'Collections', href: '#collections' },
-      { label: 'Sale', href: '#sale' },
-    ],
+    navigation: [],
     pages: [{
       path: '/',
       title: 'Home',
@@ -489,11 +468,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
       fontHeading: 'Merriweather, serif',
       fontBody: 'Source Sans Pro, sans-serif',
     },
-    navigation: [
-      { label: 'Articles', href: '#articles' },
-      { label: 'About', href: '#about' },
-      { label: 'Subscribe', href: '#subscribe' },
-    ],
+    navigation: [],
     pages: [{
       path: '/',
       title: 'Home',

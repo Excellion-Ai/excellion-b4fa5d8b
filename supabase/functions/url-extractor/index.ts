@@ -422,11 +422,7 @@ async function extractFromUrl(url: string): Promise<ExtractionResult> {
       title: "Home",
       sections,
     }],
-    navigation: navigation.length > 0 ? navigation : [
-      { label: "Home", href: "#" },
-      { label: "Services", href: "#services" },
-      { label: "Contact", href: "#contact" },
-    ],
+    navigation: [],
   };
   
   // ============ CLASSIFICATION ============

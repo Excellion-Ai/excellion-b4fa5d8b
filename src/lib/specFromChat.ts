@@ -238,18 +238,7 @@ export function specFromChat(input: string): SiteSpec {
 
   const sections = generateSections(businessModel, businessName);
 
-  const navigation = [
-    { label: 'Home', href: '#' },
-    { label: 'Features', href: '#features' },
-    { label: 'Contact', href: '#contact' },
-  ];
-
-  if (businessModel === 'RETAIL_COMMERCE') {
-    navigation.splice(2, 0, { label: 'Pricing', href: '#pricing' });
-  }
-  if (businessModel === 'HOSPITALITY') {
-    navigation.splice(2, 0, { label: 'Reviews', href: '#testimonials' });
-  }
+  const navigation: { label: string; href: string }[] = [];
 
   return {
     name: businessName,
