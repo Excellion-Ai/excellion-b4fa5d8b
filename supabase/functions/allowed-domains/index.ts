@@ -5,8 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const EXCELLION_DOMAIN = 'excellion.app'
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -24,6 +25,16 @@ Deno.serve(async (req) => {
     }
 
     console.log(`[allowed-domains] Checking domain: ${domain}`)
+
+    // Auto-allow all *.excellion.app subdomains
+    if (domain.endsWith(`.${EXCELLION_DOMAIN}`)) {
+      const slug = domain.replace(`.${EXCELLION_DOMAIN}`, '')
+      console.log(`[allowed-domains] Auto-allowing Excellion subdomain: ${slug}.${EXCELLION_DOMAIN}`)
+      return new Response(
+        JSON.stringify({ allowed: true, excellion_subdomain: true, slug }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

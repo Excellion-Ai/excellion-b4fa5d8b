@@ -119,33 +119,36 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get public URL
+    // Get public URL (storage URL for internal reference)
     const { data: urlData } = supabase.storage
       .from('published-sites')
       .getPublicUrl(fileName);
 
-    const publishedUrl = urlData.publicUrl;
+    const storageUrl = urlData.publicUrl;
+    
+    // Pretty URL using excellion.app subdomain
+    const prettyUrl = `https://${slug}.excellion.app`;
 
-    console.log(`Site published at: ${publishedUrl}`);
+    console.log(`Site published at: ${prettyUrl} (storage: ${storageUrl})`);
 
-    // Update project with published URL
+    // Update project with published URL (store storage URL for lookups)
     const { error: updateError } = await supabase
       .from('builder_projects')
       .update({
-        published_url: publishedUrl,
+        published_url: storageUrl,
         published_at: new Date().toISOString(),
       })
       .eq('id', projectId);
 
     if (updateError) {
       console.error('Update error:', updateError);
-      // Don't fail - the site is still published
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        url: publishedUrl,
+        url: prettyUrl,
+        storageUrl,
         slug 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

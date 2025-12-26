@@ -16,25 +16,40 @@
     }
 }
 
-# Catch-all for any domain
-:443 {
-    # Enable On-Demand TLS for automatic certificate generation
+# Excellion.app subdomains - wildcard for all published sites
+*.excellion.app {
     tls {
         on_demand
     }
     
-    # Reverse proxy to your main application
-    # Replace with your actual application URL
-    reverse_proxy https://twaljzxgbbkhhjjocilf.supabase.co {
-        # Pass the original host header so your app knows which site to serve
-        header_up Host {host}
+    reverse_proxy https://twaljzxgbbkhhjjocilf.supabase.co/functions/v1/serve-site {
+        header_up Host {upstream_hostport}
         header_up X-Forwarded-Host {host}
         header_up X-Original-Host {host}
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-Proto {scheme}
     }
     
-    # Logging
+    log {
+        output file /var/log/caddy/excellion-access.log
+        format json
+    }
+}
+
+# Catch-all for custom domains
+:443 {
+    tls {
+        on_demand
+    }
+    
+    reverse_proxy https://twaljzxgbbkhhjjocilf.supabase.co/functions/v1/serve-site {
+        header_up Host {upstream_hostport}
+        header_up X-Forwarded-Host {host}
+        header_up X-Original-Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
     log {
         output file /var/log/caddy/access.log
         format json
