@@ -5,13 +5,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-original-host, x-forwarded-host',
 }
 
+const EXCELLION_DOMAIN = 'excellion.app'
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Get the domain from headers (set by Caddy)
     const domain = req.headers.get('x-original-host') || 
                    req.headers.get('x-forwarded-host') || 
                    req.headers.get('host')
@@ -28,28 +29,57 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Look up the domain to get the project_id
-    const { data: domainData, error: domainError } = await supabase
-      .from('custom_domains')
-      .select('project_id')
-      .eq('domain', domain)
-      .eq('status', 'active')
-      .maybeSingle()
+    let projectData: { name: string; published_url: string } | null = null
 
-    if (domainError || !domainData) {
-      console.log(`[serve-site] Domain not found: ${domain}`)
-      return new Response('Site not found', { status: 404 })
+    // Check if it's an Excellion subdomain (e.g., my-site.excellion.app)
+    const excellionMatch = domain.match(/^([a-z0-9-]+)\.excellion\.app$/i)
+    
+    if (excellionMatch) {
+      const slug = excellionMatch[1]
+      console.log(`[serve-site] Excellion subdomain detected, slug: ${slug}`)
+      
+      // Look up project by slug in published_url
+      const { data, error } = await supabase
+        .from('builder_projects')
+        .select('name, published_url')
+        .ilike('published_url', `%/${slug}/index.html`)
+        .maybeSingle()
+
+      if (error || !data) {
+        console.log(`[serve-site] Project not found for slug: ${slug}`)
+        return new Response('Site not found', { status: 404 })
+      }
+      
+      projectData = data
+    } else {
+      // Custom domain lookup via custom_domains table
+      const { data: domainData, error: domainError } = await supabase
+        .from('custom_domains')
+        .select('project_id')
+        .eq('domain', domain)
+        .or('status.eq.active,is_verified.eq.true')
+        .maybeSingle()
+
+      if (domainError || !domainData) {
+        console.log(`[serve-site] Custom domain not found: ${domain}`)
+        return new Response('Site not found', { status: 404 })
+      }
+
+      const { data, error } = await supabase
+        .from('builder_projects')
+        .select('name, published_url')
+        .eq('id', domainData.project_id)
+        .maybeSingle()
+
+      if (error || !data || !data.published_url) {
+        console.log(`[serve-site] Project not published: ${domainData.project_id}`)
+        return new Response('Site not published', { status: 404 })
+      }
+      
+      projectData = data
     }
 
-    // Get the project's published HTML
-    const { data: projectData, error: projectError } = await supabase
-      .from('builder_projects')
-      .select('name, published_url')
-      .eq('id', domainData.project_id)
-      .maybeSingle()
-
-    if (projectError || !projectData || !projectData.published_url) {
-      console.log(`[serve-site] Project not published: ${domainData.project_id}`)
+    if (!projectData?.published_url) {
       return new Response('Site not published', { status: 404 })
     }
 

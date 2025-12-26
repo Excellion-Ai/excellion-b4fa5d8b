@@ -26,6 +26,7 @@ interface CustomDomainsPanelProps {
 }
 
 const LOVABLE_IP = '185.158.133.1';
+const EXCELLION_DOMAIN = 'excellion.app';
 const STORAGE_BASE_URL = 'https://twaljzxgbbkhhjjocilf.supabase.co/storage/v1/object/public/published-sites';
 
 export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
@@ -351,7 +352,7 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
             ) : (
               <div className="flex items-center gap-2 justify-between">
                 <code className="text-sm bg-muted px-3 py-2 rounded-md flex-1 truncate">
-                  {tempDomainSlug}
+                  {tempDomainSlug}.{EXCELLION_DOMAIN}
                 </code>
                 <div className="flex items-center gap-1">
                   <Button
@@ -368,7 +369,7 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
                     size="icon"
                     className="h-8 w-8"
                     onClick={() => {
-                      navigator.clipboard.writeText(`${STORAGE_BASE_URL}/${tempDomainSlug}/index.html`);
+                      navigator.clipboard.writeText(`https://${tempDomainSlug}.${EXCELLION_DOMAIN}`);
                       toast.success('URL copied!');
                     }}
                     title="Copy URL"
@@ -379,7 +380,7 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
-                    onClick={() => window.open(`${STORAGE_BASE_URL}/${tempDomainSlug}/index.html`, '_blank')}
+                    onClick={() => window.open(`https://${tempDomainSlug}.${EXCELLION_DOMAIN}`, '_blank')}
                     title="Open site"
                   >
                     <ExternalLink className="w-4 h-4" />
