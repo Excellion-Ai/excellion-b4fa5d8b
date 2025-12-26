@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -252,6 +252,7 @@ export function BuilderShell() {
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -357,6 +358,11 @@ export function BuilderShell() {
     }
 
     setProjectName(data.name);
+    
+    // Load published URL if site is published
+    if (data.published_url) {
+      setPublishedUrl(data.published_url);
+    }
     
     const spec = data.spec as { html?: string; messages?: Message[]; siteSpec?: SiteSpec; themeId?: string } | null;
     
@@ -1021,6 +1027,30 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
     }
   };
 
+  const handleUnpublish = async () => {
+    if (!projectId) {
+      toast.error('No project to unpublish');
+      return;
+    }
+
+    setIsUnpublishing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('unpublish-site', {
+        body: { projectId },
+      });
+
+      if (error) throw error;
+
+      setPublishedUrl(null);
+      toast.success('Site unpublished successfully');
+    } catch (error) {
+      console.error('Unpublish error:', error);
+      toast.error('Failed to unpublish site');
+    } finally {
+      setIsUnpublishing(false);
+    }
+  };
+
   const copyUrl = () => {
     if (publishedUrl) {
       navigator.clipboard.writeText(publishedUrl);
@@ -1470,6 +1500,20 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   <Upload className="h-4 w-4" />
                   <span>Publish Site</span>
                 </DropdownMenuItem>
+                {publishedUrl && (
+                  <DropdownMenuItem 
+                    onClick={handleUnpublish} 
+                    disabled={isUnpublishing} 
+                    className="gap-2 text-destructive focus:text-destructive"
+                  >
+                    {isUnpublishing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <CloudOff className="h-4 w-4" />
+                    )}
+                    <span>{isUnpublishing ? 'Unpublishing...' : 'Unpublish Site'}</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => setShowDomainsDialog(true)} disabled={!projectId} className="gap-2">
                   <Globe className="h-4 w-4" />
                   <span>Custom Domains</span>
