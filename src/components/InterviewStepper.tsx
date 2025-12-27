@@ -120,6 +120,18 @@ export function InterviewStepper({
               value={answers.websiteType}
               onChange={(v) => onUpdateAnswer('websiteType', v)}
             />
+            {/* Show text input when "Other" is selected */}
+            {answers.websiteType === 'other' && (
+              <div className="pt-2">
+                <Input
+                  value={answers.websiteTypeOther}
+                  onChange={(e) => onUpdateAnswer('websiteTypeOther', e.target.value)}
+                  placeholder="Describe your business type (e.g., Pet grooming, Music lessons...)"
+                  className="bg-background/50 border-border/50"
+                  autoFocus
+                />
+              </div>
+            )}
           </div>
         );
 
