@@ -136,7 +136,7 @@ export function validateSpecAgainstScaffold(
     }
   }
   
-  // 4. Check integrations have matching components
+  // 4. Check integrations have matching components (only for mapped integrations)
   if (scaffold.integrations && Array.isArray(scaffold.integrations)) {
     const allSections = specPages.flatMap(p => p.sections || []);
     const componentTypes = allSections
@@ -147,12 +147,15 @@ export function validateSpecAgainstScaffold(
       .map(s => (s.content as { componentType: string }).componentType);
     
     for (const integration of scaffold.integrations) {
-      const expectedComponent = INTEGRATION_TO_COMPONENT[integration as IntegrationKey];
-      if (expectedComponent && !componentTypes.includes(expectedComponent)) {
-        violations.push({
-          type: 'missing_integration',
-          details: `Integration "${integration}" requires componentType "${expectedComponent}" but none found`,
-        });
+      // Only check integrations that have a component mapping
+      if (integration in INTEGRATION_TO_COMPONENT) {
+        const expectedComponent = INTEGRATION_TO_COMPONENT[integration as IntegrationKey];
+        if (!componentTypes.includes(expectedComponent)) {
+          violations.push({
+            type: 'missing_integration',
+            details: `Integration "${integration}" requires componentType "${expectedComponent}" but none found`,
+          });
+        }
       }
     }
   }
