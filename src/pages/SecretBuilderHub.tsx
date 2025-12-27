@@ -342,11 +342,15 @@ export default function SecretBuilderHub() {
     try {
       // Create project in database
       
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
       // Create project in database
       const projectName = ideaToUse.slice(0, 50) + (ideaToUse.length > 50 ? '...' : '');
       const { data, error } = await supabase
         .from('builder_projects')
         .insert({
+          user_id: user?.id,
           name: projectName,
           idea: ideaToUse,
           spec: { 
