@@ -1020,13 +1020,25 @@ serve(async (req) => {
     console.log(`[BOT-CHAT:${requestId}] Rate limit check passed`);
 
     const body = await req.json();
-    const { messages, context, modelMode, projectId } = body;
+    const { messages, context, modelMode, projectId, scaffold } = body;
     
     console.log(`[BOT-CHAT:${requestId}] Request body parsed:`);
     console.log(`[BOT-CHAT:${requestId}]   - Messages count: ${messages?.length || 0}`);
     console.log(`[BOT-CHAT:${requestId}]   - Model mode: ${modelMode || 'default'}`);
     console.log(`[BOT-CHAT:${requestId}]   - Project ID: ${projectId || 'none'}`);
     console.log(`[BOT-CHAT:${requestId}]   - Has context: ${!!context}`);
+    console.log(`[BOT-CHAT:${requestId}]   - Has scaffold: ${!!scaffold}`);
+    
+    // Log scaffold details if present
+    if (scaffold) {
+      console.log(`[BOT-CHAT:${requestId}] [SCAFFOLD] Category: ${scaffold.category}`);
+      console.log(`[BOT-CHAT:${requestId}] [SCAFFOLD] Goal: ${scaffold.goal}`);
+      console.log(`[BOT-CHAT:${requestId}] [SCAFFOLD] Archetype: ${scaffold.archetypeId}`);
+      console.log(`[BOT-CHAT:${requestId}] [SCAFFOLD] Required Pages: ${JSON.stringify(scaffold.requiredPages?.map((p: any) => p.path) || [])}`);
+      console.log(`[BOT-CHAT:${requestId}] [SCAFFOLD] CTA Rules: ${JSON.stringify(scaffold.ctaRules || {})}`);
+      console.log(`[BOT-CHAT:${requestId}] [SCAFFOLD] Forbidden Phrases: ${JSON.stringify(scaffold.forbiddenPhrases || [])}`);
+      console.log(`[BOT-CHAT:${requestId}] [SCAFFOLD] Integrations: ${JSON.stringify(scaffold.integrations || [])}`);
+    }
     
     // Log first user message for debugging
     const firstUserMsg = messages?.find((m: any) => m.role === 'user');
@@ -1142,6 +1154,86 @@ END OF KNOWLEDGE BASE
       if (context.businessName) enhancedPrompt += `\n- Business Name: ${context.businessName}`;
       if (context.industry) enhancedPrompt += `\n- Industry: ${context.industry}`;
       console.log(`[BOT-CHAT:${requestId}] Added business context: ${context.businessName || ''} / ${context.industry || ''}`);
+    }
+
+    // SCAFFOLD ENFORCEMENT: Inject scaffold constraints as hard requirements
+    if (scaffold) {
+      console.log(`[BOT-CHAT:${requestId}] Injecting scaffold constraints into prompt`);
+      
+      let scaffoldPrompt = `
+
+====================================
+## GENERATION SCAFFOLD - MANDATORY REQUIREMENTS
+====================================
+
+You MUST follow these requirements exactly. The output SiteSpec MUST conform to this scaffold.
+
+**DETECTED CATEGORY:** ${scaffold.category}
+**CONVERSION GOAL:** ${scaffold.goal}
+**ARCHETYPE:** ${scaffold.archetypeId}
+**LAYOUT SIGNATURE:** ${scaffold.layoutSignature || 'standard'}
+
+### REQUIRED PAGES (MUST ALL EXIST IN OUTPUT):
+`;
+      
+      if (scaffold.requiredPages && scaffold.requiredPages.length > 0) {
+        scaffold.requiredPages.forEach((page: { path: string; title: string; requiredSections?: string[] }) => {
+          scaffoldPrompt += `
+- Path: "${page.path}" | Title: "${page.title}"`;
+          if (page.requiredSections && page.requiredSections.length > 0) {
+            scaffoldPrompt += `
+  Required Sections: ${page.requiredSections.join(', ')}`;
+          }
+        });
+      }
+
+      if (scaffold.ctaRules) {
+        scaffoldPrompt += `
+
+### CTA RULES (MUST BE FOLLOWED):
+- Primary CTA Label: "${scaffold.ctaRules.primaryLabel || 'Get Started'}"
+- Primary CTA Action: "${scaffold.ctaRules.primaryAction || 'contact'}"`;
+        if (scaffold.ctaRules.secondaryLabel) {
+          scaffoldPrompt += `
+- Secondary CTA Label: "${scaffold.ctaRules.secondaryLabel}"`;
+        }
+      }
+
+      if (scaffold.forbiddenPhrases && scaffold.forbiddenPhrases.length > 0) {
+        scaffoldPrompt += `
+
+### FORBIDDEN PHRASES (MUST NOT APPEAR IN ANY TEXT):
+${scaffold.forbiddenPhrases.map((phrase: string) => `- "${phrase}"`).join('\n')}`;
+      }
+
+      if (scaffold.integrations && scaffold.integrations.length > 0) {
+        scaffoldPrompt += `
+
+### REQUIRED INTEGRATIONS (INCLUDE AS CUSTOM SECTIONS):
+${scaffold.integrations.map((int: string) => `- ${int}`).join('\n')}
+
+For each integration, include a custom section with:
+- type: "custom"
+- content.componentType: "[integration_name]_embed" or "[integration_name]_form"
+- content.props: { relevant configuration }`;
+      }
+
+      scaffoldPrompt += `
+
+====================================
+CRITICAL: Your SiteSpec output MUST include:
+1. ALL required pages with their exact paths
+2. ALL required sections for each page
+3. CTA labels matching the rules above
+4. NO forbidden phrases anywhere in the content
+5. Integration sections for any listed integrations
+
+If you cannot fulfill these requirements, explain why in your conversational response.
+====================================
+`;
+      
+      enhancedPrompt += scaffoldPrompt;
+      console.log(`[BOT-CHAT:${requestId}] Scaffold prompt added (${scaffoldPrompt.length} chars)`);
     }
 
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
