@@ -11,7 +11,7 @@ export type WebsiteType =
   | 'event' 
   | 'other';
 
-export type ServiceMode = 'local' | 'online';
+export type ServiceMode = 'local' | 'online' | 'both';
 
 export type PrimaryGoal = 
   | 'get_quote' 
@@ -199,11 +199,16 @@ export function useInterviewIntake(initialPrompt: string = '') {
     const goalLabel = answers.primaryGoal ? GOAL_LABELS[answers.primaryGoal] : '';
     const vibeLabel = answers.vibe ? VIBE_LABELS[answers.vibe] : '';
     
-    const serviceInfo = answers.serviceMode === 'local' && answers.serviceArea
-      ? ` Serves ${answers.serviceArea}.`
-      : answers.serviceMode === 'online'
-      ? ' Operates online.'
-      : '';
+    let serviceInfo = '';
+    if (answers.serviceMode === 'both' && answers.serviceArea) {
+      serviceInfo = ` Serves both local (${answers.serviceArea}) and online customers.`;
+    } else if (answers.serviceMode === 'both') {
+      serviceInfo = ' Serves both local and online customers.';
+    } else if (answers.serviceMode === 'local' && answers.serviceArea) {
+      serviceInfo = ` Serves ${answers.serviceArea}.`;
+    } else if (answers.serviceMode === 'online') {
+      serviceInfo = ' Operates online.';
+    }
 
     const offersFiltered = answers.offers.filter(o => o.trim());
     const offersText = offersFiltered.length > 0

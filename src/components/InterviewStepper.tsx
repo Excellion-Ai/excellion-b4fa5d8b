@@ -41,6 +41,7 @@ const WEBSITE_TYPES: { value: WebsiteType; label: string }[] = [
 const SERVICE_MODES: { value: ServiceMode; label: string }[] = [
   { value: 'local', label: 'Local' },
   { value: 'online', label: 'Online' },
+  { value: 'both', label: 'Both' },
 ];
 
 const PRIMARY_GOALS: { value: PrimaryGoal; label: string }[] = [
@@ -162,7 +163,7 @@ export function InterviewStepper({
               value={answers.serviceMode}
               onChange={(v) => onUpdateAnswer('serviceMode', v)}
             />
-            {answers.serviceMode === 'local' && (
+            {(answers.serviceMode === 'local' || answers.serviceMode === 'both') && (
               <div className="pt-2">
                 <label className="text-sm text-muted-foreground mb-2 block">
                   City/Area you serve
