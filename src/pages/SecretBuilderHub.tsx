@@ -45,7 +45,8 @@ import {
   HelpCircle,
   MessageSquare,
   LogOut,
-  User
+  User,
+  Zap
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import {
@@ -79,10 +80,18 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { SearchModal } from '@/components/secret-builder/SearchModal';
 import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
 import { TEMPLATES } from '@/components/secret-builder/templateSpecs';
+import { InterviewStepper } from '@/components/InterviewStepper';
+import { useInterviewIntake } from '@/hooks/useInterviewIntake';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
@@ -196,6 +205,10 @@ export default function SecretBuilderHub() {
   const [projectsFolderOpen, setProjectsFolderOpen] = useState(true);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [interviewOpen, setInterviewOpen] = useState(false);
+  
+  // Interview intake hook
+  const interview = useInterviewIntake(idea);
   
   // Theme state for quick toggle
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -1010,6 +1023,18 @@ export default function SecretBuilderHub() {
                       disabled={isGenerating}
                       attachmentCount={attachments.length}
                     />
+                    
+                    {/* Guided Interview Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-muted-foreground hover:text-foreground"
+                      onClick={() => setInterviewOpen(true)}
+                      disabled={isGenerating}
+                    >
+                      <Zap className="w-4 h-4 mr-1" />
+                      Guided
+                    </Button>
                     
                     {/* Theme Dropdown */}
                     <DropdownMenu>
