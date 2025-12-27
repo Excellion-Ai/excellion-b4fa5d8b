@@ -148,14 +148,11 @@ export type StatsContent = {
   items: StatsItem[];
 };
 
-// Props type for custom sections - JSON-compatible for database storage
-export type CustomContentProps = { [key: string]: string | number | boolean | null | CustomContentProps | CustomContentProps[] };
-
 export type CustomContent = {
   title: string;
   body?: string;
   componentType?: string;
-  props?: CustomContentProps;
+  props?: Record<string, unknown>;
 };
 
 // Gallery content type

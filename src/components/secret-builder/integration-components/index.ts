@@ -26,32 +26,20 @@ export type IntegrationComponentKey =
   | 'newsletter_form' 
   | 'map_embed';
 
-// Base props that integration components accept
-export interface IntegrationSectionBaseProps {
-  title?: string;
-  body?: string;
-  props?: Record<string, unknown>;
-}
-
-// Master registry for dynamic component lookup
-// Using ComponentType with base props for flexibility
-export const INTEGRATION_COMPONENTS: Record<IntegrationComponentKey, ComponentType<IntegrationSectionBaseProps>> = {
-  checkout: CheckoutSection as ComponentType<IntegrationSectionBaseProps>,
-  booking_embed: BookingEmbedSection as ComponentType<IntegrationSectionBaseProps>,
-  order_links: OrderLinksSection as ComponentType<IntegrationSectionBaseProps>,
-  reservation_embed: ReservationEmbedSection as ComponentType<IntegrationSectionBaseProps>,
-  newsletter_form: NewsletterFormSection as ComponentType<IntegrationSectionBaseProps>,
-  map_embed: MapEmbedSection as ComponentType<IntegrationSectionBaseProps>,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const INTEGRATION_COMPONENTS: Record<string, ComponentType<any>> = {
+  checkout: CheckoutSection,
+  booking_embed: BookingEmbedSection,
+  order_links: OrderLinksSection,
+  reservation_embed: ReservationEmbedSection,
+  newsletter_form: NewsletterFormSection,
+  map_embed: MapEmbedSection,
 };
 
-// Get integration component by type with proper type checking
-export function getIntegrationComponent(
-  componentType: string
-): ComponentType<IntegrationSectionBaseProps> | null {
-  if (isValidIntegrationKey(componentType)) {
-    return INTEGRATION_COMPONENTS[componentType];
-  }
-  return null;
+// Get integration component by type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getIntegrationComponent(componentType: string): ComponentType<any> | null {
+  return INTEGRATION_COMPONENTS[componentType] || null;
 }
 
 // Type guard to check if a string is a valid integration key
