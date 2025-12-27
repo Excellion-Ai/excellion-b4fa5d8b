@@ -31,23 +31,59 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
     
-    if (!supabaseUrl || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseServiceKey || !supabaseAnonKey) {
       throw new Error("Missing Supabase configuration");
     }
 
+    // Authenticate the user from the Authorization header
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      logStep("No authorization header");
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Authentication required" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    // Create a client with the anon key to verify the user's token
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false },
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: userData, error: authError } = await supabaseAuth.auth.getUser();
+
+    if (authError || !userData.user) {
+      logStep("Invalid authentication", { error: authError?.message });
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Invalid authentication" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    // Use the authenticated user's ID - NOT from request body
+    const userId = userData.user.id;
+    logStep("User authenticated", { userId });
+
     const { 
-      userId, 
       action, 
       amount: customAmount, 
       description, 
       projectId 
     } = await req.json();
 
-    if (!userId || !action) {
+    if (!action) {
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "userId and action are required" 
+        error: "action is required" 
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
