@@ -1,14 +1,22 @@
 // Integration Components Registry
-export { CheckoutSection } from './CheckoutSection';
-export { BookingEmbedSection } from './BookingEmbedSection';
-export { OrderLinksSection } from './OrderLinksSection';
-export { ReservationEmbedSection } from './ReservationEmbedSection';
-export { NewsletterFormSection } from './NewsletterFormSection';
-export { MapEmbedSection } from './MapEmbedSection';
+import { CheckoutSection } from './CheckoutSection';
+import { BookingEmbedSection } from './BookingEmbedSection';
+import { OrderLinksSection } from './OrderLinksSection';
+import { ReservationEmbedSection } from './ReservationEmbedSection';
+import { NewsletterFormSection } from './NewsletterFormSection';
+import { MapEmbedSection } from './MapEmbedSection';
 
-export const INTEGRATION_COMPONENTS: Record<string, React.ComponentType<any>> = {};
+// Re-export components
+export { 
+  CheckoutSection, 
+  BookingEmbedSection, 
+  OrderLinksSection, 
+  ReservationEmbedSection, 
+  NewsletterFormSection, 
+  MapEmbedSection 
+};
 
-// Lazy load components to avoid circular deps
+// Get integration component by type
 export function getIntegrationComponent(componentType: string): React.ComponentType<any> | null {
   switch (componentType) {
     case 'checkout': return CheckoutSection;
