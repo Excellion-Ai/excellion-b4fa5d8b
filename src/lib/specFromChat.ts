@@ -95,20 +95,30 @@ const CATEGORY_TO_BUSINESS: Record<NicheCategory, BusinessModel> = {
   community: 'SERVICE_BASED',
 };
 
-// Layout by category
+// Layout by category - with more variety
 const CATEGORY_LAYOUT: Record<NicheCategory, LayoutStructure> = {
-  ecommerce: 'standard',
+  ecommerce: 'bento',
   reseller: 'layered',
-  restaurant: 'standard',
+  restaurant: 'standard', // Restaurants typically use standard layouts
   local_service: 'standard',
   saas: 'bento',
-  course: 'standard',
+  course: 'layered',
   coaching: 'standard',
   event: 'layered',
-  real_estate: 'standard',
+  real_estate: 'horizontal',
   nonprofit: 'standard',
   portfolio: 'layered',
-  community: 'standard',
+  community: 'bento',
+};
+
+// Vibes to layout mapping for variety
+const VIBE_LAYOUTS: Record<string, LayoutStructure> = {
+  modern: 'bento',
+  bold: 'layered',
+  warm: 'standard',
+  luxury: 'horizontal',
+  playful: 'bento',
+  sleek: 'layered',
 };
 
 // Extract a potential business name from input

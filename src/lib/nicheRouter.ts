@@ -127,7 +127,19 @@ const INTEGRATION_KEYWORDS: { pattern: RegExp; integration: IntegrationType }[] 
   { pattern: /\b(track|analytics|metrics|data)\b/i, integration: 'analytics' },
 ];
 
-function detectGoal(input: string): ConversionGoal {
+function detectGoal(input: string, category: NicheCategory): ConversionGoal {
+  // Restaurant-specific goal detection
+  if (category === 'restaurant') {
+    if (/\b(reservation|reserve|table|book|booking)\b/i.test(input)) {
+      return 'book';
+    }
+    if (/\b(order|delivery|pickup|takeout)\b/i.test(input)) {
+      return 'buy_now'; // Online ordering
+    }
+    // Default for restaurants is to drive visits/orders
+    return 'buy_now';
+  }
+
   for (const { pattern, goal } of GOAL_PATTERNS) {
     if (pattern.test(input)) {
       return goal;
@@ -204,8 +216,9 @@ function generateClarifyingQuestions(confidence: number, category: NicheCategory
 export function routeNiche(input: string): NicheRoute {
   const lowerInput = input.toLowerCase();
   
-  const goal = detectGoal(lowerInput);
+  // Detect category first so we can use category-specific goal detection
   const { category, baseIntegrations } = detectCategory(lowerInput);
+  const goal = detectGoal(lowerInput, category);
   const integrationsNeeded = detectIntegrations(lowerInput, baseIntegrations);
   const confidence = calculateConfidence(lowerInput, category, goal);
   const clarifyingQuestions = generateClarifyingQuestions(confidence, category, goal);

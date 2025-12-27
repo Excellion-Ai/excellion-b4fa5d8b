@@ -86,21 +86,23 @@ export const CONVERSION_ARCHETYPES: ConversionArchetype[] = [
     layoutSignature: 'reseller-marketplace-5page',
   },
 
-  // ============= RESTAURANT (3) =============
+  // ============= RESTAURANT (4) =============
+  // NOTE: Restaurants should NEVER have cart/checkout/shop pages - they use ordering integrations
   {
     id: 'restaurant_menu_ordering',
     category: 'restaurant',
-    goal: 'buy_now',
+    goal: 'buy_now', // Online ordering counts as buy_now for restaurants
     requiredPages: [
       { path: '/', title: 'Home', requiredSections: ['hero', 'features', 'testimonials', 'cta'] },
       { path: '/menu', title: 'Menu', requiredSections: ['hero', 'services', 'cta'] },
       { path: '/order', title: 'Order Online', requiredSections: ['custom', 'cta'] },
       { path: '/location', title: 'Hours & Location', requiredSections: ['contact', 'custom'] },
+      { path: '/about', title: 'About', requiredSections: ['hero', 'features', 'cta'] },
     ],
     requiredIntegrations: ['ordering', 'maps'],
     ctaRules: { primary: 'Order Now', secondary: 'View Menu' },
-    forbiddenPhrases: ['curriculum', 'modules', 'test drive', 'browse inventory', 'apply now'],
-    layoutSignature: 'restaurant-ordering-4page',
+    forbiddenPhrases: ['add to cart', 'checkout', 'shop', 'cart', 'curriculum', 'modules', 'test drive', 'browse inventory', 'apply now'],
+    layoutSignature: 'restaurant-ordering-5page',
   },
   {
     id: 'restaurant_menu_reservations',
@@ -111,11 +113,12 @@ export const CONVERSION_ARCHETYPES: ConversionArchetype[] = [
       { path: '/menu', title: 'Menu', requiredSections: ['hero', 'services'] },
       { path: '/reservations', title: 'Reservations', requiredSections: ['custom', 'contact'] },
       { path: '/location', title: 'Hours & Location', requiredSections: ['contact', 'custom'] },
+      { path: '/about', title: 'About', requiredSections: ['hero', 'features'] },
     ],
     requiredIntegrations: ['reservations', 'maps'],
     ctaRules: { primary: 'Reserve a Table', secondary: 'View Menu' },
-    forbiddenPhrases: ['curriculum', 'modules', 'subscribe now', 'pricing tiers'],
-    layoutSignature: 'restaurant-reservations-4page',
+    forbiddenPhrases: ['add to cart', 'checkout', 'shop', 'cart', 'curriculum', 'modules', 'subscribe now', 'pricing tiers'],
+    layoutSignature: 'restaurant-reservations-5page',
   },
   {
     id: 'restaurant_multi_location',
@@ -130,8 +133,23 @@ export const CONVERSION_ARCHETYPES: ConversionArchetype[] = [
     ],
     requiredIntegrations: ['maps', 'email_capture'],
     ctaRules: { primary: 'Find a Location', secondary: 'View Menu' },
-    forbiddenPhrases: ['schedule demo', 'free trial', 'apply today'],
+    forbiddenPhrases: ['add to cart', 'checkout', 'shop', 'cart', 'schedule demo', 'free trial', 'apply today'],
     layoutSignature: 'restaurant-multi-5page',
+  },
+  {
+    id: 'restaurant_simple',
+    category: 'restaurant',
+    goal: 'request_quote', // For catering requests
+    requiredPages: [
+      { path: '/', title: 'Home', requiredSections: ['hero', 'features', 'testimonials', 'cta'] },
+      { path: '/menu', title: 'Menu', requiredSections: ['hero', 'services'] },
+      { path: '/about', title: 'About', requiredSections: ['hero', 'features', 'team'] },
+      { path: '/contact', title: 'Contact', requiredSections: ['contact', 'custom'] },
+    ],
+    requiredIntegrations: ['maps', 'email_capture'],
+    ctaRules: { primary: 'Contact Us', secondary: 'View Menu' },
+    forbiddenPhrases: ['add to cart', 'checkout', 'shop', 'cart', 'subscribe', 'apply now'],
+    layoutSignature: 'restaurant-simple-4page',
   },
 
   // ============= LOCAL SERVICE (3) =============
