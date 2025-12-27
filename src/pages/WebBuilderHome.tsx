@@ -30,7 +30,7 @@ const placeholderSuggestions = [
   "A fitness coach selling training packages...",
   "A hair salon with booking and services...",
   "A law firm with practice areas and contact...",
-  "An online store for handmade jewelry...",
+  "A mobile car detailing service with booking...",
 ];
 
 const suggestionChips = [
