@@ -1,4 +1,5 @@
 // Integration Components Registry
+import React from 'react';
 import { CheckoutSection } from './CheckoutSection';
 import { BookingEmbedSection } from './BookingEmbedSection';
 import { OrderLinksSection } from './OrderLinksSection';
