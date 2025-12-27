@@ -6,6 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const escapeHtml = (str: string): string => {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 interface ContactFormRequest {
   name: string;
   email: string;
@@ -57,19 +67,19 @@ Deno.serve(async (req) => {
 
     // Send notification email to site owner
     const { error: notifyError } = await resend.emails.send({
-      from: `${fromSite} Contact <onboarding@resend.dev>`,
+      from: `${escapeHtml(fromSite)} Contact <onboarding@resend.dev>`,
       to: [toEmail],
-      subject: `New Contact Form Submission from ${name}`,
+      subject: `New Contact Form Submission from ${escapeHtml(name)}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">New Contact Form Submission</h2>
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>From:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>From:</strong> ${escapeHtml(name)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(email)}</p>
             <p><strong>Message:</strong></p>
-            <p style="white-space: pre-wrap; background: white; padding: 15px; border-radius: 4px;">${message}</p>
+            <p style="white-space: pre-wrap; background: white; padding: 15px; border-radius: 4px;">${escapeHtml(message)}</p>
           </div>
-          <p style="color: #666; font-size: 12px;">This message was sent via the contact form on ${fromSite}.</p>
+          <p style="color: #666; font-size: 12px;">This message was sent via the contact form on ${escapeHtml(fromSite)}.</p>
         </div>
       `,
     });
@@ -81,19 +91,19 @@ Deno.serve(async (req) => {
 
     // Send confirmation email to the person who submitted
     const { error: confirmError } = await resend.emails.send({
-      from: `${fromSite} <onboarding@resend.dev>`,
+      from: `${escapeHtml(fromSite)} <onboarding@resend.dev>`,
       to: [email],
-      subject: `We received your message - ${fromSite}`,
+      subject: `We received your message - ${escapeHtml(fromSite)}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Thank you for reaching out!</h2>
-          <p>Hi ${name},</p>
+          <p>Hi ${escapeHtml(name)},</p>
           <p>We've received your message and will get back to you as soon as possible.</p>
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p><strong>Your message:</strong></p>
-            <p style="white-space: pre-wrap;">${message}</p>
+            <p style="white-space: pre-wrap;">${escapeHtml(message)}</p>
           </div>
-          <p>Best regards,<br>The ${fromSite} Team</p>
+          <p>Best regards,<br>The ${escapeHtml(fromSite)} Team</p>
         </div>
       `,
     });
