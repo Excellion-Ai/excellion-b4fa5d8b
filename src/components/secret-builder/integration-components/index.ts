@@ -17,15 +17,17 @@ export {
   MapEmbedSection 
 };
 
-// Get integration component by type
+// Master registry for dynamic component lookup
+export const INTEGRATION_COMPONENTS: Record<string, React.ComponentType<any>> = {
+  checkout: CheckoutSection,
+  booking_embed: BookingEmbedSection,
+  order_links: OrderLinksSection,
+  reservation_embed: ReservationEmbedSection,
+  newsletter_form: NewsletterFormSection,
+  map_embed: MapEmbedSection,
+};
+
+// Get integration component by type (legacy function)
 export function getIntegrationComponent(componentType: string): React.ComponentType<any> | null {
-  switch (componentType) {
-    case 'checkout': return CheckoutSection;
-    case 'booking_embed': return BookingEmbedSection;
-    case 'order_links': return OrderLinksSection;
-    case 'reservation_embed': return ReservationEmbedSection;
-    case 'newsletter_form': return NewsletterFormSection;
-    case 'map_embed': return MapEmbedSection;
-    default: return null;
-  }
+  return INTEGRATION_COMPONENTS[componentType] || null;
 }

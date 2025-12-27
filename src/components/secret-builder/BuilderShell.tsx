@@ -41,6 +41,12 @@ import { calculateCreditCost } from '@/lib/calculateCreditCost';
 import { detectNiche } from '@/lib/motion/motionEngine';
 import { MotionIntensity } from '@/lib/motion/types';
 import type { Json } from '@/integrations/supabase/types';
+import { routeNiche, type NicheRoute, type IntegrationType } from '@/lib/nicheRouter';
+import { selectArchetype, type ConversionArchetype } from '@/lib/conversionArchetypes';
+import { getPacksForIntegrations, mergeIntegrationPages, type IntegrationPack } from '@/lib/integrationPacks';
+import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
+import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
+import { computeSignature } from '@/lib/layoutSignature';
 
 type GenerationStep = {
   id: number;
@@ -545,9 +551,68 @@ export function BuilderShell() {
     }
   };
 
-  const handleGenerate = async (inputIdea?: string) => {
+  const handleGenerate = async (inputIdea?: string, retryCount: number = 0) => {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
+
+    // ============ ROUTING & SCAFFOLDING ============
+    // Step 1: Run niche router to detect category, goal, integrations
+    const route = routeNiche(ideaToUse);
+    console.log('[ROUTER]', { 
+      category: route.category, 
+      goal: route.goal, 
+      archetypeId: `${route.category}_${route.goal}`,
+      integrations: route.integrationsNeeded,
+      confidence: route.confidence 
+    });
+    
+    // Step 2: Select archetype deterministically
+    const archetype = selectArchetype(route.category, route.goal);
+    console.log('[ARCHETYPE]', { 
+      id: archetype.id, 
+      requiredPages: archetype.requiredPages.map(p => p.path),
+      ctaRules: archetype.ctaRules,
+      forbiddenPhrases: archetype.forbiddenPhrases.slice(0, 3)
+    });
+    
+    // Step 3: Get integration packs and build page map
+    const integrationPacks = getPacksForIntegrations(route.integrationsNeeded);
+    const requiredSections = new Set<string>();
+    const pageMap: Record<string, string[]> = {};
+    
+    // Build from archetype pages
+    for (const page of archetype.requiredPages) {
+      pageMap[page.path] = page.requiredSections;
+      page.requiredSections.forEach(s => requiredSections.add(s));
+    }
+    
+    // Add integration pack sections
+    for (const pack of integrationPacks) {
+      if (pack.pages) {
+        for (const page of pack.pages) {
+          if (page.path && !pageMap[page.path]) {
+            pageMap[page.path] = (page.sections || []).map(s => s.type || 'custom');
+          }
+        }
+      }
+    }
+    
+    console.log('[SCAFFOLD]', { 
+      pageMap, 
+      requiredSections: Array.from(requiredSections) 
+    });
+    
+    // Step 4: Build generation scaffold for the AI prompt
+    const generationScaffold = {
+      category: route.category,
+      goal: route.goal,
+      archetypeId: archetype.id,
+      requiredPages: archetype.requiredPages,
+      ctaRules: archetype.ctaRules,
+      forbiddenPhrases: archetype.forbiddenPhrases,
+      integrations: route.integrationsNeeded,
+      layoutSignature: archetype.layoutSignature,
+    };
 
     // Determine credit action type
     const isFirstMessage = messages.length === 0;
@@ -762,7 +827,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           'Authorization': `Bearer ${session.access_token}`,
           'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
-        body: JSON.stringify({ messages: chatMessages, modelMode, projectId }),
+        body: JSON.stringify({ 
+          messages: chatMessages, 
+          modelMode, 
+          projectId,
+          scaffold: generationScaffold // Pass scaffold for AI to follow
+        }),
       });
 
       if (!response.ok) {
@@ -814,6 +884,43 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       
       let newSiteSpec: SiteSpec | null = null;
       if (parsedSpec) {
+        // ============ GUARDRAILS ============
+        // Run content and diversity guardrails BEFORE setting the spec
+        const contentResult = contentGuardrail(parsedSpec, route.category);
+        const diversityResult = diversityGuardrail(parsedSpec);
+        const layoutSig = computeSignature(parsedSpec);
+        
+        console.log('[GUARDRAIL]', { 
+          passed: contentResult.valid && diversityResult.valid,
+          contentIssues: contentResult.issues,
+          diversityIssues: diversityResult.issues,
+          severity: contentResult.severity
+        });
+        
+        console.log('[LAYOUT]', {
+          hash: layoutSig.hash,
+          pageCount: layoutSig.pageCount,
+          sectionPattern: layoutSig.sectionPattern,
+          uniqueSectionTypes: layoutSig.uniqueSectionTypes
+        });
+        
+        // If guardrails failed and this is first attempt, retry once with constraints
+        const guardrailsFailed = !contentResult.valid || !diversityResult.valid;
+        if (guardrailsFailed && retryCount < 1) {
+          console.log('[GUARDRAIL] Retrying generation with additional constraints...');
+          const constraintHint = [
+            ...contentResult.issues.map(i => `AVOID: ${i}`),
+            ...diversityResult.issues.map(i => `FIX: ${i}`),
+          ].join('. ');
+          
+          // Retry with enhanced prompt including guardrail feedback
+          toast.info('Improving generation quality...');
+          return handleGenerate(`${ideaToUse}\n\n[QUALITY CONSTRAINTS: ${constraintHint}]`, retryCount + 1);
+        }
+        
+        // Record the generation for diversity tracking
+        recordGeneration(parsedSpec);
+        
         newSiteSpec = parsedSpec;
         setSiteSpec(parsedSpec);
         setGeneratedHtml(null); // Use SiteSpec rendering instead of raw HTML
