@@ -413,6 +413,9 @@ export function BuilderShell() {
   };
 
   const saveProject = async (html: string | null, allMessages: Message[], ideaText: string, currentSiteSpec: SiteSpec | null) => {
+    // Get current user for new projects
+    const { data: { user } } = await supabase.auth.getUser();
+    
     // Use AI-generated site name if available, otherwise fall back to idea text
     const aiGeneratedName = currentSiteSpec?.name;
     const name = projectName !== 'New Project' ? projectName : (aiGeneratedName || ideaText.slice(0, 50));
@@ -445,7 +448,7 @@ export function BuilderShell() {
     } else {
       const { data, error } = await supabase
         .from('builder_projects')
-        .insert(projectData)
+        .insert({ ...projectData, user_id: user?.id })
         .select('id')
         .single();
 
