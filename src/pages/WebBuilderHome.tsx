@@ -15,7 +15,8 @@ import {
   ChevronRight,
   Phone,
   Mail,
-  Loader2
+  Loader2,
+  Zap
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
@@ -24,6 +25,9 @@ import { AnimatedPlaceholder } from "@/components/AnimatedPlaceholder";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
+import { InterviewStepper } from "@/components/InterviewStepper";
+import { useInterviewIntake } from "@/hooks/useInterviewIntake";
+
 const placeholderSuggestions = [
   "A local restaurant with online ordering and menu...",
   "A roofing contractor website with quote forms...",
@@ -53,14 +57,19 @@ const notMagicItems = [
   "Doesn't run your ads or marketing for you – it focuses on the site."
 ];
 
+type InputMode = 'quick' | 'interview';
 
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [inputMode, setInputMode] = useState<InputMode>('quick');
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+  
+  // Interview intake hook
+  const interview = useInterviewIntake(prompt);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -108,15 +117,25 @@ const WebBuilderHome = () => {
   }, []);
 
   const handleStart = () => {
-    if (prompt.trim()) {
-      navigate("/secret-builder-hub", { state: { initialIdea: prompt, autoGenerate: true } });
+    const promptToUse = inputMode === 'interview' ? interview.composedPrompt : prompt;
+    const structuredData = inputMode === 'interview' ? interview.structuredData : null;
+    
+    if (promptToUse.trim()) {
+      navigate("/secret-builder-hub", { 
+        state: { 
+          initialIdea: promptToUse, 
+          autoGenerate: true,
+          interviewData: structuredData
+        } 
+      });
     } else {
       navigate("/secret-builder-hub");
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleStart();
     }
   };
@@ -149,6 +168,20 @@ const WebBuilderHome = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSwitchMode = (mode: InputMode) => {
+    // Preserve state when switching
+    if (mode === 'interview' && prompt.trim()) {
+      interview.setQuickPrompt(prompt);
+    } else if (mode === 'quick' && interview.quickPrompt) {
+      setPrompt(interview.quickPrompt);
+    }
+    setInputMode(mode);
+  };
+
+  const handleInterviewSubmit = () => {
+    handleStart();
   };
 
   return (
@@ -204,57 +237,117 @@ const WebBuilderHome = () => {
               An AI website builder that generates a complete site in seconds. Make changes by chat, customize pages, and publish with your own domain.
             </p>
 
-            {/* Prompt Input */}
+            {/* Mode Toggle */}
+            <div className="max-w-2xl mx-auto mb-4">
+              <div className="inline-flex p-1 rounded-lg bg-background/30 border border-border/30 backdrop-blur-sm">
+                <button
+                  onClick={() => handleSwitchMode('quick')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    inputMode === 'quick'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground/70 hover:text-foreground'
+                  }`}
+                >
+                  Quick Prompt
+                </button>
+                <button
+                  onClick={() => handleSwitchMode('interview')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    inputMode === 'interview'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground/70 hover:text-foreground'
+                  }`}
+                >
+                  <Zap className="w-3.5 h-3.5 inline mr-1" />
+                  Guided Interview
+                </button>
+              </div>
+            </div>
+
+            {/* Input Area */}
             <div className="max-w-2xl mx-auto">
-              <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-3">
-                <div className="relative">
-                  <Textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
-                    rows={1}
-                    style={{ height: 'auto' }}
-                    onInput={(e) => {
-                      const target = e.target as HTMLTextAreaElement;
-                      target.style.height = 'auto';
-                      target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-                    }}
-                  />
-                  {!prompt && (
-                    <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
-                      <AnimatedPlaceholder 
-                        suggestions={placeholderSuggestions}
-                        typingSpeed={25}
-                        deletingSpeed={15}
-                        pauseDuration={2000}
+              <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-4">
+                {inputMode === 'quick' ? (
+                  <>
+                    {/* Quick Prompt Mode */}
+                    <div className="relative">
+                      <Textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
+                        rows={1}
+                        style={{ height: 'auto' }}
+                        onInput={(e) => {
+                          const target = e.target as HTMLTextAreaElement;
+                          target.style.height = 'auto';
+                          target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                        }}
                       />
+                      {!prompt && (
+                        <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
+                          <AnimatedPlaceholder 
+                            suggestions={placeholderSuggestions}
+                            typingSpeed={25}
+                            deletingSpeed={15}
+                            pauseDuration={2000}
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-end mt-3">
-                  <Button onClick={handleStart} size="icon" className="h-10 w-10">
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </div>
+                    <div className="flex items-center justify-end mt-3">
+                      <Button onClick={handleStart} size="icon" className="h-10 w-10">
+                        <ArrowRight className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  /* Guided Interview Mode */
+                  <InterviewStepper
+                    step={interview.step}
+                    totalSteps={interview.totalSteps}
+                    answers={interview.answers}
+                    canProceed={interview.canProceed}
+                    canSubmit={interview.canSubmit}
+                    onUpdateAnswer={interview.updateAnswer}
+                    onUpdateOffer={interview.updateOffer}
+                    onNext={interview.nextStep}
+                    onBack={interview.prevStep}
+                    onSkip={interview.skipStep}
+                    onSubmit={handleInterviewSubmit}
+                    onSwitchToQuickPrompt={() => handleSwitchMode('quick')}
+                  />
+                )}
               </div>
 
-              {/* Suggestion Chips */}
-              <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {suggestionChips.map((chip, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleChipClick(chip)}
-                    className="px-3 py-1.5 rounded-full text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
+              {/* Quick Prompt extras */}
+              {inputMode === 'quick' && (
+                <>
+                  {/* Suggestion Chips */}
+                  <div className="flex flex-wrap justify-center gap-2 mt-4">
+                    {suggestionChips.map((chip, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleChipClick(chip)}
+                        className="px-3 py-1.5 rounded-full text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
 
-              <p className="text-xs text-foreground/60 mt-4 font-light">
-                No credit card required to start. You'll see your draft before you decide anything.
-              </p>
+                  {/* Interview prompt link */}
+                  <p className="text-xs text-foreground/60 mt-4 font-light">
+                    No credit card required.{' '}
+                    <button
+                      onClick={() => handleSwitchMode('interview')}
+                      className="text-primary hover:underline"
+                    >
+                      Want a better first draft? Try Guided Interview (60 sec)
+                    </button>
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
