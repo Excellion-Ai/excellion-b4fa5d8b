@@ -867,6 +867,14 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         return;
       }
 
+      // Get user session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error('Please log in to generate images');
+        setIsGeneratingImage(false);
+        return;
+      }
+
       // Detect niche from site info for niche-specific image generation
       const businessName = siteSpec?.name || 'Business';
       const businessDescription = siteSpec?.description || '';
@@ -897,7 +905,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify(requestBody),
       });
