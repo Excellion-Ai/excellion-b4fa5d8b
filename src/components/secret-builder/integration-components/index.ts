@@ -1,5 +1,5 @@
 // Integration Components Registry
-import React from 'react';
+import type { ComponentType } from 'react';
 import { CheckoutSection } from './CheckoutSection';
 import { BookingEmbedSection } from './BookingEmbedSection';
 import { OrderLinksSection } from './OrderLinksSection';
@@ -17,17 +17,44 @@ export {
   MapEmbedSection 
 };
 
+// Valid component type keys
+export type IntegrationComponentKey = 
+  | 'checkout' 
+  | 'booking_embed' 
+  | 'order_links' 
+  | 'reservation_embed' 
+  | 'newsletter_form' 
+  | 'map_embed';
+
+// Base props that integration components accept
+export interface IntegrationSectionBaseProps {
+  title?: string;
+  body?: string;
+  props?: Record<string, unknown>;
+}
+
 // Master registry for dynamic component lookup
-export const INTEGRATION_COMPONENTS: Record<string, React.ComponentType<any>> = {
-  checkout: CheckoutSection,
-  booking_embed: BookingEmbedSection,
-  order_links: OrderLinksSection,
-  reservation_embed: ReservationEmbedSection,
-  newsletter_form: NewsletterFormSection,
-  map_embed: MapEmbedSection,
+// Using ComponentType with base props for flexibility
+export const INTEGRATION_COMPONENTS: Record<IntegrationComponentKey, ComponentType<IntegrationSectionBaseProps>> = {
+  checkout: CheckoutSection as ComponentType<IntegrationSectionBaseProps>,
+  booking_embed: BookingEmbedSection as ComponentType<IntegrationSectionBaseProps>,
+  order_links: OrderLinksSection as ComponentType<IntegrationSectionBaseProps>,
+  reservation_embed: ReservationEmbedSection as ComponentType<IntegrationSectionBaseProps>,
+  newsletter_form: NewsletterFormSection as ComponentType<IntegrationSectionBaseProps>,
+  map_embed: MapEmbedSection as ComponentType<IntegrationSectionBaseProps>,
 };
 
-// Get integration component by type (legacy function)
-export function getIntegrationComponent(componentType: string): React.ComponentType<any> | null {
-  return INTEGRATION_COMPONENTS[componentType] || null;
+// Get integration component by type with proper type checking
+export function getIntegrationComponent(
+  componentType: string
+): ComponentType<IntegrationSectionBaseProps> | null {
+  if (isValidIntegrationKey(componentType)) {
+    return INTEGRATION_COMPONENTS[componentType];
+  }
+  return null;
+}
+
+// Type guard to check if a string is a valid integration key
+export function isValidIntegrationKey(key: string): key is IntegrationComponentKey {
+  return key in INTEGRATION_COMPONENTS;
 }

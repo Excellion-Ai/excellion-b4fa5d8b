@@ -434,15 +434,15 @@ export default function SecretBuilderHub() {
       
       const { data, error } = await supabase
         .from('builder_projects')
-        .insert({
+        .insert([{
           user_id: user.id,
           name: template.title,
           idea: template.prompt,
-          spec: { 
+          spec: JSON.parse(JSON.stringify({ 
             siteSpec: template.spec,
             themeId: selectedTheme, 
-          },
-        })
+          })),
+        }])
         .select()
         .single();
 
