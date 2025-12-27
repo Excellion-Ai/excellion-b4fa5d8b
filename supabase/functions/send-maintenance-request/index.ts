@@ -5,6 +5,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const escapeHtml = (str: string): string => {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 interface MaintenanceRequest {
   name: string;
   email: string;
@@ -117,21 +127,21 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h2 style="color: #333; margin-top: 0;">Request Details</h2>
           <p><strong>Priority:</strong> ${priorityLabel}</p>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
-          ${websiteUrl ? `<p><strong>Website/Project:</strong> ${websiteUrl}</p>` : ''}
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> <a href="mailto:${encodeURIComponent(email)}">${escapeHtml(email)}</a></p>
+          ${websiteUrl ? `<p><strong>Website/Project:</strong> ${escapeHtml(websiteUrl)}</p>` : ''}
         </div>
 
         <div style="background-color: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
           <h3 style="color: #333; margin-top: 0;">Description</h3>
-          <p style="white-space: pre-wrap; line-height: 1.6;">${description}</p>
+          <p style="white-space: pre-wrap; line-height: 1.6;">${escapeHtml(description)}</p>
         </div>
 
         ${imagesHtml}
 
         <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #581c87; border-radius: 4px;">
           <p style="margin: 0; color: #666; font-size: 14px;">
-            <strong>Action Required:</strong> Please respond to ${email} within 24 hours.
+            <strong>Action Required:</strong> Please respond to ${escapeHtml(email)} within 24 hours.
           </p>
         </div>
       </div>
@@ -146,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Excellion Maintenance <noreply@excellionwebsites.com>",
         to: ["excellionai@gmail.com"],
-        subject: `${priorityLabel} - Maintenance Request from ${name}`,
+        subject: `${priorityLabel} - Maintenance Request from ${escapeHtml(name)}`,
         html: teamEmailHtml,
       }),
     });
@@ -168,19 +178,19 @@ const handler = async (req: Request): Promise<Response> => {
         </h1>
         
         <p style="font-size: 16px; line-height: 1.6; color: #333;">
-          Hi ${name},
+          Hi ${escapeHtml(name)},
         </p>
 
         <p style="font-size: 16px; line-height: 1.6; color: #333;">
-          Thank you for submitting your maintenance request. We've received your ${priority} priority request and our team will review it shortly.
+          Thank you for submitting your maintenance request. We've received your ${escapeHtml(priority)} priority request and our team will review it shortly.
         </p>
 
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h2 style="color: #333; margin-top: 0;">What You Submitted</h2>
           <p><strong>Priority:</strong> ${priorityLabel}</p>
-          ${websiteUrl ? `<p><strong>Website/Project:</strong> ${websiteUrl}</p>` : ''}
+          ${websiteUrl ? `<p><strong>Website/Project:</strong> ${escapeHtml(websiteUrl)}</p>` : ''}
           <p><strong>Description:</strong></p>
-          <p style="white-space: pre-wrap; line-height: 1.6; color: #555;">${description}</p>
+          <p style="white-space: pre-wrap; line-height: 1.6; color: #555;">${escapeHtml(description)}</p>
           ${imageUrls && imageUrls.length > 0 ? `<p style="margin-top: 10px;"><strong>Attachments:</strong> ${imageUrls.length} image(s)</p>` : ''}
         </div>
 

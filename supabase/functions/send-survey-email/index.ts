@@ -5,6 +5,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const escapeHtml = (str: string): string => {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 // Simple in-memory rate limiter
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
@@ -190,12 +200,12 @@ const handler = async (req: Request): Promise<Response> => {
     const timelineText = formatTimeline(timeline || "");
     const brand = brandName || "your business";
     
-    // Build personalized email body
-    const personalizedEmailBody = `Hi ${firstName}, this is John from Excellion Websites.
+    // Build personalized email body (escaped for HTML safety)
+    const personalizedEmailBody = `Hi ${escapeHtml(firstName)}, this is John from Excellion Websites.
 
-Thanks for filling out the estimate form for ${brand}. I see you're looking at a ${qualifiedPlan} build focused on ${outcomeText} with ${featuresText}. ${priceLine}
+Thanks for filling out the estimate form for ${escapeHtml(brand)}. I see you're looking at a ${escapeHtml(qualifiedPlan)} build focused on ${escapeHtml(outcomeText)} with ${escapeHtml(featuresText)}. ${escapeHtml(priceLine)}
 
-You mentioned a turnaround of about ${timelineText}, so I'm putting together your mockup and exact estimate now and just need a few quick details so I can nail the layout:
+You mentioned a turnaround of about ${escapeHtml(timelineText)}, so I'm putting together your mockup and exact estimate now and just need a few quick details so I can nail the layout:
 
 1) What do you sell, and how do people currently buy or book with you?
 2) Do you have any existing logo/colors, or should I propose a fresh look?
@@ -214,7 +224,7 @@ You can reply directly to this email with your answers. Once I have them, I'll s
       `;
 
       const emailSubject = brandName 
-        ? `Quick details for your ${brandName} website estimate`
+        ? `Quick details for your ${escapeHtml(brandName)} website estimate`
         : `Quick details for your website estimate`;
 
       const userEmailResponse = await fetch("https://api.resend.com/emails", {
@@ -248,19 +258,19 @@ You can reply directly to this email with your answers. Once I have them, I'll s
         
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h2 style="color: #581c87; margin-top: 0;">Contact Information</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Phone:</strong> ${phone}</p>
-          <p><strong>Email:</strong> ${email || "Not provided"}</p>
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(phone)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email || "Not provided")}</p>
         </div>
 
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h2 style="color: #581c87; margin-top: 0;">Project Details</h2>
-          <p><strong>Qualified Plan:</strong> ${qualifiedPlan}</p>
-          <p><strong>Brand Name:</strong> ${brandName || "Not specified"}</p>
-          <p><strong>Main Outcome:</strong> ${mainOutcome || "Not specified"}</p>
-          <p><strong>Timeline:</strong> ${timeline || "Not specified"}</p>
-          <p><strong>Brand Content Status:</strong> ${brandContentStatus || "Not specified"}</p>
-          <p><strong>Features Needed:</strong> ${featuresList}</p>
+          <p><strong>Qualified Plan:</strong> ${escapeHtml(qualifiedPlan)}</p>
+          <p><strong>Brand Name:</strong> ${escapeHtml(brandName || "Not specified")}</p>
+          <p><strong>Main Outcome:</strong> ${escapeHtml(mainOutcome || "Not specified")}</p>
+          <p><strong>Timeline:</strong> ${escapeHtml(timeline || "Not specified")}</p>
+          <p><strong>Brand Content Status:</strong> ${escapeHtml(brandContentStatus || "Not specified")}</p>
+          <p><strong>Features Needed:</strong> ${escapeHtml(featuresList)}</p>
         </div>
         
         <p style="margin-top: 30px;">Follow up with this lead as soon as possible!</p>
