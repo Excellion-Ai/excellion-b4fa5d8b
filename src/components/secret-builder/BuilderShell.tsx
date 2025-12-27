@@ -204,14 +204,15 @@ function normalizeSpec(spec: any): any {
   return spec;
 }
 
-// Track if fallback has been forced for this session
-let fallbackForcedOnce = false;
-
-function extractJsonFromResponse(text: string, forceFallback: boolean = false): { message: string; siteSpec: SiteSpec | null } {
+function extractJsonFromResponse(
+  text: string, 
+  forceFallback: boolean = false,
+  fallbackForcedOnceRef?: React.MutableRefObject<boolean>
+): { message: string; siteSpec: SiteSpec | null } {
   // DEBUG: Force fallback once if ?forceFallback=1
-  if (forceFallback && !fallbackForcedOnce) {
+  if (forceFallback && fallbackForcedOnceRef && !fallbackForcedOnceRef.current) {
     console.log('[DEBUG] Forcing fallback - returning null from extractJsonFromResponse');
-    fallbackForcedOnce = true;
+    fallbackForcedOnceRef.current = true;
     return { message: text, siteSpec: null };
   }
   
@@ -324,6 +325,7 @@ export function BuilderShell() {
   const [pendingSpec, setPendingSpec] = useState<SiteSpec | null>(null);
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
+  const fallbackForcedOnceRef = useRef<boolean>(false);
   
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
@@ -912,7 +914,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       updateStep(4, 'active');
       
       // Use forceFallback query param to test fallback path
-      const { message: assistantText, siteSpec: parsedSpec } = extractJsonFromResponse(fullResponse, forceFallback);
+      const { message: assistantText, siteSpec: parsedSpec } = extractJsonFromResponse(fullResponse, forceFallback, fallbackForcedOnceRef);
       
       let newSiteSpec: SiteSpec | null = null;
       if (parsedSpec) {

@@ -27,7 +27,7 @@ export const INTEGRATION_TO_COMPONENT: Record<IntegrationKey, ComponentTypeKey> 
   reservations: 'reservation_embed',
   maps: 'map_embed',
   email_capture: 'newsletter_form',
-} as const;
+};
 
 export type ScaffoldViolationType = 
   | 'missing_page' 
