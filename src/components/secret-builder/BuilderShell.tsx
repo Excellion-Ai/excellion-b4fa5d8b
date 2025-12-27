@@ -513,7 +513,7 @@ export function BuilderShell() {
       }
       
       const { data, error } = await supabase.functions.invoke('deduct-credits', {
-        body: { userId: user.id, action, description, projectId }
+        body: { action, description, projectId }
       });
       
       if (error || !data?.success) {
