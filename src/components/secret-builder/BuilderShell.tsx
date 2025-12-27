@@ -47,101 +47,14 @@ import { getPacksForIntegrations, mergeIntegrationPages, type IntegrationPack } 
 import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
-
-// Integration type to componentType mapping for validation
-const INTEGRATION_COMPONENT_MAP: Record<string, string> = {
-  stripe: "checkout",
-  calendly: "booking_embed",
-  ordering: "order_links",
-  reservations: "reservation_embed",
-  maps: "map_embed",
-  email_capture: "newsletter_form",
-};
-
-type ScaffoldViolation = {
-  type: 'missing_page' | 'missing_section' | 'forbidden_phrase' | 'missing_integration';
-  details: string;
-};
-
-type ScaffoldValidationResult = {
-  valid: boolean;
-  violations: ScaffoldViolation[];
-};
-
-// Validate SiteSpec against scaffold requirements
-function validateSpecAgainstScaffold(siteSpec: SiteSpec | null, scaffold: any): ScaffoldValidationResult {
-  const violations: ScaffoldViolation[] = [];
-  
-  if (!siteSpec || !scaffold) {
-    return { valid: true, violations: [] };
-  }
-  
-  const specPages = siteSpec.pages || [];
-  const specPagePaths = specPages.map(p => p.path);
-  
-  // 1. Check all required pages exist
-  if (scaffold.requiredPages && Array.isArray(scaffold.requiredPages)) {
-    for (const reqPage of scaffold.requiredPages) {
-      if (!specPagePaths.includes(reqPage.path)) {
-        violations.push({
-          type: 'missing_page',
-          details: `Missing required page: ${reqPage.path} (${reqPage.title})`,
-        });
-      } else {
-        // 2. Check required sections for this page
-        if (reqPage.requiredSections && Array.isArray(reqPage.requiredSections)) {
-          const foundPage = specPages.find(p => p.path === reqPage.path);
-          const pageSectionTypes = (foundPage?.sections || []).map(s => s.type);
-          
-          for (const reqSection of reqPage.requiredSections) {
-            if (!pageSectionTypes.includes(reqSection)) {
-              violations.push({
-                type: 'missing_section',
-                details: `Page "${reqPage.path}" missing required section: ${reqSection}`,
-              });
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  // 3. Check forbidden phrases
-  if (scaffold.forbiddenPhrases && Array.isArray(scaffold.forbiddenPhrases)) {
-    const specString = JSON.stringify(siteSpec).toLowerCase();
-    for (const phrase of scaffold.forbiddenPhrases) {
-      if (specString.includes(phrase.toLowerCase())) {
-        violations.push({
-          type: 'forbidden_phrase',
-          details: `Forbidden phrase found: "${phrase}"`,
-        });
-      }
-    }
-  }
-  
-  // 4. Check integrations have matching components
-  if (scaffold.integrations && Array.isArray(scaffold.integrations)) {
-    const allSections = specPages.flatMap(p => p.sections || []);
-    const componentTypes = allSections
-      .filter(s => (s.content as any)?.componentType)
-      .map(s => (s.content as any).componentType);
-    
-    for (const integration of scaffold.integrations) {
-      const expectedComponent = INTEGRATION_COMPONENT_MAP[integration];
-      if (expectedComponent && !componentTypes.includes(expectedComponent)) {
-        violations.push({
-          type: 'missing_integration',
-          details: `Integration "${integration}" requires componentType "${expectedComponent}" but none found`,
-        });
-      }
-    }
-  }
-  
-  return {
-    valid: violations.length === 0,
-    violations,
-  };
-}
+import { 
+  validateSpecAgainstScaffold, 
+  INTEGRATION_TO_COMPONENT,
+  type GenerationScaffold, 
+  type DebugInfo, 
+  type PageMap,
+  type ScaffoldValidationResult 
+} from '@/types/scaffold';
 
 type GenerationStep = {
   id: number;
@@ -354,13 +267,8 @@ export function BuilderShell() {
   const debugMode = searchParams.get('debug') === '1';
   const forceFallback = searchParams.get('forceFallback') === '1';
 
-  // Debug state for panel
-  const [debugInfo, setDebugInfo] = useState<{
-    lastScaffold: any;
-    lastSpecPageMap: Record<string, string[]>;
-    lastGuardrailViolations: string[];
-    lastLayoutSignature: any;
-  }>({
+  // Debug state for panel - using imported DebugInfo type
+  const [debugInfo, setDebugInfo] = useState<DebugInfo>({
     lastScaffold: null,
     lastSpecPageMap: {},
     lastGuardrailViolations: [],
