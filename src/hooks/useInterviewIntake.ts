@@ -31,6 +31,7 @@ export type StyleVibe =
 
 export interface InterviewAnswers {
   websiteType: WebsiteType | null;
+  websiteTypeOther: string; // Custom type when "other" is selected
   businessName: string;
   serviceMode: ServiceMode | null;
   serviceArea: string;
@@ -47,6 +48,7 @@ export interface InterviewState {
 
 const INITIAL_ANSWERS: InterviewAnswers = {
   websiteType: null,
+  websiteTypeOther: '',
   businessName: '',
   serviceMode: null,
   serviceArea: '',
@@ -157,7 +159,12 @@ export function useInterviewIntake(initialPrompt: string = '') {
   const canProceed = useMemo(() => {
     const { answers, step } = state;
     switch (step) {
-      case 1: return answers.websiteType !== null;
+      case 1: 
+        // For "other", require the custom type to be filled
+        if (answers.websiteType === 'other') {
+          return answers.websiteTypeOther.trim().length > 0;
+        }
+        return answers.websiteType !== null;
       case 2: return answers.businessName.trim().length > 0;
       case 3: return answers.serviceMode !== null;
       case 4: return answers.primaryGoal !== null;
@@ -183,7 +190,12 @@ export function useInterviewIntake(initialPrompt: string = '') {
     const { answers } = state;
     if (!canSubmit) return '';
 
-    const typeLabel = answers.websiteType ? WEBSITE_TYPE_LABELS[answers.websiteType] : '';
+    // Use custom type if "other" is selected, otherwise use the label
+    const typeLabel = answers.websiteType === 'other' && answers.websiteTypeOther.trim()
+      ? answers.websiteTypeOther.trim()
+      : answers.websiteType 
+        ? WEBSITE_TYPE_LABELS[answers.websiteType] 
+        : '';
     const goalLabel = answers.primaryGoal ? GOAL_LABELS[answers.primaryGoal] : '';
     const vibeLabel = answers.vibe ? VIBE_LABELS[answers.vibe] : '';
     
@@ -205,7 +217,7 @@ export function useInterviewIntake(initialPrompt: string = '') {
   const structuredData = useMemo(() => {
     const { answers } = state;
     return {
-      websiteType: answers.websiteType,
+      websiteType: answers.websiteType === 'other' ? answers.websiteTypeOther : answers.websiteType,
       businessName: answers.businessName,
       serviceMode: answers.serviceMode,
       serviceArea: answers.serviceArea || null,
