@@ -310,9 +310,17 @@ export default function SecretBuilderHub() {
   const handleDuplicateProject = async (project: BuilderProject, e: React.MouseEvent) => {
     e.stopPropagation();
     
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({ title: 'Sign in required', description: 'Please sign in to duplicate projects.', variant: 'destructive' });
+      return;
+    }
+    
     const { data, error } = await supabase
       .from('builder_projects')
       .insert({
+        user_id: user.id,
         name: `${project.name} (copy)`,
         idea: project.idea,
         spec: project.spec,
@@ -340,17 +348,27 @@ export default function SecretBuilderHub() {
     localStorage.setItem(LS_PENDING_THEME, selectedTheme);
 
     try {
-      // Create project in database
-      
-      // Get current user
+      // Get current user - require login
       const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({ 
+          title: 'Sign in required', 
+          description: 'Please sign in to create projects.', 
+          variant: 'destructive' 
+        });
+        navigate('/auth');
+        setIsGenerating(false);
+        isSubmittingRef.current = false;
+        return;
+      }
       
       // Create project in database
       const projectName = ideaToUse.slice(0, 50) + (ideaToUse.length > 50 ? '...' : '');
       const { data, error } = await supabase
         .from('builder_projects')
         .insert({
-          user_id: user?.id,
+          user_id: user.id,
           name: projectName,
           idea: ideaToUse,
           spec: { 
@@ -400,9 +418,24 @@ export default function SecretBuilderHub() {
     setIsGenerating(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({ 
+          title: 'Sign in required', 
+          description: 'Please sign in to use templates.', 
+          variant: 'destructive' 
+        });
+        navigate('/auth');
+        setIsGenerating(false);
+        isSubmittingRef.current = false;
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('builder_projects')
         .insert({
+          user_id: user.id,
           name: template.title,
           idea: template.prompt,
           spec: { 
