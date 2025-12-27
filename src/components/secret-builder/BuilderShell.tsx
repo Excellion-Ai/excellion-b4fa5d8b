@@ -36,7 +36,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
-import { useCredits, CREDIT_COSTS, CreditActionType } from '@/hooks/useCredits';
+import { useCredits, CreditActionType } from '@/hooks/useCredits';
+import { calculateCreditCost } from '@/lib/calculateCreditCost';
 import { detectNiche } from '@/lib/motion/motionEngine';
 import { MotionIntensity } from '@/lib/motion/types';
 import type { Json } from '@/integrations/supabase/types';
@@ -500,12 +501,15 @@ export function BuilderShell() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isGenerating]);
 
-  // Helper to deduct credits via edge function
-  const deductCredits = async (action: CreditActionType, description?: string): Promise<boolean> => {
+  // Helper to deduct credits via edge function with dynamic cost
+  const deductCredits = async (
+    action: CreditActionType, 
+    description?: string,
+    customAmount?: number
+  ): Promise<boolean> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // Anonymous users must sign in to use AI features
         toast.error('Please sign in to use AI features', {
           action: {
             label: 'Sign In',
@@ -516,12 +520,12 @@ export function BuilderShell() {
       }
       
       const { data, error } = await supabase.functions.invoke('deduct-credits', {
-        body: { action, description, projectId }
+        body: { action, description, projectId, amount: customAmount }
       });
       
       if (error || !data?.success) {
         if (data?.insufficient) {
-          toast.error(`Not enough credits. Need ${data?.required || getCost(action)}, have ${data?.balance || 0}`, {
+          toast.error(`Not enough credits. Need ${data?.required || customAmount || getCost(action)}, have ${data?.balance || 0}`, {
             action: {
               label: 'Get Credits',
               onClick: () => navigate('/billing'),
@@ -530,16 +534,14 @@ export function BuilderShell() {
           return false;
         }
         console.error('Credit deduction error:', error || data?.error);
-        // On other errors, still allow operation to not block users
         return true;
       }
       
-      deductLocal(action);
       fetchCredits(); // Refresh credit balance after deduction
       return true;
     } catch (err) {
       console.error('Credit deduction failed:', err);
-      return true; // Continue on error
+      return true;
     }
   };
 
@@ -547,19 +549,33 @@ export function BuilderShell() {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
 
-    // Determine credit action type:
-    // - 'generation' (5 credits): First message (initial site generation)
-    // - 'edit' (3 credits): Follow-up messages that request site changes (detected by keywords)
-    // - 'chat' (1 credit): Simple chat/questions without site modifications
+    // Determine credit action type
     const isFirstMessage = messages.length === 0;
     const editKeywords = /\b(change|update|edit|modify|replace|add|remove|make|regenerate|rebuild|redesign|redo|adjust|fix|improve|enhance|different|new|another)\b/i;
     const isEditRequest = !isFirstMessage && editKeywords.test(ideaToUse);
     const actionType: CreditActionType = isFirstMessage ? 'generation' : (isEditRequest ? 'edit' : 'chat');
     
-    // Deduct credits BEFORE making AI call (not after)
-    const canProceed = await deductCredits(actionType, `AI ${actionType} for project`);
+    // Calculate dynamic credit cost based on prompt complexity
+    const hasImages = attachments.some(att => 
+      att.type === 'file' && att.data instanceof File && (att.data as File).type.startsWith('image/')
+    );
+    
+    const creditCalc = calculateCreditCost(actionType, ideaToUse, {
+      attachmentCount: attachments.length,
+      hasImages,
+      isFirstGeneration: isFirstMessage,
+    });
+    
+    console.log('[Credits] Dynamic cost calculation:', creditCalc);
+    
+    // Deduct credits BEFORE making AI call with dynamic cost
+    const canProceed = await deductCredits(
+      actionType, 
+      `AI ${actionType}: ${creditCalc.breakdown}`,
+      creditCalc.totalCost
+    );
     if (!canProceed) {
-      return; // User either not authenticated or insufficient credits
+      return;
     }
 
     // Convert attachments to base64 for API and upload to storage for actual use
