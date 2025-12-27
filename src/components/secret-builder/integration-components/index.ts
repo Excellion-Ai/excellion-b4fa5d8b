@@ -27,7 +27,7 @@ export type IntegrationComponentKey =
   | 'map_embed';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const INTEGRATION_COMPONENTS: Record<string, ComponentType<any>> = {
+export const INTEGRATION_COMPONENTS: Record<IntegrationComponentKey, ComponentType<any>> = {
   checkout: CheckoutSection,
   booking_embed: BookingEmbedSection,
   order_links: OrderLinksSection,
@@ -39,7 +39,10 @@ export const INTEGRATION_COMPONENTS: Record<string, ComponentType<any>> = {
 // Get integration component by type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getIntegrationComponent(componentType: string): ComponentType<any> | null {
-  return INTEGRATION_COMPONENTS[componentType] || null;
+  if (isValidIntegrationKey(componentType)) {
+    return INTEGRATION_COMPONENTS[componentType];
+  }
+  return null;
 }
 
 // Type guard to check if a string is a valid integration key

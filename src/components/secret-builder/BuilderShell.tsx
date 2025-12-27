@@ -943,7 +943,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         const layoutSig = computeSignature(parsedSpec);
         
         // Build page map for debug
-        const specPageMap: Record<string, string[]> = {};
+        const specPageMap: PageMap = {};
         for (const page of parsedSpec.pages || []) {
           specPageMap[page.path] = (page.sections || []).map(s => s.type);
         }
@@ -1015,7 +1015,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         newSiteSpec = specFromChat(ideaToUse);
         
         // Log fallback details
-        const fallbackPageMap: Record<string, string[]> = {};
+        const fallbackPageMap: PageMap = {};
         for (const page of newSiteSpec.pages || []) {
           fallbackPageMap[page.path] = (page.sections || []).map(s => s.type);
         }

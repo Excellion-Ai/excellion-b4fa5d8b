@@ -3,7 +3,12 @@
 
 import type { SiteSpec, SiteSection } from './site-spec';
 import type { LayoutSignature } from '@/lib/layoutSignature';
+import type { IntegrationType } from '@/lib/nicheRouter';
 
+// Section type alias for PageMap
+export type SectionType = SiteSection['type'];
+
+// Integration keys that map to actual components (subset of IntegrationType)
 export type IntegrationKey = 
   | 'stripe' 
   | 'calendly' 
@@ -20,14 +25,14 @@ export type ComponentTypeKey =
   | 'map_embed' 
   | 'newsletter_form';
 
-export const INTEGRATION_TO_COMPONENT: Record<IntegrationKey, ComponentTypeKey> = {
+export const INTEGRATION_TO_COMPONENT = {
   stripe: 'checkout',
   calendly: 'booking_embed',
   ordering: 'order_links',
   reservations: 'reservation_embed',
   maps: 'map_embed',
   email_capture: 'newsletter_form',
-};
+} as const satisfies Record<IntegrationKey, ComponentTypeKey>;
 
 export type ScaffoldViolationType = 
   | 'missing_page' 
@@ -64,11 +69,11 @@ export type GenerationScaffold = {
   requiredPages: RequiredPage[];
   ctaRules: CtaRules;
   forbiddenPhrases: string[];
-  integrations: string[];
+  integrations: IntegrationType[];
   layoutSignature?: string;
 };
 
-export type PageMap = Record<string, string[]>;
+export type PageMap = Record<string, SectionType[]>;
 
 export type DebugInfo = {
   lastScaffold: GenerationScaffold | null;
