@@ -111,17 +111,120 @@ const ALLOWED_ICONS = new Set([
 // Fallback icons when AI generates invalid ones
 const FALLBACK_ICONS = ['Zap', 'Star', 'Shield', 'Heart', 'Award', 'Target', 'Sparkles', 'Rocket'];
 
-// Validate Unsplash URL format
+// Validate image URL format - also accept GENERATE: prompts for AI generation
 function isValidImageUrl(url: string | undefined): boolean {
   if (!url) return false;
-  // Allow Unsplash, placeholder, and storage URLs
+  // Accept GENERATE: prompts for AI image generation
+  if (url.startsWith('GENERATE:')) return true;
+  // Allow Unsplash, placeholder, storage URLs, and data URLs
   return url.startsWith('https://images.unsplash.com/') || 
          url.startsWith('https://source.unsplash.com/') ||
-         url.startsWith('https://') && url.includes('supabase');
+         url.startsWith('data:image/') ||
+         (url.startsWith('https://') && url.includes('supabase'));
+}
+
+// Check if an image URL is a generation prompt
+function isImageGenerationPrompt(url: string | undefined): boolean {
+  return url?.startsWith('GENERATE:') || false;
 }
 
 // Default fallback image for invalid URLs
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop';
+
+// Generate AI images for GENERATE: prompts in the spec
+async function processImageGenerationPrompts(
+  spec: SiteSpec,
+  supabaseClient: typeof supabase
+): Promise<SiteSpec> {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session?.access_token) {
+    console.warn('[ImageGen] No auth session - skipping image generation');
+    return spec;
+  }
+
+  const updatedSpec = JSON.parse(JSON.stringify(spec)) as SiteSpec;
+  const businessName = spec.name || 'Business';
+  const route = routeNiche(spec.description || businessName);
+  const niche = route.category.toUpperCase().replace('_', ' ');
+
+  // Find all GENERATE: prompts in the spec
+  const imagePromises: Promise<void>[] = [];
+
+  for (const page of updatedSpec.pages || []) {
+    for (const section of page.sections || []) {
+      const content = section.content as any;
+      
+      // Check hero background
+      if (content?.backgroundImage && isImageGenerationPrompt(content.backgroundImage)) {
+        const prompt = content.backgroundImage.replace('GENERATE:', '').trim();
+        imagePromises.push(
+          generateImageForPrompt(prompt, businessName, niche, session.access_token)
+            .then(url => { content.backgroundImage = url; })
+            .catch(() => { content.backgroundImage = FALLBACK_IMAGE; })
+        );
+      }
+
+      // Check gallery/portfolio items
+      if (content?.items && Array.isArray(content.items)) {
+        for (const item of content.items) {
+          if (item.image && isImageGenerationPrompt(item.image)) {
+            const prompt = item.image.replace('GENERATE:', '').trim();
+            imagePromises.push(
+              generateImageForPrompt(prompt, businessName, niche, session.access_token)
+                .then(url => { item.image = url; })
+                .catch(() => { item.image = FALLBACK_IMAGE; })
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // Wait for all images to generate (with timeout)
+  if (imagePromises.length > 0) {
+    console.log(`[ImageGen] Generating ${imagePromises.length} AI images...`);
+    try {
+      await Promise.race([
+        Promise.all(imagePromises),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Image generation timeout')), 60000))
+      ]);
+      console.log('[ImageGen] All images generated successfully');
+    } catch (err) {
+      console.warn('[ImageGen] Some images may have failed:', err);
+    }
+  }
+
+  return updatedSpec;
+}
+
+// Generate a single AI image
+async function generateImageForPrompt(
+  prompt: string,
+  businessName: string,
+  niche: string,
+  accessToken: string
+): Promise<string> {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-niche-image`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      businessName,
+      niche,
+      imageType: 'hero',
+      customPrompt: prompt,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Image generation failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.imageUrl || data.images?.[0] || FALLBACK_IMAGE;
+}
 
 function normalizeSpec(spec: any): any {
   // GLOBAL icon tracking across all pages
@@ -1001,8 +1104,19 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         // Record the generation for diversity tracking
         recordGeneration(parsedSpec);
         
-        newSiteSpec = parsedSpec;
-        setSiteSpec(parsedSpec);
+        // Process GENERATE: image prompts in the spec (async, don't block)
+        let processedSpec = parsedSpec;
+        try {
+          toast.info('Generating custom images for your site...');
+          processedSpec = await processImageGenerationPrompts(parsedSpec, supabase);
+          toast.success('Custom images generated!');
+        } catch (imgErr) {
+          console.warn('[ImageGen] Failed to process image prompts:', imgErr);
+          // Continue with original spec - images will use fallbacks
+        }
+        
+        newSiteSpec = processedSpec;
+        setSiteSpec(processedSpec);
         setGeneratedHtml(null); // Use SiteSpec rendering instead of raw HTML
         
         // Set project name from AI-generated site name

@@ -564,174 +564,41 @@ Once you detect the industry, USE THESE EXACT TEMPLATES for content generation:
 - **Theme**: primaryColor: "#7c3aed" (purple), secondaryColor: "#f59e0b" (gold)
 
 ====================================
-## 2B. INDUSTRY-SPECIFIC PLACEHOLDER IMAGES
+## 2B. AI-GENERATED IMAGES (NO STOCK PHOTOS)
 ====================================
 
-CRITICAL: Always include realistic placeholder images for each industry. Use these Unsplash URLs:
+CRITICAL CHANGE: Do NOT use hardcoded Unsplash placeholder URLs anymore. Instead:
 
-### AUTOMOTIVE (Car Dealership)
-- Hero Background: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920&q=80" (luxury car showroom)
-- Inventory Items:
-  - "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80" (sports car)
-  - "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80" (sedan front)
-  - "https://images.unsplash.com/photo-1542362567-b07e54358753?w=800&q=80" (SUV)
-  - "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80" (truck)
-  - "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=800&q=80" (BMW)
-  - "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80" (Mercedes)
+1. **Hero Images**: Set backgroundImage to a DESCRIPTIVE PROMPT that can be used to generate a unique image:
+   - Format: "GENERATE: [detailed description of desired image]"
+   - Example for pizza shop: "GENERATE: Professional photo of a wood-fired pizza oven with flames, fresh pizzas being made, warm restaurant kitchen atmosphere, Italian cuisine, appetizing food photography"
+   - Example for plumber: "GENERATE: Professional plumber in blue uniform fixing pipes under a modern kitchen sink, clean workspace, trustworthy and reliable home service"
 
-### LAWN CARE & LANDSCAPING
-- Hero Background: "https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1920&q=80" (beautiful lawn)
-- Gallery Items:
-  - "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&q=80" (manicured garden)
-  - "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&q=80" (lawn mower)
-  - "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80" (landscaping)
-  - "https://images.unsplash.com/photo-1598902108854-10e335adac99?w=800&q=80" (garden design)
+2. **Gallery/Portfolio Images**: Use the same GENERATE: prefix with specific descriptions
+   - Example: "GENERATE: Close-up of fresh pepperoni pizza with melting cheese, steam rising, professional food photography"
 
-### CLOTHING & FASHION
-- Hero Background: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80" (fashion store)
-- Product Items:
-  - "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&q=80" (clothing rack)
-  - "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&q=80" (t-shirts)
-  - "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&q=80" (jeans)
-  - "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80" (accessories)
+3. **The descriptions MUST be specific to the exact business type**:
+   - A sandwich shop gets sandwich images (NOT pizza, NOT cars, NOT generic food)
+   - A plumber gets plumbing images (NOT welding, NOT HVAC, NOT generic construction)
+   - A pizza restaurant gets pizza images (NOT sushi, NOT burgers)
 
-### RESTAURANT & FOOD SERVICE
-- Hero Background: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&q=80" (restaurant interior)
-- Menu Items:
-  - "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80" (salad dish)
-  - "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80" (pizza)
-  - "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&q=80" (gourmet plate)
-  - "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80" (burger)
+4. **NEVER use the same image description twice** - each image must be unique
 
-### SANDWICH SHOP / DELI / SUB SHOP
-- Hero Background: "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=1920&q=80" (deli counter)
-- Menu Items:
-  - "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&q=80" (sub sandwich)
-  - "https://images.unsplash.com/photo-1553909489-cd47e0907980?w=800&q=80" (deli sandwich)
-  - "https://images.unsplash.com/photo-1485963631004-f2f00b1d6571?w=800&q=80" (stacked sandwich)
-  - "https://images.unsplash.com/photo-1626078299034-59c6dc0de225?w=800&q=80" (fresh ingredients)
-  - "https://images.unsplash.com/photo-1550507992-eb63ffee0847?w=800&q=80" (hoagie)
-  - "https://images.unsplash.com/photo-1521390188846-e2a3a97453a0?w=800&q=80" (deli meat)
+5. **Image prompts should be professional and high-quality**:
+   - Include lighting details ("warm lighting", "natural light", "studio lighting")
+   - Include style ("professional photography", "photorealistic", "editorial style")
+   - Include mood ("welcoming", "appetizing", "trustworthy", "modern")
 
-### FITNESS & GYM
-- Hero Background: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920&q=80" (gym interior)
-- Gallery Items:
-  - "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&q=80" (workout area)
-  - "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80" (group class)
-  - "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&q=80" (weights)
-  - "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&q=80" (trainer)
-
-### MEDICAL & DENTAL
-- Hero Background: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1920&q=80" (medical office)
-- Gallery Items:
-  - "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&q=80" (doctor)
-  - "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80" (dental chair)
-  - "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80" (medical equipment)
-  - "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&q=80" (consultation)
-
-### LEGAL SERVICES
-- Hero Background: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1920&q=80" (law office)
-- Gallery Items:
-  - "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" (professional attorney)
-  - "https://images.unsplash.com/photo-1436450412740-6b988f486c6b?w=800&q=80" (law books)
-  - "https://images.unsplash.com/photo-1521791055366-0d553872125f?w=800&q=80" (courtroom)
-
-### REAL ESTATE
-- Hero Background: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&q=80" (modern home)
-- Property Items:
-  - "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80" (house exterior)
-  - "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" (luxury home)
-  - "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80" (modern house)
-  - "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&q=80" (suburban home)
-
-### SALON & SPA
-- Hero Background: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1920&q=80" (salon interior)
-- Gallery Items:
-  - "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&q=80" (haircut)
-  - "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=800&q=80" (spa treatment)
-  - "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=800&q=80" (nail salon)
-  - "https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=800&q=80" (hair styling)
-
-### PLUMBING (SPECIFIC - NOT HVAC, NOT WELDING, NOT ELECTRICAL)
-- Hero Background: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" (plumber at work with pipes)
-- About Page: "https://images.unsplash.com/photo-1621905251189-9a69c5e7c91f?w=1920&q=80" (plumbing team)
-- Gallery/Service Items:
-  - "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&q=80" (pipe repair)
-  - "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=800&q=80" (bathroom plumbing)
-  - "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80" (plumbing service van)
-  - "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&q=80" (water heater installation)
-  - "https://images.unsplash.com/photo-1581141849291-1125c7b692b5?w=800&q=80" (plumber with wrench)
-  - "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80" (drain cleaning)
-
-### ELECTRICAL SERVICES (SPECIFIC - NOT PLUMBING, NOT WELDING)
-- Hero Background: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1920&q=80" (electrician working)
-- About Page: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80" (electrical team)
-- Gallery/Service Items:
-  - "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80" (electrical panel work)
-  - "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" (wiring installation)
-  - "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&q=80" (electrician with tools)
-  - "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80" (lighting installation)
-
-### HVAC / AIR CONDITIONING (SPECIFIC - NOT PLUMBING, NOT WELDING)
-- Hero Background: "https://images.unsplash.com/photo-1631545806609-6578a0d0d9e9?w=1920&q=80" (HVAC system)
-- About Page: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1920&q=80" (HVAC technician)
-- Gallery/Service Items:
-  - "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&q=80" (AC unit installation)
-  - "https://images.unsplash.com/photo-1631545806609-6578a0d0d9e9?w=800&q=80" (HVAC equipment)
-  - "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&q=80" (heating system)
-  - "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80" (service technician)
-
-### ROOFING (SPECIFIC)
-- Hero Background: "https://images.unsplash.com/photo-1632759145351-1d592919f522?w=1920&q=80" (roofing work)
-- About Page: "https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=1920&q=80" (roofing crew)
-- Gallery/Service Items:
-  - "https://images.unsplash.com/photo-1632759145351-1d592919f522?w=800&q=80" (roof installation)
-  - "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" (roof repair)
-  - "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80" (completed roof)
-
-### PHOTOGRAPHY
-- Hero Background: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1920&q=80" (photography studio)
-- Portfolio Items:
-  - "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80" (wedding photo)
-  - "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=800&q=80" (portrait)
-  - "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80" (wedding couple)
-  - "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80" (family portrait)
-
-### CONSTRUCTION & CONTRACTOR
-- Hero Background: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80" (construction site)
-- Project Items:
-  - "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80" (building project)
-  - "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80" (construction work)
-  - "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80" (renovation)
-  - "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=800&q=80" (contractor)
-### CLEANING SERVICES
-- Hero Background: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1920&q=80" (clean home)
-- Gallery Items:
-  - "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=800&q=80" (cleaning supplies)
-  - "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&q=80" (professional cleaner)
-  - "https://images.unsplash.com/photo-1527515545081-5db817172677?w=800&q=80" (sparkling kitchen)
-
-### PET SERVICES
-- Hero Background: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1920&q=80" (pet shop)
-- Gallery Items:
-  - "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&q=80" (happy dog)
-  - "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80" (dogs playing)
-  - "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&q=80" (cat)
-  - "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=800&q=80" (pet grooming)
-
-**IMPORTANT IMAGE RULES:**
-1. For INVENTORY/PRODUCT sections (cars, homes, products), always include image URLs in the items array
-2. Use the pattern: { "title": "Item Name", "description": "...", "image": "https://images.unsplash.com/..." }
-3. Hero sections should use backgroundImage property with the industry hero URL
-4. Gallery/portfolio sections must include image arrays
-5. NEVER leave image slots empty - always use industry-appropriate stock photos
-
-**CRITICAL IMAGE VALIDATION RULES - MANDATORY:**
-6. **NEVER use automotive/car images for non-automotive businesses** - This is a common error. Food businesses, salons, fitness centers, etc. must NEVER show car images.
-7. **ALWAYS match images to the exact business type** - A sandwich shop MUST use sandwich images, not generic restaurant or car images.
-8. **When unsure about the business type, use NEUTRAL professional images** - Use abstract gradients, office spaces, or professional meeting images instead of defaulting to automotive.
-9. **Double-check gallery/portfolio sections** - These are the most common places where wrong images appear. Verify every image URL matches the business.
-10. **Food businesses get food images ONLY** - Restaurants, cafes, delis, sandwich shops, bakeries, etc. must ONLY use food-related imagery.
+EXAMPLE hero section for Tony's Pizza:
+{
+  "type": "hero",
+  "content": {
+    "headline": "Fresh Flavors, Made With Love",
+    "subheadline": "Tony's local favorites — hand-tossed pizza, signature wings, and seasonal salads.",
+    "backgroundImage": "GENERATE: Warm, inviting Italian pizzeria interior with brick oven, freshly baked pizzas on wooden boards, warm lighting, cozy restaurant atmosphere, appetizing food photography, 16:9 hero banner",
+    "ctas": [...]
+  }
+}
 
 **CRITICAL TRADE-SPECIFIC IMAGE RULES (HOME SERVICES):**
 11. **PLUMBER ≠ WELDER ≠ ELECTRICIAN ≠ HVAC** - These are COMPLETELY DIFFERENT trades with DIFFERENT imagery:
@@ -841,19 +708,30 @@ Only include on home page:
 DO NOT put on home page: FAQ, Contact form, full service lists, team sections, pricing details
 These go on SEPARATE dedicated pages.
 
+**SMART PAGE SELECTION - CRITICAL:**
+Pages MUST match the business type. DO NOT include irrelevant pages:
+
+- **Restaurant/Food Business**: Home, Menu, Order/Reservations, Location, Contact
+  - NEVER include: Cart, Checkout, Shop, Product pages (these are for e-commerce only!)
+  
+- **Local Service (plumber, electrician, etc.)**: Home, Services, About, Contact, Reviews
+  - NEVER include: Cart, Checkout, Shop, Product, Menu pages
+  
+- **E-commerce/Retail**: Home, Shop, Product, Cart, Checkout, Contact
+  - These businesses DO need cart/checkout pages
+  
+- **Portfolio/Agency**: Home, Work, Services, About, Contact
+  - NEVER include: Cart, Checkout, Menu, Product pages
+
+- **Coaching/Course**: Home, Services/Curriculum, About, Testimonials, Contact
+  - NEVER include: Cart, Menu, Reservations pages
+
 **NAVIGATION MUST USE PAGE PATHS:**
 - "/" for Home
 - "/services" or "/products" or "/menu" for main offering
 - "/about" for About page
 - "/contact" for Contact page
 - NEVER use "#section" anchor links - they don't work for separate pages!
-
-**GENERATE MULTIPLE WORKING PAGES:**
-Every site needs 3-4 separate pages with full content:
-- Home (/) - Condensed overview with CTAs linking to other pages
-- Services/Products/Menu (/services or /products or /menu) - Full details
-- About (/about) - Company story, team, values
-- Contact (/contact) - Contact form, location, hours
 
 ====================================
 ## 8. RESPONSE FORMAT - CRITICAL
