@@ -151,6 +151,8 @@ export type StatsContent = {
 export type CustomContent = {
   title: string;
   body?: string;
+  componentType?: string;
+  props?: Record<string, any>;
 };
 
 // Gallery content type
