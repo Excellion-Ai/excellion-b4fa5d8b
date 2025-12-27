@@ -34,6 +34,11 @@ export const INTEGRATION_TO_COMPONENT = {
   email_capture: 'newsletter_form',
 } as const satisfies Record<IntegrationKey, ComponentTypeKey>;
 
+// Type guard: check if an IntegrationType has a component mapping
+export function isMappableIntegration(integration: string): integration is IntegrationKey {
+  return integration in INTEGRATION_TO_COMPONENT;
+}
+
 export type ScaffoldViolationType = 
   | 'missing_page' 
   | 'missing_section' 
@@ -73,7 +78,7 @@ export type GenerationScaffold = {
   layoutSignature?: string;
 };
 
-export type PageMap = Record<string, SectionType[]>;
+export type PageMap = Record<string, Array<SiteSection['type']>>;
 
 export type DebugInfo = {
   lastScaffold: GenerationScaffold | null;
@@ -148,8 +153,8 @@ export function validateSpecAgainstScaffold(
     
     for (const integration of scaffold.integrations) {
       // Only check integrations that have a component mapping
-      if (integration in INTEGRATION_TO_COMPONENT) {
-        const expectedComponent = INTEGRATION_TO_COMPONENT[integration as IntegrationKey];
+      if (isMappableIntegration(integration)) {
+        const expectedComponent = INTEGRATION_TO_COMPONENT[integration];
         if (!componentTypes.includes(expectedComponent)) {
           violations.push({
             type: 'missing_integration',
