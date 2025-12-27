@@ -48,6 +48,101 @@ import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
 
+// Integration type to componentType mapping for validation
+const INTEGRATION_COMPONENT_MAP: Record<string, string> = {
+  stripe: "checkout",
+  calendly: "booking_embed",
+  ordering: "order_links",
+  reservations: "reservation_embed",
+  maps: "map_embed",
+  email_capture: "newsletter_form",
+};
+
+type ScaffoldViolation = {
+  type: 'missing_page' | 'missing_section' | 'forbidden_phrase' | 'missing_integration';
+  details: string;
+};
+
+type ScaffoldValidationResult = {
+  valid: boolean;
+  violations: ScaffoldViolation[];
+};
+
+// Validate SiteSpec against scaffold requirements
+function validateSpecAgainstScaffold(siteSpec: SiteSpec | null, scaffold: any): ScaffoldValidationResult {
+  const violations: ScaffoldViolation[] = [];
+  
+  if (!siteSpec || !scaffold) {
+    return { valid: true, violations: [] };
+  }
+  
+  const specPages = siteSpec.pages || [];
+  const specPagePaths = specPages.map(p => p.path);
+  
+  // 1. Check all required pages exist
+  if (scaffold.requiredPages && Array.isArray(scaffold.requiredPages)) {
+    for (const reqPage of scaffold.requiredPages) {
+      if (!specPagePaths.includes(reqPage.path)) {
+        violations.push({
+          type: 'missing_page',
+          details: `Missing required page: ${reqPage.path} (${reqPage.title})`,
+        });
+      } else {
+        // 2. Check required sections for this page
+        if (reqPage.requiredSections && Array.isArray(reqPage.requiredSections)) {
+          const foundPage = specPages.find(p => p.path === reqPage.path);
+          const pageSectionTypes = (foundPage?.sections || []).map(s => s.type);
+          
+          for (const reqSection of reqPage.requiredSections) {
+            if (!pageSectionTypes.includes(reqSection)) {
+              violations.push({
+                type: 'missing_section',
+                details: `Page "${reqPage.path}" missing required section: ${reqSection}`,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // 3. Check forbidden phrases
+  if (scaffold.forbiddenPhrases && Array.isArray(scaffold.forbiddenPhrases)) {
+    const specString = JSON.stringify(siteSpec).toLowerCase();
+    for (const phrase of scaffold.forbiddenPhrases) {
+      if (specString.includes(phrase.toLowerCase())) {
+        violations.push({
+          type: 'forbidden_phrase',
+          details: `Forbidden phrase found: "${phrase}"`,
+        });
+      }
+    }
+  }
+  
+  // 4. Check integrations have matching components
+  if (scaffold.integrations && Array.isArray(scaffold.integrations)) {
+    const allSections = specPages.flatMap(p => p.sections || []);
+    const componentTypes = allSections
+      .filter(s => (s.content as any)?.componentType)
+      .map(s => (s.content as any).componentType);
+    
+    for (const integration of scaffold.integrations) {
+      const expectedComponent = INTEGRATION_COMPONENT_MAP[integration];
+      if (expectedComponent && !componentTypes.includes(expectedComponent)) {
+        violations.push({
+          type: 'missing_integration',
+          details: `Integration "${integration}" requires componentType "${expectedComponent}" but none found`,
+        });
+      }
+    }
+  }
+  
+  return {
+    valid: violations.length === 0,
+    violations,
+  };
+}
+
 type GenerationStep = {
   id: number;
   label: string;
@@ -196,7 +291,17 @@ function normalizeSpec(spec: any): any {
   return spec;
 }
 
-function extractJsonFromResponse(text: string): { message: string; siteSpec: SiteSpec | null } {
+// Track if fallback has been forced for this session
+let fallbackForcedOnce = false;
+
+function extractJsonFromResponse(text: string, forceFallback: boolean = false): { message: string; siteSpec: SiteSpec | null } {
+  // DEBUG: Force fallback once if ?forceFallback=1
+  if (forceFallback && !fallbackForcedOnce) {
+    console.log('[DEBUG] Forcing fallback - returning null from extractJsonFromResponse');
+    fallbackForcedOnce = true;
+    return { message: text, siteSpec: null };
+  }
+  
   // Try to find JSON code block
   const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
   if (jsonMatch) {
@@ -243,6 +348,24 @@ export function BuilderShell() {
   const initialIdea = state?.initialIdea || '';
   const projectIdFromState = state?.projectId || null;
   const templateSpecFromState = state?.templateSpec || null;
+
+  // Debug mode query params
+  const searchParams = new URLSearchParams(location.search);
+  const debugMode = searchParams.get('debug') === '1';
+  const forceFallback = searchParams.get('forceFallback') === '1';
+
+  // Debug state for panel
+  const [debugInfo, setDebugInfo] = useState<{
+    lastScaffold: any;
+    lastSpecPageMap: Record<string, string[]>;
+    lastGuardrailViolations: string[];
+    lastLayoutSignature: any;
+  }>({
+    lastScaffold: null,
+    lastSpecPageMap: {},
+    lastGuardrailViolations: [],
+    lastLayoutSignature: null,
+  });
 
   const [idea, setIdea] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -880,15 +1003,57 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
 
       updateStep(4, 'active');
       
-      const { message: assistantText, siteSpec: parsedSpec } = extractJsonFromResponse(fullResponse);
+      // Use forceFallback query param to test fallback path
+      const { message: assistantText, siteSpec: parsedSpec } = extractJsonFromResponse(fullResponse, forceFallback);
       
       let newSiteSpec: SiteSpec | null = null;
       if (parsedSpec) {
+        // ============ SCAFFOLD VALIDATION ============
+        const scaffoldValidation = validateSpecAgainstScaffold(parsedSpec, generationScaffold);
+        console.log('[SCAFFOLD_VALIDATION]', {
+          valid: scaffoldValidation.valid,
+          violations: scaffoldValidation.violations.map(v => v.details),
+        });
+        
+        // If scaffold validation failed and this is first attempt, retry with repair instructions
+        if (!scaffoldValidation.valid && retryCount < 1) {
+          console.log('[SCAFFOLD_VALIDATION] Retrying with repair instructions...');
+          const repairHint = scaffoldValidation.violations
+            .map(v => `FIX: ${v.details}`)
+            .join('. ');
+          
+          toast.info('Repairing site structure...');
+          return handleGenerate(`${ideaToUse}\n\n[REPAIR INSTRUCTIONS: ${repairHint}]`, retryCount + 1);
+        }
+        
         // ============ GUARDRAILS ============
         // Run content and diversity guardrails BEFORE setting the spec
         const contentResult = contentGuardrail(parsedSpec, route.category);
         const diversityResult = diversityGuardrail(parsedSpec);
         const layoutSig = computeSignature(parsedSpec);
+        
+        // Build page map for debug
+        const specPageMap: Record<string, string[]> = {};
+        for (const page of parsedSpec.pages || []) {
+          specPageMap[page.path] = (page.sections || []).map(s => s.type);
+        }
+        
+        // Collect violations for debug (include scaffold violations)
+        const allViolations = [
+          ...scaffoldValidation.violations.map(v => v.details),
+          ...contentResult.issues,
+          ...diversityResult.issues,
+        ];
+        
+        // Update debug info
+        if (debugMode) {
+          setDebugInfo({
+            lastScaffold: generationScaffold,
+            lastSpecPageMap: specPageMap,
+            lastGuardrailViolations: allViolations,
+            lastLayoutSignature: layoutSig,
+          });
+        }
         
         console.log('[GUARDRAIL]', { 
           passed: contentResult.valid && diversityResult.valid,
@@ -904,7 +1069,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           uniqueSectionTypes: layoutSig.uniqueSectionTypes
         });
         
-        // If guardrails failed and this is first attempt, retry once with constraints
+        console.log('[LAYOUT_SIGNATURE]', {
+          pages: Object.keys(specPageMap),
+          sectionsPerPage: specPageMap,
+        });
+        
+        // If guardrails failed and this is first attempt (and scaffold passed), retry once with constraints
         const guardrailsFailed = !contentResult.valid || !diversityResult.valid;
         if (guardrailsFailed && retryCount < 1) {
           console.log('[GUARDRAIL] Retrying generation with additional constraints...');
@@ -931,8 +1101,27 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         }
       } else {
         // Fallback to rule-based generation if AI didn't return valid JSON
-        console.warn('AI did not return valid JSON, using fallback generator');
+        console.warn('[specFromChat] AI did not return valid JSON, using fallback generator');
         newSiteSpec = specFromChat(ideaToUse);
+        
+        // Log fallback details
+        const fallbackPageMap: Record<string, string[]> = {};
+        for (const page of newSiteSpec.pages || []) {
+          fallbackPageMap[page.path] = (page.sections || []).map(s => s.type);
+        }
+        console.log('[specFromChat] Generated pages:', Object.keys(fallbackPageMap));
+        console.log('[specFromChat] pages.length:', newSiteSpec.pages?.length || 0);
+        console.log('[specFromChat] pageMap:', fallbackPageMap);
+        
+        // Update debug info for fallback
+        if (debugMode) {
+          setDebugInfo(prev => ({
+            ...prev,
+            lastSpecPageMap: fallbackPageMap,
+            lastGuardrailViolations: ['Used fallback generator (AI JSON parse failed)'],
+          }));
+        }
+        
         setSiteSpec(newSiteSpec);
         
         // Set project name from fallback spec
@@ -2055,6 +2244,61 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         currentName={projectName}
         onRename={handleRenameProject}
       />
+
+      {/* Debug Panel - only visible with ?debug=1 */}
+      {debugMode && (
+        <div className="fixed bottom-4 right-4 w-96 max-h-80 bg-black/90 border border-amber-500/50 rounded-lg p-4 text-xs text-white font-mono z-50 overflow-auto">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-amber-400 font-bold">🔧 DEBUG PANEL</span>
+            <span className="text-gray-400">?debug=1</span>
+          </div>
+          
+          <div className="space-y-2">
+            <div>
+              <span className="text-cyan-400">Last Scaffold:</span>
+              <pre className="text-gray-300 mt-1 overflow-x-auto">
+                {JSON.stringify(debugInfo.lastScaffold ? {
+                  category: debugInfo.lastScaffold.category,
+                  goal: debugInfo.lastScaffold.goal,
+                  archetypeId: debugInfo.lastScaffold.archetypeId,
+                  requiredPages: debugInfo.lastScaffold.requiredPages?.map((p: any) => p.path),
+                } : null, null, 2)}
+              </pre>
+            </div>
+            
+            <div>
+              <span className="text-green-400">Spec Page Map:</span>
+              <pre className="text-gray-300 mt-1 overflow-x-auto">
+                {JSON.stringify(debugInfo.lastSpecPageMap, null, 2)}
+              </pre>
+            </div>
+            
+            <div>
+              <span className="text-red-400">Guardrail Violations:</span>
+              <pre className="text-gray-300 mt-1 overflow-x-auto">
+                {debugInfo.lastGuardrailViolations.length > 0 
+                  ? debugInfo.lastGuardrailViolations.join('\n')
+                  : '(none)'}
+              </pre>
+            </div>
+            
+            <div>
+              <span className="text-purple-400">Layout Signature:</span>
+              <pre className="text-gray-300 mt-1 overflow-x-auto">
+                {JSON.stringify(debugInfo.lastLayoutSignature ? {
+                  hash: debugInfo.lastLayoutSignature.hash,
+                  pageCount: debugInfo.lastLayoutSignature.pageCount,
+                  sectionPattern: debugInfo.lastLayoutSignature.sectionPattern,
+                } : null, null, 2)}
+              </pre>
+            </div>
+          </div>
+          
+          <div className="mt-3 pt-2 border-t border-gray-700 text-gray-500">
+            <span>?forceFallback=1 to test fallback</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

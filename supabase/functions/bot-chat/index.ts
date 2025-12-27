@@ -116,6 +116,133 @@ INSTRUCTIONS: Use the above brand kit colors, fonts, and content to generate a s
 `;
 }
 
+// Integration type to componentType mapping
+const INTEGRATION_COMPONENT_MAP: Record<string, string> = {
+  stripe: "checkout",
+  calendly: "booking_embed",
+  ordering: "order_links",
+  reservations: "reservation_embed",
+  maps: "map_embed",
+  email_capture: "newsletter_form",
+};
+
+// Scaffold validation types
+type ScaffoldViolation = {
+  type: 'missing_page' | 'missing_section' | 'forbidden_phrase' | 'missing_integration';
+  details: string;
+};
+
+type ValidationResult = {
+  valid: boolean;
+  violations: ScaffoldViolation[];
+};
+
+// Validate SiteSpec against scaffold requirements
+function validateSpecAgainstScaffold(siteSpec: any, scaffold: any): ValidationResult {
+  const violations: ScaffoldViolation[] = [];
+  
+  if (!siteSpec || !scaffold) {
+    return { valid: true, violations: [] };
+  }
+  
+  const specPages = siteSpec.pages || [];
+  const specPagePaths = specPages.map((p: any) => p.path);
+  
+  // 1. Check all required pages exist
+  if (scaffold.requiredPages && Array.isArray(scaffold.requiredPages)) {
+    for (const reqPage of scaffold.requiredPages) {
+      if (!specPagePaths.includes(reqPage.path)) {
+        violations.push({
+          type: 'missing_page',
+          details: `Missing required page: ${reqPage.path} (${reqPage.title})`,
+        });
+      } else {
+        // 2. Check required sections for this page
+        if (reqPage.requiredSections && Array.isArray(reqPage.requiredSections)) {
+          const foundPage = specPages.find((p: any) => p.path === reqPage.path);
+          const pageSectionTypes = (foundPage?.sections || []).map((s: any) => s.type);
+          
+          for (const reqSection of reqPage.requiredSections) {
+            if (!pageSectionTypes.includes(reqSection)) {
+              violations.push({
+                type: 'missing_section',
+                details: `Page "${reqPage.path}" missing required section: ${reqSection}`,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // 3. Check forbidden phrases
+  if (scaffold.forbiddenPhrases && Array.isArray(scaffold.forbiddenPhrases)) {
+    const specString = JSON.stringify(siteSpec).toLowerCase();
+    for (const phrase of scaffold.forbiddenPhrases) {
+      if (specString.includes(phrase.toLowerCase())) {
+        violations.push({
+          type: 'forbidden_phrase',
+          details: `Forbidden phrase found: "${phrase}"`,
+        });
+      }
+    }
+  }
+  
+  // 4. Check integrations have matching components
+  if (scaffold.integrations && Array.isArray(scaffold.integrations)) {
+    const allSections = specPages.flatMap((p: any) => p.sections || []);
+    const componentTypes = allSections
+      .filter((s: any) => s.content?.componentType)
+      .map((s: any) => s.content.componentType);
+    
+    for (const integration of scaffold.integrations) {
+      const expectedComponent = INTEGRATION_COMPONENT_MAP[integration];
+      if (expectedComponent && !componentTypes.includes(expectedComponent)) {
+        violations.push({
+          type: 'missing_integration',
+          details: `Integration "${integration}" requires componentType "${expectedComponent}" but none found`,
+        });
+      }
+    }
+  }
+  
+  return {
+    valid: violations.length === 0,
+    violations,
+  };
+}
+
+// Extract JSON from AI response
+function extractJsonFromAIResponse(text: string): any | null {
+  // Try to find JSON code block
+  const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[1].trim());
+      if (parsed.name && parsed.pages && Array.isArray(parsed.pages)) {
+        return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse JSON from response:", e);
+    }
+  }
+  
+  // Fallback: try to find raw JSON object
+  const rawJsonMatch = text.match(/\{[\s\S]*"name"[\s\S]*"pages"[\s\S]*\}/);
+  if (rawJsonMatch) {
+    try {
+      const parsed = JSON.parse(rawJsonMatch[0]);
+      if (parsed.name && parsed.pages) {
+        return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse raw JSON:", e);
+    }
+  }
+  
+  return null;
+}
+
 // Rate limiting
 const RATE_LIMIT_WINDOW_MS = 60000;
 const MAX_REQUESTS_PER_WINDOW = 10;
