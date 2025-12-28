@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, FileText, Trash2, Eye, Upload, BookOpen, Loader2, Sparkles, Check } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, Upload, BookOpen, Loader2, Sparkles, Check, Globe } from 'lucide-react';
 
 interface KnowledgeEntry {
   id: string;
@@ -33,6 +33,8 @@ interface Project {
 const MAX_FILE_SIZE = 500 * 1024;
 const SUPPORTED_TYPES = ['.txt', '.md', '.json', '.css', '.html', '.xml', '.yaml', '.yml'];
 const CUSTOM_INSTRUCTIONS_KEY = '__custom_instructions__';
+const GLOBAL_INSTRUCTIONS_KEY = '__global_instructions__';
+const GLOBAL_PROJECT_ID = 'global';
 
 function formatFileSize(bytes: number | null): string {
   if (!bytes) return 'Unknown';
@@ -122,28 +124,49 @@ export default function KnowledgeSettings() {
     setIsLoading(false);
   }, [selectedProjectId]);
 
-  // Load custom instructions for selected project
+  // Load custom instructions for selected project or global
   const loadCustomInstructions = useCallback(async (projectId: string) => {
     if (!projectId) {
       setCustomInstructions('');
       setInitialInstructions('');
       return;
     }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
     
     try {
-      const { data } = await supabase
-        .from('knowledge_base')
-        .select('content')
-        .eq('project_id', projectId)
-        .eq('name', CUSTOM_INSTRUCTIONS_KEY)
-        .single();
-      
-      if (data) {
-        setCustomInstructions(data.content);
-        setInitialInstructions(data.content);
+      if (projectId === GLOBAL_PROJECT_ID) {
+        // Load global instructions - stored with first project but special name
+        const { data } = await supabase
+          .from('knowledge_base')
+          .select('content')
+          .eq('name', GLOBAL_INSTRUCTIONS_KEY)
+          .limit(1)
+          .maybeSingle();
+        
+        if (data) {
+          setCustomInstructions(data.content);
+          setInitialInstructions(data.content);
+        } else {
+          setCustomInstructions('');
+          setInitialInstructions('');
+        }
       } else {
-        setCustomInstructions('');
-        setInitialInstructions('');
+        const { data } = await supabase
+          .from('knowledge_base')
+          .select('content')
+          .eq('project_id', projectId)
+          .eq('name', CUSTOM_INSTRUCTIONS_KEY)
+          .single();
+        
+        if (data) {
+          setCustomInstructions(data.content);
+          setInitialInstructions(data.content);
+        } else {
+          setCustomInstructions('');
+          setInitialInstructions('');
+        }
       }
     } catch {
       setCustomInstructions('');
@@ -154,47 +177,85 @@ export default function KnowledgeSettings() {
   // Save custom instructions
   const saveCustomInstructions = async () => {
     if (!instructionsProjectId) {
-      toast.error('Please select a project first');
+      toast.error('Please select a scope first');
       return;
     }
     
     setInstructionsSaving(true);
     try {
-      const { data: existing } = await supabase
-        .from('knowledge_base')
-        .select('id')
-        .eq('project_id', instructionsProjectId)
-        .eq('name', CUSTOM_INSTRUCTIONS_KEY)
-        .single();
+      if (instructionsProjectId === GLOBAL_PROJECT_ID) {
+        // Save global instructions - use first project as anchor
+        if (projects.length === 0) {
+          toast.error('Create a project first to save global instructions');
+          setInstructionsSaving(false);
+          return;
+        }
+        
+        const { data: existing } = await supabase
+          .from('knowledge_base')
+          .select('id')
+          .eq('name', GLOBAL_INSTRUCTIONS_KEY)
+          .limit(1)
+          .maybeSingle();
 
-      if (existing) {
-        await supabase
+        if (existing) {
+          await supabase
+            .from('knowledge_base')
+            .update({
+              content: customInstructions,
+              file_size: new Blob([customInstructions]).size,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existing.id);
+        } else if (customInstructions.trim()) {
+          await supabase
+            .from('knowledge_base')
+            .insert({
+              project_id: projects[0].id, // Use first project as anchor
+              name: GLOBAL_INSTRUCTIONS_KEY,
+              content: customInstructions,
+              file_type: 'global-instructions',
+              file_size: new Blob([customInstructions]).size,
+            });
+        }
+      } else {
+        // Save project-specific instructions
+        const { data: existing } = await supabase
           .from('knowledge_base')
-          .update({
-            content: customInstructions,
-            file_size: new Blob([customInstructions]).size,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existing.id);
-      } else if (customInstructions.trim()) {
-        await supabase
-          .from('knowledge_base')
-          .insert({
-            project_id: instructionsProjectId,
-            name: CUSTOM_INSTRUCTIONS_KEY,
-            content: customInstructions,
-            file_type: 'instructions',
-            file_size: new Blob([customInstructions]).size,
-          });
+          .select('id')
+          .eq('project_id', instructionsProjectId)
+          .eq('name', CUSTOM_INSTRUCTIONS_KEY)
+          .single();
+
+        if (existing) {
+          await supabase
+            .from('knowledge_base')
+            .update({
+              content: customInstructions,
+              file_size: new Blob([customInstructions]).size,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existing.id);
+        } else if (customInstructions.trim()) {
+          await supabase
+            .from('knowledge_base')
+            .insert({
+              project_id: instructionsProjectId,
+              name: CUSTOM_INSTRUCTIONS_KEY,
+              content: customInstructions,
+              file_type: 'instructions',
+              file_size: new Blob([customInstructions]).size,
+            });
+        }
       }
       
       setInitialInstructions(customInstructions);
       setInstructionsSaved(true);
-      toast.success('Custom instructions saved!');
+      toast.success(instructionsProjectId === GLOBAL_PROJECT_ID ? 'Global instructions saved!' : 'Custom instructions saved!');
       setTimeout(() => setInstructionsSaved(false), 2000);
     } catch (error) {
       console.error('Failed to save instructions:', error);
-      toast.error('Failed to save custom instructions');
+      toast.error('Failed to save instructions');
     } finally {
       setInstructionsSaving(false);
     }
@@ -207,13 +268,14 @@ export default function KnowledgeSettings() {
   useEffect(() => {
     if (projects.length > 0) {
       fetchEntries();
-      if (!instructionsProjectId && projects[0]) {
-        setInstructionsProjectId(projects[0].id);
+      // Default to global instructions
+      if (!instructionsProjectId) {
+        setInstructionsProjectId(GLOBAL_PROJECT_ID);
       }
     } else {
       setIsLoading(false);
     }
-  }, [projects.length, fetchEntries, instructionsProjectId, projects]);
+  }, [projects.length, fetchEntries, instructionsProjectId]);
 
   useEffect(() => {
     if (instructionsProjectId) {
@@ -338,20 +400,32 @@ export default function KnowledgeSettings() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Select Project</Label>
+            <Label>Apply To</Label>
             <Select
               value={instructionsProjectId}
               onValueChange={setInstructionsProjectId}
             >
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="Select a project" />
+              <SelectTrigger className="w-72">
+                <SelectValue placeholder="Select scope" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value={GLOBAL_PROJECT_ID}>
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-primary" />
+                    <span className="font-medium">All Projects (Global)</span>
+                  </div>
+                </SelectItem>
+                <Separator className="my-1" />
                 {projects.map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              {instructionsProjectId === GLOBAL_PROJECT_ID 
+                ? "These instructions will apply to ALL your projects."
+                : "These instructions will only apply to this specific project."}
+            </p>
           </div>
           
           <div className="space-y-2">

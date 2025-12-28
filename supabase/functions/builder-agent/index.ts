@@ -777,16 +777,49 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Fetch knowledge base entries for this project
+    // Fetch knowledge base entries for this project AND global instructions
     let knowledgeContext = "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const kbSupabaseUrl = Deno.env.get("SUPABASE_URL")!;
+
+    // First, fetch global instructions (applies to all projects)
+    try {
+      console.log('Fetching global instructions...');
+      const globalResponse = await fetch(
+        `${kbSupabaseUrl}/rest/v1/knowledge_base?name=eq.__global_instructions__&select=content&limit=1`,
+        {
+          headers: {
+            "apikey": serviceKey,
+            "Authorization": `Bearer ${serviceKey}`,
+          },
+        }
+      );
+      
+      if (globalResponse.ok) {
+        const globalEntries = await globalResponse.json();
+        if (globalEntries && globalEntries.length > 0 && globalEntries[0].content) {
+          knowledgeContext += `
+====================================
+## GLOBAL INSTRUCTIONS (Applies to ALL Projects)
+====================================
+
+${globalEntries[0].content}
+
+`;
+          console.log('Found global instructions');
+        }
+      }
+    } catch (globalError) {
+      console.error("Error fetching global instructions:", globalError);
+    }
+
+    // Then fetch project-specific knowledge
     if (projectId) {
       try {
         console.log(`Fetching knowledge base for project: ${projectId}`);
-        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         
         const kbResponse = await fetch(
-          `${supabaseUrl}/rest/v1/knowledge_base?project_id=eq.${projectId}&select=name,content`,
+          `${kbSupabaseUrl}/rest/v1/knowledge_base?project_id=eq.${projectId}&select=name,content`,
           {
             headers: {
               "apikey": serviceKey,
@@ -797,8 +830,10 @@ serve(async (req) => {
         
         if (kbResponse.ok) {
           const kbEntries = await kbResponse.json();
-          if (kbEntries && kbEntries.length > 0) {
-            knowledgeContext = `
+          // Filter out global instructions from project entries
+          const projectEntries = kbEntries.filter((e: { name: string }) => e.name !== '__global_instructions__');
+          if (projectEntries && projectEntries.length > 0) {
+            knowledgeContext += `
 ====================================
 ## PROJECT KNOWLEDGE BASE
 ====================================
@@ -806,12 +841,12 @@ serve(async (req) => {
 The user has provided the following brand guidelines, documentation, and reference materials.
 IMPORTANT: Use this knowledge to inform your design decisions, copy, and overall approach.
 
-${kbEntries.map((entry: { name: string; content: string }) => `
+${projectEntries.map((entry: { name: string; content: string }) => `
 ### ${entry.name}
 ${entry.content}
 `).join('\n')}
 `;
-            console.log(`Found ${kbEntries.length} knowledge base entries`);
+            console.log(`Found ${projectEntries.length} knowledge base entries`);
           }
         }
       } catch (kbError) {
