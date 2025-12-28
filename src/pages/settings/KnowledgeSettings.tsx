@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, FileText, Trash2, Eye, Upload, BookOpen, Loader2 } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, Upload, BookOpen, Loader2, Sparkles, Check } from 'lucide-react';
 
 interface KnowledgeEntry {
   id: string;
@@ -51,6 +51,14 @@ export default function KnowledgeSettings() {
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<KnowledgeEntry | null>(null);
   const [newEntry, setNewEntry] = useState({ name: '', content: '', projectId: '' });
+  
+  // Custom instructions state
+  const [instructionsProjectId, setInstructionsProjectId] = useState<string>('');
+  const [customInstructions, setCustomInstructions] = useState('');
+  const [initialInstructions, setInitialInstructions] = useState('');
+  const [instructionsSaving, setInstructionsSaving] = useState(false);
+  const [instructionsSaved, setInstructionsSaved] = useState(false);
+  const hasUnsavedChanges = customInstructions !== initialInstructions;
 
   const fetchProjects = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -114,6 +122,84 @@ export default function KnowledgeSettings() {
     setIsLoading(false);
   }, [selectedProjectId]);
 
+  // Load custom instructions for selected project
+  const loadCustomInstructions = useCallback(async (projectId: string) => {
+    if (!projectId) {
+      setCustomInstructions('');
+      setInitialInstructions('');
+      return;
+    }
+    
+    try {
+      const { data } = await supabase
+        .from('knowledge_base')
+        .select('content')
+        .eq('project_id', projectId)
+        .eq('name', CUSTOM_INSTRUCTIONS_KEY)
+        .single();
+      
+      if (data) {
+        setCustomInstructions(data.content);
+        setInitialInstructions(data.content);
+      } else {
+        setCustomInstructions('');
+        setInitialInstructions('');
+      }
+    } catch {
+      setCustomInstructions('');
+      setInitialInstructions('');
+    }
+  }, []);
+
+  // Save custom instructions
+  const saveCustomInstructions = async () => {
+    if (!instructionsProjectId) {
+      toast.error('Please select a project first');
+      return;
+    }
+    
+    setInstructionsSaving(true);
+    try {
+      const { data: existing } = await supabase
+        .from('knowledge_base')
+        .select('id')
+        .eq('project_id', instructionsProjectId)
+        .eq('name', CUSTOM_INSTRUCTIONS_KEY)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('knowledge_base')
+          .update({
+            content: customInstructions,
+            file_size: new Blob([customInstructions]).size,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id);
+      } else if (customInstructions.trim()) {
+        await supabase
+          .from('knowledge_base')
+          .insert({
+            project_id: instructionsProjectId,
+            name: CUSTOM_INSTRUCTIONS_KEY,
+            content: customInstructions,
+            file_type: 'instructions',
+            file_size: new Blob([customInstructions]).size,
+          });
+      }
+      
+      setInitialInstructions(customInstructions);
+      setInstructionsSaved(true);
+      toast.success('Custom instructions saved!');
+      setTimeout(() => setInstructionsSaved(false), 2000);
+    } catch (error) {
+      console.error('Failed to save instructions:', error);
+      toast.error('Failed to save custom instructions');
+    } finally {
+      setInstructionsSaving(false);
+    }
+  };
+
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
@@ -121,10 +207,19 @@ export default function KnowledgeSettings() {
   useEffect(() => {
     if (projects.length > 0) {
       fetchEntries();
+      if (!instructionsProjectId && projects[0]) {
+        setInstructionsProjectId(projects[0].id);
+      }
     } else {
       setIsLoading(false);
     }
-  }, [projects.length, fetchEntries]);
+  }, [projects.length, fetchEntries, instructionsProjectId, projects]);
+
+  useEffect(() => {
+    if (instructionsProjectId) {
+      loadCustomInstructions(instructionsProjectId);
+    }
+  }, [instructionsProjectId, loadCustomInstructions]);
 
   const handleAddEntry = async () => {
     if (!newEntry.name.trim() || !newEntry.content.trim() || !newEntry.projectId) {
@@ -229,6 +324,78 @@ export default function KnowledgeSettings() {
           Manage brand guidelines, documentation, and reference materials for your AI builder.
         </p>
       </div>
+
+      {/* Custom Instructions Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            Custom Instructions
+          </CardTitle>
+          <CardDescription>
+            Add custom instructions that the AI will follow when generating your website.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Select Project</Label>
+            <Select
+              value={instructionsProjectId}
+              onValueChange={setInstructionsProjectId}
+            >
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Select a project" />
+              </SelectTrigger>
+              <SelectContent>
+                {projects.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Instructions</Label>
+              {instructionsSaved && !instructionsSaving && (
+                <span className="text-xs text-green-600 flex items-center gap-1">
+                  <Check className="h-3 w-3" />
+                  Saved
+                </span>
+              )}
+            </div>
+            <Textarea
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder="Add custom instructions for the AI... (e.g., brand voice, design preferences, specific requirements, things to avoid)"
+              className="min-h-[150px]"
+              disabled={!instructionsProjectId}
+            />
+            <p className="text-xs text-muted-foreground">
+              These instructions will be used by the AI when generating your site. Include details like brand voice, 
+              color preferences, specific terminology, or things to avoid.
+            </p>
+          </div>
+          
+          <Button
+            onClick={saveCustomInstructions}
+            disabled={!instructionsProjectId || instructionsSaving || !hasUnsavedChanges}
+            className="gap-2"
+          >
+            {instructionsSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Check className="h-4 w-4" />
+                {hasUnsavedChanges ? 'Save Instructions' : 'Saved'}
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
