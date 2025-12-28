@@ -34,6 +34,7 @@ const AppearanceSettings = lazy(() => import("./pages/settings/AppearanceSetting
 const ShortcutsSettings = lazy(() => import("./pages/settings/ShortcutsSettings"));
 const HelpSettings = lazy(() => import("./pages/settings/HelpSettings"));
 const SupportSettings = lazy(() => import("./pages/settings/SupportSettings"));
+const KnowledgeSettings = lazy(() => import("./pages/settings/KnowledgeSettings"));
 // const Index = lazy(() => import("./pages/Index"));
 // const DFY = lazy(() => import("./pages/DFY"));
 // const BookCall = lazy(() => import("./pages/BookCall"));
@@ -81,6 +82,7 @@ const App = () => (
           <Route path="notifications" element={<NotificationsSettings />} />
           <Route path="workspace" element={<WorkspaceSettings />} />
           <Route path="team" element={<TeamSettings />} />
+          <Route path="knowledge" element={<KnowledgeSettings />} />
           <Route path="domains" element={<DomainsSettings />} />
           <Route path="appearance" element={<AppearanceSettings />} />
           <Route path="shortcuts" element={<ShortcutsSettings />} />

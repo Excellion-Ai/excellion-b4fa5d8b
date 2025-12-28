@@ -19,6 +19,7 @@ import {
   LogOut,
   ArrowLeft,
   ChevronRight,
+  BookOpen,
 } from 'lucide-react';
 import excellionLogo from '@/assets/excellion-logo.png';
 
@@ -36,6 +37,7 @@ const NAV_SECTIONS = [
     items: [
       { label: 'Workspace Settings', path: '/settings/workspace', icon: FolderKanban },
       { label: 'Team Members', path: '/settings/team', icon: Users },
+      { label: 'Knowledge Base', path: '/settings/knowledge', icon: BookOpen },
     ],
   },
   {
