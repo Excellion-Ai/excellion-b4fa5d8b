@@ -763,7 +763,7 @@ serve(async (req) => {
 
     console.log("Authenticated user:", user.id);
 
-    const { idea, target, complexity } = await req.json();
+    const { idea, target, complexity, projectId } = await req.json();
 
     if (!idea) {
       return new Response(
@@ -775,6 +775,55 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    // Fetch knowledge base entries for this project
+    let knowledgeContext = "";
+    if (projectId) {
+      try {
+        console.log(`Fetching knowledge base for project: ${projectId}`);
+        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        
+        const kbResponse = await fetch(
+          `${supabaseUrl}/rest/v1/knowledge_base?project_id=eq.${projectId}&select=name,content`,
+          {
+            headers: {
+              "apikey": serviceKey,
+              "Authorization": `Bearer ${serviceKey}`,
+            },
+          }
+        );
+        
+        if (kbResponse.ok) {
+          const kbEntries = await kbResponse.json();
+          if (kbEntries && kbEntries.length > 0) {
+            knowledgeContext = `
+====================================
+## PROJECT KNOWLEDGE BASE
+====================================
+
+The user has provided the following brand guidelines, documentation, and reference materials.
+IMPORTANT: Use this knowledge to inform your design decisions, copy, and overall approach.
+
+${kbEntries.map((entry: { name: string; content: string }) => `
+### ${entry.name}
+${entry.content}
+`).join('\n')}
+`;
+            console.log(`Found ${kbEntries.length} knowledge base entries`);
+          }
+        }
+      } catch (kbError) {
+        console.error("Error fetching knowledge base:", kbError);
+      }
+    }
+
+    // Build enhanced system prompt with knowledge context
+    let enhancedSystemPrompt = SYSTEM_PROMPT;
+    if (knowledgeContext) {
+      enhancedSystemPrompt += `\n${knowledgeContext}`;
+      console.log("Added knowledge base context to prompt");
     }
 
     const userPrompt = `
@@ -798,7 +847,7 @@ Generate the complete blueprint and build prompt. Return ONLY valid JSON matchin
       body: JSON.stringify({
         model: 'openai/gpt-5',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: enhancedSystemPrompt },
           { role: 'user', content: userPrompt }
         ],
         max_completion_tokens: 8000,
