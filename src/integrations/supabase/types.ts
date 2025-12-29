@@ -603,6 +603,8 @@ export type Database = {
         Row: {
           balance: number
           current_plan: string
+          sprint_expires_at: string | null
+          sprint_pass_used: boolean
           total_earned: number
           total_spent: number
           updated_at: string
@@ -611,6 +613,8 @@ export type Database = {
         Insert: {
           balance?: number
           current_plan?: string
+          sprint_expires_at?: string | null
+          sprint_pass_used?: boolean
           total_earned?: number
           total_spent?: number
           updated_at?: string
@@ -619,6 +623,8 @@ export type Database = {
         Update: {
           balance?: number
           current_plan?: string
+          sprint_expires_at?: string | null
+          sprint_pass_used?: boolean
           total_earned?: number
           total_spent?: number
           updated_at?: string
