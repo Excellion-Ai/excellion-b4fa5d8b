@@ -45,7 +45,10 @@ import {
   MessageSquare,
   LogOut,
   User,
-  Zap
+  Zap,
+  Image,
+  Download,
+  Link
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import {
@@ -183,6 +186,11 @@ export default function SecretBuilderHub() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [interviewOpen, setInterviewOpen] = useState(false);
   
+  // AI Image Library state
+  const [imageLibraryOpen, setImageLibraryOpen] = useState(false);
+  const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string; type: 'image' | 'logo'; createdAt: Date }[]>([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+  
   // Interview intake hook
   const interview = useInterviewIntake(idea);
   
@@ -318,6 +326,110 @@ export default function SecretBuilderHub() {
     } else if (data) {
       setProjects((prev) => [data, ...prev]);
       toast({ title: 'Project duplicated' });
+    }
+  };
+
+  // Fetch AI-generated images from storage
+  const fetchGeneratedImages = useCallback(async () => {
+    setIsLoadingImages(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setGeneratedImages([]);
+        setIsLoadingImages(false);
+        return;
+      }
+
+      const allImages: { name: string; url: string; type: 'image' | 'logo'; createdAt: Date }[] = [];
+
+      // Fetch from images folder
+      const imagesFolder = `images/${user.id}`;
+      const { data: imagesData } = await supabase.storage
+        .from('builder-images')
+        .list(imagesFolder, { sortBy: { column: 'created_at', order: 'desc' } });
+
+      if (imagesData) {
+        for (const file of imagesData) {
+          if (file.name && !file.name.startsWith('.')) {
+            const { data: urlData } = supabase.storage
+              .from('builder-images')
+              .getPublicUrl(`${imagesFolder}/${file.name}`);
+            
+            allImages.push({
+              name: file.name,
+              url: urlData.publicUrl,
+              type: 'image',
+              createdAt: new Date(file.created_at || Date.now())
+            });
+          }
+        }
+      }
+
+      // Fetch from logos folder
+      const logosFolder = `logos/${user.id}`;
+      const { data: logosData } = await supabase.storage
+        .from('builder-images')
+        .list(logosFolder, { sortBy: { column: 'created_at', order: 'desc' } });
+
+      if (logosData) {
+        for (const file of logosData) {
+          if (file.name && !file.name.startsWith('.')) {
+            const { data: urlData } = supabase.storage
+              .from('builder-images')
+              .getPublicUrl(`${logosFolder}/${file.name}`);
+            
+            allImages.push({
+              name: file.name,
+              url: urlData.publicUrl,
+              type: 'logo',
+              createdAt: new Date(file.created_at || Date.now())
+            });
+          }
+        }
+      }
+
+      // Sort by creation date descending
+      allImages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      setGeneratedImages(allImages);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    } finally {
+      setIsLoadingImages(false);
+    }
+  }, []);
+
+  // Fetch images when library opens
+  useEffect(() => {
+    if (imageLibraryOpen) {
+      fetchGeneratedImages();
+    }
+  }, [imageLibraryOpen, fetchGeneratedImages]);
+
+  const handleCopyImageUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    toast({ title: 'URL copied to clipboard' });
+  };
+
+  const handleDeleteImage = async (imagePath: string, imageType: 'image' | 'logo') => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const folder = imageType === 'logo' ? 'logos' : 'images';
+      const fullPath = `${folder}/${user.id}/${imagePath}`;
+      
+      const { error } = await supabase.storage
+        .from('builder-images')
+        .remove([fullPath]);
+
+      if (error) {
+        toast({ title: 'Error', description: 'Failed to delete image', variant: 'destructive' });
+      } else {
+        setGeneratedImages(prev => prev.filter(img => img.name !== imagePath));
+        toast({ title: 'Image deleted' });
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
     }
   };
 
@@ -612,8 +724,16 @@ export default function SecretBuilderHub() {
                         <span className="text-sm">{item.label}</span>
                       </Button>
                     ))}
-
-                  {/* Projects List */}
+                  
+                  {/* AI Image Library Button */}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    onClick={() => { setImageLibraryOpen(true); setMobileMenuOpen(false); }}
+                  >
+                    <Image className="w-4 h-4" />
+                    <span className="text-sm">Image Library</span>
+                  </Button>
                   <Collapsible open={projectsFolderOpen} onOpenChange={setProjectsFolderOpen}>
                     <CollapsibleTrigger asChild>
                       <Button
@@ -815,8 +935,16 @@ export default function SecretBuilderHub() {
                 <span className="text-sm">{item.label}</span>
               </Button>
             ))}
-
-          {/* Projects Folder Collapsible */}
+          
+          {/* AI Image Library Button */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            onClick={() => setImageLibraryOpen(true)}
+          >
+            <Image className="w-4 h-4" />
+            <span className="text-sm">Image Library</span>
+          </Button>
           <Collapsible open={projectsFolderOpen} onOpenChange={setProjectsFolderOpen}>
             <CollapsibleTrigger asChild>
               <Button
@@ -1315,6 +1443,89 @@ export default function SecretBuilderHub() {
             onSubmit={handleInterviewSubmit}
             onSwitchToQuickPrompt={() => setInterviewOpen(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Image Library Dialog */}
+      <Dialog open={imageLibraryOpen} onOpenChange={setImageLibraryOpen}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Image className="w-5 h-5" />
+              AI Image Library
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="flex-1 -mx-6 px-6">
+            {isLoadingImages ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : generatedImages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <Image className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">No images yet</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  AI-generated images and logos will appear here. Start creating in the builder!
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-4">
+                {generatedImages.map((image, index) => (
+                  <div
+                    key={`${image.name}-${index}`}
+                    className="group relative aspect-square rounded-lg overflow-hidden border border-border bg-muted/50"
+                  >
+                    <img
+                      src={image.url}
+                      alt={image.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    
+                    {/* Type Badge */}
+                    <Badge 
+                      className={`absolute top-2 left-2 text-[10px] ${
+                        image.type === 'logo' 
+                          ? 'bg-violet-500/90 text-white' 
+                          : 'bg-blue-500/90 text-white'
+                      }`}
+                    >
+                      {image.type === 'logo' ? 'Logo' : 'Image'}
+                    </Badge>
+                    
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="h-8 text-xs"
+                          onClick={() => handleCopyImageUrl(image.url)}
+                        >
+                          <Link className="w-3 h-3 mr-1" />
+                          Copy URL
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-8 text-xs"
+                          onClick={() => handleDeleteImage(image.name, image.type)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <span className="text-[10px] text-white/70 mt-1">
+                        {image.createdAt.toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>
