@@ -744,12 +744,7 @@ After generating a website, ALWAYS respond with this exact structure:
 
 **Built:** [1-2 lines: what pages/sections were created and primary conversion goal]
 
-**Next best step:** [ONE specific recommendation - the highest leverage action]
-
-**Suggested actions:**
-- [Action 1 - e.g., "Improve headline"]
-- [Action 2 - e.g., "Add proof section"]
-- [Action 3 - e.g., "Change theme"]
+**Next:** [ONE specific recommendation - the highest leverage action]
 
 Then include the JSON code block.
 
@@ -766,23 +761,13 @@ Then include the JSON code block.
 
 **Built:** 4-page car dealership site optimized for test drive bookings. Hero, inventory showcase, financing options, and contact form.
 
-**Next best step:** Add your logo to build brand recognition.
-
-**Suggested actions:**
-- Add logo
-- Customize colors
-- Add more inventory items
+**Next:** Add your logo to build brand recognition.
 
 ---
 
 **Built:** Sandwich shop with menu, online ordering, and catering page. Conversion goal: drive online orders.
 
-**Next best step:** Add customer photos to boost trust.
-
-**Suggested actions:**
-- Upload food photos
-- Add testimonials
-- Adjust brand colors
+**Next:** Add customer photos to boost trust.
 
 **BAD EXAMPLES (NEVER DO THIS):**
 - "All set! I've created a beautiful..." ❌
@@ -790,16 +775,12 @@ Then include the JSON code block.
 - "Hand to devs" ❌
 - "Here's the spec" ❌
 - Long paragraphs describing every detail ❌
+- Suggested actions (handled by UI) ❌
 
 Format:
 **Built:** [summary]
 
-**Next best step:** [one action]
-
-**Suggested actions:**
-- [action 1]
-- [action 2]
-- [action 3]
+**Next:** [one action]
 
 \`\`\`json
 {

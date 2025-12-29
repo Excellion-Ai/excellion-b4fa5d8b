@@ -250,7 +250,7 @@ export function parseStructuredMessage(content: string): {
   blockerCount?: number;
 } {
   const builtMatch = content.match(/\*\*Built:\*\*\s*(.+?)(?=\n\n|\*\*Next)/s);
-  const nextMatch = content.match(/\*\*Next:\*\*\s*(.+?)(?=\n\n|⚠️|$)/s);
+  const nextMatch = content.match(/\*\*Next(?:\s*best\s*step)?:\*\*\s*(.+?)(?=\n\n|⚠️|$)/s);
   const blockerMatch = content.match(/⚠️\s*Blocking issues detected:\s*(\d+)/);
   
   if (builtMatch || nextMatch) {
