@@ -490,7 +490,12 @@ export default function SecretBuilderHub() {
 
   const handleInterviewSubmit = () => {
     setInterviewOpen(false);
-    handleGenerate();
+    // Use the composed prompt from interview data if main idea is empty
+    const promptToUse = idea.trim() || interview.composedPrompt;
+    if (promptToUse) {
+      setIdea(promptToUse); // Also update the idea state for consistency
+      handleGenerate(promptToUse);
+    }
   };
 
   const handleClearPrompt = () => {
