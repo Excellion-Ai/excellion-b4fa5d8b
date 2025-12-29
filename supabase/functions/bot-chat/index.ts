@@ -1153,10 +1153,17 @@ END OF KNOWLEDGE BASE
       
       const urls = textContent.match(URL_REGEX);
       if (urls && urls.length > 0) {
-        console.log("Found URLs in message, using deep extractor:", urls);
-        const extraction = await extractFromUrl(urls[0]);
+        console.log(`[BOT-CHAT:${requestId}] Found URL, extracting (5s timeout): ${urls[0]}`);
+        // Add 5 second timeout for URL extraction to prevent slow requests
+        const extractionPromise = extractFromUrl(urls[0]);
+        const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) => 
+          setTimeout(() => resolve({ success: false, error: 'URL extraction timeout' }), 5000)
+        );
+        const extraction = await Promise.race([extractionPromise, timeoutPromise]);
         if (extraction.success && extraction.data) {
           urlContext = formatExtractionForPrompt(extraction.data);
+        } else {
+          console.log(`[BOT-CHAT:${requestId}] URL extraction skipped: ${extraction.error || 'timeout'}`);
         }
       }
     }
@@ -1264,10 +1271,10 @@ If you cannot fulfill these requirements, explain why in your conversational res
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
     console.log(`[BOT-CHAT:${requestId}] Total messages to send: ${messages.length + 1}`);
 
-    // Select model based on mode (quality = gpt-5-mini for streaming, fast = gemini flash)
+    // Always use Gemini Flash for speed - it's fast and high quality
+    // Only use GPT-5 if explicitly requested for complex reasoning
     const selectedModel = modelMode === 'quality' ? 'openai/gpt-5-mini' : 'google/gemini-2.5-flash';
-    console.log(`[BOT-CHAT:${requestId}] Selected model: ${selectedModel}`);
-    console.log(`[BOT-CHAT:${requestId}] Calling Lovable AI Gateway...`);
+    console.log(`[BOT-CHAT:${requestId}] Model: ${selectedModel}`);
 
     const aiStartTime = Date.now();
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -1283,6 +1290,7 @@ If you cannot fulfill these requirements, explain why in your conversational res
           ...messages,
         ],
         stream: true,
+        max_tokens: 8000, // Limit response size for speed
       }),
     });
 

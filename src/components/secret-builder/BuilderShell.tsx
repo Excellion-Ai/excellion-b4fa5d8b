@@ -627,12 +627,27 @@ export function BuilderShell() {
     }
   };
 
-  // Auto-save when siteSpec changes (from inline editing)
+  // Auto-save when siteSpec changes (from inline editing) - debounced to prevent excessive writes
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
   useEffect(() => {
     if (siteSpec && projectId) {
-      const firstUserMessage = messages.find(m => m.role === 'user');
-      saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec);
+      // Clear any pending save
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      // Debounce save by 2 seconds
+      saveTimeoutRef.current = setTimeout(() => {
+        const firstUserMessage = messages.find(m => m.role === 'user');
+        saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec);
+      }, 2000);
     }
+    
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
   }, [siteSpec]);
 
   // Keyboard shortcuts for undo/redo
