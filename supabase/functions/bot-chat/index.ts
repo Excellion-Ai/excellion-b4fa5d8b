@@ -1280,6 +1280,20 @@ For each integration, include a custom section with:
 - content.props: { relevant configuration }`;
       }
 
+      // Handle custom theme from Build Assist interview
+      if (scaffold.customTheme) {
+        scaffoldPrompt += `
+
+### CUSTOM COLOR THEME (MANDATORY - USE THESE EXACT COLORS):
+**PRIMARY COLOR:** ${scaffold.customTheme.primaryColor} - Use for buttons, CTAs, headlines, navigation highlights
+**ACCENT COLOR:** ${scaffold.customTheme.accentColor} - Use for secondary elements, hover states, icons
+**BACKGROUND MODE:** ${scaffold.customTheme.backgroundMode} (dark = use dark backgrounds like #0a0a0a, light = use light backgrounds like #ffffff)
+
+CRITICAL: Do NOT use the default industry colors (blue, green, etc.). 
+The user has explicitly chosen these colors: PRIMARY=${scaffold.customTheme.primaryColor}, ACCENT=${scaffold.customTheme.accentColor}.
+Your theme object MUST use these exact hex values.`;
+      }
+
       scaffoldPrompt += `
 
 ====================================
@@ -1288,7 +1302,7 @@ CRITICAL: Your SiteSpec output MUST include:
 2. ALL required sections for each page
 3. CTA labels matching the rules above
 4. NO forbidden phrases anywhere in the content
-5. Integration sections for any listed integrations
+5. Integration sections for any listed integrations${scaffold.customTheme ? '\n6. EXACT custom theme colors specified above' : ''}
 
 If you cannot fulfill these requirements, explain why in your conversational response.
 ====================================
@@ -1296,6 +1310,9 @@ If you cannot fulfill these requirements, explain why in your conversational res
       
       enhancedPrompt += scaffoldPrompt;
       console.log(`[BOT-CHAT:${requestId}] Scaffold prompt added (${scaffoldPrompt.length} chars)`);
+      if (scaffold.customTheme) {
+        console.log(`[BOT-CHAT:${requestId}] Custom theme: primary=${scaffold.customTheme.primaryColor}, accent=${scaffold.customTheme.accentColor}`);
+      }
     }
 
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
