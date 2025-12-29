@@ -270,7 +270,7 @@ const WebBuilderHome = () => {
                   }`}
                 >
                   <Zap className="w-3.5 h-3.5 inline mr-1" />
-                  Guided Interview
+                  Build Assist
                 </button>
               </div>
             </div>
@@ -313,7 +313,7 @@ const WebBuilderHome = () => {
                     </div>
                   </>
                 ) : (
-                  /* Guided Interview Mode */
+                  /* Build Assist Mode */
                   <InterviewStepper
                     step={interview.step}
                     totalSteps={interview.totalSteps}
@@ -354,7 +354,7 @@ const WebBuilderHome = () => {
                       onClick={() => handleSwitchMode('interview')}
                       className="text-primary hover:underline"
                     >
-                      Want a better first draft? Try Guided Interview (60 sec)
+                      Want a better first draft? Try Build Assist (60 sec)
                     </button>
                   </p>
                 </>
