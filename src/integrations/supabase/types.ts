@@ -841,7 +841,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      github_connections_safe: {
+        Row: {
+          connected_at: string | null
+          github_user_id: string | null
+          github_username: string | null
+          id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          connected_at?: string | null
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          connected_at?: string | null
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_domain_verification: {
