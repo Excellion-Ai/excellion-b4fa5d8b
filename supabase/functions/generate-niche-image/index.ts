@@ -54,8 +54,8 @@ async function uploadToStorage(imageData: string, supabaseUrl: string, serviceKe
     }
     const byteArray = new Uint8Array(byteNumbers);
     
-    // Store in user-specific folder for isolation
-    const fileName = `generated/${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+    // Store in user-specific images folder (separate from logos)
+    const fileName = `images/${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("builder-images")

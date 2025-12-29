@@ -1480,7 +1480,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         return;
       }
 
-      const userFolder = `generated/${userId}`;
+      // Fetch from images/ folder only (logos are stored separately in logos/)
+      const userFolder = `images/${userId}`;
       console.log('[IMAGE-LIBRARY] Fetching images from:', userFolder);
       
       const { data, error } = await supabase.storage

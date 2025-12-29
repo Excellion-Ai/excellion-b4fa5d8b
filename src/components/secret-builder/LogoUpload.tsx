@@ -96,12 +96,13 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
 
     setIsGenerating(true);
     try {
-      // Use generate-image function which saves to the generated/ folder for the library
+      // Use generate-image function with type: 'logo' to save to logos/ folder
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: { 
           prompt: `Minimalist professional logo design: ${logoPrompt}. Simple, clean, iconic, suitable for a brand logo, white or transparent background, vector-style.`,
           width: 512,
-          height: 512
+          height: 512,
+          type: 'logo'
         }
       });
 
