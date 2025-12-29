@@ -20,7 +20,7 @@ import { LogoUpload } from './LogoUpload';
 import { HelpChat } from './HelpChat';
 import { CodeExport, generateHtmlFromSpec } from './CodeExport';
 import { SectionLibrary } from './SectionLibrary';
-import { PageManager } from './PageManager';
+
 import { AnalyticsPanel } from './AnalyticsPanel';
 import { CustomDomainsPanel } from './CustomDomainsPanel';
 import { DiffViewer } from './DiffViewer';
@@ -1758,24 +1758,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           <div className="h-full flex flex-col">
         <div className="h-12 border-b border-border flex items-center justify-between px-2 sm:px-4 bg-card/30 gap-1 sm:gap-2 overflow-x-auto">
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-            {/* Presence Avatars */}
+            {/* Presence Avatars - System toolbar only, NO generated site navigation here */}
             <PresenceAvatars users={otherUsers} />
-            
-            {siteSpec && siteSpec.pages.length > 0 && (
-              <PageManager
-                pages={siteSpec.pages}
-                currentPageIndex={currentPageIndex}
-                onSelectPage={setCurrentPageIndex}
-                onAddPage={editor.addPage}
-                onRemovePage={(index) => {
-                  editor.removePage(index);
-                  if (currentPageIndex >= index && currentPageIndex > 0) {
-                    setCurrentPageIndex(currentPageIndex - 1);
-                  }
-                }}
-                onRenamePage={editor.renamePage}
-              />
-            )}
           </div>
 
           <div className="flex items-center gap-0.5 sm:gap-1 bg-muted/50 rounded-lg p-0.5 sm:p-1 shrink-0">
