@@ -21,6 +21,7 @@ import { HelpChat } from './HelpChat';
 import { CodeExport, generateHtmlFromSpec } from './CodeExport';
 import { SectionLibrary } from './SectionLibrary';
 import { GenerationProgress } from './GenerationProgress';
+import { SiteRendererErrorBoundary } from './SiteRendererErrorBoundary';
 
 import { AnalyticsPanel } from './AnalyticsPanel';
 import { CustomDomainsPanel } from './CustomDomainsPanel';
@@ -460,6 +461,10 @@ export function BuilderShell() {
   const [versions, setVersions] = useState<VersionSnapshot[]>([]);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [isRestoringVersion, setIsRestoringVersion] = useState(false);
+  
+  // Error boundary state for self-healing
+  const [lastRenderError, setLastRenderError] = useState<{ error: string; stack: string } | null>(null);
+  const errorBoundaryKeyRef = useRef(0);
   
   // Generation progress tracking
   const [tokenCount, setTokenCount] = useState(0);
@@ -1420,6 +1425,44 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
     }
   };
 
+  // Self-healing function: sends error context back to AI for auto-fix
+  const healCode = useCallback(async (errorMessage: string, componentStack: string) => {
+    if (!siteSpec) {
+      toast.error('No site to heal. Please generate a site first.');
+      return;
+    }
+
+    const healPrompt = `[RENDER ERROR - AUTO-FIX REQUIRED]
+The generated site crashed with this error:
+Error: ${errorMessage}
+
+Component Stack: ${componentStack.slice(0, 500)}
+
+Current site spec name: "${siteSpec.name}"
+Pages: ${siteSpec.pages?.map(p => p.path).join(', ')}
+
+Please analyze and fix the issue. Common causes:
+- Invalid section content structure
+- Missing required fields in sections
+- Malformed data in pricing/features/testimonials
+
+Regenerate the problematic sections with valid content.`;
+
+    toast.info('AI is analyzing the error...');
+    
+    // Increment error boundary key to force remount after heal
+    errorBoundaryKeyRef.current += 1;
+    
+    // Trigger regeneration with the heal prompt
+    await handleGenerate(healPrompt);
+  }, [siteSpec, handleGenerate]);
+
+  // Retry handler for error boundary (just resets error state)
+  const handleRetryRender = useCallback(() => {
+    errorBoundaryKeyRef.current += 1;
+    setLastRenderError(null);
+  }, []);
+
   const handleGenerateImage = async () => {
     if (!imagePrompt.trim()) {
       toast.error('Please enter an image description');
@@ -2261,29 +2304,36 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   sandbox="allow-scripts"
                 />
               ) : siteSpec ? (
-                <SiteRenderer 
-                  siteSpec={siteSpec}
-                  pageIndex={currentPageIndex}
-                  isLoading={isGenerating}
-                  onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
-                  onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
-                  onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
-                  onUpdateTestimonialsContent={visualEditsEnabled ? editor.updateTestimonialsContent : undefined}
-                  onUpdateTestimonialItem={visualEditsEnabled ? editor.updateTestimonialItem : undefined}
-                  onUpdatePricingContent={visualEditsEnabled ? editor.updatePricingContent : undefined}
-                  onUpdatePricingItem={visualEditsEnabled ? editor.updatePricingItem : undefined}
-                  onUpdateFAQContent={visualEditsEnabled ? editor.updateFAQContent : undefined}
-                  onUpdateFAQItem={visualEditsEnabled ? editor.updateFAQItem : undefined}
-                  onUpdateContactContent={visualEditsEnabled ? editor.updateContactContent : undefined}
-                  onUpdateCTAContent={visualEditsEnabled ? editor.updateCTAContent : undefined}
-                  onUpdateStatsContent={visualEditsEnabled ? editor.updateStatsContent : undefined}
-                  onUpdateStatsItem={visualEditsEnabled ? editor.updateStatsItem : undefined}
-                  onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
-                  onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
-                  onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
-                  onPageChange={setCurrentPageIndex}
-                  motionIntensity={motionIntensity}
-                />
+                <SiteRendererErrorBoundary
+                  key={errorBoundaryKeyRef.current}
+                  siteName={siteSpec.name}
+                  onRetry={handleRetryRender}
+                  onHeal={healCode}
+                >
+                  <SiteRenderer 
+                    siteSpec={siteSpec}
+                    pageIndex={currentPageIndex}
+                    isLoading={isGenerating}
+                    onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
+                    onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
+                    onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
+                    onUpdateTestimonialsContent={visualEditsEnabled ? editor.updateTestimonialsContent : undefined}
+                    onUpdateTestimonialItem={visualEditsEnabled ? editor.updateTestimonialItem : undefined}
+                    onUpdatePricingContent={visualEditsEnabled ? editor.updatePricingContent : undefined}
+                    onUpdatePricingItem={visualEditsEnabled ? editor.updatePricingItem : undefined}
+                    onUpdateFAQContent={visualEditsEnabled ? editor.updateFAQContent : undefined}
+                    onUpdateFAQItem={visualEditsEnabled ? editor.updateFAQItem : undefined}
+                    onUpdateContactContent={visualEditsEnabled ? editor.updateContactContent : undefined}
+                    onUpdateCTAContent={visualEditsEnabled ? editor.updateCTAContent : undefined}
+                    onUpdateStatsContent={visualEditsEnabled ? editor.updateStatsContent : undefined}
+                    onUpdateStatsItem={visualEditsEnabled ? editor.updateStatsItem : undefined}
+                    onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
+                    onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
+                    onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
+                    onPageChange={setCurrentPageIndex}
+                    motionIntensity={motionIntensity}
+                  />
+                </SiteRendererErrorBoundary>
               ) : (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center p-8">
