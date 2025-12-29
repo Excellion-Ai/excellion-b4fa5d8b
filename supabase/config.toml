@@ -74,3 +74,6 @@ verify_jwt = false
 
 [functions.sync-to-github]
 verify_jwt = false
+
+[functions.deploy-to-vercel]
+verify_jwt = false
