@@ -183,6 +183,13 @@ export default function KnowledgeSettings() {
     
     setInstructionsSaving(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to save instructions');
+        setInstructionsSaving(false);
+        return;
+      }
+
       if (instructionsProjectId === GLOBAL_PROJECT_ID) {
         // Save global instructions - use first project as anchor
         if (projects.length === 0) {
@@ -199,7 +206,7 @@ export default function KnowledgeSettings() {
           .maybeSingle();
 
         if (existing) {
-          await supabase
+          const { error: updateError } = await supabase
             .from('knowledge_base')
             .update({
               content: customInstructions,
@@ -207,16 +214,31 @@ export default function KnowledgeSettings() {
               updated_at: new Date().toISOString(),
             })
             .eq('id', existing.id);
+          
+          if (updateError) {
+            console.error('Failed to update global instructions:', updateError);
+            toast.error('Failed to save: ' + updateError.message);
+            setInstructionsSaving(false);
+            return;
+          }
         } else if (customInstructions.trim()) {
-          await supabase
+          const { error: insertError } = await supabase
             .from('knowledge_base')
             .insert({
-              project_id: projects[0].id, // Use first project as anchor
+              project_id: projects[0].id,
+              user_id: user.id,
               name: GLOBAL_INSTRUCTIONS_KEY,
               content: customInstructions,
               file_type: 'global-instructions',
               file_size: new Blob([customInstructions]).size,
             });
+          
+          if (insertError) {
+            console.error('Failed to insert global instructions:', insertError);
+            toast.error('Failed to save: ' + insertError.message);
+            setInstructionsSaving(false);
+            return;
+          }
         }
       } else {
         // Save project-specific instructions
@@ -225,10 +247,10 @@ export default function KnowledgeSettings() {
           .select('id')
           .eq('project_id', instructionsProjectId)
           .eq('name', CUSTOM_INSTRUCTIONS_KEY)
-          .single();
+          .maybeSingle();
 
         if (existing) {
-          await supabase
+          const { error: updateError } = await supabase
             .from('knowledge_base')
             .update({
               content: customInstructions,
@@ -236,16 +258,31 @@ export default function KnowledgeSettings() {
               updated_at: new Date().toISOString(),
             })
             .eq('id', existing.id);
+          
+          if (updateError) {
+            console.error('Failed to update instructions:', updateError);
+            toast.error('Failed to save: ' + updateError.message);
+            setInstructionsSaving(false);
+            return;
+          }
         } else if (customInstructions.trim()) {
-          await supabase
+          const { error: insertError } = await supabase
             .from('knowledge_base')
             .insert({
               project_id: instructionsProjectId,
+              user_id: user.id,
               name: CUSTOM_INSTRUCTIONS_KEY,
               content: customInstructions,
               file_type: 'instructions',
               file_size: new Blob([customInstructions]).size,
             });
+          
+          if (insertError) {
+            console.error('Failed to insert instructions:', insertError);
+            toast.error('Failed to save: ' + insertError.message);
+            setInstructionsSaving(false);
+            return;
+          }
         }
       }
       
