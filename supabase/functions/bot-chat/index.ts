@@ -1290,7 +1290,11 @@ If you cannot fulfill these requirements, explain why in your conversational res
           ...messages,
         ],
         stream: true,
-        max_tokens: 8000, // Limit response size for speed
+        // Use max_completion_tokens for newer OpenAI models (GPT-5, etc.)
+        // Use max_tokens for Gemini models
+        ...(selectedModel.startsWith('openai/') 
+          ? { max_completion_tokens: 8000 } 
+          : { max_tokens: 8000 }),
       }),
     });
 
