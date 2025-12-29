@@ -33,7 +33,6 @@ import {
   X,
   Copy,
   Pencil,
-  Check,
   Globe,
   Folder,
   ChevronUp,
@@ -108,44 +107,6 @@ interface BuilderProject {
 
 // Using AttachmentItem from the attachments module instead of local Attachment interface
 
-const THEME_OPTIONS = [
-  { 
-    id: 'modern', 
-    label: 'Modern', 
-    color: 'hsl(220, 70%, 50%)',
-    description: 'Clean layouts, balanced spacing, professional'
-  },
-  { 
-    id: 'minimal', 
-    label: 'Minimal', 
-    color: 'hsl(0, 0%, 40%)',
-    description: 'Typography-focused, lots of whitespace'
-  },
-  { 
-    id: 'bold', 
-    label: 'Bold', 
-    color: 'hsl(350, 80%, 50%)',
-    description: 'High contrast, large fonts, attention-grabbing'
-  },
-  { 
-    id: 'luxury', 
-    label: 'Luxury', 
-    color: 'hsl(38, 45%, 55%)',
-    description: 'Elegant, sophisticated, premium feel'
-  },
-  { 
-    id: 'playful', 
-    label: 'Playful', 
-    color: 'hsl(280, 70%, 60%)',
-    description: 'Rounded shapes, bright, fun & energetic'
-  },
-  { 
-    id: 'dark', 
-    label: 'Dark', 
-    color: 'hsl(0, 0%, 15%)',
-    description: 'Dark backgrounds, tech/developer aesthetic'
-  },
-];
 
 const QUICK_PROMPTS = [
   { 
@@ -184,7 +145,6 @@ const NAV_ITEMS = [
 // localStorage keys
 const LS_LAST_PROJECT_ID = 'excellion_last_project_id';
 const LS_PENDING_PROMPT = 'excellion_pending_prompt';
-const LS_PENDING_THEME = 'excellion_pending_theme';
 
 export default function SecretBuilderHub() {
   const location = useLocation();
@@ -211,7 +171,6 @@ export default function SecretBuilderHub() {
   const [projects, setProjects] = useState<BuilderProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState('modern');
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
@@ -262,12 +221,8 @@ export default function SecretBuilderHub() {
   // Restore pending prompt from localStorage
   useEffect(() => {
     const pendingPrompt = localStorage.getItem(LS_PENDING_PROMPT);
-    const pendingTheme = localStorage.getItem(LS_PENDING_THEME);
     if (pendingPrompt) {
       setIdea(pendingPrompt);
-    }
-    if (pendingTheme) {
-      setSelectedTheme(pendingTheme);
     }
   }, []);
 
@@ -375,7 +330,6 @@ export default function SecretBuilderHub() {
     
     // Save to localStorage in case of refresh
     localStorage.setItem(LS_PENDING_PROMPT, ideaToUse);
-    localStorage.setItem(LS_PENDING_THEME, selectedTheme);
 
     try {
       // Get current user - require login
@@ -404,7 +358,7 @@ export default function SecretBuilderHub() {
           name: projectName,
           idea: ideaToUse,
           spec: JSON.parse(JSON.stringify({ 
-            themeId: selectedTheme, 
+            themeId: 'modern', 
             attachments: attachments.map(a => a.name),
             interviewData: currentInterviewData,
           })),
@@ -419,16 +373,15 @@ export default function SecretBuilderHub() {
       
       // Clear pending state
       localStorage.removeItem(LS_PENDING_PROMPT);
-      localStorage.removeItem(LS_PENDING_THEME);
 
       toast({ title: 'Project created', description: 'Opening builder...' });
       
-      // Navigate to builder with theme style ID and interview data
+      // Navigate to builder with interview data
       navigate('/secret-builder', { 
         state: { 
           projectId: data.id, 
           initialIdea: ideaToUse,
-          themeId: selectedTheme,
+          themeId: 'modern',
           interviewData: currentInterviewData,
         } 
       });
@@ -442,7 +395,7 @@ export default function SecretBuilderHub() {
       setIsGenerating(false);
       isSubmittingRef.current = false;
     }
-  }, [idea, isGenerating, selectedTheme, attachments, navigate, toast]);
+  }, [idea, isGenerating, attachments, navigate, toast]);
 
   // Generate from template with pre-built spec
   const handleGenerateFromTemplate = useCallback(async (template: typeof TEMPLATES[0]) => {
@@ -474,7 +427,7 @@ export default function SecretBuilderHub() {
           idea: template.prompt,
           spec: JSON.parse(JSON.stringify({ 
             siteSpec: template.spec,
-            themeId: selectedTheme, 
+            themeId: 'modern', 
           })),
         }])
         .select()
@@ -490,8 +443,8 @@ export default function SecretBuilderHub() {
         state: { 
           projectId: data.id, 
           initialIdea: template.prompt,
-          themeId: selectedTheme,
-          templateSpec: template.spec, // Pass spec directly to builder
+          themeId: 'modern',
+          templateSpec: template.spec,
         } 
       });
     } catch (error) {
@@ -505,7 +458,7 @@ export default function SecretBuilderHub() {
       setIsGenerating(false);
       isSubmittingRef.current = false;
     }
-  }, [isGenerating, selectedTheme, navigate, toast]);
+  }, [isGenerating, navigate, toast]);
 
   // Auto-generate when coming from home page with a prompt
   useEffect(() => {
@@ -572,7 +525,6 @@ export default function SecretBuilderHub() {
   };
 
   const lastProject = projects[0];
-  const selectedThemeOption = THEME_OPTIONS.find((t) => t.id === selectedTheme);
 
   // Settings handlers
   const handleSignOut = async () => {
@@ -1057,46 +1009,6 @@ export default function SecretBuilderHub() {
                       Build Assist
                     </Button>
                     
-                    {/* Theme Dropdown */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 text-muted-foreground hover:text-foreground"
-                          disabled={isGenerating}
-                        >
-                          <div 
-                            className="w-3 h-3 rounded-full mr-1.5 border border-border"
-                            style={{ backgroundColor: selectedThemeOption?.color }}
-                          />
-                          <Palette className="w-4 h-4 mr-1" />
-                          {selectedThemeOption?.label}
-                          <ChevronDown className="w-3 h-3 ml-1" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-56">
-                        {THEME_OPTIONS.map((theme) => (
-                          <DropdownMenuItem
-                            key={theme.id}
-                            onClick={() => setSelectedTheme(theme.id)}
-                            className="flex items-start gap-2 py-2"
-                          >
-                            <div 
-                              className="w-4 h-4 rounded-full border border-border mt-0.5 shrink-0"
-                              style={{ backgroundColor: theme.color }}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <span className="font-medium">{theme.label}</span>
-                              <p className="text-xs text-muted-foreground">{theme.description}</p>
-                            </div>
-                            {selectedTheme === theme.id && (
-                              <Check className="w-4 h-4 mt-0.5 shrink-0" />
-                            )}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
                   
                   <Button 
@@ -1184,9 +1096,6 @@ export default function SecretBuilderHub() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(showAllProjects ? projects : projects.slice(0, 6)).map((project) => {
-                  const themeId = project.spec?.themeId || 'modern';
-                  const themeOption = THEME_OPTIONS.find(t => t.id === themeId);
-                  
                   return (
                     <Card 
                       key={project.id}
@@ -1197,7 +1106,6 @@ export default function SecretBuilderHub() {
                       <div className="h-36 bg-gradient-to-br from-muted/50 to-muted/20 p-3 relative overflow-hidden">
                         <ProjectPreview 
                           spec={project.spec?.siteSpec || project.spec} 
-                          themeColor={themeOption?.color}
                         />
                         
                         {/* Hover overlay */}
