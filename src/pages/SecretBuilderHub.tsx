@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -48,9 +50,12 @@ import {
   Zap,
   Image,
   Download,
-  Link
+  Link,
+  Eye
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
+import { ImprovedPromptModal } from '@/components/secret-builder/ImprovedPromptModal';
+import { refinePrompt, getAutoImproveEnabled, setAutoImproveEnabled, type RefinerMeta } from '@/lib/promptRefiner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -190,6 +195,13 @@ export default function SecretBuilderHub() {
   const [imageLibraryOpen, setImageLibraryOpen] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string; type: 'image' | 'logo'; createdAt: Date }[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
+  
+  // Shadow Prompt / Refiner state
+  const [isRefining, setIsRefining] = useState(false);
+  const [autoImproveEnabled, setAutoImproveState] = useState(getAutoImproveEnabled);
+  const [lastRefinedPrompt, setLastRefinedPrompt] = useState<string>('');
+  const [lastRefinerMeta, setLastRefinerMeta] = useState<RefinerMeta | undefined>();
+  const [showImprovedPromptModal, setShowImprovedPromptModal] = useState(false);
   
   // Interview intake hook
   const interview = useInterviewIntake(idea);
@@ -451,14 +463,61 @@ export default function SecretBuilderHub() {
         return;
       }
       
+      // ============ SHADOW PROMPT REFINEMENT ============
+      let promptToSend = ideaToUse;
+      let refinerMeta: RefinerMeta | undefined;
+      
+      if (autoImproveEnabled) {
+        setIsRefining(true);
+        try {
+          const result = await refinePrompt(ideaToUse, { source: 'hero' });
+          
+          if (!result.fallback && result.refinedPrompt) {
+            promptToSend = result.refinedPrompt;
+            refinerMeta = result.meta;
+            console.log(`[ShadowPrompt] Refined in ${result.latencyMs}ms, confidence: ${result.meta?.confidence}`);
+          } else {
+            console.log('[ShadowPrompt] Using original prompt (fallback)');
+          }
+          
+          // Store for "View improved prompt" modal
+          setLastRefinedPrompt(result.refinedPrompt || ideaToUse);
+          setLastRefinerMeta(result.meta);
+        } catch (refineError) {
+          // If blocked content error, show toast and abort
+          if (refineError instanceof Error && refineError.message.includes('Content not allowed')) {
+            toast({
+              title: 'Content not allowed',
+              description: refineError.message,
+              variant: 'destructive',
+            });
+            setIsGenerating(false);
+            setIsRefining(false);
+            isSubmittingRef.current = false;
+            return;
+          }
+          // Otherwise continue with original prompt
+          console.warn('[ShadowPrompt] Refiner error, using original:', refineError);
+          setLastRefinedPrompt(ideaToUse);
+        } finally {
+          setIsRefining(false);
+        }
+      } else {
+        // Auto-improve disabled
+        setLastRefinedPrompt(ideaToUse);
+      }
+      
       // Interview data can come from location state (from WebBuilderHome) or local interview hook
       const currentInterviewData = interviewDataFromLocation || interview.structuredData;
       
       // Navigate IMMEDIATELY to builder - let builder handle project creation
       // This makes the experience feel instant
+      // Pass the refined prompt internally, but store original for display
       navigate('/secret-builder', { 
         state: { 
-          initialIdea: ideaToUse,
+          initialIdea: promptToSend, // Use refined prompt for generation
+          originalIdea: ideaToUse,   // Store original for display
+          refinerMeta,               // Store meta for debugging
           themeId: 'modern',
           interviewData: currentInterviewData,
           attachments: attachments.map(a => a.name),
@@ -477,9 +536,10 @@ export default function SecretBuilderHub() {
         variant: 'destructive' 
       });
       setIsGenerating(false);
+      setIsRefining(false);
       isSubmittingRef.current = false;
     }
-  }, [idea, isGenerating, attachments, navigate, toast, interviewDataFromLocation, interview.structuredData]);
+  }, [idea, isGenerating, attachments, navigate, toast, interviewDataFromLocation, interview.structuredData, autoImproveEnabled]);
 
   // Generate from template with pre-built spec
   const handleGenerateFromTemplate = useCallback(async (template: typeof TEMPLATES[0]) => {
@@ -858,6 +918,22 @@ export default function SecretBuilderHub() {
               
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-xs text-muted-foreground">Preferences</DropdownMenuLabel>
+              
+              {/* Auto-improve prompts toggle */}
+              <div className="flex items-center justify-between px-2 py-1.5">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">Auto-improve prompts</span>
+                </div>
+                <Switch
+                  checked={autoImproveEnabled}
+                  onCheckedChange={(checked) => {
+                    setAutoImproveState(checked);
+                    setAutoImproveEnabled(checked);
+                  }}
+                />
+              </div>
+              
               <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/appearance')}>
                 <Palette className="w-4 h-4" />
                 <span>Theme & Appearance</span>
@@ -1121,23 +1197,43 @@ export default function SecretBuilderHub() {
                     
                   </div>
                   
-                  <Button 
-                    onClick={() => handleGenerate()}
-                    disabled={!idea.trim() || isGenerating}
-                    className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Generating…
-                      </>
-                    ) : (
-                      <>
-                        Generate
-                        <Send className="w-4 h-4 ml-2" />
-                      </>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      onClick={() => handleGenerate()}
+                      disabled={!idea.trim() || isGenerating}
+                      className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      {isRefining ? (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
+                          Polishing…
+                        </>
+                      ) : isGenerating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating…
+                        </>
+                      ) : (
+                        <>
+                          Generate
+                          <Send className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                    
+                    {/* View improved prompt link - only show if we have a refined prompt */}
+                    {lastRefinedPrompt && lastRefinedPrompt !== idea && !isGenerating && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-xs text-muted-foreground hover:text-primary gap-1"
+                        onClick={() => setShowImprovedPromptModal(true)}
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        View improved
+                      </Button>
                     )}
-                  </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1520,6 +1616,15 @@ export default function SecretBuilderHub() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Improved Prompt Modal */}
+      <ImprovedPromptModal
+        open={showImprovedPromptModal}
+        onOpenChange={setShowImprovedPromptModal}
+        originalPrompt={idea}
+        refinedPrompt={lastRefinedPrompt}
+        meta={lastRefinerMeta}
+      />
     </div>
   );
 }
