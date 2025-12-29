@@ -1916,39 +1916,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               <span className="hidden md:inline">Layout</span>
             </Button>
             
-            {/* Motion Intensity Toggle */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline capitalize">{motionIntensity}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                {(['off', 'subtle', 'premium', 'wild'] as MotionIntensity[]).map((level) => (
-                  <DropdownMenuItem
-                    key={level}
-                    onClick={() => {
-                      setMotionIntensity(level);
-                      localStorage.setItem('excellion-motion-intensity', level);
-                      toast.success(`Motion: ${level.charAt(0).toUpperCase() + level.slice(1)}`);
-                    }}
-                    className={`gap-2 capitalize ${motionIntensity === level ? 'bg-accent' : ''}`}
-                  >
-                    {level === 'off' && '⏸️'}
-                    {level === 'subtle' && '✨'}
-                    {level === 'premium' && '💫'}
-                    {level === 'wild' && '🔥'}
-                    {level}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
             {/* Bookmarks */}
             <BookmarksPanel
               projectId={projectId}
