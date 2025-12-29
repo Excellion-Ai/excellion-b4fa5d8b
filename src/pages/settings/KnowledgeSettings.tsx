@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus, FileText, Trash2, Eye, Upload, BookOpen, Loader2, Sparkles, Check, Globe } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, Upload, BookOpen, Loader2, Sparkles, Check, Globe, Copy } from 'lucide-react';
 
 interface KnowledgeEntry {
   id: string;
@@ -488,23 +488,41 @@ export default function KnowledgeSettings() {
             </p>
           </div>
           
-          <Button
-            onClick={saveCustomInstructions}
-            disabled={!instructionsProjectId || instructionsSaving || !hasUnsavedChanges}
-            className="gap-2"
-          >
-            {instructionsSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Check className="h-4 w-4" />
-                {hasUnsavedChanges ? 'Save Instructions' : 'Saved'}
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={saveCustomInstructions}
+              disabled={!instructionsProjectId || instructionsSaving || !hasUnsavedChanges}
+              className="gap-2"
+            >
+              {instructionsSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4" />
+                  {hasUnsavedChanges ? 'Save Instructions' : 'Saved'}
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (customInstructions.trim()) {
+                  navigator.clipboard.writeText(customInstructions);
+                  toast.success('Copied to clipboard');
+                } else {
+                  toast.error('No instructions to copy');
+                }
+              }}
+              disabled={!customInstructions.trim()}
+              className="gap-2"
+            >
+              <Copy className="h-4 w-4" />
+              Copy
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
