@@ -34,6 +34,7 @@ const MAX_FILE_SIZE = 500 * 1024;
 const SUPPORTED_TYPES = ['.txt', '.md', '.json', '.css', '.html', '.xml', '.yaml', '.yml'];
 const CUSTOM_INSTRUCTIONS_KEY = '__custom_instructions__';
 const GLOBAL_INSTRUCTIONS_KEY = '__global_instructions__';
+const GLOBAL_ENTRIES_KEY = '__global_entry__';
 const GLOBAL_PROJECT_ID = 'global';
 
 function formatFileSize(bytes: number | null): string {
@@ -91,36 +92,74 @@ export default function KnowledgeSettings() {
       return;
     }
 
-    let query = supabase
-      .from('knowledge_base')
-      .select(`
-        id, name, content, file_type, file_size, created_at, updated_at, project_id,
-        builder_projects!inner(name, user_id)
-      `)
-      .neq('name', CUSTOM_INSTRUCTIONS_KEY)
-      .order('created_at', { ascending: false });
+    // Fetch entries based on selected filter
+    if (selectedProjectId === GLOBAL_PROJECT_ID) {
+      // Fetch only global entries
+      const { data, error } = await supabase
+        .from('knowledge_base')
+        .select(`
+          id, name, content, file_type, file_size, created_at, updated_at, project_id,
+          builder_projects!inner(name, user_id)
+        `)
+        .eq('file_type', 'global-entry')
+        .neq('name', CUSTOM_INSTRUCTIONS_KEY)
+        .neq('name', GLOBAL_INSTRUCTIONS_KEY)
+        .order('created_at', { ascending: false });
 
-    if (selectedProjectId !== 'all') {
-      query = query.eq('project_id', selectedProjectId);
+      if (error) {
+        console.error('Error fetching global entries:', error);
+        toast.error('Failed to load knowledge base');
+        setIsLoading(false);
+        return;
+      }
+
+      const formatted = (data || [])
+        .filter((item: any) => item.builder_projects?.user_id === user.id)
+        .map((item: any) => ({
+          ...item,
+          project_name: 'Global',
+          isGlobal: true,
+        }));
+
+      setEntries(formatted);
+    } else {
+      // Fetch project-specific entries (excluding global entries)
+      let query = supabase
+        .from('knowledge_base')
+        .select(`
+          id, name, content, file_type, file_size, created_at, updated_at, project_id,
+          builder_projects!inner(name, user_id)
+        `)
+        .neq('name', CUSTOM_INSTRUCTIONS_KEY)
+        .neq('name', GLOBAL_INSTRUCTIONS_KEY)
+        .neq('file_type', 'global-entry')
+        .neq('file_type', 'global-instructions')
+        .order('created_at', { ascending: false });
+
+      if (selectedProjectId !== 'all') {
+        query = query.eq('project_id', selectedProjectId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching knowledge:', error);
+        toast.error('Failed to load knowledge base');
+        setIsLoading(false);
+        return;
+      }
+
+      const formatted = (data || [])
+        .filter((item: any) => item.builder_projects?.user_id === user.id)
+        .map((item: any) => ({
+          ...item,
+          project_name: item.builder_projects?.name || 'Unknown Project',
+          isGlobal: false,
+        }));
+
+      setEntries(formatted);
     }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Error fetching knowledge:', error);
-      toast.error('Failed to load knowledge base');
-      setIsLoading(false);
-      return;
-    }
-
-    const formatted = (data || [])
-      .filter((item: any) => item.builder_projects?.user_id === user.id)
-      .map((item: any) => ({
-        ...item,
-        project_name: item.builder_projects?.name || 'Unknown Project',
-      }));
-
-    setEntries(formatted);
+    
     setIsLoading(false);
   }, [selectedProjectId]);
 
@@ -321,8 +360,26 @@ export default function KnowledgeSettings() {
   }, [instructionsProjectId, loadCustomInstructions]);
 
   const handleAddEntry = async () => {
-    if (!newEntry.name.trim() || !newEntry.content.trim() || !newEntry.projectId) {
+    const isGlobalEntry = newEntry.projectId === GLOBAL_PROJECT_ID;
+    
+    if (!newEntry.name.trim() || !newEntry.content.trim()) {
       toast.error('Please fill in all fields');
+      return;
+    }
+    
+    if (!isGlobalEntry && !newEntry.projectId) {
+      toast.error('Please select a project');
+      return;
+    }
+
+    if (isGlobalEntry && projects.length === 0) {
+      toast.error('Create a project first to add global entries');
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error('You must be logged in');
       return;
     }
 
@@ -330,10 +387,11 @@ export default function KnowledgeSettings() {
     const { error } = await supabase
       .from('knowledge_base')
       .insert({
-        project_id: newEntry.projectId,
+        project_id: isGlobalEntry ? projects[0].id : newEntry.projectId,
+        user_id: user.id,
         name: newEntry.name.trim(),
         content: newEntry.content.trim(),
-        file_type: 'text',
+        file_type: isGlobalEntry ? 'global-entry' : 'text',
         file_size: new Blob([newEntry.content]).size,
       });
 
@@ -344,7 +402,7 @@ export default function KnowledgeSettings() {
       return;
     }
 
-    toast.success('Knowledge entry added');
+    toast.success(isGlobalEntry ? 'Global knowledge entry added' : 'Knowledge entry added');
     setNewEntry({ name: '', content: '', projectId: projects[0]?.id || '' });
     setShowAddDialog(false);
     setIsSaving(false);
@@ -554,20 +612,32 @@ export default function KnowledgeSettings() {
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label>Project</Label>
+                    <Label>Apply To</Label>
                     <Select
                       value={newEntry.projectId}
                       onValueChange={(v) => setNewEntry(prev => ({ ...prev, projectId: v }))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a project" />
+                        <SelectValue placeholder="Select scope" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value={GLOBAL_PROJECT_ID}>
+                          <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-primary" />
+                            <span className="font-medium">All Projects (Global)</span>
+                          </div>
+                        </SelectItem>
+                        <Separator className="my-1" />
                         {projects.map(p => (
                           <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-muted-foreground">
+                      {newEntry.projectId === GLOBAL_PROJECT_ID 
+                        ? "This entry will be available to ALL your projects."
+                        : "This entry will only be available to this specific project."}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label>Name</Label>
@@ -620,18 +690,32 @@ export default function KnowledgeSettings() {
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <Label className="text-sm text-muted-foreground mb-2 block">Filter by Project</Label>
+            <Label className="text-sm text-muted-foreground mb-2 block">View Entries For</Label>
             <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="All projects" />
+              <SelectTrigger className="w-72">
+                <SelectValue placeholder="Select scope" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
+                <SelectItem value={GLOBAL_PROJECT_ID}>
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-primary" />
+                    <span className="font-medium">All Projects (Global)</span>
+                  </div>
+                </SelectItem>
+                <Separator className="my-1" />
+                <SelectItem value="all">All Project-Specific Entries</SelectItem>
                 {projects.map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              {selectedProjectId === GLOBAL_PROJECT_ID 
+                ? "Showing entries that apply to all projects."
+                : selectedProjectId === 'all'
+                ? "Showing all project-specific entries."
+                : "Showing entries for this specific project only."}
+            </p>
           </div>
 
           <Separator className="my-4" />
@@ -643,8 +727,12 @@ export default function KnowledgeSettings() {
           ) : entries.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No knowledge entries yet.</p>
-              <p className="text-sm">Add brand guidelines, documentation, or other reference materials.</p>
+              <p>No {selectedProjectId === GLOBAL_PROJECT_ID ? 'global ' : ''}knowledge entries yet.</p>
+              <p className="text-sm">
+                {selectedProjectId === GLOBAL_PROJECT_ID 
+                  ? "Add global reference materials that apply to all projects."
+                  : "Add brand guidelines, documentation, or other reference materials."}
+              </p>
             </div>
           ) : (
             <ScrollArea className="h-[400px]">
@@ -655,11 +743,21 @@ export default function KnowledgeSettings() {
                     className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <FileText className="w-5 h-5 text-primary shrink-0" />
+                      {(entry as any).isGlobal ? (
+                        <Globe className="w-5 h-5 text-primary shrink-0" />
+                      ) : (
+                        <FileText className="w-5 h-5 text-primary shrink-0" />
+                      )}
                       <div className="min-w-0">
                         <p className="font-medium truncate">{entry.name}</p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Badge variant="outline" className="text-xs">{entry.project_name}</Badge>
+                          <Badge 
+                            variant={(entry as any).isGlobal ? "default" : "outline"} 
+                            className={`text-xs ${(entry as any).isGlobal ? 'bg-primary/20 text-primary border-primary/30' : ''}`}
+                          >
+                            {(entry as any).isGlobal && <Globe className="w-3 h-3 mr-1" />}
+                            {entry.project_name}
+                          </Badge>
                           <span>{formatFileSize(entry.file_size)}</span>
                         </div>
                       </div>
