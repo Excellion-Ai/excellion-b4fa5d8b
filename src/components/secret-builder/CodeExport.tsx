@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { Copy, Check, Download, FileCode } from 'lucide-react';
+import { Copy, Check, Download, FileCode, FolderArchive, Rocket, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { SiteSpec } from '@/types/site-spec';
 import { GeneratedCode } from '@/types/app-spec';
+import { generateReactProject, ProjectFile } from '@/lib/reactCodeGenerator';
+import JSZip from 'jszip';
 
 interface CodeExportProps {
   siteSpec?: SiteSpec | null;
   projectName?: string;
   generatedCode?: GeneratedCode | null;
-  onExport?: () => Promise<boolean>; // Credit check callback - returns false if insufficient credits
+  onExport?: () => Promise<boolean>;
 }
 
 export function generateHtmlFromSpec(spec: SiteSpec): string {
@@ -323,7 +326,75 @@ ${footerHtml}
 export function CodeExport({ siteSpec, projectName, generatedCode, onExport }: CodeExportProps) {
   const [copied, setCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  // Support legacy generatedCode prop for BotExperiment
+  const [activeTab, setActiveTab] = useState('react');
+  const [isDeploying, setIsDeploying] = useState(false);
+
+  const projectFiles = siteSpec ? generateReactProject(siteSpec, projectName || 'my-site') : [];
+  const appTsx = projectFiles.find(f => f.path === 'src/App.tsx');
+
+  const handleDownloadZip = async () => {
+    if (!siteSpec) return;
+    
+    if (onExport) {
+      setIsExporting(true);
+      try {
+        const success = await onExport();
+        if (!success) return;
+      } finally {
+        setIsExporting(false);
+      }
+    }
+
+    const zip = new JSZip();
+    
+    projectFiles.forEach(file => {
+      zip.file(file.path, file.content);
+    });
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(projectName || 'site').replace(/\s+/g, '-').toLowerCase()}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success('Project ZIP downloaded!');
+  };
+
+  const handleDeployToVercel = async () => {
+    if (!siteSpec) return;
+    
+    setIsDeploying(true);
+    try {
+      const files: Record<string, string> = {};
+      projectFiles.forEach(file => {
+        files[file.path] = file.content;
+      });
+
+      const encodedFiles = btoa(unescape(encodeURIComponent(JSON.stringify(files))));
+      const repoName = (projectName || 'my-site').replace(/\s+/g, '-').toLowerCase();
+      
+      const vercelUrl = `https://vercel.com/new/clone?repository-url=https://github.com/vercel/vercel&env=VITE_APP_NAME&envDescription=Your%20app%20name&project-name=${repoName}&repository-name=${repoName}`;
+      
+      window.open(vercelUrl, '_blank');
+      toast.success('Opening Vercel deployment...');
+    } catch (error) {
+      console.error('Deploy error:', error);
+      toast.error('Failed to initiate deployment');
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  const handleCopyCode = async (code: string) => {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    toast.success('Code copied to clipboard!');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (generatedCode) {
     const handleCopyLegacy = async () => {
       if (!generatedCode.reactCode) return;
@@ -335,7 +406,6 @@ export function CodeExport({ siteSpec, projectName, generatedCode, onExport }: C
 
     const handleDownloadLegacy = async () => {
       if (!generatedCode.reactCode) return;
-      // Check credits before export
       if (onExport) {
         const success = await onExport();
         if (!success) return;
@@ -389,59 +459,85 @@ export function CodeExport({ siteSpec, projectName, generatedCode, onExport }: C
 
   const html = generateHtmlFromSpec(siteSpec);
 
-  const handleDownload = async () => {
-    // Check credits before export
-    if (onExport) {
-      setIsExporting(true);
-      try {
-        const success = await onExport();
-        if (!success) return;
-      } finally {
-        setIsExporting(false);
-      }
-    }
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(projectName || 'site').replace(/\s+/g, '-').toLowerCase()}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success('HTML file downloaded!');
-  };
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(html);
-    setCopied(true);
-    toast.success('Code copied to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className="h-full flex flex-col">
       <div className="p-3 border-b border-border flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <FileCode className="h-3.5 w-3.5" />
-          <span>index.html</span>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
+          <TabsList className="h-7">
+            <TabsTrigger value="react" className="text-xs h-6 px-2">React</TabsTrigger>
+            <TabsTrigger value="html" className="text-xs h-6 px-2">HTML</TabsTrigger>
+            <TabsTrigger value="files" className="text-xs h-6 px-2">Files</TabsTrigger>
+          </TabsList>
+        </Tabs>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={handleCopy} className="gap-1.5 h-7 text-xs">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => handleCopyCode(activeTab === 'html' ? html : appTsx?.content || '')} 
+            className="gap-1.5 h-7 text-xs"
+          >
             {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
             {copied ? 'Copied' : 'Copy'}
           </Button>
-          <Button size="sm" onClick={handleDownload} className="gap-1.5 h-7 text-xs">
-            <Download className="h-3.5 w-3.5" />
-            Download
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleDownloadZip} 
+            disabled={isExporting}
+            className="gap-1.5 h-7 text-xs"
+          >
+            <FolderArchive className="h-3.5 w-3.5" />
+            {isExporting ? 'Exporting...' : 'Download ZIP'}
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={handleDeployToVercel}
+            disabled={isDeploying}
+            className="gap-1.5 h-7 text-xs bg-black hover:bg-black/80 text-white"
+          >
+            <Rocket className="h-3.5 w-3.5" />
+            {isDeploying ? 'Deploying...' : 'Deploy to Vercel'}
           </Button>
         </div>
       </div>
-      <ScrollArea className="flex-1">
-        <pre className="p-4 text-xs font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed">
-          {html}
-        </pre>
-      </ScrollArea>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <TabsContent value="react" className="flex-1 m-0 mt-0">
+          <ScrollArea className="h-full">
+            <pre className="p-4 text-xs font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed">
+              {appTsx?.content || ''}
+            </pre>
+          </ScrollArea>
+        </TabsContent>
+        
+        <TabsContent value="html" className="flex-1 m-0 mt-0">
+          <ScrollArea className="h-full">
+            <pre className="p-4 text-xs font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed">
+              {html}
+            </pre>
+          </ScrollArea>
+        </TabsContent>
+        
+        <TabsContent value="files" className="flex-1 m-0 mt-0">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-1">
+              {projectFiles.map(file => (
+                <button
+                  key={file.path}
+                  onClick={() => handleCopyCode(file.content)}
+                  className="w-full flex items-center justify-between p-2 rounded hover:bg-muted/50 text-left group"
+                >
+                  <div className="flex items-center gap-2 text-xs">
+                    <FileCode className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="font-mono">{file.path}</span>
+                  </div>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
