@@ -506,14 +506,34 @@ export function BuilderShell() {
     }
   }, [projectId]);
 
-  // Load generated images on mount so library is always available
+  // Load generated images when session is available
   useEffect(() => {
-    fetchGeneratedImages();
+    const checkSessionAndFetch = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        console.log('[IMAGE-LIBRARY] Session ready, fetching user images for:', session.user.id);
+        fetchGeneratedImages();
+      }
+    };
+    
+    checkSessionAndFetch();
     
     // Listen for refresh events from LogoUpload
     const handleRefresh = () => fetchGeneratedImages();
     window.addEventListener('refresh-image-library', handleRefresh);
-    return () => window.removeEventListener('refresh-image-library', handleRefresh);
+    
+    // Also re-fetch when auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user?.id) {
+        console.log('[IMAGE-LIBRARY] Auth state changed, re-fetching images');
+        fetchGeneratedImages();
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('refresh-image-library', handleRefresh);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadProjectAndMaybeGenerate = async (id: string) => {
