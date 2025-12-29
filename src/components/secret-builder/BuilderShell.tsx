@@ -2500,6 +2500,18 @@ Regenerate the problematic sections with valid content.`;
                     visualModeActive={visualEditsEnabled}
                   />
                 </SiteRendererErrorBoundary>
+              ) : isGenerating ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center p-8">
+                    <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
+                    <p className="text-muted-foreground">
+                      Generating your website...
+                    </p>
+                    <p className="text-xs text-muted-foreground/60 mt-2">
+                      This usually takes 10-20 seconds
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center p-8">
