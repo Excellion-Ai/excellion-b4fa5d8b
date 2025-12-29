@@ -1,12 +1,14 @@
 import { SiteSection, SiteTheme, CTAContent } from '@/types/app-spec';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
+import { EditableText } from '../EditableText';
 
 interface CTASectionProps {
   section: SiteSection;
   theme: SiteTheme;
+  onUpdateContent?: (field: keyof CTAContent, value: string) => void;
 }
 
-export function CTASection({ section, theme }: CTASectionProps) {
+export function CTASection({ section, theme, onUpdateContent }: CTASectionProps) {
   const content = section.content as CTAContent | undefined;
   
   const headline = content?.headline || section.label || 'Ready to Get Started?';
@@ -23,20 +25,41 @@ export function CTASection({ section, theme }: CTASectionProps) {
     >
       <div className="w-full text-center overflow-hidden">
         <ScrollAnimation animation="fade-up">
-          <h2 
-            className="text-3xl md:text-4xl font-bold mb-4 text-white break-words"
-            style={{ fontFamily: theme.fontHeading, overflowWrap: 'anywhere' }}
-          >
-            {headline}
-          </h2>
+          {onUpdateContent ? (
+            <EditableText
+              value={headline}
+              onSave={(val) => onUpdateContent('headline', val)}
+              as="h2"
+              className="text-3xl md:text-4xl font-bold mb-4 text-white break-words"
+              style={{ fontFamily: theme.fontHeading, overflowWrap: 'anywhere' }}
+            />
+          ) : (
+            <h2 
+              className="text-3xl md:text-4xl font-bold mb-4 text-white break-words"
+              style={{ fontFamily: theme.fontHeading, overflowWrap: 'anywhere' }}
+            >
+              {headline}
+            </h2>
+          )}
         </ScrollAnimation>
         <ScrollAnimation animation="fade-up" delay={150}>
-          <p 
-            className="text-lg mb-8 text-white/90 max-w-2xl mx-auto break-words"
-            style={{ fontFamily: theme.fontBody, overflowWrap: 'anywhere' }}
-          >
-            {subheadline}
-          </p>
+          {onUpdateContent ? (
+            <EditableText
+              value={subheadline}
+              onSave={(val) => onUpdateContent('subheadline', val)}
+              as="p"
+              multiline
+              className="text-lg mb-8 text-white/90 max-w-2xl mx-auto break-words"
+              style={{ fontFamily: theme.fontBody, overflowWrap: 'anywhere' }}
+            />
+          ) : (
+            <p 
+              className="text-lg mb-8 text-white/90 max-w-2xl mx-auto break-words"
+              style={{ fontFamily: theme.fontBody, overflowWrap: 'anywhere' }}
+            >
+              {subheadline}
+            </p>
+          )}
         </ScrollAnimation>
         <ScrollAnimation animation="scale-up" delay={300}>
           <div className="flex flex-wrap gap-4 justify-center">
