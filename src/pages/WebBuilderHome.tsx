@@ -203,6 +203,22 @@ const WebBuilderHome = () => {
         <title>Website Builder AI | Build Your Site with AI</title>
       </Helmet>
 
+      {/* DEBUG: Temporary banner to confirm correct mount location */}
+      <div style={{ 
+        position: 'sticky', 
+        top: 0, 
+        zIndex: 9999, 
+        width: '100%', 
+        height: '48px', 
+        background: '#ff00ff', 
+        color: 'black', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        fontWeight: 'bold'
+      }}>
+        DEBUG: HOMEPAGE BANNER MOUNTED
+      </div>
       <SprintPassBar />
       <Navigation />
 
