@@ -272,6 +272,35 @@ setInterval(() => {
   }
 }, 60000);
 
+// Extract color specifications from user prompt
+function extractColorsFromPrompt(prompt: string): { primary?: string; accent?: string; backgroundMode?: 'dark' | 'light' } | null {
+  // Look for hex colors specified in the prompt
+  const hexPattern = /#([a-fA-F0-9]{6})\b/g;
+  const hexMatches = [...prompt.matchAll(hexPattern)];
+  
+  // Look for explicit color specifications
+  const primaryMatch = prompt.match(/primary[:\s]+#([a-fA-F0-9]{6})/i);
+  const accentMatch = prompt.match(/accent[:\s]+#([a-fA-F0-9]{6})/i);
+  const secondaryMatch = prompt.match(/secondary[:\s]+#([a-fA-F0-9]{6})/i);
+  
+  // Check for light/dark mode
+  const lightModeMatch = /light\s*mode/i.test(prompt);
+  const darkModeMatch = /dark\s*mode/i.test(prompt);
+  
+  // Look for color theme presets
+  const presetMatch = prompt.match(/color\s*theme[:\s]+([^(]+)/i);
+  
+  if (primaryMatch || accentMatch || secondaryMatch || hexMatches.length >= 2) {
+    return {
+      primary: primaryMatch ? `#${primaryMatch[1]}` : (hexMatches[0] ? `#${hexMatches[0][1]}` : undefined),
+      accent: accentMatch ? `#${accentMatch[1]}` : (secondaryMatch ? `#${secondaryMatch[1]}` : (hexMatches[1] ? `#${hexMatches[1][1]}` : undefined)),
+      backgroundMode: lightModeMatch ? 'light' : (darkModeMatch ? 'dark' : undefined),
+    };
+  }
+  
+  return null;
+}
+
 // ULTRA-FAST MODE: Minimized prompt for sub-10s first byte
 // Optimized for streaming: outputs sections sequentially for speculative rendering
 const FAST_SYSTEM_PROMPT = `Website builder AI. Output SiteSpec JSON only. Start with name/theme IMMEDIATELY for fast preview.
@@ -296,13 +325,16 @@ SECTIONS: hero, features, testimonials, pricing, faq, contact, cta, stats
 - faq: {title, items:[{question,answer}]} - about USER'S business only
 - contact: {title, formFields:["name","email","message"]}
 
-COLORS: Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6, Salon=#be185d, Construction=#ca8a04, Fitness=#dc2626, RealEstate=#0d9488, Default=#2563eb
+DEFAULT COLORS (ONLY use if no custom colors specified in user prompt):
+Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6, Salon=#be185d, Construction=#ca8a04, Fitness=#dc2626, RealEstate=#0d9488, Default=#2563eb
+
+CRITICAL: If user prompt contains "[COLOR THEME" or specifies hex colors like "#d4a574", you MUST use THOSE EXACT COLORS in your theme object, NOT the defaults above.
 
 RULES: 
 - Industry-specific content only
 - Home page max 5 sections
 - GENERATE: prefix for images (NO TEXT in images)
-- Output name+theme first for progressive rendering`;
+- Custom colors in user prompt ALWAYS override defaults`;
 
 
 const SYSTEM_PROMPT = `ACT AS: A friendly, helpful website builder assistant for "Excellion AI."
@@ -1227,6 +1259,38 @@ ${kbEntries.map((entry: { name: string; content: string }) => `### ${entry.name}
       if (context.businessName) enhancedPrompt += `\n- Business Name: ${context.businessName}`;
       if (context.industry) enhancedPrompt += `\n- Industry: ${context.industry}`;
       console.log(`[BOT-CHAT:${requestId}] Added business context: ${context.businessName || ''} / ${context.industry || ''}`);
+    }
+
+    // COLOR EXTRACTION FROM USER PROMPT (fallback if not in scaffold)
+    // This catches colors specified in the prompt text like "primary: #d4a574"
+    const userPromptContent = messages?.find((m: any) => m.role === 'user')?.content || '';
+    const userPromptText = typeof userPromptContent === 'string' ? userPromptContent : '';
+    const extractedColors = extractColorsFromPrompt(userPromptText);
+    
+    // Merge extracted colors with scaffold customTheme (scaffold takes priority)
+    const effectiveColors = scaffold?.customTheme || extractedColors;
+    
+    if (effectiveColors && (effectiveColors.primary || effectiveColors.accent)) {
+      console.log(`[BOT-CHAT:${requestId}] EFFECTIVE COLORS: primary=${effectiveColors.primary}, accent=${effectiveColors.accent}, mode=${effectiveColors.backgroundMode}`);
+      
+      // Add COLOR OVERRIDE at the START of the enhanced prompt for maximum visibility
+      const colorOverride = `
+====================================
+## ⚠️ CUSTOM COLOR THEME - HIGHEST PRIORITY ⚠️
+====================================
+THE USER HAS SPECIFIED CUSTOM COLORS. YOU MUST USE THESE EXACT HEX VALUES:
+- PRIMARY COLOR: ${effectiveColors.primary || '#2563eb'} ← Use for headlines, buttons, CTAs, navigation highlights
+- ACCENT/SECONDARY COLOR: ${effectiveColors.accent || effectiveColors.primary || '#8b5a2b'} ← Use for secondary elements, icons, hover states
+- BACKGROUND MODE: ${effectiveColors.backgroundMode || 'dark'} (use ${effectiveColors.backgroundMode === 'light' ? 'light background like #ffffff' : 'dark background like #0a0a0a'})
+
+⚠️ DO NOT USE DEFAULT INDUSTRY COLORS (blue, purple, green, etc.)
+⚠️ YOUR theme.primaryColor MUST BE EXACTLY: ${effectiveColors.primary || '#2563eb'}
+⚠️ YOUR theme.secondaryColor MUST BE EXACTLY: ${effectiveColors.accent || effectiveColors.primary || '#8b5a2b'}
+====================================
+
+`;
+      // Prepend to enhanced prompt
+      enhancedPrompt = colorOverride + enhancedPrompt;
     }
 
     // SCAFFOLD ENFORCEMENT: Inject scaffold constraints as hard requirements
