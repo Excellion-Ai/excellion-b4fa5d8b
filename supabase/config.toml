@@ -77,3 +77,9 @@ verify_jwt = false
 
 [functions.deploy-to-vercel]
 verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.credit-rollover-cron]
+verify_jwt = false
