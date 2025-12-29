@@ -342,51 +342,43 @@ export default function SecretBuilderHub() {
 
       const allImages: { name: string; url: string; type: 'image' | 'logo'; createdAt: Date }[] = [];
 
-      // Fetch from images folder
-      const imagesFolder = `images/${user.id}`;
-      const { data: imagesData } = await supabase.storage
-        .from('builder-images')
-        .list(imagesFolder, { sortBy: { column: 'created_at', order: 'desc' } });
-
-      if (imagesData) {
-        for (const file of imagesData) {
-          if (file.name && !file.name.startsWith('.')) {
-            const { data: urlData } = supabase.storage
-              .from('builder-images')
-              .getPublicUrl(`${imagesFolder}/${file.name}`);
-            
-            allImages.push({
-              name: file.name,
-              url: urlData.publicUrl,
-              type: 'image',
-              createdAt: new Date(file.created_at || Date.now())
-            });
+      // Helper to fetch from a folder
+      const fetchFromFolder = async (folder: string, type: 'image' | 'logo') => {
+        const { data, error } = await supabase.storage
+          .from('builder-images')
+          .list(folder, { sortBy: { column: 'created_at', order: 'desc' } });
+        
+        if (error) {
+          console.log(`[IMAGE-LIBRARY] No files in ${folder}:`, error.message);
+          return;
+        }
+        
+        if (data) {
+          for (const file of data) {
+            if (file.name && !file.name.startsWith('.') && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+              const { data: urlData } = supabase.storage
+                .from('builder-images')
+                .getPublicUrl(`${folder}/${file.name}`);
+              
+              allImages.push({
+                name: file.name,
+                url: urlData.publicUrl,
+                type,
+                createdAt: new Date(file.created_at || Date.now())
+              });
+            }
           }
         }
-      }
+      };
 
-      // Fetch from logos folder
-      const logosFolder = `logos/${user.id}`;
-      const { data: logosData } = await supabase.storage
-        .from('builder-images')
-        .list(logosFolder, { sortBy: { column: 'created_at', order: 'desc' } });
+      // Fetch from all storage locations in parallel
+      await Promise.all([
+        fetchFromFolder(`images/${user.id}`, 'image'),
+        fetchFromFolder(`logos/${user.id}`, 'logo'),
+        fetchFromFolder(`generated/${user.id}`, 'image'), // Legacy folder
+      ]);
 
-      if (logosData) {
-        for (const file of logosData) {
-          if (file.name && !file.name.startsWith('.')) {
-            const { data: urlData } = supabase.storage
-              .from('builder-images')
-              .getPublicUrl(`${logosFolder}/${file.name}`);
-            
-            allImages.push({
-              name: file.name,
-              url: urlData.publicUrl,
-              type: 'logo',
-              createdAt: new Date(file.created_at || Date.now())
-            });
-          }
-        }
-      }
+      console.log(`[IMAGE-LIBRARY] Found ${allImages.length} total images across all folders`);
 
       // Sort by creation date descending
       allImages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
