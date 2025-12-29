@@ -1045,7 +1045,7 @@ export default function SecretBuilderHub() {
                       attachmentCount={attachments.length}
                     />
                     
-                    {/* Guided Interview Button */}
+                    {/* Build Assist Button */}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -1054,7 +1054,7 @@ export default function SecretBuilderHub() {
                       disabled={isGenerating}
                     >
                       <Zap className="w-4 h-4 mr-1" />
-                      Guided
+                      Build Assist
                     </Button>
                     
                     {/* Theme Dropdown */}
