@@ -1022,6 +1022,9 @@ export function BuilderShell() {
       'hosting infrastructure', 'cloud hosting', 'code export'
     ];
     
+    // Get custom theme from interview data if available
+    const interviewColorData = state?.interviewData?.colorTheme || state?.interviewData?.colorThemeCustom;
+    
     const generationScaffold = {
       category: route.category,
       goal: route.goal,
@@ -1031,6 +1034,12 @@ export function BuilderShell() {
       forbiddenPhrases: [...archetype.forbiddenPhrases, ...globalForbiddenPhrases],
       integrations: route.integrationsNeeded,
       layoutSignature: archetype.layoutSignature,
+      // Pass custom theme from Build Assist interview
+      customTheme: interviewColorData ? {
+        primaryColor: interviewColorData.primary,
+        accentColor: interviewColorData.accent,
+        backgroundMode: interviewColorData.backgroundMode || 'dark',
+      } : null,
     };
 
     // Determine credit action type
@@ -1071,6 +1080,22 @@ export function BuilderShell() {
     
     // Build enhanced idea with attachment context
     let enhancedIdea = ideaToUse;
+    
+    // Include custom colors from Build Assist interview if provided
+    const interviewData = state?.interviewData;
+    if (interviewData?.colorTheme || interviewData?.colorThemeCustom) {
+      const colorData = interviewData.colorTheme || interviewData.colorThemeCustom;
+      if (colorData && colorData.primary) {
+        const colorContext = `[COLOR THEME - CRITICAL - USE THESE EXACT COLORS:
+- Primary Color: ${colorData.primary} (USE THIS for buttons, headlines, CTAs)
+- Accent Color: ${colorData.accent || colorData.primary} (USE THIS for secondary elements)
+- Background Mode: ${colorData.backgroundMode || 'dark'} (dark = dark backgrounds, light = light backgrounds)
+- Preset: ${(interviewData.colorTheme as any)?.preset || 'custom'}
+DO NOT use default industry colors. USE THE EXACT HEX CODES SPECIFIED ABOVE.]`;
+        enhancedIdea = `${colorContext}\n\n${enhancedIdea}`;
+        console.log('[handleGenerate] Including custom colors from interview:', colorData);
+      }
+    }
 
     for (const att of currentAttachments) {
       // Handle file attachments
