@@ -20,6 +20,7 @@ import { LogoUpload } from './LogoUpload';
 import { HelpChat } from './HelpChat';
 import { CodeExport, generateHtmlFromSpec } from './CodeExport';
 import { SectionLibrary } from './SectionLibrary';
+import { GenerationProgress } from './GenerationProgress';
 
 import { AnalyticsPanel } from './AnalyticsPanel';
 import { CustomDomainsPanel } from './CustomDomainsPanel';
@@ -453,6 +454,10 @@ export function BuilderShell() {
   const [showIssuesPanel, setShowIssuesPanel] = useState(false);
   const [currentIssues, setCurrentIssues] = useState<BuilderIssue[]>([]);
   const [lastScaffold, setLastScaffold] = useState<GenerationScaffold | null>(null);
+  
+  // Generation progress tracking
+  const [tokenCount, setTokenCount] = useState(0);
+  const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
   
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
@@ -1013,6 +1018,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       updateStep(2, 'complete');
 
       updateStep(3, 'active');
+      setTokenCount(0);
+      setGenerationStartTime(Date.now());
       
       // Build chat messages, including images for the latest user message
       const chatMessages = [...messages, userMessage].map((m, idx, arr) => {
@@ -1095,7 +1102,11 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             try {
               const parsed = JSON.parse(jsonStr);
               const content = parsed.choices?.[0]?.delta?.content;
-              if (content) fullResponse += content;
+              if (content) {
+                fullResponse += content;
+                // Estimate tokens: ~4 chars per token on average
+                setTokenCount(prev => prev + Math.ceil(content.length / 4));
+              }
             } catch {
               // Partial JSON, continue
             }
@@ -1104,6 +1115,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       }
 
       updateStep(3, 'complete');
+      setGenerationStartTime(null); // Stop the timer
       // Credits already deducted before AI call
 
       updateStep(4, 'active');
@@ -1686,11 +1698,13 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   );
                 })}
                 {isGenerating && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted rounded-xl px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating...
-                    </div>
+                  <div className="px-1">
+                    <GenerationProgress
+                      tokenCount={tokenCount}
+                      startTime={generationStartTime}
+                      isGenerating={isGenerating}
+                      estimatedTotalTokens={messages.length <= 1 ? 2000 : 1500}
+                    />
                   </div>
                 )}
               </div>
