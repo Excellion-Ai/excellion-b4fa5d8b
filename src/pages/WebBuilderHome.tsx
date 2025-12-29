@@ -121,14 +121,25 @@ const WebBuilderHome = () => {
     const structuredData = inputMode === 'interview' ? interview.structuredData : null;
     
     if (promptToUse.trim()) {
-      navigate("/secret-builder-hub", { 
-        state: { 
-          initialIdea: promptToUse, 
-          autoGenerate: true,
-          interviewData: structuredData
-        } 
-      });
+      const builderData = {
+        initialIdea: promptToUse,
+        autoGenerate: true,
+        interviewData: structuredData
+      };
+      
+      // If user is not signed in, store the data and redirect to auth
+      if (!user) {
+        sessionStorage.setItem('pendingBuilderData', JSON.stringify(builderData));
+        navigate("/auth?redirect=/secret-builder-hub");
+        return;
+      }
+      
+      navigate("/secret-builder-hub", { state: builderData });
     } else {
+      if (!user) {
+        navigate("/auth?redirect=/secret-builder-hub");
+        return;
+      }
       navigate("/secret-builder-hub");
     }
   };
