@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -32,6 +32,7 @@ import { SchemaVizPanel } from './SchemaVizPanel';
 import { ThreeDPanel } from './ThreeDPanel';
 import { SecurityScanPanel } from './SecurityScanPanel';
 import { RenameDialog } from './RenameDialog';
+import { IssuesPanel } from './IssuesPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -47,6 +48,14 @@ import { getPacksForIntegrations, mergeIntegrationPages, type IntegrationPack } 
 import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
+import { 
+  formatChatResponse,
+  convertViolationsToIssues,
+  parseStructuredMessage,
+  type VerbosityMode,
+  type ActionChip,
+  type BuilderIssue,
+} from '@/lib/chatResponseFormatter';
 import { 
   validateSpecAgainstScaffold, 
   INTEGRATION_TO_COMPONENT,
@@ -435,6 +444,12 @@ export function BuilderShell() {
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const fallbackForcedOnceRef = useRef<boolean>(false);
+  
+  // Chat response formatting state
+  const [verbosityMode, setVerbosityMode] = useState<VerbosityMode>('concise');
+  const [showIssuesPanel, setShowIssuesPanel] = useState(false);
+  const [currentIssues, setCurrentIssues] = useState<BuilderIssue[]>([]);
+  const [lastScaffold, setLastScaffold] = useState<GenerationScaffold | null>(null);
   
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
@@ -1162,10 +1177,18 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       
       updateStep(4, 'complete');
 
+      // Format the response using the new contract
+      const formattedResponse = formatChatResponse(newSiteSpec, lastScaffold, assistantText || '', verbosityMode);
+      
+      // Update issues state
+      const validationResult = validateSpecAgainstScaffold(newSiteSpec, lastScaffold);
+      const issues = convertViolationsToIssues(validationResult.violations);
+      setCurrentIssues(issues);
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: assistantText || 'Website generated! Check the preview on the right.',
+        content: formattedResponse.fullMessage || assistantText || 'Website generated! Check the preview on the right.',
         htmlCode: undefined,
       };
       const allMessages = [...messages, userMessage, assistantMessage];
@@ -1476,6 +1499,28 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   </svg>
                 </button>
                 <div className="h-4 w-px bg-border ml-auto shrink-0" />
+                
+                {/* Verbosity Toggle */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-6 text-xs gap-1 px-2">
+                      <span className="capitalize">{verbosityMode}</span>
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-28">
+                    {(['concise', 'normal', 'detailed'] as VerbosityMode[]).map((mode) => (
+                      <DropdownMenuItem
+                        key={mode}
+                        onClick={() => setVerbosityMode(mode)}
+                        className={`capitalize ${verbosityMode === mode ? 'bg-accent' : ''}`}
+                      >
+                        {mode}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <CreditBalance className="shrink-0" />
               </div>
             </div>
@@ -1489,43 +1534,142 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     </p>
                   </div>
                 )}
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
+                {messages.map((msg) => {
+                  const parsed = msg.role === 'assistant' ? parseStructuredMessage(msg.content) : null;
+                  
+                  return (
                     <div
-                      className={`max-w-[85%] rounded-xl px-4 py-2 text-sm ${
-                        msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground'
-                      }`}
+                      key={msg.id}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      {/* Show attachments if present */}
-                      {msg.attachments && msg.attachments.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {msg.attachments.map((att, idx) => (
-                            <div key={idx} className="relative">
-                              {att.type.startsWith('image/') && att.url ? (
-                                <img 
-                                  src={att.url} 
-                                  alt={att.name} 
-                                  className="max-h-32 max-w-full rounded-lg object-cover" 
-                                />
-                              ) : (
-                                <div className="flex items-center gap-1 bg-black/20 rounded px-2 py-1 text-xs">
-                                  <Upload className="h-3 w-3" />
-                                  <span className="truncate max-w-[100px]">{att.name}</span>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {msg.content}
+                      <div
+                        className={`max-w-[85%] rounded-xl px-4 py-2 text-sm ${
+                          msg.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-foreground'
+                        }`}
+                      >
+                        {/* Show attachments if present */}
+                        {msg.attachments && msg.attachments.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {msg.attachments.map((att, idx) => (
+                              <div key={idx} className="relative">
+                                {att.type.startsWith('image/') && att.url ? (
+                                  <img 
+                                    src={att.url} 
+                                    alt={att.name} 
+                                    className="max-h-32 max-w-full rounded-lg object-cover" 
+                                  />
+                                ) : (
+                                  <div className="flex items-center gap-1 bg-black/20 rounded px-2 py-1 text-xs">
+                                    <Upload className="h-3 w-3" />
+                                    <span className="truncate max-w-[100px]">{att.name}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Structured message rendering */}
+                        {parsed?.isStructured ? (
+                          <div className="space-y-2">
+                            {parsed.built && (
+                              <p><span className="font-semibold">Built:</span> {parsed.built}</p>
+                            )}
+                            {parsed.nextStep && (
+                              <p><span className="font-semibold">Next:</span> {parsed.nextStep}</p>
+                            )}
+                            {parsed.hasBlockers && (
+                              <div className="flex items-center gap-2 text-yellow-500 mt-2">
+                                <AlertTriangle className="h-4 w-4" />
+                                <span>Blocking issues: {parsed.blockerCount}</span>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 text-xs ml-auto"
+                                  onClick={() => setShowIssuesPanel(true)}
+                                >
+                                  Open Issues
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span>{msg.content}</span>
+                        )}
+                        
+                        {/* Action chips for assistant messages after generation */}
+                        {msg.role === 'assistant' && siteSpec && parsed?.isStructured && (
+                          <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-border/50">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                const themeEditorEl = document.querySelector('[data-theme-editor]');
+                                if (themeEditorEl) (themeEditorEl as HTMLButtonElement).click();
+                                else toast.info('Use the Theme button above to customize colors');
+                              }}
+                            >
+                              Change Theme
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                const heroSection = siteSpec.pages[currentPageIndex]?.sections?.find(s => s.type === 'hero');
+                                if (heroSection) {
+                                  setVisualEditsEnabled(true);
+                                  toast.success('Visual edits enabled - click the headline to edit');
+                                }
+                              }}
+                            >
+                              Improve Headline
+                            </Button>
+                            {!siteSpec.pages?.some(p => p.sections?.some(s => s.type === 'testimonials')) && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={() => {
+                                  editor.addSection({
+                                    id: `testimonials-${Date.now()}`,
+                                    type: 'testimonials',
+                                    label: 'Testimonials',
+                                    content: {
+                                      title: 'What Our Clients Say',
+                                      items: [
+                                        { name: 'Happy Client', role: 'Customer', quote: 'Amazing service! Highly recommend.' },
+                                        { name: 'Business Owner', role: 'Partner', quote: 'Professional and reliable.' },
+                                        { name: 'Regular User', role: 'Customer', quote: 'Great experience every time.' },
+                                      ],
+                                    },
+                                  });
+                                  toast.success('Added testimonials section');
+                                }}
+                              >
+                                Add Proof Section
+                              </Button>
+                            )}
+                            {currentIssues.length > 0 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs text-yellow-500 border-yellow-500/50"
+                                onClick={() => setShowIssuesPanel(true)}
+                              >
+                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                Fix Issues ({currentIssues.length})
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {isGenerating && (
                   <div className="flex justify-start">
                     <div className="bg-muted rounded-xl px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
@@ -2328,6 +2472,33 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             <span>?forceFallback=1 to test fallback</span>
           </div>
         </div>
+      )}
+      
+      {/* Issues Panel */}
+      {showIssuesPanel && (
+        <IssuesPanel
+          issues={currentIssues}
+          onClose={() => setShowIssuesPanel(false)}
+          onFixIssue={(issue) => {
+            if (issue.fixAction?.type === 'add_section' && issue.fixAction.payload?.sectionType) {
+              const sectionType = issue.fixAction.payload.sectionType as string;
+              editor.addSection({
+                id: `${sectionType}-${Date.now()}`,
+                type: sectionType as any,
+                label: sectionType.charAt(0).toUpperCase() + sectionType.slice(1),
+                content: { title: `${sectionType.charAt(0).toUpperCase() + sectionType.slice(1)} Section`, items: [] } as any,
+              });
+              setCurrentIssues(prev => prev.filter(i => i.id !== issue.id));
+              toast.success(`Added ${sectionType} section`);
+            } else if (issue.fixAction?.type === 'edit_content') {
+              setVisualEditsEnabled(true);
+              setShowIssuesPanel(false);
+              toast.info('Visual edits enabled - click content to edit');
+            } else {
+              toast.info('Fix this issue manually in the editor');
+            }
+          }}
+        />
       )}
     </div>
   );
