@@ -156,16 +156,23 @@ function extractFields(partial: string): SpeculativeResult | null {
     parsedFields.push('name');
   }
 
-  // Extract theme colors
+  // Extract theme colors - ONLY if we have BOTH primary and secondary
+  // to avoid setting incorrect defaults that block later updates
   const primaryMatch = partial.match(/"primaryColor"\s*:\s*"(#[a-fA-F0-9]{6})"/);
   const secondaryMatch = partial.match(/"secondaryColor"\s*:\s*"(#[a-fA-F0-9]{6})"/);
-  if (primaryMatch || secondaryMatch) {
+  const accentMatch = partial.match(/"accentColor"\s*:\s*"(#[a-fA-F0-9]{6})"/);
+  const backgroundMatch = partial.match(/"backgroundColor"\s*:\s*"(#[a-fA-F0-9]{6})"/);
+  const darkModeMatch = partial.match(/"darkMode"\s*:\s*(true|false)/);
+  
+  // Only set theme if we have at least the primary color
+  if (primaryMatch) {
     result.theme = {
-      primaryColor: primaryMatch?.[1] || '#3b82f6',
-      secondaryColor: secondaryMatch?.[1] || '#1e3a5f',
-      backgroundColor: '#0a0a0a',
-      textColor: '#ffffff',
-      darkMode: true,
+      primaryColor: primaryMatch[1],
+      secondaryColor: secondaryMatch?.[1] || primaryMatch[1], // Fallback to primary if no secondary
+      accentColor: accentMatch?.[1],
+      backgroundColor: backgroundMatch?.[1] || (darkModeMatch?.[1] === 'true' ? '#0a0a0a' : '#ffffff'),
+      textColor: darkModeMatch?.[1] === 'true' ? '#ffffff' : '#1f2937',
+      darkMode: darkModeMatch?.[1] === 'true',
       fontHeading: 'Inter',
       fontBody: 'Inter',
     };
@@ -211,7 +218,13 @@ export function mergeSpeculative(
 
   // Only update if speculative has more data
   if (!merged.name && speculative.name) merged.name = speculative.name;
-  if (!merged.theme && speculative.theme) merged.theme = speculative.theme;
+  
+  // ALWAYS update theme if speculative has one - this ensures custom colors 
+  // from the AI response override any early fallback defaults
+  if (speculative.theme) {
+    merged.theme = speculative.theme;
+  }
+  
   if (!merged.navigation && speculative.navigation) merged.navigation = speculative.navigation;
   if (!merged.footer && speculative.footer) merged.footer = speculative.footer;
   if (!merged.layoutStructure && speculative.layoutStructure) merged.layoutStructure = speculative.layoutStructure;

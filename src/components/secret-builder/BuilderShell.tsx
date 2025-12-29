@@ -1524,6 +1524,20 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         console.warn('[specFromChat] AI did not return valid JSON, using fallback generator');
         newSiteSpec = specFromChat(ideaToUse);
         
+        // Apply custom colors from scaffold if available (preserves user's color choice)
+        if (generationScaffold?.customTheme) {
+          const customTheme = generationScaffold.customTheme;
+          newSiteSpec.theme = {
+            ...newSiteSpec.theme,
+            primaryColor: customTheme.primaryColor || newSiteSpec.theme.primaryColor,
+            accentColor: customTheme.accentColor || newSiteSpec.theme.accentColor,
+            darkMode: customTheme.backgroundMode === 'dark',
+            backgroundColor: customTheme.backgroundMode === 'dark' ? '#0a0a0a' : '#ffffff',
+            textColor: customTheme.backgroundMode === 'dark' ? '#ffffff' : '#1f2937',
+          };
+          console.log('[specFromChat] Applied custom theme from scaffold:', customTheme);
+        }
+        
         // Log fallback details
         const fallbackPageMap: PageMap = {};
         for (const page of newSiteSpec.pages || []) {
