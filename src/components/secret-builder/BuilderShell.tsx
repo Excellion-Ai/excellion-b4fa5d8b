@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github, Scan, Eye, EyeOff } from 'lucide-react';
+import { DeviceFrame, DeviceSelector, type DeviceType } from './DeviceFrame';
+import { TouchTargetAnalyzer, useTouchTargetAnalysis } from './TouchTargetAnalyzer';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -475,9 +477,15 @@ export function BuilderShell() {
   const [speculativeSpec, setSpeculativeSpec] = useState<Partial<SiteSpec> | null>(null);
   const lastParseTokenRef = useRef(0);
   
+  // Device frame and responsive testing state
+  const [deviceType, setDeviceType] = useState<DeviceType>('none');
+  const [showSafeAreas, setShowSafeAreas] = useState(false);
+  const [showTouchZones, setShowTouchZones] = useState(false);
+  const { isAnalyzing: isTouchAnalyzing, startAnalysis: startTouchAnalysis, stopAnalysis: stopTouchAnalysis } = useTouchTargetAnalysis();
+  
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
-  
+
   // Credits system
   const { 
     balance: creditBalance, 
@@ -2173,7 +2181,7 @@ Regenerate the problematic sections with valid content.`;
               variant="ghost"
               size="icon"
               className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'desktop' ? 'bg-background shadow-sm' : ''}`}
-              onClick={() => setPreviewMode('desktop')}
+              onClick={() => { setPreviewMode('desktop'); setDeviceType('none'); }}
             >
               <Monitor className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
@@ -2181,7 +2189,7 @@ Regenerate the problematic sections with valid content.`;
               variant="ghost"
               size="icon"
               className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'tablet' ? 'bg-background shadow-sm' : ''}`}
-              onClick={() => setPreviewMode('tablet')}
+              onClick={() => { setPreviewMode('tablet'); setDeviceType('ipad'); }}
             >
               <Tablet className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
@@ -2189,12 +2197,53 @@ Regenerate the problematic sections with valid content.`;
               variant="ghost"
               size="icon"
               className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'mobile' ? 'bg-background shadow-sm' : ''}`}
-              onClick={() => setPreviewMode('mobile')}
+              onClick={() => { setPreviewMode('mobile'); setDeviceType('iphone-15'); }}
             >
               <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
-          {/* Model is auto-selected by the bot based on prompt complexity */}
+          
+          {/* Device Frame Selector - only show for mobile/tablet */}
+          {previewMode !== 'desktop' && (
+            <DeviceSelector
+              value={deviceType}
+              onChange={setDeviceType}
+              previewMode={previewMode}
+            />
+          )}
+          
+          {/* Responsive Testing Controls - only show for mobile/tablet */}
+          {previewMode !== 'desktop' && (
+            <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-6 w-6 sm:h-7 sm:w-7", showSafeAreas && "bg-blue-500/20 text-blue-500")}
+                onClick={() => setShowSafeAreas(!showSafeAreas)}
+                title="Toggle Safe Areas"
+              >
+                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-6 w-6 sm:h-7 sm:w-7", showTouchZones && "bg-green-500/20 text-green-500")}
+                onClick={() => setShowTouchZones(!showTouchZones)}
+                title="Toggle Touch Zones"
+              >
+                <MousePointer2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-6 w-6 sm:h-7 sm:w-7", isTouchAnalyzing && "bg-amber-500/20 text-amber-500")}
+                onClick={() => isTouchAnalyzing ? stopTouchAnalysis() : startTouchAnalysis()}
+                title="Analyze Touch Targets"
+              >
+                <Scan className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </Button>
+            </div>
+          )}
 
           {/* Undo/Redo buttons */}
           <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
@@ -2495,7 +2544,7 @@ Regenerate the problematic sections with valid content.`;
         </div>
 
         <div 
-          className="flex-1 bg-muted/30 p-4 overflow-hidden relative"
+          className="flex-1 bg-muted/30 p-4 overflow-hidden relative flex items-center justify-center"
           ref={previewContainerRef}
           onMouseMove={(e) => {
             if (projectId && previewContainerRef.current) {
@@ -2514,96 +2563,113 @@ Regenerate the problematic sections with valid content.`;
             containerRef={previewContainerRef as React.RefObject<HTMLElement>}
           />
           
-          <div className={`h-full mx-auto ${getPreviewWidth()} transition-all duration-300`}>
-            <div className="h-full bg-background rounded-xl shadow-lg overflow-hidden border border-border">
-              {generatedHtml ? (
-                <iframe
-                  srcDoc={generatedHtml}
-                  className="w-full h-full border-0"
-                  title="Generated Website Preview"
-                  sandbox="allow-scripts"
-                />
-              ) : siteSpec ? (
-                <SiteRendererErrorBoundary
-                  key={errorBoundaryKeyRef.current}
-                  siteName={siteSpec.name}
-                  onRetry={handleRetryRender}
-                  onHeal={healCode}
-                >
-                  <SiteRenderer 
-                    siteSpec={siteSpec}
-                    pageIndex={currentPageIndex}
-                    isLoading={isGenerating}
-                    onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
-                    onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
-                    onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
-                    onUpdateTestimonialsContent={visualEditsEnabled ? editor.updateTestimonialsContent : undefined}
-                    onUpdateTestimonialItem={visualEditsEnabled ? editor.updateTestimonialItem : undefined}
-                    onUpdatePricingContent={visualEditsEnabled ? editor.updatePricingContent : undefined}
-                    onUpdatePricingItem={visualEditsEnabled ? editor.updatePricingItem : undefined}
-                    onUpdateFAQContent={visualEditsEnabled ? editor.updateFAQContent : undefined}
-                    onUpdateFAQItem={visualEditsEnabled ? editor.updateFAQItem : undefined}
-                    onUpdateContactContent={visualEditsEnabled ? editor.updateContactContent : undefined}
-                    onUpdateCTAContent={visualEditsEnabled ? editor.updateCTAContent : undefined}
-                    onUpdateStatsContent={visualEditsEnabled ? editor.updateStatsContent : undefined}
-                    onUpdateStatsItem={visualEditsEnabled ? editor.updateStatsItem : undefined}
-                    onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
-                    onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
-                    onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
-                    onPageChange={setCurrentPageIndex}
-                    motionIntensity={motionIntensity}
-                    visualModeActive={visualEditsEnabled}
+          {/* Touch Target Analyzer */}
+          {isTouchAnalyzing && previewMode !== 'desktop' && (
+            <TouchTargetAnalyzer
+              containerRef={previewContainerRef as React.RefObject<HTMLElement>}
+              isActive={isTouchAnalyzing}
+              onClose={stopTouchAnalysis}
+            />
+          )}
+          
+          <DeviceFrame
+            deviceType={deviceType}
+            previewMode={previewMode}
+            showSafeAreas={showSafeAreas}
+            showTouchZones={showTouchZones}
+            className={previewMode === 'desktop' ? 'h-full w-full' : ''}
+          >
+            <div className={`${previewMode === 'desktop' ? 'h-full' : 'h-full'} mx-auto ${getPreviewWidth()} transition-all duration-300`}>
+              <div className="h-full bg-background rounded-xl shadow-lg overflow-hidden border border-border">
+                {generatedHtml ? (
+                  <iframe
+                    srcDoc={generatedHtml}
+                    className="w-full h-full border-0"
+                    title="Generated Website Preview"
+                    sandbox="allow-scripts"
                   />
-                </SiteRendererErrorBoundary>
-              ) : isGenerating && speculativeSpec && speculativeSpec.name ? (
-                // Speculative preview - show partial site as it generates
-                <div className="h-full relative">
-                  <div className="absolute top-2 right-2 z-10 flex items-center gap-2 bg-background/90 px-3 py-1.5 rounded-full border border-primary/30 shadow-lg">
-                    <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                    <span className="text-xs text-muted-foreground">Generating...</span>
+                ) : siteSpec ? (
+                  <SiteRendererErrorBoundary
+                    key={errorBoundaryKeyRef.current}
+                    siteName={siteSpec.name}
+                    onRetry={handleRetryRender}
+                    onHeal={healCode}
+                  >
+                    <SiteRenderer 
+                      siteSpec={siteSpec}
+                      pageIndex={currentPageIndex}
+                      isLoading={isGenerating}
+                      onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
+                      onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
+                      onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
+                      onUpdateTestimonialsContent={visualEditsEnabled ? editor.updateTestimonialsContent : undefined}
+                      onUpdateTestimonialItem={visualEditsEnabled ? editor.updateTestimonialItem : undefined}
+                      onUpdatePricingContent={visualEditsEnabled ? editor.updatePricingContent : undefined}
+                      onUpdatePricingItem={visualEditsEnabled ? editor.updatePricingItem : undefined}
+                      onUpdateFAQContent={visualEditsEnabled ? editor.updateFAQContent : undefined}
+                      onUpdateFAQItem={visualEditsEnabled ? editor.updateFAQItem : undefined}
+                      onUpdateContactContent={visualEditsEnabled ? editor.updateContactContent : undefined}
+                      onUpdateCTAContent={visualEditsEnabled ? editor.updateCTAContent : undefined}
+                      onUpdateStatsContent={visualEditsEnabled ? editor.updateStatsContent : undefined}
+                      onUpdateStatsItem={visualEditsEnabled ? editor.updateStatsItem : undefined}
+                      onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
+                      onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
+                      onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
+                      onPageChange={setCurrentPageIndex}
+                      motionIntensity={motionIntensity}
+                      visualModeActive={visualEditsEnabled}
+                    />
+                  </SiteRendererErrorBoundary>
+                ) : isGenerating && speculativeSpec && speculativeSpec.name ? (
+                  // Speculative preview - show partial site as it generates
+                  <div className="h-full relative">
+                    <div className="absolute top-2 right-2 z-10 flex items-center gap-2 bg-background/90 px-3 py-1.5 rounded-full border border-primary/30 shadow-lg">
+                      <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                      <span className="text-xs text-muted-foreground">Generating...</span>
+                    </div>
+                    <div className="h-full opacity-80">
+                      <SiteRendererErrorBoundary
+                        key={`speculative-${tokenCount}`}
+                        siteName={speculativeSpec.name || 'Generating...'}
+                        onRetry={() => {}}
+                        onHeal={() => {}}
+                      >
+                        <SiteRenderer 
+                          siteSpec={speculativeSpec as SiteSpec}
+                          pageIndex={0}
+                          isLoading={true}
+                          motionIntensity="off"
+                          visualModeActive={false}
+                          onPageChange={() => {}}
+                        />
+                      </SiteRendererErrorBoundary>
+                    </div>
                   </div>
-                  <div className="h-full opacity-80">
-                    <SiteRendererErrorBoundary
-                      key={`speculative-${tokenCount}`}
-                      siteName={speculativeSpec.name || 'Generating...'}
-                      onRetry={() => {}}
-                      onHeal={() => {}}
-                    >
-                      <SiteRenderer 
-                        siteSpec={speculativeSpec as SiteSpec}
-                        pageIndex={0}
-                        isLoading={true}
-                        motionIntensity="off"
-                        visualModeActive={false}
-                        onPageChange={() => {}}
-                      />
-                    </SiteRendererErrorBoundary>
+                ) : isGenerating ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center p-8">
+                      <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
+                      <p className="text-muted-foreground">
+                        Generating your website...
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-2">
+                        This usually takes 10-20 seconds
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ) : isGenerating ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
-                    <p className="text-muted-foreground">
-                      Generating your website...
-                    </p>
-                    <p className="text-xs text-muted-foreground/60 mt-2">
-                      This usually takes 10-20 seconds
-                    </p>
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center p-8">
+                      <Monitor className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                      <p className="text-muted-foreground">
+                        No site generated yet. Enter an idea to see a live preview.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <Monitor className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">
-                      No site generated yet. Enter an idea to see a live preview.
-                    </p>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          </DeviceFrame>
         </div>
         </div>
         </ResizablePanel>
