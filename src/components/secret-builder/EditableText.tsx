@@ -66,7 +66,7 @@ export function EditableText({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         className={cn(
-          'bg-transparent border-2 border-primary/50 rounded px-2 py-1 outline-none focus:border-primary w-full',
+          'bg-transparent border-2 border-blue-500/50 rounded px-2 py-1 outline-none focus:border-blue-500 w-full',
           multiline && 'min-h-[80px] resize-none',
           className
         )}
@@ -85,8 +85,8 @@ export function EditableText({
       className={cn(
         'cursor-pointer transition-all duration-150 rounded px-1 -mx-1',
         visualModeActive 
-          ? 'ring-2 ring-primary/40 ring-offset-2 bg-primary/5 hover:ring-primary/60 hover:bg-primary/10' 
-          : 'hover:ring-2 hover:ring-primary/30 hover:ring-offset-2',
+          ? 'ring-2 ring-blue-500/40 ring-offset-2 bg-blue-500/5 hover:ring-blue-500/60 hover:bg-blue-500/10' 
+          : 'hover:ring-2 hover:ring-blue-500/30 hover:ring-offset-2',
         className
       )}
       style={style}
@@ -102,7 +102,7 @@ export function EditableText({
           <TooltipTrigger asChild>
             {content}
           </TooltipTrigger>
-          <TooltipContent side="top" className="bg-primary text-primary-foreground text-xs">
+          <TooltipContent side="top" className="bg-blue-500 text-white text-xs border-blue-500">
             Click to edit • Free, no credits used
           </TooltipContent>
         </Tooltip>
