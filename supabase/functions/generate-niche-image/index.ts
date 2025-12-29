@@ -36,8 +36,8 @@ const IMAGE_TYPE_PROMPTS: Record<string, string> = {
   feature: "Icon-style or representative image for a feature/benefit. Simple, clear concept. NO TEXT, NO WORDS.",
 };
 
-// Helper to upload base64 image to storage
-async function uploadToStorage(imageData: string, supabaseUrl: string, serviceKey: string): Promise<string | null> {
+// Helper to upload base64 image to storage with user isolation
+async function uploadToStorage(imageData: string, supabaseUrl: string, serviceKey: string, userId: string): Promise<string | null> {
   try {
     if (!imageData.startsWith("data:image")) {
       return imageData; // Already a URL
@@ -54,7 +54,8 @@ async function uploadToStorage(imageData: string, supabaseUrl: string, serviceKe
     }
     const byteArray = new Uint8Array(byteNumbers);
     
-    const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+    // Store in user-specific folder for isolation
+    const fileName = `generated/${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("builder-images")
@@ -87,6 +88,21 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication to get user ID for storage isolation
+    const authHeader = req.headers.get("Authorization");
+    let userId: string | null = null;
+    
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (authHeader && supabaseUrl && serviceKey) {
+      const token = authHeader.replace("Bearer ", "");
+      const authClient = createClient(supabaseUrl, serviceKey);
+      const { data: { user } } = await authClient.auth.getUser(token);
+      userId = user?.id || null;
+      console.log(`[NICHE-IMAGE] User authenticated: ${userId}`);
+    }
+
     const { 
       businessName, 
       businessDescription, 
@@ -110,9 +126,6 @@ serve(async (req) => {
       console.error('[NICHE-IMAGE] LOVABLE_API_KEY not configured');
       throw new Error('LOVABLE_API_KEY is not configured');
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     // Determine niche style
     const nicheStyle = NICHE_PROMPT_STYLES[niche] || NICHE_PROMPT_STYLES.GENERIC;
@@ -192,9 +205,9 @@ Specific request: ${basePrompt}`;
       if (imageUrl) {
         console.log(`[NICHE-IMAGE] Got base64 image, uploading to storage...`);
         
-        // Upload to Supabase Storage for persistence
-        if (supabaseUrl && serviceKey) {
-          const persistedUrl = await uploadToStorage(imageUrl, supabaseUrl, serviceKey);
+        // Upload to Supabase Storage for persistence with user isolation
+        if (supabaseUrl && serviceKey && userId) {
+          const persistedUrl = await uploadToStorage(imageUrl, supabaseUrl, serviceKey, userId);
           if (persistedUrl) {
             images.push(persistedUrl);
             console.log(`[NICHE-IMAGE] Generated image ${i + 1}/${count} successfully: ${persistedUrl}`);
@@ -203,6 +216,10 @@ Specific request: ${basePrompt}`;
             images.push(imageUrl);
             console.log(`[NICHE-IMAGE] Storage upload failed, using base64 for image ${i + 1}/${count}`);
           }
+        } else if (supabaseUrl && serviceKey) {
+          // No userId - store in shared folder as fallback (for unauthenticated requests)
+          const persistedUrl = await uploadToStorage(imageUrl, supabaseUrl, serviceKey, 'shared');
+          images.push(persistedUrl || imageUrl);
         } else {
           images.push(imageUrl);
           console.log(`[NICHE-IMAGE] No storage config, using base64 for image ${i + 1}/${count}`);

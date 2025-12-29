@@ -45,9 +45,18 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
 
     setIsUploading(true);
     try {
+      // Get current user for user-specific logo storage
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      if (!userId) {
+        toast.error('Please log in to upload logos');
+        return;
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
-      const filePath = `logos/${fileName}`;
+      const filePath = `logos/${userId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('builder-images')

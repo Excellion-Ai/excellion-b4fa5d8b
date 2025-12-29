@@ -223,7 +223,8 @@ serve(async (req) => {
         }
         const byteArray = new Uint8Array(byteNumbers);
         
-        const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+        // Store in user-specific folder for isolation
+        const fileName = `generated/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("builder-images")
