@@ -21,6 +21,7 @@ import {
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
+import { SprintPassBar } from "@/components/SprintPassBar";
 import { AnimatedPlaceholder } from "@/components/AnimatedPlaceholder";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -202,6 +203,7 @@ const WebBuilderHome = () => {
         <title>Website Builder AI | Build Your Site with AI</title>
       </Helmet>
 
+      <SprintPassBar />
       <Navigation />
 
       {/* Hero Section */}

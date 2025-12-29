@@ -245,7 +245,7 @@ const BuilderPricing = () => {
           </div>
 
           {/* Sprint Pass Banner */}
-          <div className="mb-8 p-5 rounded-xl bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 max-w-3xl mx-auto">
+          <div id="sprint-pass" className="mb-8 p-5 rounded-xl bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 max-w-3xl mx-auto scroll-mt-24">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-accent/20">
