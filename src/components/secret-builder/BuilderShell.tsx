@@ -1572,7 +1572,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
   const fetchGeneratedImages = async () => {
     setIsLoadingImages(true);
     try {
-      // Get current user for user-specific image library
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
       
@@ -1583,30 +1582,45 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         return;
       }
 
-      // Fetch from images/ folder only (logos are stored separately in logos/)
-      const userFolder = `images/${userId}`;
-      console.log('[IMAGE-LIBRARY] Fetching images from:', userFolder);
-      
-      const { data, error } = await supabase.storage
-        .from('builder-images')
-        .list(userFolder, { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
-      
-      if (error) {
-        console.error('[IMAGE-LIBRARY] Storage list error:', error);
-        throw error;
-      }
-      
-      console.log('[IMAGE-LIBRARY] Raw storage response:', data);
-      
-      const images = (data || [])
-        .filter(file => !file.id?.includes('.emptyFolderPlaceholder') && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
-        .map(file => ({
-          name: file.name,
-          url: supabase.storage.from('builder-images').getPublicUrl(`${userFolder}/${file.name}`).data.publicUrl,
-        }));
-      
-      console.log('[IMAGE-LIBRARY] Filtered images:', images.length, images);
-      setGeneratedImages(images);
+      const allImages: { name: string; url: string }[] = [];
+
+      // Helper to fetch from a folder
+      const fetchFromFolder = async (folder: string) => {
+        const { data, error } = await supabase.storage
+          .from('builder-images')
+          .list(folder, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+        
+        if (error) {
+          console.log(`[IMAGE-LIBRARY] No files in ${folder}:`, error.message);
+          return;
+        }
+        
+        if (data) {
+          for (const file of data) {
+            if (file.name && !file.name.startsWith('.') && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+              const { data: urlData } = supabase.storage
+                .from('builder-images')
+                .getPublicUrl(`${folder}/${file.name}`);
+              
+              allImages.push({
+                name: file.name,
+                url: urlData.publicUrl,
+              });
+            }
+          }
+        }
+      };
+
+      // Fetch from all storage locations in parallel
+      console.log('[IMAGE-LIBRARY] Fetching from images/, logos/, and generated/ folders for user:', userId);
+      await Promise.all([
+        fetchFromFolder(`images/${userId}`),
+        fetchFromFolder(`logos/${userId}`),
+        fetchFromFolder(`generated/${userId}`), // Legacy folder
+      ]);
+
+      console.log('[IMAGE-LIBRARY] Found', allImages.length, 'total images across all folders');
+      setGeneratedImages(allImages);
     } catch (error) {
       console.error('Failed to fetch images:', error);
     } finally {
