@@ -1,10 +1,13 @@
 import { SiteSection, SiteTheme, PricingContent, PricingTier } from '@/types/app-spec';
 import { Check } from 'lucide-react';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
+import { EditableText } from '../EditableText';
 
 interface PricingSectionProps {
   section: SiteSection;
   theme: SiteTheme;
+  onUpdateContent?: (field: keyof PricingContent, value: string) => void;
+  onUpdateItem?: (index: number, field: keyof PricingTier, value: string | string[]) => void;
 }
 
 const defaultPlans: PricingTier[] = [
@@ -31,7 +34,7 @@ const defaultPlans: PricingTier[] = [
   },
 ];
 
-export function PricingSection({ section, theme }: PricingSectionProps) {
+export function PricingSection({ section, theme, onUpdateContent, onUpdateItem }: PricingSectionProps) {
   const content = section.content as PricingContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
@@ -50,26 +53,52 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
       <div className="w-full">
         <div className="text-center mb-8">
           <ScrollAnimation animation="fade-up">
-            <h2 
-              className="text-3xl md:text-4xl font-bold mb-4"
-              style={{ 
-                fontFamily: theme.fontHeading || 'system-ui',
-                color: isDark ? '#ffffff' : '#111827'
-              }}
-            >
-              {title}
-            </h2>
+            {onUpdateContent ? (
+              <EditableText
+                value={title}
+                onSave={(val) => onUpdateContent('title', val)}
+                as="h2"
+                className="text-3xl md:text-4xl font-bold mb-4"
+                style={{ 
+                  fontFamily: theme.fontHeading || 'system-ui',
+                  color: isDark ? '#ffffff' : '#111827'
+                }}
+              />
+            ) : (
+              <h2 
+                className="text-3xl md:text-4xl font-bold mb-4"
+                style={{ 
+                  fontFamily: theme.fontHeading || 'system-ui',
+                  color: isDark ? '#ffffff' : '#111827'
+                }}
+              >
+                {title}
+              </h2>
+            )}
           </ScrollAnimation>
           <ScrollAnimation animation="fade-up" delay={100}>
-            <p 
-              className="text-lg max-w-2xl mx-auto"
-              style={{ 
-                fontFamily: theme.fontBody || 'system-ui',
-                color: isDark ? '#9ca3af' : '#6b7280'
-              }}
-            >
-              {subtitle}
-            </p>
+            {onUpdateContent ? (
+              <EditableText
+                value={subtitle}
+                onSave={(val) => onUpdateContent('subtitle', val)}
+                as="p"
+                className="text-lg max-w-2xl mx-auto"
+                style={{ 
+                  fontFamily: theme.fontBody || 'system-ui',
+                  color: isDark ? '#9ca3af' : '#6b7280'
+                }}
+              />
+            ) : (
+              <p 
+                className="text-lg max-w-2xl mx-auto"
+                style={{ 
+                  fontFamily: theme.fontBody || 'system-ui',
+                  color: isDark ? '#9ca3af' : '#6b7280'
+                }}
+              >
+                {subtitle}
+              </p>
+            )}
           </ScrollAnimation>
         </div>
         
@@ -97,24 +126,49 @@ export function PricingSection({ section, theme }: PricingSectionProps) {
                   minWidth: '260px'
                 }}
               >
-                <h3 
-                  className="text-lg md:text-xl font-semibold mb-2"
-                  style={{ 
-                    fontFamily: theme.fontHeading || 'system-ui',
-                    color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
-                  }}
-                >
-                  {plan.name}
-                </h3>
-                <div className="mb-4 md:mb-6">
-                  <span 
-                    className="text-3xl md:text-4xl font-bold"
+                {onUpdateItem ? (
+                  <EditableText
+                    value={plan.name}
+                    onSave={(val) => onUpdateItem(index, 'name', val)}
+                    as="h3"
+                    className="text-lg md:text-xl font-semibold mb-2"
                     style={{ 
+                      fontFamily: theme.fontHeading || 'system-ui',
+                      color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
+                    }}
+                  />
+                ) : (
+                  <h3 
+                    className="text-lg md:text-xl font-semibold mb-2"
+                    style={{ 
+                      fontFamily: theme.fontHeading || 'system-ui',
                       color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
                     }}
                   >
-                    {plan.price}
-                  </span>
+                    {plan.name}
+                  </h3>
+                )}
+                <div className="mb-4 md:mb-6">
+                  {onUpdateItem ? (
+                    <EditableText
+                      value={plan.price}
+                      onSave={(val) => onUpdateItem(index, 'price', val)}
+                      as="span"
+                      className="text-3xl md:text-4xl font-bold"
+                      style={{ 
+                        color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
+                      }}
+                    />
+                  ) : (
+                    <span 
+                      className="text-3xl md:text-4xl font-bold"
+                      style={{ 
+                        color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
+                      }}
+                    >
+                      {plan.price}
+                    </span>
+                  )}
                   <span 
                     className="text-sm md:text-base"
                     style={{ 

@@ -1,10 +1,13 @@
 import { SiteSection, SiteTheme, TestimonialsContent, TestimonialItem } from '@/types/app-spec';
 import { Star } from 'lucide-react';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
+import { EditableText } from '../EditableText';
 
 interface TestimonialsSectionProps {
   section: SiteSection;
   theme: SiteTheme;
+  onUpdateContent?: (field: keyof TestimonialsContent, value: string) => void;
+  onUpdateItem?: (index: number, field: keyof TestimonialItem, value: string) => void;
 }
 
 const defaultTestimonials: TestimonialItem[] = [
@@ -28,19 +31,13 @@ const defaultTestimonials: TestimonialItem[] = [
   },
 ];
 
-export function TestimonialsSection({ section, theme }: TestimonialsSectionProps) {
+export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateItem }: TestimonialsSectionProps) {
   const content = section.content as TestimonialsContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
   const title = content?.title || section.label || 'What Our Customers Say';
   const subtitle = content?.subtitle || section.description || 'Trusted by thousands of happy customers';
   const items = content?.items || defaultTestimonials;
-
-  // Determine optimal column count based on number of items
-  const itemCount = items.length;
-  const gridCols = itemCount === 1 ? 'grid-cols-1' 
-    : itemCount === 2 ? 'grid-cols-1 md:grid-cols-2' 
-    : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
 
   return (
     <section 
@@ -53,30 +50,55 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
       <div className="w-full">
         <div className="text-center mb-6 md:mb-8">
           <ScrollAnimation animation="fade-up">
-            <h2 
-              className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
-              style={{ 
-                fontFamily: theme.fontHeading || 'system-ui',
-                color: isDark ? '#ffffff' : '#111827'
-              }}
-            >
-              {title}
-            </h2>
+            {onUpdateContent ? (
+              <EditableText
+                value={title}
+                onSave={(val) => onUpdateContent('title', val)}
+                as="h2"
+                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
+                style={{ 
+                  fontFamily: theme.fontHeading || 'system-ui',
+                  color: isDark ? '#ffffff' : '#111827'
+                }}
+              />
+            ) : (
+              <h2 
+                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
+                style={{ 
+                  fontFamily: theme.fontHeading || 'system-ui',
+                  color: isDark ? '#ffffff' : '#111827'
+                }}
+              >
+                {title}
+              </h2>
+            )}
           </ScrollAnimation>
           <ScrollAnimation animation="fade-up" delay={100}>
-            <p 
-              className="text-base md:text-lg max-w-2xl mx-auto px-4"
-              style={{ 
-                fontFamily: theme.fontBody || 'system-ui',
-                color: isDark ? '#9ca3af' : '#6b7280'
-              }}
-            >
-              {subtitle}
-            </p>
+            {onUpdateContent ? (
+              <EditableText
+                value={subtitle}
+                onSave={(val) => onUpdateContent('subtitle', val)}
+                as="p"
+                className="text-base md:text-lg max-w-2xl mx-auto px-4"
+                style={{ 
+                  fontFamily: theme.fontBody || 'system-ui',
+                  color: isDark ? '#9ca3af' : '#6b7280'
+                }}
+              />
+            ) : (
+              <p 
+                className="text-base md:text-lg max-w-2xl mx-auto px-4"
+                style={{ 
+                  fontFamily: theme.fontBody || 'system-ui',
+                  color: isDark ? '#9ca3af' : '#6b7280'
+                }}
+              >
+                {subtitle}
+              </p>
+            )}
           </ScrollAnimation>
         </div>
         
-        {/* Use CSS Grid with proper min-width to prevent narrow cards */}
         <div 
           className="grid gap-6 md:gap-8 w-full"
           style={{
@@ -108,16 +130,31 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
                     ))}
                   </div>
                 )}
-                <p 
-                  className="text-base md:text-lg mb-6 flex-grow leading-relaxed break-words"
-                  style={{ 
-                    fontFamily: theme.fontBody || 'system-ui',
-                    color: isDark ? '#d1d5db' : '#4b5563',
-                    overflowWrap: 'anywhere'
-                  }}
-                >
-                  "{testimonial.quote}"
-                </p>
+                {onUpdateItem ? (
+                  <EditableText
+                    value={testimonial.quote}
+                    onSave={(val) => onUpdateItem(index, 'quote', val)}
+                    as="p"
+                    multiline
+                    className="text-base md:text-lg mb-6 flex-grow leading-relaxed break-words"
+                    style={{ 
+                      fontFamily: theme.fontBody || 'system-ui',
+                      color: isDark ? '#d1d5db' : '#4b5563',
+                      overflowWrap: 'anywhere'
+                    }}
+                  />
+                ) : (
+                  <p 
+                    className="text-base md:text-lg mb-6 flex-grow leading-relaxed break-words"
+                    style={{ 
+                      fontFamily: theme.fontBody || 'system-ui',
+                      color: isDark ? '#d1d5db' : '#4b5563',
+                      overflowWrap: 'anywhere'
+                    }}
+                  >
+                    "{testimonial.quote}"
+                  </p>
+                )}
                 <div className="flex items-center gap-3 mt-auto pt-4 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}>
                   <div 
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0"
@@ -126,23 +163,49 @@ export function TestimonialsSection({ section, theme }: TestimonialsSectionProps
                     {testimonial.name.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    <p 
-                      className="font-semibold text-sm truncate"
-                      style={{ 
-                        fontFamily: theme.fontHeading || 'system-ui',
-                        color: isDark ? '#ffffff' : '#111827'
-                      }}
-                    >
-                      {testimonial.name}
-                    </p>
-                    <p 
-                      className="text-xs truncate"
-                      style={{ 
-                        color: isDark ? '#9ca3af' : '#6b7280'
-                      }}
-                    >
-                      {testimonial.role}
-                    </p>
+                    {onUpdateItem ? (
+                      <>
+                        <EditableText
+                          value={testimonial.name}
+                          onSave={(val) => onUpdateItem(index, 'name', val)}
+                          as="p"
+                          className="font-semibold text-sm truncate"
+                          style={{ 
+                            fontFamily: theme.fontHeading || 'system-ui',
+                            color: isDark ? '#ffffff' : '#111827'
+                          }}
+                        />
+                        <EditableText
+                          value={testimonial.role}
+                          onSave={(val) => onUpdateItem(index, 'role', val)}
+                          as="p"
+                          className="text-xs truncate"
+                          style={{ 
+                            color: isDark ? '#9ca3af' : '#6b7280'
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <p 
+                          className="font-semibold text-sm truncate"
+                          style={{ 
+                            fontFamily: theme.fontHeading || 'system-ui',
+                            color: isDark ? '#ffffff' : '#111827'
+                          }}
+                        >
+                          {testimonial.name}
+                        </p>
+                        <p 
+                          className="text-xs truncate"
+                          style={{ 
+                            color: isDark ? '#9ca3af' : '#6b7280'
+                          }}
+                        >
+                          {testimonial.role}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
