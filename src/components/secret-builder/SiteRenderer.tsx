@@ -164,8 +164,21 @@ export function SiteRenderer({
     );
   }
 
-  const { theme, pages, navigation, footer, layoutStructure } = siteSpec;
-  const currentPage = pages[pageIndex] || pages[0];
+  const { theme, pages = [], navigation = [], footer, layoutStructure } = siteSpec;
+  const currentPage = pages.length > 0 ? (pages[pageIndex] || pages[0]) : null;
+  
+  // Show loading state if pages haven't been parsed yet during streaming
+  if (!currentPage) {
+    return (
+      <div className="h-full flex items-center justify-center bg-muted/20">
+        <div className="text-center space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <p className="text-sm text-muted-foreground">Building your pages...</p>
+        </div>
+      </div>
+    );
+  }
+  
   const legacyTheme = toSectionTheme(theme);
   const isEditable = !!onUpdateHeroContent;
 
@@ -312,7 +325,8 @@ export function SiteRenderer({
     );
   };
 
-  const sectionIds = currentPage?.sections?.map((s) => s.id) || [];
+  const sections = currentPage.sections ?? [];
+  const sectionIds = sections.map((s) => s.id);
 
   // Determine layout type
   const useBentoLayout = layoutStructure === 'bento';

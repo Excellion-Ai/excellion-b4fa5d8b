@@ -124,6 +124,12 @@ function attemptRepair(partial: string): SpeculativeResult | null {
     if (hasName && hasTheme) confidence = 'medium';
     if (hasCompletePage) confidence = 'high';
 
+    // Only return specs that have valid pages to prevent blank page rendering
+    // Low confidence specs without pages should wait for more data
+    if (!hasPages && confidence === 'low') {
+      return null;
+    }
+
     return {
       spec: parsed as Partial<SiteSpec>,
       confidence,
