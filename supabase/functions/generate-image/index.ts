@@ -126,7 +126,7 @@ serve(async (req) => {
 
     console.log("Authenticated user:", user.id);
 
-    const { prompt, width = 1024, height = 1024, referenceImage } = await req.json();
+    const { prompt, width = 1024, height = 1024, referenceImage, type = 'image' } = await req.json();
 
     if (!prompt) {
       return new Response(
@@ -223,8 +223,9 @@ serve(async (req) => {
         }
         const byteArray = new Uint8Array(byteNumbers);
         
-        // Store in user-specific folder for isolation
-        const fileName = `generated/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+        // Determine folder based on type parameter (logo vs image)
+        const assetType = type === 'logo' ? 'logos' : 'images';
+        const fileName = `${assetType}/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("builder-images")
