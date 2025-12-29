@@ -1449,9 +1449,21 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
   const fetchGeneratedImages = async () => {
     setIsLoadingImages(true);
     try {
+      // Get current user for user-specific image library
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      if (!userId) {
+        console.log('No user session, skipping image fetch');
+        setGeneratedImages([]);
+        setIsLoadingImages(false);
+        return;
+      }
+
+      const userFolder = `generated/${userId}`;
       const { data, error } = await supabase.storage
         .from('builder-images')
-        .list('generated', { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
+        .list(userFolder, { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
       
       if (error) throw error;
       
@@ -1459,7 +1471,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         .filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
         .map(file => ({
           name: file.name,
-          url: supabase.storage.from('builder-images').getPublicUrl(`generated/${file.name}`).data.publicUrl,
+          url: supabase.storage.from('builder-images').getPublicUrl(`${userFolder}/${file.name}`).data.publicUrl,
         }));
       
       setGeneratedImages(images);
