@@ -23,16 +23,25 @@ const PLAN_CREDITS: Record<string, number> = {
   agency: 500,
 };
 
+const PRICE_TO_PLAN: Record<string, string> = {
+  "price_1RY11AIoRCjttqsGnCkZYtxU": "starter",
+  "price_1RY11AIoRCjttqsGjwsmBp1E": "pro",
+  "price_1RY11AIoRCjttqsG87OIrPUB": "agency",
+  "price_starter_annual": "starter",
+  "price_pro_annual": "pro",
+  "price_agency_annual": "agency",
+};
+
 const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREDIT-ROLLOVER] ${step}${detailsStr}`);
 };
 
-async function grantMonthlyCredits(userId: string, plan: string) {
+async function grantMonthlyCredits(userId: string, plan: string, email: string) {
   const credits = PLAN_CREDITS[plan];
   if (!credits) {
     logStep("Unknown plan, skipping", { userId, plan });
-    return;
+    return false;
   }
 
   const { data: currentCredits, error: fetchError } = await supabaseAdmin
@@ -43,7 +52,7 @@ async function grantMonthlyCredits(userId: string, plan: string) {
 
   if (fetchError) {
     logStep("Error fetching credits", { userId, error: fetchError.message });
-    return;
+    return false;
   }
 
   const newBalance = (currentCredits?.balance || 0) + credits;
@@ -54,13 +63,14 @@ async function grantMonthlyCredits(userId: string, plan: string) {
     .update({ 
       balance: newBalance, 
       total_earned: newTotalEarned,
+      current_plan: plan,
       updated_at: new Date().toISOString()
     })
     .eq("user_id", userId);
 
   if (updateError) {
     logStep("Error updating credits", { userId, error: updateError.message });
-    return;
+    return false;
   }
 
   const { error: txError } = await supabaseAdmin
@@ -69,37 +79,41 @@ async function grantMonthlyCredits(userId: string, plan: string) {
       user_id: userId,
       amount: credits,
       type: "earned",
-      action_type: "monthly_rollover",
-      description: `Monthly ${plan} plan credit allocation`,
+      action_type: "monthly_allocation",
+      description: `Monthly ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan credit allocation`,
     });
 
   if (txError) {
     logStep("Error logging transaction", { userId, error: txError.message });
   }
 
-  logStep("Credits granted", { userId, plan, credits, newBalance });
+  logStep("Credits granted", { email, plan, credits, newBalance });
+  return true;
 }
 
 async function checkAndExpireSprintPasses() {
   logStep("Checking for expired Sprint Passes");
 
+  const now = new Date().toISOString();
   const { data: expiredSprints, error } = await supabaseAdmin
     .from("user_credits")
     .select("user_id")
-    .eq("current_plan", "pro")
     .eq("sprint_pass_used", true)
-    .lt("sprint_expires_at", new Date().toISOString());
+    .not("sprint_expires_at", "is", null)
+    .lt("sprint_expires_at", now);
 
   if (error) {
     logStep("Error fetching expired sprints", { error: error.message });
-    return;
+    return 0;
   }
 
+  let expiredCount = 0;
   for (const record of expiredSprints || []) {
     const { error: updateError } = await supabaseAdmin
       .from("user_credits")
       .update({ 
         current_plan: "free",
+        sprint_expires_at: null,
         updated_at: new Date().toISOString()
       })
       .eq("user_id", record.user_id);
@@ -107,54 +121,34 @@ async function checkAndExpireSprintPasses() {
     if (updateError) {
       logStep("Error expiring sprint", { userId: record.user_id, error: updateError.message });
     } else {
-      logStep("Sprint Pass expired", { userId: record.user_id });
+      logStep("Sprint Pass expired, downgraded to free", { userId: record.user_id });
+      expiredCount++;
     }
   }
+
+  return expiredCount;
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+async function syncSubscriptionsAndGrantCredits() {
+  logStep("Starting subscription sync and credit allocation");
+
+  const { data: allUsers, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+  if (usersError) {
+    logStep("Error fetching users", { error: usersError.message });
+    return { granted: 0, downgraded: 0, errors: 1 };
   }
 
-  logStep("Starting credit rollover job");
+  let granted = 0;
+  let downgraded = 0;
+  let errors = 0;
 
-  try {
-    await checkAndExpireSprintPasses();
+  for (const user of allUsers?.users || []) {
+    if (!user.email) continue;
 
-    const { data: paidUsers, error: fetchError } = await supabaseAdmin
-      .from("user_credits")
-      .select("user_id, current_plan")
-      .in("current_plan", ["starter", "pro", "agency"]);
-
-    if (fetchError) {
-      logStep("Error fetching paid users", { error: fetchError.message });
-      return new Response(JSON.stringify({ error: fetchError.message }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      });
-    }
-
-    logStep("Found paid users", { count: paidUsers?.length || 0 });
-
-    const { data: allUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const emailToId = new Map(allUsers?.users.map(u => [u.email, u.id]) || []);
-
-    let processed = 0;
-    let skipped = 0;
-
-    for (const userCredit of paidUsers || []) {
-      const user = allUsers?.users.find(u => u.id === userCredit.user_id);
-      if (!user?.email) {
-        logStep("No email for user", { userId: userCredit.user_id });
-        skipped++;
-        continue;
-      }
-
+    try {
       const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      
       if (customers.data.length === 0) {
-        logStep("No Stripe customer", { email: user.email });
-        skipped++;
         continue;
       }
 
@@ -165,33 +159,99 @@ serve(async (req) => {
         limit: 1,
       });
 
+      const { data: userCredits } = await supabaseAdmin
+        .from("user_credits")
+        .select("current_plan, sprint_pass_used, sprint_expires_at")
+        .eq("user_id", user.id)
+        .single();
+
       if (subscriptions.data.length === 0) {
-        logStep("No active subscription, downgrading", { email: user.email });
-        await supabaseAdmin
-          .from("user_credits")
-          .update({ current_plan: "free", updated_at: new Date().toISOString() })
-          .eq("user_id", userCredit.user_id);
-        skipped++;
+        if (userCredits?.current_plan && userCredits.current_plan !== "free") {
+          if (userCredits.sprint_pass_used && userCredits.sprint_expires_at) {
+            const sprintExpires = new Date(userCredits.sprint_expires_at);
+            if (sprintExpires > new Date()) {
+              continue;
+            }
+          }
+          
+          await supabaseAdmin
+            .from("user_credits")
+            .update({ current_plan: "free", updated_at: new Date().toISOString() })
+            .eq("user_id", user.id);
+          
+          logStep("No active subscription, downgraded to free", { email: user.email });
+          downgraded++;
+        }
         continue;
       }
 
-      processed++;
-    }
+      const subscription = subscriptions.data[0];
+      const priceId = subscription.items.data[0]?.price?.id;
+      const plan = PRICE_TO_PLAN[priceId || ""] || null;
 
-    logStep("Credit rollover complete", { processed, skipped });
+      if (!plan) {
+        logStep("Unknown price ID", { email: user.email, priceId });
+        continue;
+      }
+
+      const success = await grantMonthlyCredits(user.id, plan, user.email);
+      if (success) {
+        granted++;
+      } else {
+        errors++;
+      }
+    } catch (err) {
+      logStep("Error processing user", { email: user.email, error: (err as Error).message });
+      errors++;
+    }
+  }
+
+  return { granted, downgraded, errors };
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const startTime = Date.now();
+  logStep("Starting monthly credit rollover job");
+
+  try {
+    const expiredSprints = await checkAndExpireSprintPasses();
+    logStep("Sprint Pass expiration check complete", { expired: expiredSprints });
+
+    const { granted, downgraded, errors } = await syncSubscriptionsAndGrantCredits();
+
+    const duration = Date.now() - startTime;
+    logStep("Credit rollover complete", { 
+      granted, 
+      downgraded, 
+      expiredSprints,
+      errors,
+      durationMs: duration 
+    });
 
     return new Response(JSON.stringify({ 
-      success: true, 
-      processed, 
-      skipped,
+      success: true,
+      summary: {
+        creditsGranted: granted,
+        usersDowngraded: downgraded,
+        sprintPassesExpired: expiredSprints,
+        errors,
+      },
+      durationMs: duration,
       timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (err) {
-    logStep("Error in rollover job", { error: (err as Error).message });
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    logStep("Fatal error in rollover job", { error: (err as Error).message });
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: (err as Error).message 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
