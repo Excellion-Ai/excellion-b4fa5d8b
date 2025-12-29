@@ -55,6 +55,7 @@ import {
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import { ImprovedPromptModal } from '@/components/secret-builder/ImprovedPromptModal';
+import { ImageLibraryDialog } from '@/components/secret-builder/ImageLibraryDialog';
 import { refinePrompt, getAutoImproveEnabled, setAutoImproveEnabled, type RefinerMeta } from '@/lib/promptRefiner';
 import {
   DropdownMenu,
@@ -1535,87 +1536,14 @@ export default function SecretBuilderHub() {
       </Dialog>
 
       {/* AI Image Library Dialog */}
-      <Dialog open={imageLibraryOpen} onOpenChange={setImageLibraryOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Image className="w-5 h-5" />
-              AI Image Library
-            </DialogTitle>
-          </DialogHeader>
-          
-          <ScrollArea className="flex-1 -mx-6 px-6">
-            {isLoadingImages ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : generatedImages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                  <Image className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-medium mb-2">No images yet</h3>
-                <p className="text-sm text-muted-foreground max-w-sm">
-                  AI-generated images and logos will appear here. Start creating in the builder!
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-4">
-                {generatedImages.map((image, index) => (
-                  <div
-                    key={`${image.name}-${index}`}
-                    className="group relative aspect-square rounded-lg overflow-hidden border border-border bg-muted/50"
-                  >
-                    <img
-                      src={image.url}
-                      alt={image.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    
-                    {/* Type Badge */}
-                    <Badge 
-                      className={`absolute top-2 left-2 text-[10px] ${
-                        image.type === 'logo' 
-                          ? 'bg-violet-500/90 text-white' 
-                          : 'bg-blue-500/90 text-white'
-                      }`}
-                    >
-                      {image.type === 'logo' ? 'Logo' : 'Image'}
-                    </Badge>
-                    
-                    {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="h-8 text-xs"
-                          onClick={() => handleCopyImageUrl(image.url)}
-                        >
-                          <Link className="w-3 h-3 mr-1" />
-                          Copy URL
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="h-8 text-xs"
-                          onClick={() => handleDeleteImage(image.name, image.type)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                      <span className="text-[10px] text-white/70 mt-1">
-                        {image.createdAt.toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      <ImageLibraryDialog
+        open={imageLibraryOpen}
+        onOpenChange={setImageLibraryOpen}
+        images={generatedImages}
+        isLoading={isLoadingImages}
+        onRefresh={fetchGeneratedImages}
+        onDelete={handleDeleteImage}
+      />
 
       {/* Improved Prompt Modal */}
       <ImprovedPromptModal
