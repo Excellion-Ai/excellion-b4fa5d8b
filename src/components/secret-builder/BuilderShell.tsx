@@ -52,6 +52,7 @@ import { getPacksForIntegrations, mergeIntegrationPages, type IntegrationPack } 
 import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
+import { speculativeParse, shouldAttemptParse, mergeSpeculative } from '@/lib/speculativeParser';
 import { cn } from '@/lib/utils';
 import { 
   formatChatResponse,
@@ -471,6 +472,8 @@ export function BuilderShell() {
   // Generation progress tracking
   const [tokenCount, setTokenCount] = useState(0);
   const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
+  const [speculativeSpec, setSpeculativeSpec] = useState<Partial<SiteSpec> | null>(null);
+  const lastParseTokenRef = useRef(0);
   
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
@@ -1290,6 +1293,11 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       const decoder = new TextDecoder();
       let fullResponse = '';
       let textBuffer = '';
+      let currentTokenCount = 0;
+
+      // Reset speculative state for new generation
+      lastParseTokenRef.current = 0;
+      setSpeculativeSpec(null);
 
       if (reader) {
         while (true) {
@@ -1316,7 +1324,25 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               if (content) {
                 fullResponse += content;
                 // Estimate tokens: ~4 chars per token on average
-                setTokenCount(prev => prev + Math.ceil(content.length / 4));
+                const newTokens = Math.ceil(content.length / 4);
+                currentTokenCount += newTokens;
+                setTokenCount(currentTokenCount);
+                
+                // Speculative parsing: attempt to parse partial JSON during stream
+                if (shouldAttemptParse(currentTokenCount, lastParseTokenRef.current)) {
+                  const speculativeResult = speculativeParse(fullResponse, currentTokenCount);
+                  if (speculativeResult && speculativeResult.spec) {
+                    lastParseTokenRef.current = currentTokenCount;
+                    setSpeculativeSpec(prev => 
+                      prev ? mergeSpeculative(prev, speculativeResult.spec!) : speculativeResult.spec
+                    );
+                    console.log('[SPECULATIVE]', {
+                      confidence: speculativeResult.confidence,
+                      fields: speculativeResult.parsedFields,
+                      tokens: currentTokenCount,
+                    });
+                  }
+                }
               }
             } catch {
               // Partial JSON, continue
@@ -1324,6 +1350,9 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           }
         }
       }
+
+      // Clear speculative spec once we have final result
+      setSpeculativeSpec(null);
 
       updateStep(3, 'complete');
       setGenerationStartTime(null); // Stop the timer
@@ -2010,6 +2039,7 @@ Regenerate the problematic sections with valid content.`;
                       startTime={generationStartTime}
                       isGenerating={isGenerating}
                       estimatedTotalTokens={messages.length <= 1 ? 2000 : 1500}
+                      speculativeSpec={speculativeSpec}
                     />
                   </div>
                 )}
@@ -2525,6 +2555,31 @@ Regenerate the problematic sections with valid content.`;
                     visualModeActive={visualEditsEnabled}
                   />
                 </SiteRendererErrorBoundary>
+              ) : isGenerating && speculativeSpec && speculativeSpec.name ? (
+                // Speculative preview - show partial site as it generates
+                <div className="h-full relative">
+                  <div className="absolute top-2 right-2 z-10 flex items-center gap-2 bg-background/90 px-3 py-1.5 rounded-full border border-primary/30 shadow-lg">
+                    <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                    <span className="text-xs text-muted-foreground">Generating...</span>
+                  </div>
+                  <div className="h-full opacity-80">
+                    <SiteRendererErrorBoundary
+                      key={`speculative-${tokenCount}`}
+                      siteName={speculativeSpec.name || 'Generating...'}
+                      onRetry={() => {}}
+                      onHeal={() => {}}
+                    >
+                      <SiteRenderer 
+                        siteSpec={speculativeSpec as SiteSpec}
+                        pageIndex={0}
+                        isLoading={true}
+                        motionIntensity="off"
+                        visualModeActive={false}
+                        onPageChange={() => {}}
+                      />
+                    </SiteRendererErrorBoundary>
+                  </div>
+                </div>
               ) : isGenerating ? (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center p-8">

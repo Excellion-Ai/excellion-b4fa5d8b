@@ -273,25 +273,36 @@ setInterval(() => {
 }, 60000);
 
 // ULTRA-FAST MODE: Minimized prompt for sub-10s first byte
-const FAST_SYSTEM_PROMPT = `Website builder AI. Output SiteSpec JSON only.
+// Optimized for streaming: outputs sections sequentially for speculative rendering
+const FAST_SYSTEM_PROMPT = `Website builder AI. Output SiteSpec JSON only. Start with name/theme IMMEDIATELY for fast preview.
 
 BANNED: "Excellion", "website builder", "hosting", "export", "code ownership", meta-references.
 
+OUTPUT ORDER (for streaming):
+1. name + theme FIRST (enables early preview)
+2. navigation 
+3. pages array with sections
+4. footer LAST
+
 FORMAT:
 \`\`\`json
-{"name":"Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","fontFamily":"Sans"},"layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
+{"name":"Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","backgroundColor":"#0a0a0a","textColor":"#ffffff","darkMode":true,"fontHeading":"Inter","fontBody":"Inter"},"businessModel":"SERVICE_BASED","layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
 \`\`\`
 
 SECTIONS: hero, features, testimonials, pricing, faq, contact, cta, stats
-- hero: {headline, subheadline, ctas:[{label,href,variant}], backgroundImage:"GENERATE: scene - NO TEXT"}
-- features: {title, items:[{title,description,icon}]} (4 or 6 items)
-- testimonials: {title, items:[{name:"Customer Name",role,quote:"Add review here",rating}]}
+- hero: {headline, subheadline, ctas:[{label,href,variant:"primary"}], backgroundImage:"GENERATE: scene - NO TEXT"}
+- features: {title, items:[{title,description,icon}]} (4-6 items, icons: Star,Zap,Shield,Clock,CheckCircle,Award,Heart,Target,Lightbulb,Rocket)
+- testimonials: {title, items:[{name:"Customer Name",role:"",quote:"Add review here",rating:5}]}
 - faq: {title, items:[{question,answer}]} - about USER'S business only
 - contact: {title, formFields:["name","email","message"]}
 
 COLORS: Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6, Salon=#be185d, Construction=#ca8a04, Fitness=#dc2626, RealEstate=#0d9488, Default=#2563eb
 
-RULES: Industry-specific content only. Home page max 5 sections. GENERATE: prefix for images (NO TEXT in images).`;
+RULES: 
+- Industry-specific content only
+- Home page max 5 sections
+- GENERATE: prefix for images (NO TEXT in images)
+- Output name+theme first for progressive rendering`;
 
 
 const SYSTEM_PROMPT = `ACT AS: A friendly, helpful website builder assistant for "Excellion AI."
