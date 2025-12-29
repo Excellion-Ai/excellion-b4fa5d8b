@@ -272,55 +272,26 @@ setInterval(() => {
   }
 }, 60000);
 
-// FAST MODE: Condensed prompt for speed (under 60 seconds)
-const FAST_SYSTEM_PROMPT = `You are a website builder AI. Generate a SiteSpec JSON for the USER'S BUSINESS.
+// ULTRA-FAST MODE: Minimized prompt for sub-10s first byte
+const FAST_SYSTEM_PROMPT = `Website builder AI. Output SiteSpec JSON only.
 
-CRITICAL RULE - NEVER INCLUDE:
-- Content about "Excellion", "website builder", "code ownership", "export", "hosting", "uptime SLA", "support response times"
-- Any meta-references to the tool building the website
-- Generic SaaS features unless the user IS building a SaaS product
-- FAQs about website building, code, or technical infrastructure
+BANNED: "Excellion", "website builder", "hosting", "export", "code ownership", meta-references.
 
-ALL CONTENT MUST BE 100% RELEVANT TO THE USER'S ACTUAL BUSINESS.
-
-OUTPUT FORMAT: 
+FORMAT:
 \`\`\`json
-{"name":"Business Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","fontFamily":"Sans"},"layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
+{"name":"Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","fontFamily":"Sans"},"layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
 \`\`\`
 
-SECTION TYPES: hero, features, testimonials, pricing, faq, contact, cta, stats
-- hero: {headline, subheadline, ctas:[{label,href,variant}], backgroundImage:"GENERATE: visual description - NO TEXT IN IMAGE"}
-- features: {title, items:[{title,description,icon}]} (4-6 items)
-- testimonials: {title, items:[{name,role,quote,rating}]} - USE TEMPLATE PLACEHOLDERS, not fake reviews (see below)
-- pricing: {title, items:[{name,price,features:[],ctaText,highlighted}]}
-- faq: {title, items:[{question,answer}]} - MUST be about the USER'S BUSINESS, not about websites
-- contact: {title, email, phone, formFields:["name","email","message"]}
+SECTIONS: hero, features, testimonials, pricing, faq, contact, cta, stats
+- hero: {headline, subheadline, ctas:[{label,href,variant}], backgroundImage:"GENERATE: scene - NO TEXT"}
+- features: {title, items:[{title,description,icon}]} (4 or 6 items)
+- testimonials: {title, items:[{name:"Customer Name",role,quote:"Add review here",rating}]}
+- faq: {title, items:[{question,answer}]} - about USER'S business only
+- contact: {title, formFields:["name","email","message"]}
 
-IMAGE GENERATION RULE:
-When using "GENERATE: description", describe ONLY the visual scene - NO TEXT should appear in images.
-Example: "GENERATE: professional office team collaborating at modern desk, warm lighting" (NOT "GENERATE: hero banner with headline")
-All text (headlines, buttons, captions) will be rendered as separate HTML elements that users can edit.
+COLORS: Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6, Salon=#be185d, Construction=#ca8a04, Fitness=#dc2626, RealEstate=#0d9488, Default=#2563eb
 
-COLORS BY INDUSTRY:
-- Restaurant/Food: #dc2626 (red)
-- Health/Medical: #0891b2 (teal)
-- Legal: #1e3a5f (navy)
-- Tech/SaaS: #3b82f6 (blue)
-- Salon/Spa: #be185d (pink)
-- Construction: #ca8a04 (yellow)
-- Fitness: #dc2626 (red)
-- Real Estate: #0d9488 (teal)
-- Coaching/Education: #7c3aed (purple)
-- Default: #2563eb (blue)
-
-RULES:
-1. Generate industry-specific content, NEVER generic placeholders
-2. Use GENERATE: prefix for images with detailed descriptions
-3. Home page: max 5 sections
-4. Navigation links use paths (/, /about, /contact)
-5. 4 or 6 feature items, never 3 or 5
-6. FAQs must be about the USER'S BUSINESS (e.g., coaching FAQs for coaches, not website FAQs)
-7. TESTIMONIALS MUST BE TEMPLATES - use placeholder names like "Customer Name", "Your Client", "Happy Customer" with quotes like "Add your customer review here" or "Your testimonial goes here - connect Google Reviews to display real feedback"`;
+RULES: Industry-specific content only. Home page max 5 sections. GENERATE: prefix for images (NO TEXT in images).`;
 
 
 const SYSTEM_PROMPT = `ACT AS: A friendly, helpful website builder assistant for "Excellion AI."
@@ -1210,10 +1181,10 @@ ${kbEntries.map((entry: { name: string; content: string }) => `### ${entry.name}
       
       const urls = textContent.match(URL_REGEX);
       if (urls && urls.length > 0) {
-        console.log(`[BOT-CHAT:${requestId}] Found URL, extracting (3s timeout): ${urls[0]}`);
+        console.log(`[BOT-CHAT:${requestId}] Found URL, extracting (2s timeout): ${urls[0]}`);
         const extractionPromise = extractFromUrl(urls[0]);
         const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) => 
-          setTimeout(() => resolve({ success: false, error: 'URL extraction timeout' }), 3000)
+          setTimeout(() => resolve({ success: false, error: 'URL extraction timeout' }), 2000)
         );
         const extraction = await Promise.race([extractionPromise, timeoutPromise]);
         if (extraction.success && extraction.data) {
@@ -1330,11 +1301,13 @@ If you cannot fulfill these requirements, explain why in your conversational res
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
     console.log(`[BOT-CHAT:${requestId}] Total messages to send: ${messages.length + 1}`);
 
-    // Model selection: Gemini Flash for speed, GPT-5 for quality mode
-    const selectedModel = modelMode === 'quality' ? 'openai/gpt-5-mini' : 'google/gemini-2.5-flash';
+    // Model selection: gemini-2.5-flash-lite for ultra-fast initial, gemini-2.5-flash for refinements
+    const selectedModel = isFastMode 
+      ? 'google/gemini-2.5-flash-lite' 
+      : (modelMode === 'quality' ? 'google/gemini-2.5-flash' : 'google/gemini-2.5-flash');
     
-    // Token limits: Lower for fast mode (faster response), higher for quality
-    const maxTokens = isFastMode ? 4000 : 8000;
+    // Token limits: 3000 for fast mode (faster response), 6000 for normal
+    const maxTokens = isFastMode ? 3000 : 6000;
     
     console.log(`[BOT-CHAT:${requestId}] Model: ${selectedModel}, Max tokens: ${maxTokens}`);
 

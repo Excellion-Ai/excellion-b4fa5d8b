@@ -1004,14 +1004,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
     const hasUrl = containsUrl(ideaToUse);
 
     try {
+      // Minimal delays - just enough to show visual feedback
       updateStep(1, 'active');
-      await new Promise((r) => setTimeout(r, 200));
+      await new Promise((r) => setTimeout(r, 50));
       updateStep(1, 'complete');
 
       updateStep(2, 'active');
-      if (hasUrl) {
-        await new Promise((r) => setTimeout(r, 100));
-      }
       updateStep(2, 'complete');
 
       updateStep(3, 'active');
