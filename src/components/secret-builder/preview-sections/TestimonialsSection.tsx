@@ -1,8 +1,10 @@
 import { SiteSection, SiteTheme } from '@/types/app-spec';
 import { TestimonialsContent, TestimonialItem } from '@/types/site-spec';
-import { Star } from 'lucide-react';
+import { Star, ExternalLink } from 'lucide-react';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
 import { EditableText } from '../EditableText';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface TestimonialsSectionProps {
   section: SiteSection;
@@ -11,23 +13,23 @@ interface TestimonialsSectionProps {
   onUpdateItem?: (index: number, field: keyof TestimonialItem, value: string) => void;
 }
 
-const defaultTestimonials: TestimonialItem[] = [
+const templateTestimonials: TestimonialItem[] = [
   { 
-    name: 'Sarah Johnson', 
-    role: 'CEO, TechCorp',
-    quote: 'This product has completely transformed how we work. Highly recommended!',
+    name: 'Customer Name', 
+    role: 'Your Client',
+    quote: 'Add your customer review here. Connect Google Reviews to display real feedback from your customers.',
     rating: 5
   },
   { 
-    name: 'Michael Chen', 
-    role: 'Designer, Creative Studio',
-    quote: "The best investment we've made this year. The results speak for themselves.",
+    name: 'Happy Customer', 
+    role: 'Verified Buyer',
+    quote: 'Your testimonial goes here. Replace this with a real review from Google, Yelp, or another review platform.',
     rating: 5
   },
   { 
-    name: 'Emily Davis', 
-    role: 'Founder, StartupXYZ',
-    quote: "Outstanding service and incredible results. We couldn't be happier.",
+    name: 'Your Client', 
+    role: 'Satisfied Customer',
+    quote: 'Click to edit this placeholder. Import real reviews to build trust with potential customers.',
     rating: 5
   },
 ];
@@ -38,7 +40,22 @@ export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateI
   
   const title = content?.title || section.label || 'What Our Customers Say';
   const subtitle = content?.subtitle || section.description || 'Trusted by thousands of happy customers';
-  const items = content?.items || defaultTestimonials;
+  const items = content?.items || templateTestimonials;
+
+  const isTemplateContent = items.some(item => 
+    item.name === 'Customer Name' || 
+    item.name === 'Happy Customer' || 
+    item.name === 'Your Client' ||
+    item.quote.includes('Add your customer review') ||
+    item.quote.includes('Your testimonial goes here')
+  );
+
+  const handleConnectGoogleReviews = () => {
+    toast.info('Google Reviews Integration', {
+      description: 'To import real reviews, visit your Google Business Profile and copy your reviews, or use a reviews widget service like EmbedSocial or Elfsight.',
+      duration: 8000,
+    });
+  };
 
   return (
     <section 
@@ -98,6 +115,24 @@ export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateI
               </p>
             )}
           </ScrollAnimation>
+          
+          {isTemplateContent && (
+            <ScrollAnimation animation="fade-up" delay={150}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleConnectGoogleReviews}
+                className="mt-4 gap-2"
+                style={{
+                  borderColor: theme.primaryColor,
+                  color: theme.primaryColor,
+                }}
+              >
+                <ExternalLink className="w-4 h-4" />
+                Connect Google Reviews
+              </Button>
+            </ScrollAnimation>
+          )}
         </div>
         
         <div 
