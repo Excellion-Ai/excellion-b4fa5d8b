@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure } from '@/types/site-spec';
+import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure, TestimonialItem, PricingTier, FAQItem, StatsItem, ServiceItem, TeamMember, GalleryItem, PortfolioItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent, StatsContent } from '@/types/site-spec';
 import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
 import { MotionIntensity } from '@/lib/motion/types';
 import { MotionProvider, MotionWrapper, SignatureFlourish, BackgroundAccent } from '@/components/motion';
@@ -52,6 +52,16 @@ interface SiteRendererProps {
   onUpdateHeroContent?: (sectionId: string, field: keyof HeroContent, value: string) => void;
   onUpdateFeaturesContent?: (sectionId: string, field: keyof FeaturesContent, value: string) => void;
   onUpdateFeatureItem?: (sectionId: string, index: number, field: keyof FeatureItem, value: string) => void;
+  onUpdateTestimonialsContent?: (sectionId: string, field: keyof TestimonialsContent, value: string) => void;
+  onUpdateTestimonialItem?: (sectionId: string, index: number, field: keyof TestimonialItem, value: string) => void;
+  onUpdatePricingContent?: (sectionId: string, field: keyof PricingContent, value: string) => void;
+  onUpdatePricingItem?: (sectionId: string, index: number, field: keyof PricingTier, value: string | string[]) => void;
+  onUpdateFAQContent?: (sectionId: string, field: keyof FAQContent, value: string) => void;
+  onUpdateFAQItem?: (sectionId: string, index: number, field: keyof FAQItem, value: string) => void;
+  onUpdateContactContent?: (sectionId: string, field: keyof ContactContent, value: string) => void;
+  onUpdateCTAContent?: (sectionId: string, field: keyof CTAContent, value: string) => void;
+  onUpdateStatsContent?: (sectionId: string, field: keyof StatsContent, value: string) => void;
+  onUpdateStatsItem?: (sectionId: string, index: number, field: keyof StatsItem, value: string) => void;
   onUpdateSiteName?: (name: string) => void;
   onUpdateNavItem?: (index: number, label: string) => void;
   onReorderSections?: (oldIndex: number, newIndex: number) => void;
@@ -89,6 +99,16 @@ export function SiteRenderer({
   onUpdateHeroContent,
   onUpdateFeaturesContent,
   onUpdateFeatureItem,
+  onUpdateTestimonialsContent,
+  onUpdateTestimonialItem,
+  onUpdatePricingContent,
+  onUpdatePricingItem,
+  onUpdateFAQContent,
+  onUpdateFAQItem,
+  onUpdateContactContent,
+  onUpdateCTAContent,
+  onUpdateStatsContent,
+  onUpdateStatsItem,
   onUpdateSiteName,
   onUpdateNavItem,
   onReorderSections,
@@ -206,19 +226,47 @@ export function SiteRenderer({
         );
         break;
       case 'pricing':
-        sectionContent = <PricingSection {...commonProps} />;
+        sectionContent = (
+          <PricingSection 
+            {...commonProps}
+            onUpdateContent={onUpdatePricingContent ? (field, value) => onUpdatePricingContent(section.id, field, value) : undefined}
+            onUpdateItem={onUpdatePricingItem ? (index, field, value) => onUpdatePricingItem(section.id, index, field, value) : undefined}
+          />
+        );
         break;
       case 'testimonials':
-        sectionContent = <TestimonialsSection {...commonProps} />;
+        sectionContent = (
+          <TestimonialsSection 
+            {...commonProps}
+            onUpdateContent={onUpdateTestimonialsContent ? (field, value) => onUpdateTestimonialsContent(section.id, field, value) : undefined}
+            onUpdateItem={onUpdateTestimonialItem ? (index, field, value) => onUpdateTestimonialItem(section.id, index, field, value) : undefined}
+          />
+        );
         break;
       case 'faq':
-        sectionContent = <FAQSection {...commonProps} />;
+        sectionContent = (
+          <FAQSection 
+            {...commonProps}
+            onUpdateContent={onUpdateFAQContent ? (field, value) => onUpdateFAQContent(section.id, field, value) : undefined}
+            onUpdateItem={onUpdateFAQItem ? (index, field, value) => onUpdateFAQItem(section.id, index, field, value) : undefined}
+          />
+        );
         break;
       case 'contact':
-        sectionContent = <ContactSection {...commonProps} />;
+        sectionContent = (
+          <ContactSection 
+            {...commonProps}
+            onUpdateContent={onUpdateContactContent ? (field, value) => onUpdateContactContent(section.id, field, value) : undefined}
+          />
+        );
         break;
       case 'cta':
-        sectionContent = <CTASection {...commonProps} />;
+        sectionContent = (
+          <CTASection 
+            {...commonProps}
+            onUpdateContent={onUpdateCTAContent ? (field, value) => onUpdateCTAContent(section.id, field, value) : undefined}
+          />
+        );
         break;
       case 'stats':
         sectionContent = (
@@ -230,6 +278,8 @@ export function SiteRenderer({
               textColor: theme.textColor,
             }}
             asTile={asTile}
+            onUpdateContent={onUpdateStatsContent ? (field, value) => onUpdateStatsContent(section.id, field, value) : undefined}
+            onUpdateItem={onUpdateStatsItem ? (index, field, value) => onUpdateStatsItem(section.id, index, field, value) : undefined}
           />
         );
         break;

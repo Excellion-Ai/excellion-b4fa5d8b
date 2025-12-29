@@ -2046,6 +2046,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
                   onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
                   onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
+                  onUpdateTestimonialsContent={visualEditsEnabled ? editor.updateTestimonialsContent : undefined}
+                  onUpdateTestimonialItem={visualEditsEnabled ? editor.updateTestimonialItem : undefined}
+                  onUpdatePricingContent={visualEditsEnabled ? editor.updatePricingContent : undefined}
+                  onUpdatePricingItem={visualEditsEnabled ? editor.updatePricingItem : undefined}
+                  onUpdateFAQContent={visualEditsEnabled ? editor.updateFAQContent : undefined}
+                  onUpdateFAQItem={visualEditsEnabled ? editor.updateFAQItem : undefined}
+                  onUpdateContactContent={visualEditsEnabled ? editor.updateContactContent : undefined}
+                  onUpdateCTAContent={visualEditsEnabled ? editor.updateCTAContent : undefined}
+                  onUpdateStatsContent={visualEditsEnabled ? editor.updateStatsContent : undefined}
+                  onUpdateStatsItem={visualEditsEnabled ? editor.updateStatsItem : undefined}
                   onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
                   onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
                   onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}

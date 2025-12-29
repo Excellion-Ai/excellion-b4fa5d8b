@@ -1,4 +1,5 @@
-import { SiteSection, SiteTheme, TestimonialsContent, TestimonialItem } from '@/types/app-spec';
+import { SiteSection, SiteTheme } from '@/types/app-spec';
+import { TestimonialsContent, TestimonialItem } from '@/types/site-spec';
 import { Star } from 'lucide-react';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
 import { EditableText } from '../EditableText';
