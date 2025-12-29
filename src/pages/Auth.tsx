@@ -121,18 +121,28 @@ const Auth = () => {
   }, [lockoutTime]);
 
   useEffect(() => {
+    const handleAuthRedirect = (session: any) => {
+      if (session) {
+        // Check for pending builder data from WebBuilderHome
+        const pendingData = sessionStorage.getItem('pendingBuilderData');
+        if (pendingData && redirectTo === '/secret-builder-hub') {
+          sessionStorage.removeItem('pendingBuilderData');
+          const builderData = JSON.parse(pendingData);
+          navigate('/secret-builder-hub', { state: builderData });
+        } else {
+          navigate(redirectTo);
+        }
+      }
+    };
+
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate(redirectTo);
-      }
+      handleAuthRedirect(session);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate(redirectTo);
-      }
+      handleAuthRedirect(session);
     });
 
     return () => subscription.unsubscribe();
