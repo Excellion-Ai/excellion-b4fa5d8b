@@ -339,20 +339,22 @@ export function InterviewStepper({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1.5 block">Primary color</label>
-                    <div className="relative">
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={answers.colorThemeCustom?.primary || '#111111'}
+                        onChange={(e) => handleCustomColorChange('primary', e.target.value)}
+                        className="w-10 h-10 rounded border border-border/50 cursor-pointer bg-transparent"
+                      />
                       <Input
                         value={answers.colorThemeCustom?.primary || '#111111'}
                         onChange={(e) => handleCustomColorChange('primary', e.target.value)}
                         placeholder="#111111"
-                        className={`bg-background/50 border-border/50 pl-10 font-mono text-sm ${
+                        className={`bg-background/50 border-border/50 font-mono text-sm flex-1 ${
                           answers.colorThemeCustom?.primary && !isValidHexColor(answers.colorThemeCustom.primary) 
                             ? 'border-destructive' 
                             : ''
                         }`}
-                      />
-                      <div 
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded border border-white/20"
-                        style={{ backgroundColor: answers.colorThemeCustom?.primary || '#111111' }}
                       />
                     </div>
                     {answers.colorThemeCustom?.primary && !isValidHexColor(answers.colorThemeCustom.primary) && (
@@ -361,44 +363,27 @@ export function InterviewStepper({
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground mb-1.5 block">Accent color</label>
-                    <div className="relative">
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={answers.colorThemeCustom?.accent || '#D4AF37'}
+                        onChange={(e) => handleCustomColorChange('accent', e.target.value)}
+                        className="w-10 h-10 rounded border border-border/50 cursor-pointer bg-transparent"
+                      />
                       <Input
                         value={answers.colorThemeCustom?.accent || '#D4AF37'}
                         onChange={(e) => handleCustomColorChange('accent', e.target.value)}
                         placeholder="#D4AF37"
-                        className={`bg-background/50 border-border/50 pl-10 font-mono text-sm ${
+                        className={`bg-background/50 border-border/50 font-mono text-sm flex-1 ${
                           answers.colorThemeCustom?.accent && !isValidHexColor(answers.colorThemeCustom.accent) 
                             ? 'border-destructive' 
                             : ''
                         }`}
                       />
-                      <div 
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded border border-white/20"
-                        style={{ backgroundColor: answers.colorThemeCustom?.accent || '#D4AF37' }}
-                      />
                     </div>
                     {answers.colorThemeCustom?.accent && !isValidHexColor(answers.colorThemeCustom.accent) && (
                       <p className="text-xs text-destructive mt-1">Use format #RRGGBB</p>
                     )}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Background mode</label>
-                  <div className="flex gap-2">
-                    {(['dark', 'light'] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => handleCustomColorChange('backgroundMode', mode)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all border capitalize ${
-                          answers.colorThemeCustom?.backgroundMode === mode
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-background/50 text-foreground/80 border-border/50 hover:border-primary/50'
-                        }`}
-                      >
-                        {mode}
-                      </button>
-                    ))}
                   </div>
                 </div>
               </div>
