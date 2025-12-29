@@ -136,7 +136,7 @@ serve(async (req) => {
       });
       logStep("Sprint Pass checkout session created", { sessionId: session.id, url: session.url });
 
-      // Mark Sprint Pass as used and grant +35 credits
+      // Mark Sprint Pass as used and grant +50 credits
       const sprintExpiresAt = new Date();
       sprintExpiresAt.setDate(sprintExpiresAt.getDate() + 7);
 
@@ -155,7 +155,7 @@ serve(async (req) => {
         // Don't throw - let checkout proceed, we'll handle this on webhook/success
       }
 
-      // Grant +35 credits for Sprint Pass
+      // Grant +50 credits for Sprint Pass
       const { data: currentCredits } = await supabaseClient
         .from("user_credits")
         .select("balance, total_earned")
@@ -166,21 +166,21 @@ serve(async (req) => {
         await supabaseClient
           .from("user_credits")
           .update({
-            balance: currentCredits.balance + 35,
-            total_earned: currentCredits.total_earned + 35,
+            balance: currentCredits.balance + 50,
+            total_earned: currentCredits.total_earned + 50,
           })
           .eq("user_id", user.id);
 
         // Log the transaction
         await supabaseClient.from("credit_transactions").insert({
           user_id: user.id,
-          amount: 35,
+          amount: 50,
           type: "bonus",
           action_type: "sprint_pass",
-          description: "Sprint Pass bonus - 35 credits",
+          description: "Sprint Pass bonus - 50 credits",
         });
 
-        logStep("Sprint Pass credits granted", { credits: 35 });
+        logStep("Sprint Pass credits granted", { credits: 50 });
       }
 
       return new Response(JSON.stringify({ url: session.url }), {
