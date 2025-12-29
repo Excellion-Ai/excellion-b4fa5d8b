@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -41,6 +41,7 @@ import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
 import { useCredits, CreditActionType } from '@/hooks/useCredits';
+import { useGitHubSync } from '@/hooks/useGitHubSync';
 import { calculateCreditCost } from '@/lib/calculateCreditCost';
 import { detectNiche } from '@/lib/motion/motionEngine';
 import { MotionIntensity } from '@/lib/motion/types';
@@ -483,6 +484,17 @@ export function BuilderShell() {
     authenticated: isAuthenticated,
     fetchCredits 
   } = useCredits();
+  
+  // GitHub sync
+  const {
+    connection: githubConnection,
+    projectGithub,
+    isSyncing: isGitHubSyncing,
+    connectGitHub,
+    disconnectGitHub,
+    syncToGitHub,
+    checkConnection: checkGitHubConnection,
+  } = useGitHubSync(projectId);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
@@ -2246,6 +2258,90 @@ Regenerate the problematic sections with valid content.`;
               <BarChart3 className="h-3.5 w-3.5" />
               <span className="hidden md:inline">Analytics</span>
             </Button>
+            
+            {/* GitHub Sync Button */}
+            {githubConnection.isConnected ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+                    disabled={!projectId || !siteSpec}
+                  >
+                    {isGitHubSyncing ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : projectGithub?.github_last_synced_at ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <Github className="h-3.5 w-3.5" />
+                    )}
+                    <span className="hidden md:inline">
+                      {projectGithub?.github_last_synced_at ? 'Synced' : 'GitHub'}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem 
+                    onClick={async () => {
+                      if (!siteSpec || !projectName) return;
+                      const result = await syncToGitHub(projectName, siteSpec);
+                      if (result.success) {
+                        toast.success('Synced to GitHub!', {
+                          description: 'Your code is now on GitHub',
+                          action: result.repoUrl ? {
+                            label: 'View Repo',
+                            onClick: () => window.open(result.repoUrl, '_blank'),
+                          } : undefined,
+                        });
+                      } else {
+                        toast.error('Sync failed', { description: result.error });
+                      }
+                    }}
+                    disabled={isGitHubSyncing || !siteSpec}
+                    className="gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span>Sync to GitHub</span>
+                  </DropdownMenuItem>
+                  {projectGithub?.github_repo_url && (
+                    <DropdownMenuItem 
+                      onClick={() => window.open(projectGithub.github_repo_url!, '_blank')}
+                      className="gap-2"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      <span>View Repository</span>
+                    </DropdownMenuItem>
+                  )}
+                  {projectGithub?.github_last_synced_at && (
+                    <DropdownMenuItem disabled className="gap-2 text-xs text-muted-foreground">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span>Last sync: {new Date(projectGithub.github_last_synced_at).toLocaleString()}</span>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      disconnectGitHub();
+                      toast.success('GitHub disconnected');
+                    }}
+                    className="gap-2 text-destructive focus:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                    <span>Disconnect GitHub</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={connectGitHub}
+                className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+              >
+                <Github className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">GitHub</span>
+              </Button>
+            )}
             
             {/* Publish dropdown with Domains and Security */}
             <DropdownMenu>
