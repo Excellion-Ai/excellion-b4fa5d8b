@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,6 +36,51 @@ const IMAGE_TYPE_PROMPTS: Record<string, string> = {
   feature: "Icon-style or representative image for a feature/benefit. Simple, clear concept. NO TEXT, NO WORDS.",
 };
 
+// Helper to upload base64 image to storage
+async function uploadToStorage(imageData: string, supabaseUrl: string, serviceKey: string): Promise<string | null> {
+  try {
+    if (!imageData.startsWith("data:image")) {
+      return imageData; // Already a URL
+    }
+    
+    const supabase = createClient(supabaseUrl, serviceKey);
+    
+    // Convert base64 to blob
+    const base64Data = imageData.split(",")[1];
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    
+    const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("builder-images")
+      .upload(fileName, byteArray, {
+        contentType: "image/png",
+        upsert: false,
+      });
+
+    if (!uploadError && uploadData) {
+      const { data: urlData } = supabase.storage
+        .from("builder-images")
+        .getPublicUrl(fileName);
+      
+      if (urlData?.publicUrl) {
+        console.log("Image uploaded to storage:", urlData.publicUrl);
+        return urlData.publicUrl;
+      }
+    } else {
+      console.error("Storage upload failed:", uploadError);
+    }
+  } catch (storageError) {
+    console.error("Storage upload error:", storageError);
+  }
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -50,6 +96,8 @@ serve(async (req) => {
       count = 1
     } = await req.json();
 
+    console.log(`[NICHE-IMAGE] Request received: ${businessName}, niche: ${niche}, type: ${imageType}`);
+
     if (!businessName) {
       return new Response(
         JSON.stringify({ error: 'Business name is required' }),
@@ -59,8 +107,12 @@ serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
+      console.error('[NICHE-IMAGE] LOVABLE_API_KEY not configured');
       throw new Error('LOVABLE_API_KEY is not configured');
     }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     // Determine niche style
     const nicheStyle = NICHE_PROMPT_STYLES[niche] || NICHE_PROMPT_STYLES.GENERIC;
@@ -89,12 +141,14 @@ Image requirements:
 
 Specific request: ${basePrompt}`;
 
-    console.log(`Generating ${imageType} image for ${businessName} (${niche || 'generic'} niche)`);
+    console.log(`[NICHE-IMAGE] Generating ${imageType} image for ${businessName} (${niche || 'generic'} niche)`);
 
     const images: string[] = [];
     
     // Generate requested number of images
     for (let i = 0; i < Math.min(count, 4); i++) {
+      console.log(`[NICHE-IMAGE] Generating image ${i + 1}/${count}...`);
+      
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -115,7 +169,7 @@ Specific request: ${basePrompt}`;
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('AI Gateway error:', response.status, errorText);
+        console.error('[NICHE-IMAGE] AI Gateway error:', response.status, errorText);
         
         if (response.status === 429) {
           return new Response(
@@ -136,14 +190,34 @@ Specific request: ${basePrompt}`;
       const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       
       if (imageUrl) {
-        images.push(imageUrl);
-        console.log(`Generated image ${i + 1}/${count} successfully`);
+        console.log(`[NICHE-IMAGE] Got base64 image, uploading to storage...`);
+        
+        // Upload to Supabase Storage for persistence
+        if (supabaseUrl && serviceKey) {
+          const persistedUrl = await uploadToStorage(imageUrl, supabaseUrl, serviceKey);
+          if (persistedUrl) {
+            images.push(persistedUrl);
+            console.log(`[NICHE-IMAGE] Generated image ${i + 1}/${count} successfully: ${persistedUrl}`);
+          } else {
+            // Fall back to base64 if storage upload fails
+            images.push(imageUrl);
+            console.log(`[NICHE-IMAGE] Storage upload failed, using base64 for image ${i + 1}/${count}`);
+          }
+        } else {
+          images.push(imageUrl);
+          console.log(`[NICHE-IMAGE] No storage config, using base64 for image ${i + 1}/${count}`);
+        }
+      } else {
+        console.error('[NICHE-IMAGE] No image in AI response');
       }
     }
 
     if (images.length === 0) {
+      console.error('[NICHE-IMAGE] No images generated');
       throw new Error('No images generated');
     }
+
+    console.log(`[NICHE-IMAGE] Successfully generated ${images.length} images`);
 
     return new Response(
       JSON.stringify({ 
@@ -157,7 +231,7 @@ Specific request: ${basePrompt}`;
     );
 
   } catch (error) {
-    console.error('Generate niche image error:', error);
+    console.error('[NICHE-IMAGE] Generate niche image error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
