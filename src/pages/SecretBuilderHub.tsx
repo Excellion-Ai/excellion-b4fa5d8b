@@ -488,6 +488,11 @@ export default function SecretBuilderHub() {
     textareaRef.current?.focus();
   };
 
+  const handleInterviewSubmit = () => {
+    setInterviewOpen(false);
+    handleGenerate();
+  };
+
   const handleClearPrompt = () => {
     setIdea('');
     setAttachments([]);
@@ -1304,6 +1309,29 @@ export default function SecretBuilderHub() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Build Assist Interview Dialog */}
+      <Dialog open={interviewOpen} onOpenChange={setInterviewOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Build Assist</DialogTitle>
+          </DialogHeader>
+          <InterviewStepper
+            step={interview.step}
+            totalSteps={interview.totalSteps}
+            answers={interview.answers}
+            canProceed={interview.canProceed}
+            canSubmit={interview.canSubmit}
+            onUpdateAnswer={interview.updateAnswer}
+            onUpdateOffer={interview.updateOffer}
+            onNext={interview.nextStep}
+            onBack={interview.prevStep}
+            onSkip={interview.skipStep}
+            onSubmit={handleInterviewSubmit}
+            onSwitchToQuickPrompt={() => setInterviewOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
