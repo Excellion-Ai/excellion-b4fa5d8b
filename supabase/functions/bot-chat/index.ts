@@ -289,12 +289,17 @@ OUTPUT FORMAT:
 \`\`\`
 
 SECTION TYPES: hero, features, testimonials, pricing, faq, contact, cta, stats
-- hero: {headline, subheadline, ctas:[{label,href,variant}], backgroundImage:"GENERATE: description"}
+- hero: {headline, subheadline, ctas:[{label,href,variant}], backgroundImage:"GENERATE: visual description - NO TEXT IN IMAGE"}
 - features: {title, items:[{title,description,icon}]} (4-6 items)
 - testimonials: {title, items:[{name,role,quote,rating}]}
 - pricing: {title, items:[{name,price,features:[],ctaText,highlighted}]}
 - faq: {title, items:[{question,answer}]} - MUST be about the USER'S BUSINESS, not about websites
 - contact: {title, email, phone, formFields:["name","email","message"]}
+
+IMAGE GENERATION RULE:
+When using "GENERATE: description", describe ONLY the visual scene - NO TEXT should appear in images.
+Example: "GENERATE: professional office team collaborating at modern desk, warm lighting" (NOT "GENERATE: hero banner with headline")
+All text (headlines, buttons, captions) will be rendered as separate HTML elements that users can edit.
 
 COLORS BY INDUSTRY:
 - Restaurant/Food: #dc2626 (red)

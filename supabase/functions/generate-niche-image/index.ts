@@ -24,15 +24,15 @@ const NICHE_PROMPT_STYLES: Record<string, string> = {
 };
 
 const IMAGE_TYPE_PROMPTS: Record<string, string> = {
-  hero: "A stunning hero banner image suitable for the top of a website. Wide 16:9 aspect ratio. No text overlays.",
-  service: "A clean image representing a professional service offering. Square or slightly rectangular format.",
-  team: "Professional team/staff photo placeholder. Show diverse, professional-looking people.",
-  gallery: "High-quality portfolio/gallery image showcasing work or products.",
-  testimonial: "Background image suitable for testimonials section. Subtle, not distracting.",
-  about: "Warm, inviting image representing the company story or values.",
-  contact: "Professional image suitable for a contact page. Office, location, or welcoming imagery.",
-  product: "Clean product photography with good lighting and neutral background.",
-  feature: "Icon-style or representative image for a feature/benefit. Simple, clear concept.",
+  hero: "A stunning hero banner image suitable for the top of a website. Wide 16:9 aspect ratio. ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO TYPOGRAPHY OF ANY KIND.",
+  service: "A clean image representing a professional service offering. Square or slightly rectangular format. ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS.",
+  team: "Professional team/staff photo placeholder. Show diverse, professional-looking people. NO TEXT OR NAMES.",
+  gallery: "High-quality portfolio/gallery image showcasing work or products. NO TEXT, NO LABELS, NO WATERMARKS.",
+  testimonial: "Background image suitable for testimonials section. Subtle, not distracting. NO TEXT.",
+  about: "Warm, inviting image representing the company story or values. NO TEXT, NO WORDS.",
+  contact: "Professional image suitable for a contact page. Office, location, or welcoming imagery. NO TEXT.",
+  product: "Clean product photography with good lighting and neutral background. NO TEXT, NO LABELS.",
+  feature: "Icon-style or representative image for a feature/benefit. Simple, clear concept. NO TEXT, NO WORDS.",
 };
 
 serve(async (req) => {
@@ -74,12 +74,16 @@ serve(async (req) => {
 Business: ${businessName}
 ${businessDescription ? `Description: ${businessDescription}` : ''}
 
+CRITICAL - VISUALS ONLY:
+- ABSOLUTELY NO TEXT IN THE IMAGE - no words, letters, numbers, typography, titles, captions, labels, or any readable characters
+- NO logos, watermarks, or branding
+- Text will be added separately as HTML overlays - the image must be pure visual content only
+
 Image requirements:
 - ${typePrompt}
 - ${nicheStyle}
 - Ultra high resolution, photorealistic
 - Professional lighting and composition
-- NO text, logos, or watermarks
 - Must look like a real photograph, not AI-generated
 - Unique and specific to this business type
 

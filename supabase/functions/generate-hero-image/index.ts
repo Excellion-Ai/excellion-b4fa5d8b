@@ -25,13 +25,19 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Enhanced prompt for hero images
+    // Enhanced prompt for hero images - STRICTLY NO TEXT
     const enhancedPrompt = `Create a professional, modern hero image for a ${businessType || 'business'} website. ${prompt}. 
+
+CRITICAL RULE - VISUALS ONLY:
+- ABSOLUTELY NO TEXT IN THE IMAGE - no words, letters, numbers, typography, titles, captions, headlines, or any readable characters whatsoever
+- NO logos, watermarks, or branding of any kind
+- This is a background image - text will be added separately as HTML overlays
+
 The image should be:
 - High quality, professional photography style
 - 16:9 aspect ratio suitable for hero sections
 - Clean and modern with good lighting
-- No text or logos
+- Pure visual content only - suitable for text overlay
 - Suitable for a business website background`;
 
     console.log('Generating hero image with prompt:', enhancedPrompt);
