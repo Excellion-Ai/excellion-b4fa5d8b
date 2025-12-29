@@ -20,6 +20,7 @@ const SecretBuilderHub = lazy(() => import("./pages/SecretBuilderHub"));
 const Billing = lazy(() => import("./pages/Billing"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
+const GitHubCallback = lazy(() => import("./pages/GitHubCallback"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Settings pages
@@ -73,6 +74,7 @@ const App = () => (
         <Route path="/billing" element={<Billing />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
+        <Route path="/github-callback" element={<GitHubCallback />} />
         
         {/* Settings routes */}
         <Route path="/settings" element={<Settings />}>

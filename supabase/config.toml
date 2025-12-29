@@ -68,3 +68,9 @@ verify_jwt = false
 
 [functions.prompt-refiner]
 verify_jwt = false
+
+[functions.github-oauth-callback]
+verify_jwt = false
+
+[functions.sync-to-github]
+verify_jwt = false

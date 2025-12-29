@@ -157,6 +157,9 @@ export type Database = {
       builder_projects: {
         Row: {
           created_at: string
+          github_access_token: string | null
+          github_last_synced_at: string | null
+          github_repo_url: string | null
           id: string
           idea: string
           name: string
@@ -170,6 +173,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          github_access_token?: string | null
+          github_last_synced_at?: string | null
+          github_repo_url?: string | null
           id?: string
           idea: string
           name: string
@@ -183,6 +189,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          github_access_token?: string | null
+          github_last_synced_at?: string | null
+          github_repo_url?: string | null
           id?: string
           idea?: string
           name?: string
@@ -297,6 +306,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      github_connections: {
+        Row: {
+          access_token: string
+          connected_at: string
+          github_user_id: string | null
+          github_username: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          connected_at?: string
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          connected_at?: string
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       inquiries: {
         Row: {
