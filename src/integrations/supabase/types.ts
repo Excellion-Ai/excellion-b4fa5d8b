@@ -165,6 +165,7 @@ export type Database = {
           spec: Json | null
           updated_at: string
           user_id: string | null
+          versions: Json | null
           workspace_id: string | null
         }
         Insert: {
@@ -177,6 +178,7 @@ export type Database = {
           spec?: Json | null
           updated_at?: string
           user_id?: string | null
+          versions?: Json | null
           workspace_id?: string | null
         }
         Update: {
@@ -189,6 +191,7 @@ export type Database = {
           spec?: Json | null
           updated_at?: string
           user_id?: string | null
+          versions?: Json | null
           workspace_id?: string | null
         }
         Relationships: [

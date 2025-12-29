@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -34,6 +34,7 @@ import { ThreeDPanel } from './ThreeDPanel';
 import { SecurityScanPanel } from './SecurityScanPanel';
 import { RenameDialog } from './RenameDialog';
 import { IssuesPanel } from './IssuesPanel';
+import { VersionHistoryPanel, VersionSnapshot } from './VersionHistoryPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -455,6 +456,11 @@ export function BuilderShell() {
   const [currentIssues, setCurrentIssues] = useState<BuilderIssue[]>([]);
   const [lastScaffold, setLastScaffold] = useState<GenerationScaffold | null>(null);
   
+  // Version history state
+  const [versions, setVersions] = useState<VersionSnapshot[]>([]);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [isRestoringVersion, setIsRestoringVersion] = useState(false);
+  
   // Generation progress tracking
   const [tokenCount, setTokenCount] = useState(0);
   const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
@@ -550,6 +556,11 @@ export function BuilderShell() {
     }
 
     setProjectName(data.name);
+    
+    // Load versions if available
+    if (data.versions && Array.isArray(data.versions)) {
+      setVersions(data.versions as unknown as VersionSnapshot[]);
+    }
     
     // Load published URL if site is published
     if (data.published_url) {
@@ -650,15 +661,19 @@ export function BuilderShell() {
     );
   };
 
-  const saveProject = async (html: string | null, allMessages: Message[], ideaText: string, currentSiteSpec: SiteSpec | null) => {
-    // Get current user for new projects
+  const saveProject = async (
+    html: string | null, 
+    allMessages: Message[], 
+    ideaText: string, 
+    currentSiteSpec: SiteSpec | null,
+    saveVersion: boolean = false // Only save version on AI generation
+  ) => {
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Use AI-generated site name if available, otherwise fall back to idea text
     const aiGeneratedName = currentSiteSpec?.name;
     const name = projectName !== 'New Project' ? projectName : (aiGeneratedName || ideaText.slice(0, 50));
     
-    const projectData = {
+    const projectData: Record<string, unknown> = {
       name,
       idea: ideaText,
       spec: { 
@@ -669,12 +684,37 @@ export function BuilderShell() {
           role: m.role,
           content: m.content,
           htmlCode: m.htmlCode,
-          attachments: m.attachments, // Persist attached images
+          attachments: m.attachments,
         }))
       } as unknown as Json,
     };
 
     if (projectId) {
+      // If saveVersion is true, add version snapshot
+      if (saveVersion && currentSiteSpec) {
+        const newVersion: VersionSnapshot = {
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          spec: currentSiteSpec,
+          name: currentSiteSpec.name || `Version ${versions.length + 1}`,
+        };
+        
+        // Fetch current versions and append
+        const { data: currentProject } = await supabase
+          .from('builder_projects')
+          .select('versions')
+          .eq('id', projectId)
+          .single();
+        
+        const existingVersions = (Array.isArray(currentProject?.versions) 
+          ? currentProject.versions 
+          : []) as unknown as VersionSnapshot[];
+        const updatedVersions = [...existingVersions, newVersion].slice(-20); // Keep last 20 versions
+        
+        projectData.versions = updatedVersions as unknown as Json;
+        setVersions(updatedVersions);
+      }
+      
       const { error } = await supabase
         .from('builder_projects')
         .update(projectData)
@@ -684,9 +724,24 @@ export function BuilderShell() {
         console.error('Failed to update project:', error);
       }
     } else {
+      // New project - include initial version if saveVersion is true
+      if (saveVersion && currentSiteSpec) {
+        const newVersion: VersionSnapshot = {
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          spec: currentSiteSpec,
+          name: currentSiteSpec.name || 'Initial version',
+        };
+        projectData.versions = [newVersion] as unknown as Json;
+        setVersions([newVersion]);
+      }
+      
       const { data, error } = await supabase
         .from('builder_projects')
-        .insert({ ...projectData, user_id: user?.id })
+        .insert({ 
+          ...projectData, 
+          user_id: user?.id 
+        } as any)
         .select('id')
         .single();
 
@@ -700,19 +755,67 @@ export function BuilderShell() {
     }
   };
 
-  // Auto-save when siteSpec changes (from inline editing) - debounced to prevent excessive writes
+  // Restore a version from history
+  const handleRestoreVersion = async (version: VersionSnapshot) => {
+    if (!projectId) return;
+    
+    setIsRestoringVersion(true);
+    try {
+      // First, save current state as a new version (auto-backup before restore)
+      if (siteSpec) {
+        const backupVersion: VersionSnapshot = {
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          spec: siteSpec,
+          name: `Backup before restore`,
+        };
+        
+        const { data: currentProject } = await supabase
+          .from('builder_projects')
+          .select('versions')
+          .eq('id', projectId)
+          .single();
+        
+        const existingVersions = (Array.isArray(currentProject?.versions) 
+          ? currentProject.versions 
+          : []) as unknown as VersionSnapshot[];
+        const updatedVersions = [...existingVersions, backupVersion].slice(-20);
+        
+        await supabase
+          .from('builder_projects')
+          .update({ versions: updatedVersions as unknown as Json })
+          .eq('id', projectId);
+        
+        setVersions(updatedVersions);
+      }
+      
+      // Restore the selected version
+      setSiteSpec(version.spec);
+      
+      // Save the restored spec
+      const firstUserMessage = messages.find(m => m.role === 'user');
+      await saveProject(null, messages, firstUserMessage?.content || '', version.spec, false);
+      
+      toast.success(`Restored to "${version.name}"`);
+    } catch (error) {
+      console.error('Failed to restore version:', error);
+      toast.error('Failed to restore version');
+    } finally {
+      setIsRestoringVersion(false);
+    }
+  };
+
+  // Auto-save when siteSpec changes (from inline editing) - debounced, no version save
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   useEffect(() => {
     if (siteSpec && projectId) {
-      // Clear any pending save
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      // Debounce save by 2 seconds
       saveTimeoutRef.current = setTimeout(() => {
         const firstUserMessage = messages.find(m => m.role === 'user');
-        saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec);
+        saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, false);
       }, 2000);
     }
     
@@ -1298,7 +1401,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       setMessages(allMessages);
 
       const firstUserMessage = allMessages.find(m => m.role === 'user');
-      await saveProject(null, allMessages, firstUserMessage?.content || ideaToUse, newSiteSpec);
+      await saveProject(null, allMessages, firstUserMessage?.content || ideaToUse, newSiteSpec, true); // Save version on AI generation
     } catch (error) {
       console.error('Generation error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate. Please try again.');
@@ -1941,6 +2044,15 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               title="Redo (Ctrl+Y)"
             >
               <Redo2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 sm:h-8 sm:w-8"
+              onClick={() => setShowVersionHistory(true)}
+              title="Version History"
+            >
+              <HistoryIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
 
@@ -2609,6 +2721,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           }}
         />
       )}
+      
+      {/* Version History Panel */}
+      <VersionHistoryPanel
+        open={showVersionHistory}
+        onOpenChange={setShowVersionHistory}
+        versions={versions}
+        currentSpec={siteSpec}
+        onRestore={handleRestoreVersion}
+        isRestoring={isRestoringVersion}
+      />
     </div>
   );
 }
