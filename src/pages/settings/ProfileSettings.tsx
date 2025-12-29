@@ -192,9 +192,26 @@ export default function ProfileSettings() {
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') return;
     setDeleting(true);
-    // TODO: Implement admin endpoint for account deletion
-    toast.error('Account deletion requires admin endpoint. Please contact support.');
-    setDeleting(false);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-account');
+      
+      if (error) throw error;
+      
+      if (data?.success) {
+        toast.success('Account deleted successfully');
+        // Sign out and redirect to home
+        await supabase.auth.signOut();
+        window.location.href = '/';
+      } else {
+        throw new Error(data?.error || 'Failed to delete account');
+      }
+    } catch (error: any) {
+      console.error('Delete account error:', error);
+      toast.error(error.message || 'Failed to delete account');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) {
