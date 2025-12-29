@@ -332,7 +332,7 @@ export default function SecretBuilderHub() {
     localStorage.setItem(LS_PENDING_PROMPT, ideaToUse);
 
     try {
-      // Get current user - require login
+      // Quick auth check - just verify user exists
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -347,55 +347,35 @@ export default function SecretBuilderHub() {
         return;
       }
       
-      // Create project in database
-      const projectName = ideaToUse.slice(0, 50) + (ideaToUse.length > 50 ? '...' : '');
       // Interview data can come from location state (from WebBuilderHome) or local interview hook
       const currentInterviewData = interviewDataFromLocation || interview.structuredData;
-      const { data, error } = await supabase
-        .from('builder_projects')
-        .insert([{
-          user_id: user.id,
-          name: projectName,
-          idea: ideaToUse,
-          spec: JSON.parse(JSON.stringify({ 
-            themeId: 'modern', 
-            attachments: attachments.map(a => a.name),
-            interviewData: currentInterviewData,
-          })),
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Store as last project
-      localStorage.setItem(LS_LAST_PROJECT_ID, data.id);
       
-      // Clear pending state
-      localStorage.removeItem(LS_PENDING_PROMPT);
-
-      toast({ title: 'Project created', description: 'Opening builder...' });
-      
-      // Navigate to builder with interview data
+      // Navigate IMMEDIATELY to builder - let builder handle project creation
+      // This makes the experience feel instant
       navigate('/secret-builder', { 
         state: { 
-          projectId: data.id, 
           initialIdea: ideaToUse,
           themeId: 'modern',
           interviewData: currentInterviewData,
+          attachments: attachments.map(a => a.name),
+          createProject: true, // Signal that builder should create the project
         } 
       });
+      
+      // Clear pending state
+      localStorage.removeItem(LS_PENDING_PROMPT);
+      
     } catch (error) {
-      console.error('Error creating project:', error);
+      console.error('Error starting generation:', error);
       toast({ 
         title: 'Error', 
-        description: 'Failed to create project. Please try again.', 
+        description: 'Failed to start. Please try again.', 
         variant: 'destructive' 
       });
       setIsGenerating(false);
       isSubmittingRef.current = false;
     }
-  }, [idea, isGenerating, attachments, navigate, toast]);
+  }, [idea, isGenerating, attachments, navigate, toast, interviewDataFromLocation, interview.structuredData]);
 
   // Generate from template with pre-built spec
   const handleGenerateFromTemplate = useCallback(async (template: typeof TEMPLATES[0]) => {
