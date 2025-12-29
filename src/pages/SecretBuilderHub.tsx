@@ -188,7 +188,24 @@ const LS_PENDING_THEME = 'excellion_pending_theme';
 
 export default function SecretBuilderHub() {
   const location = useLocation();
-  const locationState = location.state as { initialIdea?: string; autoGenerate?: boolean } | null;
+  const locationState = location.state as { 
+    initialIdea?: string; 
+    autoGenerate?: boolean;
+    interviewData?: {
+      websiteType: string | null;
+      businessName: string;
+      serviceMode: string | null;
+      serviceArea: string | null;
+      primaryGoal: string | null;
+      offers: string[];
+      colorThemePreset: string | null;
+      colorThemeCustom: { primary: string; accent: string; backgroundMode: 'dark' | 'light' } | null;
+      colorTheme: { preset: string; primary: string; accent: string; backgroundMode: 'dark' | 'light' } | null;
+    };
+  } | null;
+  
+  // Store interviewData from location state (from WebBuilderHome)
+  const [interviewDataFromLocation] = useState(locationState?.interviewData || null);
   
   const [idea, setIdea] = useState(locationState?.initialIdea || '');
   const [projects, setProjects] = useState<BuilderProject[]>([]);
@@ -378,17 +395,20 @@ export default function SecretBuilderHub() {
       
       // Create project in database
       const projectName = ideaToUse.slice(0, 50) + (ideaToUse.length > 50 ? '...' : '');
+      // Interview data can come from location state (from WebBuilderHome) or local interview hook
+      const currentInterviewData = interviewDataFromLocation || interview.structuredData;
       const { data, error } = await supabase
         .from('builder_projects')
-        .insert({
+        .insert([{
           user_id: user.id,
           name: projectName,
           idea: ideaToUse,
-          spec: { 
+          spec: JSON.parse(JSON.stringify({ 
             themeId: selectedTheme, 
-            attachments: attachments.map(a => a.name) 
-          },
-        })
+            attachments: attachments.map(a => a.name),
+            interviewData: currentInterviewData,
+          })),
+        }])
         .select()
         .single();
 
@@ -403,12 +423,13 @@ export default function SecretBuilderHub() {
 
       toast({ title: 'Project created', description: 'Opening builder...' });
       
-      // Navigate to builder with theme style ID
+      // Navigate to builder with theme style ID and interview data
       navigate('/secret-builder', { 
         state: { 
           projectId: data.id, 
           initialIdea: ideaToUse,
-          themeId: selectedTheme
+          themeId: selectedTheme,
+          interviewData: currentInterviewData,
         } 
       });
     } catch (error) {
