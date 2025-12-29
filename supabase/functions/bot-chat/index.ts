@@ -272,6 +272,40 @@ setInterval(() => {
   }
 }, 60000);
 
+// FAST MODE: Condensed prompt for speed (under 60 seconds)
+const FAST_SYSTEM_PROMPT = `You are a website builder AI. Generate a SiteSpec JSON for the business.
+
+OUTPUT FORMAT: 
+\`\`\`json
+{"name":"Business Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","fontFamily":"Sans"},"layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
+\`\`\`
+
+SECTION TYPES: hero, features, testimonials, pricing, faq, contact, cta, stats
+- hero: {headline, subheadline, ctas:[{label,href,variant}], backgroundImage:"GENERATE: description"}
+- features: {title, items:[{title,description,icon}]} (4-6 items)
+- testimonials: {title, items:[{name,role,quote,rating}]}
+- pricing: {title, items:[{name,price,features:[],ctaText,highlighted}]}
+- faq: {title, items:[{question,answer}]}
+- contact: {title, email, phone, formFields:["name","email","message"]}
+
+COLORS BY INDUSTRY:
+- Restaurant/Food: #dc2626 (red)
+- Health/Medical: #0891b2 (teal)
+- Legal: #1e3a5f (navy)
+- Tech/SaaS: #3b82f6 (blue)
+- Salon/Spa: #be185d (pink)
+- Construction: #ca8a04 (yellow)
+- Fitness: #dc2626 (red)
+- Real Estate: #0d9488 (teal)
+- Default: #2563eb (blue)
+
+RULES:
+1. Generate industry-specific content, NEVER generic placeholders
+2. Use GENERATE: prefix for images with detailed descriptions
+3. Home page: max 5 sections
+4. Navigation links use paths (/, /about, /contact)
+5. 4 or 6 feature items, never 3 or 5`;
+
 const SYSTEM_PROMPT = `ACT AS: A friendly, helpful website builder assistant for "Excellion AI."
 
 PERSONA: You're an enthusiastic creative partner who makes building websites fun and easy. You speak in simple, encouraging terms - NEVER technical jargon.
@@ -1045,11 +1079,15 @@ serve(async (req) => {
     console.log(`[BOT-CHAT:${requestId}] Rate limit check passed`);
 
     const body = await req.json();
-    const { messages, context, modelMode, projectId, scaffold } = body;
+    const { messages, context, modelMode, projectId, scaffold, speedMode } = body;
+    
+    // SPEED OPTIMIZATION: Fast mode for initial generation
+    const isFastMode = speedMode === 'fast' || (!projectId && messages?.length === 1);
     
     console.log(`[BOT-CHAT:${requestId}] Request body parsed:`);
     console.log(`[BOT-CHAT:${requestId}]   - Messages count: ${messages?.length || 0}`);
     console.log(`[BOT-CHAT:${requestId}]   - Model mode: ${modelMode || 'default'}`);
+    console.log(`[BOT-CHAT:${requestId}]   - Speed mode: ${isFastMode ? 'FAST' : 'normal'}`);
     console.log(`[BOT-CHAT:${requestId}]   - Project ID: ${projectId || 'none'}`);
     console.log(`[BOT-CHAT:${requestId}]   - Has context: ${!!context}`);
     console.log(`[BOT-CHAT:${requestId}]   - Has scaffold: ${!!scaffold}`);
@@ -1088,9 +1126,9 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Fetch knowledge base entries for this project
+    // Fetch knowledge base entries - SKIP in fast mode for speed
     let knowledgeContext = "";
-    if (projectId && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+    if (!isFastMode && projectId && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
       try {
         console.log(`[BOT-CHAT:${requestId}] Fetching knowledge base for project: ${projectId}`);
         const kbResponse = await fetch(
@@ -1108,21 +1146,8 @@ serve(async (req) => {
           console.log(`[BOT-CHAT:${requestId}] Knowledge base entries found: ${kbEntries?.length || 0}`);
           if (kbEntries && kbEntries.length > 0) {
             knowledgeContext = `
-====================================
 ## PROJECT KNOWLEDGE BASE
-====================================
-
-The user has provided the following brand guidelines, documentation, and reference materials. 
-IMPORTANT: Use this knowledge to inform your design decisions, copy, and overall approach.
-
-${kbEntries.map((entry: { name: string; content: string }) => `
-### ${entry.name}
-${entry.content}
-`).join('\n---\n')}
-
-====================================
-END OF KNOWLEDGE BASE
-====================================
+${kbEntries.map((entry: { name: string; content: string }) => `### ${entry.name}\n${entry.content}`).join('\n---\n')}
 `;
           }
         } else {
@@ -1130,34 +1155,32 @@ END OF KNOWLEDGE BASE
         }
       } catch (kbError) {
         console.error(`[BOT-CHAT:${requestId}] Error fetching knowledge base:`, kbError);
-        // Continue without knowledge base
       }
+    } else if (isFastMode) {
+      console.log(`[BOT-CHAT:${requestId}] Skipping knowledge base fetch (fast mode)`);
     } else {
       console.log(`[BOT-CHAT:${requestId}] Skipping knowledge base fetch (no projectId or missing env vars)`);
     }
 
-    // Check for URLs in the most recent user message - use deep extraction
+    // Check for URLs - SKIP in fast mode for speed (reduces 5+ seconds)
     const lastUserMessage = [...messages].reverse().find((m: any) => m.role === "user");
     let urlContext = "";
     
-    if (lastUserMessage?.content) {
-      // Handle both string content and multimodal array content
+    if (!isFastMode && lastUserMessage?.content) {
       let textContent = "";
       if (typeof lastUserMessage.content === "string") {
         textContent = lastUserMessage.content;
       } else if (Array.isArray(lastUserMessage.content)) {
-        // Extract text from multimodal content array
         const textPart = lastUserMessage.content.find((part: any) => part.type === "text");
         textContent = textPart?.text || "";
       }
       
       const urls = textContent.match(URL_REGEX);
       if (urls && urls.length > 0) {
-        console.log(`[BOT-CHAT:${requestId}] Found URL, extracting (5s timeout): ${urls[0]}`);
-        // Add 5 second timeout for URL extraction to prevent slow requests
+        console.log(`[BOT-CHAT:${requestId}] Found URL, extracting (3s timeout): ${urls[0]}`);
         const extractionPromise = extractFromUrl(urls[0]);
         const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) => 
-          setTimeout(() => resolve({ success: false, error: 'URL extraction timeout' }), 5000)
+          setTimeout(() => resolve({ success: false, error: 'URL extraction timeout' }), 3000)
         );
         const extraction = await Promise.race([extractionPromise, timeoutPromise]);
         if (extraction.success && extraction.data) {
@@ -1166,9 +1189,12 @@ END OF KNOWLEDGE BASE
           console.log(`[BOT-CHAT:${requestId}] URL extraction skipped: ${extraction.error || 'timeout'}`);
         }
       }
+    } else if (isFastMode) {
+      console.log(`[BOT-CHAT:${requestId}] Skipping URL extraction (fast mode)`);
     }
 
-    let enhancedPrompt = SYSTEM_PROMPT;
+    // Select base prompt based on mode
+    let enhancedPrompt = isFastMode ? FAST_SYSTEM_PROMPT : SYSTEM_PROMPT;
     
     // Add knowledge base context first (higher priority)
     if (knowledgeContext) {
@@ -1271,10 +1297,13 @@ If you cannot fulfill these requirements, explain why in your conversational res
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
     console.log(`[BOT-CHAT:${requestId}] Total messages to send: ${messages.length + 1}`);
 
-    // Always use Gemini Flash for speed - it's fast and high quality
-    // Only use GPT-5 if explicitly requested for complex reasoning
+    // Model selection: Gemini Flash for speed, GPT-5 for quality mode
     const selectedModel = modelMode === 'quality' ? 'openai/gpt-5-mini' : 'google/gemini-2.5-flash';
-    console.log(`[BOT-CHAT:${requestId}] Model: ${selectedModel}`);
+    
+    // Token limits: Lower for fast mode (faster response), higher for quality
+    const maxTokens = isFastMode ? 4000 : 8000;
+    
+    console.log(`[BOT-CHAT:${requestId}] Model: ${selectedModel}, Max tokens: ${maxTokens}`);
 
     const aiStartTime = Date.now();
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -1290,11 +1319,10 @@ If you cannot fulfill these requirements, explain why in your conversational res
           ...messages,
         ],
         stream: true,
-        // Use max_completion_tokens for newer OpenAI models (GPT-5, etc.)
-        // Use max_tokens for Gemini models
+        // Use max_completion_tokens for OpenAI models, max_tokens for Gemini
         ...(selectedModel.startsWith('openai/') 
-          ? { max_completion_tokens: 8000 } 
-          : { max_tokens: 8000 }),
+          ? { max_completion_tokens: maxTokens } 
+          : { max_tokens: maxTokens }),
       }),
     });
 

@@ -1052,7 +1052,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           messages: chatMessages, 
           modelMode, 
           projectId,
-          scaffold: generationScaffold // Pass scaffold for AI to follow
+          scaffold: generationScaffold,
+          speedMode: messages.length <= 1 ? 'fast' : 'normal' // Fast mode for initial generation
         }),
       });
 
