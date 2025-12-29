@@ -824,13 +824,21 @@ export function BuilderShell() {
     });
     
     // Step 4: Build generation scaffold for the AI prompt
+    // Global forbidden phrases - NEVER generate content about the builder itself
+    const globalForbiddenPhrases = [
+      'excellion', 'website builder', 'code ownership', 'export your code',
+      'uptime sla', '99.9% uptime', 'support response', 'enterprise hosting',
+      'own 100% of your code', 'priority support', 'response times',
+      'hosting infrastructure', 'cloud hosting', 'code export'
+    ];
+    
     const generationScaffold = {
       category: route.category,
       goal: route.goal,
       archetypeId: archetype.id,
       requiredPages: archetype.requiredPages,
       ctaRules: archetype.ctaRules,
-      forbiddenPhrases: archetype.forbiddenPhrases,
+      forbiddenPhrases: [...archetype.forbiddenPhrases, ...globalForbiddenPhrases],
       integrations: route.integrationsNeeded,
       layoutSignature: archetype.layoutSignature,
     };
