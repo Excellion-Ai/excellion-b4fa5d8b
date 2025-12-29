@@ -1301,13 +1301,12 @@ If you cannot fulfill these requirements, explain why in your conversational res
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
     console.log(`[BOT-CHAT:${requestId}] Total messages to send: ${messages.length + 1}`);
 
-    // Model selection: gemini-2.5-flash-lite for ultra-fast initial, gemini-2.5-flash for refinements
-    const selectedModel = isFastMode 
-      ? 'google/gemini-2.5-flash-lite' 
-      : (modelMode === 'quality' ? 'google/gemini-2.5-flash' : 'google/gemini-2.5-flash');
+    // Model selection: gemini-2.5-flash for all generation (balanced speed + quality)
+    // flash-lite was too low quality, flash provides 10-20s generation with better output
+    const selectedModel = 'google/gemini-2.5-flash';
     
-    // Token limits: 3000 for fast mode (faster response), 6000 for normal
-    const maxTokens = isFastMode ? 3000 : 6000;
+    // Token limits: 3500 for fast mode (compact but complete), 6000 for refinements
+    const maxTokens = isFastMode ? 3500 : 6000;
     
     console.log(`[BOT-CHAT:${requestId}] Model: ${selectedModel}, Max tokens: ${maxTokens}`);
 
