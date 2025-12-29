@@ -440,6 +440,7 @@ export function BuilderShell() {
     return 'premium';
   });
   const [showDiffViewer, setShowDiffViewer] = useState(false);
+  const [showCodeDialog, setShowCodeDialog] = useState(false);
   const [pendingSpec, setPendingSpec] = useState<SiteSpec | null>(null);
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
@@ -1594,77 +1595,21 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                                 </Button>
                               </div>
                             )}
+                            {/* View code link */}
+                            {siteSpec && (
+                              <Button
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                                onClick={() => setShowCodeDialog(true)}
+                              >
+                                <Code className="h-3 w-3 mr-1" />
+                                View code
+                              </Button>
+                            )}
                           </div>
                         ) : (
                           <span>{msg.content}</span>
-                        )}
-                        
-                        {/* Action chips for assistant messages after generation */}
-                        {msg.role === 'assistant' && siteSpec && parsed?.isStructured && (
-                          <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-border/50">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs"
-                              onClick={() => {
-                                const themeEditorEl = document.querySelector('[data-theme-editor]');
-                                if (themeEditorEl) (themeEditorEl as HTMLButtonElement).click();
-                                else toast.info('Use the Theme button above to customize colors');
-                              }}
-                            >
-                              Change Theme
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs"
-                              onClick={() => {
-                                const heroSection = siteSpec.pages[currentPageIndex]?.sections?.find(s => s.type === 'hero');
-                                if (heroSection) {
-                                  setVisualEditsEnabled(true);
-                                  toast.success('Visual edits enabled - click the headline to edit');
-                                }
-                              }}
-                            >
-                              Improve Headline
-                            </Button>
-                            {!siteSpec.pages?.some(p => p.sections?.some(s => s.type === 'testimonials')) && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs"
-                                onClick={() => {
-                                  editor.addSection({
-                                    id: `testimonials-${Date.now()}`,
-                                    type: 'testimonials',
-                                    label: 'Testimonials',
-                                    content: {
-                                      title: 'What Our Clients Say',
-                                      items: [
-                                        { name: 'Happy Client', role: 'Customer', quote: 'Amazing service! Highly recommend.' },
-                                        { name: 'Business Owner', role: 'Partner', quote: 'Professional and reliable.' },
-                                        { name: 'Regular User', role: 'Customer', quote: 'Great experience every time.' },
-                                      ],
-                                    },
-                                  });
-                                  toast.success('Added testimonials section');
-                                }}
-                              >
-                                Add Proof Section
-                              </Button>
-                            )}
-                            {currentIssues.length > 0 && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs text-yellow-500 border-yellow-500/50"
-                                onClick={() => setShowIssuesPanel(true)}
-                              >
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                Fix Issues ({currentIssues.length})
-                              </Button>
-                            )}
-                          </div>
                         )}
                       </div>
                     </div>
@@ -1680,6 +1625,47 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                 )}
               </div>
             </ScrollArea>
+
+            {/* Dynamic Suggestions - show when site exists */}
+            {siteSpec && (
+              <div className="border-t border-border px-3 py-2 flex flex-wrap gap-1.5">
+                <span className="text-xs text-muted-foreground mr-1 self-center">Try:</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-xs px-2"
+                  onClick={() => setIdea('Add a testimonials section with 3 customer reviews')}
+                >
+                  Add reviews
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-xs px-2"
+                  onClick={() => setIdea('Improve the hero headline to be more compelling and conversion-focused')}
+                >
+                  Better headline
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-xs px-2"
+                  onClick={() => setIdea('Add a FAQ section with 5 common questions about this business')}
+                >
+                  Add FAQ
+                </Button>
+                {!siteSpec.pages?.some(p => p.sections?.some(s => s.type === 'stats')) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 text-xs px-2"
+                    onClick={() => setIdea('Add a stats section showing key metrics and achievements')}
+                  >
+                    Add stats
+                  </Button>
+                )}
+              </div>
+            )}
 
             {/* Theme Editor - show when site exists */}
             {siteSpec && (
@@ -2367,6 +2353,24 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           </DialogHeader>
           <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
             <SecurityScanPanel siteSpec={siteSpec} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Code Export Dialog */}
+      <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
+        <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Code className="h-5 w-5 text-primary" />
+              Generated Code
+            </DialogTitle>
+            <DialogDescription>
+              View, copy, or download the generated HTML for your website.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
+            <CodeExport siteSpec={siteSpec} projectName={projectName} />
           </div>
         </DialogContent>
       </Dialog>
