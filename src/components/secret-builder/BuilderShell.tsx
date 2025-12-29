@@ -1303,6 +1303,22 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       return;
     }
 
+    console.log('[IMAGE-GEN] Starting image generation:', { imagePrompt, hasSiteSpec: !!siteSpec });
+
+    // Check session FIRST before doing anything else
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      console.log('[IMAGE-GEN] No session found, redirecting to auth');
+      toast.error('Please log in to generate images', {
+        action: {
+          label: 'Sign In',
+          onClick: () => navigate('/auth'),
+        },
+      });
+      return;
+    }
+    console.log('[IMAGE-GEN] Session valid, user:', session.user?.email);
+
     // Check credits for image generation (2 credits)
     if (isAuthenticated && !checkCredits('image')) {
       toast.error(`Not enough credits. Need ${getCost('image')} for image generation.`);
@@ -1313,15 +1329,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
     try {
       // Deduct credits before image generation
       const canProceed = await deductCredits('image', 'AI image generation');
+      console.log('[IMAGE-GEN] Deduct credits result:', canProceed);
       if (!canProceed) {
-        setIsGeneratingImage(false);
-        return;
-      }
-
-      // Get user session for authentication
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        toast.error('Please log in to generate images');
         setIsGeneratingImage(false);
         return;
       }
@@ -1352,6 +1361,9 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             referenceImage: imageAttachment || undefined
           };
 
+      console.log('[IMAGE-GEN] Calling endpoint:', endpoint);
+      console.log('[IMAGE-GEN] Request body:', requestBody);
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -1361,12 +1373,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         body: JSON.stringify(requestBody),
       });
 
+      console.log('[IMAGE-GEN] Response status:', response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.error('[IMAGE-GEN] Error response:', error);
         throw new Error(error.error || 'Failed to generate image');
       }
 
       const data = await response.json();
+      console.log('[IMAGE-GEN] Success response:', { imageUrl: data.imageUrl, imagesCount: data.images?.length });
       const generatedImageUrl = data.imageUrl || data.images?.[0];
       
       if (generatedImageUrl) {
@@ -1394,9 +1410,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         fetchGeneratedImages();
         setImagePrompt('');
         setImageAttachment(null);
+      } else {
+        console.error('[IMAGE-GEN] No image URL in response:', data);
+        toast.error('Image generation completed but no image was returned');
       }
     } catch (error) {
-      console.error('Image generation error:', error);
+      console.error('[IMAGE-GEN] Error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate image');
     } finally {
       setIsGeneratingImage(false);
