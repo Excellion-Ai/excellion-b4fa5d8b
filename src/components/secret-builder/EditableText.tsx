@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useVisualMode } from './VisualModeContext';
 
 interface EditableTextProps {
   value: string;
@@ -20,6 +22,7 @@ export function EditableText({
   multiline = false,
   placeholder = 'Click to edit...',
 }: EditableTextProps) {
+  const { visualModeActive } = useVisualMode();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
@@ -76,17 +79,36 @@ export function EditableText({
     );
   }
 
-  return (
+  const content = (
     <Tag
       onClick={() => setIsEditing(true)}
       className={cn(
-        'cursor-pointer transition-all duration-150 hover:ring-2 hover:ring-primary/30 hover:ring-offset-2 rounded px-1 -mx-1',
+        'cursor-pointer transition-all duration-150 rounded px-1 -mx-1',
+        visualModeActive 
+          ? 'ring-2 ring-primary/40 ring-offset-2 bg-primary/5 hover:ring-primary/60 hover:bg-primary/10' 
+          : 'hover:ring-2 hover:ring-primary/30 hover:ring-offset-2',
         className
       )}
       style={style}
-      title="Click to edit"
     >
       {value || placeholder}
     </Tag>
   );
+
+  if (visualModeActive) {
+    return (
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {content}
+          </TooltipTrigger>
+          <TooltipContent side="top" className="bg-primary text-primary-foreground text-xs">
+            Click to edit • Free, no credits used
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return content;
 }

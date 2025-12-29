@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -51,6 +51,7 @@ import { getPacksForIntegrations, mergeIntegrationPages, type IntegrationPack } 
 import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
+import { cn } from '@/lib/utils';
 import { 
   formatChatResponse,
   convertViolationsToIssues,
@@ -2111,6 +2112,26 @@ Regenerate the problematic sections with valid content.`;
             >
               <HistoryIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
+            
+            {/* Visual Mode Toggle */}
+            <div className="ml-1 sm:ml-2">
+              <Button
+                variant={visualEditsEnabled ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setVisualEditsEnabled(!visualEditsEnabled);
+                  toast.success(visualEditsEnabled ? 'Visual Mode OFF' : 'Visual Mode ON — Click any text to edit for free');
+                }}
+                className={cn(
+                  "gap-1 sm:gap-1.5 text-xs px-2 sm:px-3 transition-all",
+                  visualEditsEnabled && "bg-primary text-primary-foreground"
+                )}
+                title="Toggle Visual Mode for free inline editing"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Visual</span>
+              </Button>
+            </div>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -2332,6 +2353,7 @@ Regenerate the problematic sections with valid content.`;
                     onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
                     onPageChange={setCurrentPageIndex}
                     motionIntensity={motionIntensity}
+                    visualModeActive={visualEditsEnabled}
                   />
                 </SiteRendererErrorBoundary>
               ) : (
