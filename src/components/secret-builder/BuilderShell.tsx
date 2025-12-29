@@ -1461,19 +1461,27 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       }
 
       const userFolder = `generated/${userId}`;
+      console.log('[IMAGE-LIBRARY] Fetching images from:', userFolder);
+      
       const { data, error } = await supabase.storage
         .from('builder-images')
         .list(userFolder, { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
       
-      if (error) throw error;
+      if (error) {
+        console.error('[IMAGE-LIBRARY] Storage list error:', error);
+        throw error;
+      }
+      
+      console.log('[IMAGE-LIBRARY] Raw storage response:', data);
       
       const images = (data || [])
-        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+        .filter(file => !file.id?.includes('.emptyFolderPlaceholder') && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
         .map(file => ({
           name: file.name,
           url: supabase.storage.from('builder-images').getPublicUrl(`${userFolder}/${file.name}`).data.publicUrl,
         }));
       
+      console.log('[IMAGE-LIBRARY] Filtered images:', images.length, images);
       setGeneratedImages(images);
     } catch (error) {
       console.error('Failed to fetch images:', error);
