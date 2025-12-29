@@ -15,6 +15,7 @@ import {
   Lock, ShieldCheck, Fingerprint, Phone, Mail, MessageCircle, Send
 } from 'lucide-react';
 import { EditableText } from '../EditableText';
+import { EditableElement } from '../EditableElement';
 import { ScrollAnimation, StaggerContainer } from '../animations/ScrollAnimations';
 
 interface FeaturesSectionProps {
@@ -243,71 +244,83 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
                 variant="card"
                 delay={index * 0.1}
               >
-                <div 
-                  className={`p-6 rounded-xl transition-all h-full overflow-hidden ${hasMicroEffect('shadowLift') ? 'hover-lift' : 'hover:scale-105'}`}
-                  style={{ 
-                    backgroundColor: isDark ? '#1f1f1f' : '#ffffff',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
+                <EditableElement
+                  elementId={`${section.id}-feature-${index}`}
+                  sectionId={section.id}
+                  itemIndex={index}
+                  label={`Feature Card ${index + 1}`}
+                  properties={[
+                    { type: 'text', key: 'title', label: 'Title', value: feature.title },
+                    { type: 'text', key: 'description', label: 'Description', value: feature.description, multiline: true },
+                    { type: 'icon', key: 'icon', label: 'Icon', value: feature.icon || 'Zap' },
+                  ]}
                 >
                   <div 
-                    className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${hasMicroEffect('iconPulse') ? 'animate-icon-pulse' : ''}`}
-                    style={{ backgroundColor: `${theme.primaryColor}20` }}
+                    className={`p-6 rounded-xl transition-all h-full overflow-hidden ${hasMicroEffect('shadowLift') ? 'hover-lift' : 'hover:scale-105'}`}
+                    style={{ 
+                      backgroundColor: isDark ? '#1f1f1f' : '#ffffff',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
                   >
-                    <IconComponent 
-                      className="w-6 h-6" 
-                      style={{ color: theme.primaryColor }} 
-                    />
+                    <div 
+                      className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${hasMicroEffect('iconPulse') ? 'animate-icon-pulse' : ''}`}
+                      style={{ backgroundColor: `${theme.primaryColor}20` }}
+                    >
+                      <IconComponent 
+                        className="w-6 h-6" 
+                        style={{ color: theme.primaryColor }} 
+                      />
+                    </div>
+                    {onUpdateItem ? (
+                      <EditableText
+                        value={feature.title}
+                        onSave={(val) => onUpdateItem(index, 'title', val)}
+                        as="h3"
+                        className="text-lg font-semibold mb-2 break-words"
+                        style={{ 
+                          fontFamily: theme.fontHeading || 'system-ui',
+                          color: isDark ? '#ffffff' : '#111827',
+                          overflowWrap: 'anywhere'
+                        }}
+                      />
+                    ) : (
+                      <h3 
+                        className="text-lg font-semibold mb-2 break-words"
+                        style={{ 
+                          fontFamily: theme.fontHeading || 'system-ui',
+                          color: isDark ? '#ffffff' : '#111827',
+                          overflowWrap: 'anywhere'
+                        }}
+                      >
+                        {feature.title}
+                      </h3>
+                    )}
+                    {onUpdateItem ? (
+                      <EditableText
+                        value={feature.description}
+                        onSave={(val) => onUpdateItem(index, 'description', val)}
+                        as="p"
+                        className="text-sm break-words"
+                        style={{ 
+                          fontFamily: theme.fontBody || 'system-ui',
+                          color: isDark ? '#9ca3af' : '#6b7280',
+                          overflowWrap: 'anywhere'
+                        }}
+                      />
+                    ) : (
+                      <p 
+                        className="text-sm break-words"
+                        style={{ 
+                          fontFamily: theme.fontBody || 'system-ui',
+                          color: isDark ? '#9ca3af' : '#6b7280',
+                          overflowWrap: 'anywhere'
+                        }}
+                      >
+                        {feature.description}
+                      </p>
+                    )}
                   </div>
-                  {onUpdateItem ? (
-                    <EditableText
-                      value={feature.title}
-                      onSave={(val) => onUpdateItem(index, 'title', val)}
-                      as="h3"
-                      className="text-lg font-semibold mb-2 break-words"
-                      style={{ 
-                        fontFamily: theme.fontHeading || 'system-ui',
-                        color: isDark ? '#ffffff' : '#111827',
-                        overflowWrap: 'anywhere'
-                      }}
-                    />
-                  ) : (
-                    <h3 
-                      className="text-lg font-semibold mb-2 break-words"
-                      style={{ 
-                        fontFamily: theme.fontHeading || 'system-ui',
-                        color: isDark ? '#ffffff' : '#111827',
-                        overflowWrap: 'anywhere'
-                      }}
-                    >
-                      {feature.title}
-                    </h3>
-                  )}
-                  {onUpdateItem ? (
-                    <EditableText
-                      value={feature.description}
-                      onSave={(val) => onUpdateItem(index, 'description', val)}
-                      as="p"
-                      className="text-sm break-words"
-                      style={{ 
-                        fontFamily: theme.fontBody || 'system-ui',
-                        color: isDark ? '#9ca3af' : '#6b7280',
-                        overflowWrap: 'anywhere'
-                      }}
-                    />
-                  ) : (
-                    <p 
-                      className="text-sm break-words"
-                      style={{ 
-                        fontFamily: theme.fontBody || 'system-ui',
-                        color: isDark ? '#9ca3af' : '#6b7280',
-                        overflowWrap: 'anywhere'
-                      }}
-                    >
-                      {feature.description}
-                    </p>
-                  )}
-                </div>
+                </EditableElement>
               </MotionWrapper>
             );
           })}

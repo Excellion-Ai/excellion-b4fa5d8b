@@ -5,7 +5,8 @@ import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure, Tes
 import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
 import { MotionIntensity } from '@/lib/motion/types';
 import { MotionProvider, MotionWrapper, SignatureFlourish, BackgroundAccent } from '@/components/motion';
-import { VisualModeContext } from './VisualModeContext';
+import { VisualModeProvider } from './VisualModeContext';
+import { VisualEditPanel } from './VisualEditPanel';
 import {
   DndContext,
   closestCenter,
@@ -713,8 +714,63 @@ export function SiteRenderer({
     ?.flatMap(s => (s.content as any)?.items?.map((i: any) => i.title || i.name) || [])
     ?.filter(Boolean) || [];
 
+  // Handler for visual edit property changes
+  const handleVisualPropertyChange = (sectionId: string, itemIndex: number | undefined, key: string, value: string) => {
+    // Route the property change to the appropriate update handler
+    const section = currentPage?.sections?.find(s => s.id === sectionId);
+    if (!section) return;
+
+    // Map common keys to their handlers
+    if (section.type === 'hero') {
+      if (['headline', 'subheadline', 'ctaText', 'secondaryCtaText', 'backgroundImage'].includes(key)) {
+        onUpdateHeroContent?.(sectionId, key as keyof HeroContent, value);
+      }
+    } else if (section.type === 'features') {
+      if (itemIndex !== undefined) {
+        onUpdateFeatureItem?.(sectionId, itemIndex, key as keyof FeatureItem, value);
+      } else if (['title', 'subtitle'].includes(key)) {
+        onUpdateFeaturesContent?.(sectionId, key as keyof FeaturesContent, value);
+      }
+    } else if (section.type === 'testimonials') {
+      if (itemIndex !== undefined) {
+        onUpdateTestimonialItem?.(sectionId, itemIndex, key as keyof TestimonialItem, value);
+      } else if (['title', 'subtitle'].includes(key)) {
+        onUpdateTestimonialsContent?.(sectionId, key as keyof TestimonialsContent, value);
+      }
+    } else if (section.type === 'pricing') {
+      if (itemIndex !== undefined) {
+        onUpdatePricingItem?.(sectionId, itemIndex, key as keyof PricingTier, value);
+      } else if (['title', 'subtitle'].includes(key)) {
+        onUpdatePricingContent?.(sectionId, key as keyof PricingContent, value);
+      }
+    } else if (section.type === 'faq') {
+      if (itemIndex !== undefined) {
+        onUpdateFAQItem?.(sectionId, itemIndex, key as keyof FAQItem, value);
+      } else if (['title', 'subtitle'].includes(key)) {
+        onUpdateFAQContent?.(sectionId, key as keyof FAQContent, value);
+      }
+    } else if (section.type === 'contact') {
+      if (['title', 'subtitle', 'email', 'phone', 'address'].includes(key)) {
+        onUpdateContactContent?.(sectionId, key as keyof ContactContent, value);
+      }
+    } else if (section.type === 'cta') {
+      if (['headline', 'subheadline', 'buttonText', 'buttonLink'].includes(key)) {
+        onUpdateCTAContent?.(sectionId, key as keyof CTAContent, value);
+      }
+    } else if (section.type === 'stats') {
+      if (itemIndex !== undefined) {
+        onUpdateStatsItem?.(sectionId, itemIndex, key as keyof StatsItem, value);
+      } else if (['title', 'subtitle'].includes(key)) {
+        onUpdateStatsContent?.(sectionId, key as keyof StatsContent, value);
+      }
+    }
+  };
+
   return (
-    <VisualModeContext.Provider value={{ visualModeActive }}>
+    <VisualModeProvider 
+      active={visualModeActive} 
+      onPropertyChange={handleVisualPropertyChange}
+    >
       <MotionProvider
         businessName={siteSpec.name}
         description={siteSpec.description}
@@ -733,8 +789,8 @@ export function SiteRenderer({
               )}
               {isEditable && <span className="ml-2 text-primary">(Click text to edit, drag to reorder)</span>}
               {visualModeActive && (
-                <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-green-500/20 text-green-500">
-                  VISUAL MODE
+                <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-blue-500/20 text-blue-400">
+                  VISUAL EDIT MODE
                 </span>
               )}
             </span>
@@ -782,8 +838,11 @@ export function SiteRenderer({
             </div>
           </div>
         </div>
+
+        {/* Visual Edit Panel */}
+        <VisualEditPanel />
       </MotionProvider>
-    </VisualModeContext.Provider>
+    </VisualModeProvider>
   );
 }
 
