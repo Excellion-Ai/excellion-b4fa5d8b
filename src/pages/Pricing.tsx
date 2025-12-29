@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { SprintPassBar } from "@/components/SprintPassBar";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
@@ -141,6 +142,7 @@ const Pricing = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
+      <SprintPassBar />
       <main className="container mx-auto px-6 py-20">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
