@@ -76,6 +76,12 @@ type LocationState = {
   initialIdea?: string;
   projectId?: string;
   templateSpec?: SiteSpec;
+  interviewData?: {
+    offers?: string[];
+    colorThemePreset?: string | null;
+    colorThemeCustom?: { primary: string; accent: string; backgroundMode: 'dark' | 'light' } | null;
+    colorTheme?: { preset: string; primary: string; accent: string; backgroundMode: 'dark' | 'light' } | null;
+  };
 };
 
 const INITIAL_STEPS: GenerationStep[] = [

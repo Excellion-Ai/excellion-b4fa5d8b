@@ -6,8 +6,12 @@ import {
   WebsiteType, 
   ServiceMode, 
   PrimaryGoal, 
-  StyleVibe,
-  InterviewAnswers 
+  ColorThemePreset,
+  ColorThemeCustom,
+  InterviewAnswers,
+  OFFER_SUGGESTIONS,
+  COLOR_THEME_PRESETS,
+  isValidHexColor,
 } from '@/hooks/useInterviewIntake';
 
 interface InterviewStepperProps {
@@ -53,13 +57,14 @@ const PRIMARY_GOALS: { value: PrimaryGoal; label: string }[] = [
   { value: 'contact_me', label: 'Contact me' },
 ];
 
-const STYLE_VIBES: { value: StyleVibe; label: string }[] = [
-  { value: 'modern', label: 'Modern' },
-  { value: 'bold', label: 'Bold' },
-  { value: 'warm', label: 'Warm' },
-  { value: 'luxury', label: 'Luxury' },
-  { value: 'playful', label: 'Playful' },
-  { value: 'dark', label: 'Dark/Sleek' },
+const COLOR_THEMES: { value: ColorThemePreset; label: string; colors?: { primary: string; accent: string } }[] = [
+  { value: 'dark_gold', label: 'Dark + Gold (Luxury)', colors: { primary: '#111111', accent: '#D4AF37' } },
+  { value: 'bw_minimal', label: 'Black + White (Minimal)', colors: { primary: '#000000', accent: '#FFFFFF' } },
+  { value: 'navy_white', label: 'Navy + White (Corporate)', colors: { primary: '#1e3a5a', accent: '#FFFFFF' } },
+  { value: 'forest_cream', label: 'Forest + Cream (Natural)', colors: { primary: '#064e3b', accent: '#FDF6E3' } },
+  { value: 'charcoal_blue', label: 'Charcoal + Blue (Modern Tech)', colors: { primary: '#1f2937', accent: '#3b82f6' } },
+  { value: 'warm_sand', label: 'Warm Sand + Clay (Warm)', colors: { primary: '#d4a574', accent: '#8b5a2b' } },
+  { value: 'custom', label: 'Custom' },
 ];
 
 function ChipGroup<T extends string>({
@@ -91,6 +96,42 @@ function ChipGroup<T extends string>({
   );
 }
 
+function ColorThemeChip({
+  theme,
+  selected,
+  onClick,
+}: {
+  theme: typeof COLOR_THEMES[0];
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+        selected
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background/50 text-foreground/80 border-border/50 hover:border-primary/50 hover:bg-background/70'
+      }`}
+    >
+      {theme.colors && (
+        <div className="flex -space-x-1">
+          <div 
+            className="w-4 h-4 rounded-full border border-white/20" 
+            style={{ backgroundColor: theme.colors.primary }}
+          />
+          <div 
+            className="w-4 h-4 rounded-full border border-white/20" 
+            style={{ backgroundColor: theme.colors.accent }}
+          />
+        </div>
+      )}
+      <span>{theme.label}</span>
+    </button>
+  );
+}
+
 export function InterviewStepper({
   step,
   totalSteps,
@@ -107,6 +148,43 @@ export function InterviewStepper({
   isGenerating = false,
 }: InterviewStepperProps) {
   const isLastStep = step === totalSteps;
+  
+  // Get offer suggestions based on website type
+  const offerSuggestions = answers.websiteType 
+    ? OFFER_SUGGESTIONS[answers.websiteType] 
+    : OFFER_SUGGESTIONS.other;
+
+  // Handle suggestion chip click - fill next empty offer field
+  const handleSuggestionClick = (suggestion: string) => {
+    const emptyIndex = answers.offers.findIndex(o => !o.trim());
+    if (emptyIndex !== -1) {
+      onUpdateOffer(emptyIndex as 0 | 1 | 2, suggestion);
+    } else {
+      // All filled - replace the third one
+      onUpdateOffer(2, suggestion);
+    }
+  };
+
+  // Handle color theme selection
+  const handleColorThemeSelect = (preset: ColorThemePreset) => {
+    onUpdateAnswer('colorThemePreset', preset);
+    if (preset !== 'custom') {
+      onUpdateAnswer('colorThemeCustom', null);
+    } else {
+      // Initialize custom with defaults
+      onUpdateAnswer('colorThemeCustom', {
+        primary: '#111111',
+        accent: '#D4AF37',
+        backgroundMode: 'dark',
+      });
+    }
+  };
+
+  // Handle custom color updates
+  const handleCustomColorChange = (field: keyof ColorThemeCustom, value: string) => {
+    const current = answers.colorThemeCustom || { primary: '#111111', accent: '#D4AF37', backgroundMode: 'dark' as const };
+    onUpdateAnswer('colorThemeCustom', { ...current, [field]: value });
+  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -121,7 +199,6 @@ export function InterviewStepper({
               value={answers.websiteType}
               onChange={(v) => onUpdateAnswer('websiteType', v)}
             />
-            {/* Show text input when "Other" is selected */}
             {answers.websiteType === 'other' && (
               <div className="pt-2">
                 <Input
@@ -196,19 +273,56 @@ export function InterviewStepper({
       case 5:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Top 3 things you offer <span className="text-muted-foreground font-normal">(optional)</span>
-            </h3>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">
+                What are your top offers?
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Add up to 3. These become your homepage highlights.
+              </p>
+            </div>
             <div className="space-y-3">
-              {[0, 1, 2].map((i) => (
-                <Input
-                  key={i}
-                  value={answers.offers[i as 0 | 1 | 2]}
-                  onChange={(e) => onUpdateOffer(i as 0 | 1 | 2, e.target.value)}
-                  placeholder={`Offer ${i + 1}`}
-                  className="bg-background/50 border-border/50"
-                />
-              ))}
+              {[0, 1, 2].map((i) => {
+                const value = answers.offers[i as 0 | 1 | 2];
+                const isOverLimit = value.length > 60;
+                return (
+                  <div key={i} className="relative">
+                    <Input
+                      value={value}
+                      onChange={(e) => onUpdateOffer(i as 0 | 1 | 2, e.target.value)}
+                      onBlur={(e) => onUpdateOffer(i as 0 | 1 | 2, e.target.value.trim())}
+                      placeholder={
+                        i === 0 ? "e.g., Free estimates" :
+                        i === 1 ? "e.g., Same-day appointments" :
+                        "e.g., Monthly membership / packages"
+                      }
+                      maxLength={60}
+                      className={`bg-background/50 border-border/50 pr-12 ${isOverLimit ? 'border-destructive' : ''}`}
+                    />
+                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${
+                      value.length > 50 ? 'text-amber-500' : 'text-muted-foreground/50'
+                    }`}>
+                      {value.length}/60
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            {/* Suggestion chips */}
+            <div className="pt-2">
+              <p className="text-xs text-muted-foreground mb-2">Quick add:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {offerSuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="px-2.5 py-1 rounded-full text-xs bg-background/30 text-foreground/70 border border-border/30 hover:border-primary/40 hover:bg-background/50 transition-colors"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         );
@@ -216,14 +330,95 @@ export function InterviewStepper({
       case 6:
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Pick a style vibe
-            </h3>
-            <ChipGroup
-              options={STYLE_VIBES}
-              value={answers.vibe}
-              onChange={(v) => onUpdateAnswer('vibe', v)}
-            />
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">
+                Pick a color theme
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                This sets your site's main colors. You can change it later.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {COLOR_THEMES.map((theme) => (
+                <ColorThemeChip
+                  key={theme.value}
+                  theme={theme}
+                  selected={answers.colorThemePreset === theme.value}
+                  onClick={() => handleColorThemeSelect(theme.value)}
+                />
+              ))}
+            </div>
+            
+            {/* Custom color inputs */}
+            {answers.colorThemePreset === 'custom' && (
+              <div className="pt-3 space-y-3 p-4 rounded-lg bg-background/30 border border-border/30">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">Primary color</label>
+                    <div className="relative">
+                      <Input
+                        value={answers.colorThemeCustom?.primary || '#111111'}
+                        onChange={(e) => handleCustomColorChange('primary', e.target.value)}
+                        placeholder="#111111"
+                        className={`bg-background/50 border-border/50 pl-10 font-mono text-sm ${
+                          answers.colorThemeCustom?.primary && !isValidHexColor(answers.colorThemeCustom.primary) 
+                            ? 'border-destructive' 
+                            : ''
+                        }`}
+                      />
+                      <div 
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded border border-white/20"
+                        style={{ backgroundColor: answers.colorThemeCustom?.primary || '#111111' }}
+                      />
+                    </div>
+                    {answers.colorThemeCustom?.primary && !isValidHexColor(answers.colorThemeCustom.primary) && (
+                      <p className="text-xs text-destructive mt-1">Use format #RRGGBB</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">Accent color</label>
+                    <div className="relative">
+                      <Input
+                        value={answers.colorThemeCustom?.accent || '#D4AF37'}
+                        onChange={(e) => handleCustomColorChange('accent', e.target.value)}
+                        placeholder="#D4AF37"
+                        className={`bg-background/50 border-border/50 pl-10 font-mono text-sm ${
+                          answers.colorThemeCustom?.accent && !isValidHexColor(answers.colorThemeCustom.accent) 
+                            ? 'border-destructive' 
+                            : ''
+                        }`}
+                      />
+                      <div 
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded border border-white/20"
+                        style={{ backgroundColor: answers.colorThemeCustom?.accent || '#D4AF37' }}
+                      />
+                    </div>
+                    {answers.colorThemeCustom?.accent && !isValidHexColor(answers.colorThemeCustom.accent) && (
+                      <p className="text-xs text-destructive mt-1">Use format #RRGGBB</p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">Background mode</label>
+                  <div className="flex gap-2">
+                    {(['dark', 'light'] as const).map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => handleCustomColorChange('backgroundMode', mode)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all border capitalize ${
+                          answers.colorThemeCustom?.backgroundMode === mode
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background/50 text-foreground/80 border-border/50 hover:border-primary/50'
+                        }`}
+                      >
+                        {mode}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
 
@@ -257,7 +452,7 @@ export function InterviewStepper({
       </div>
 
       {/* Step content */}
-      <div className="min-h-[120px]">
+      <div className="min-h-[160px]">
         {renderStepContent()}
       </div>
 
