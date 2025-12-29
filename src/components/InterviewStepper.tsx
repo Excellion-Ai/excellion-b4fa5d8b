@@ -308,22 +308,6 @@ export function InterviewStepper({
                 );
               })}
             </div>
-            {/* Suggestion chips */}
-            <div className="pt-2">
-              <p className="text-xs text-muted-foreground mb-2">Quick add:</p>
-              <div className="flex flex-wrap gap-1.5">
-                {offerSuggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="px-2.5 py-1 rounded-full text-xs bg-background/30 text-foreground/70 border border-border/30 hover:border-primary/40 hover:bg-background/50 transition-colors"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         );
 
