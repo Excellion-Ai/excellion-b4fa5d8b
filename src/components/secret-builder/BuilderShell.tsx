@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github, Scan, Eye, EyeOff } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github, Scan, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { DeviceFrame, DeviceSelector, type DeviceType } from './DeviceFrame';
 import { TouchTargetAnalyzer, useTouchTargetAnalysis } from './TouchTargetAnalyzer';
 import { CreditBalance } from './CreditBalance';
@@ -2303,7 +2303,7 @@ Regenerate the problematic sections with valid content.`;
             </div>
           )}
 
-          {/* Undo/Redo buttons */}
+          {/* Undo/Redo/Refresh buttons */}
           <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
             <Button
               variant="ghost"
@@ -2314,6 +2314,21 @@ Regenerate the problematic sections with valid content.`;
               title="Undo (Ctrl+Z)"
             >
               <Undo2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 sm:h-8 sm:w-8"
+              onClick={() => {
+                // Force re-render of preview without losing data
+                if (siteSpec) {
+                  setSiteSpecWithHistory({ ...siteSpec });
+                }
+              }}
+              disabled={!siteSpec}
+              title="Refresh Preview"
+            >
+              <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
             <Button
               variant="ghost"
