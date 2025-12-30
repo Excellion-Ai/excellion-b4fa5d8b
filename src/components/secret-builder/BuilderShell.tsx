@@ -458,7 +458,6 @@ export function BuilderShell() {
   const fallbackForcedOnceRef = useRef<boolean>(false);
   
   // Chat response formatting state
-  const [verbosityMode, setVerbosityMode] = useState<VerbosityMode>('concise');
   const [showIssuesPanel, setShowIssuesPanel] = useState(false);
   const [currentIssues, setCurrentIssues] = useState<BuilderIssue[]>([]);
   const [lastScaffold, setLastScaffold] = useState<GenerationScaffold | null>(null);
@@ -1567,7 +1566,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       updateStep(4, 'complete');
 
       // Format the response using the new contract
-      const formattedResponse = formatChatResponse(newSiteSpec, lastScaffold, assistantText || '', verbosityMode);
+      const formattedResponse = formatChatResponse(newSiteSpec, lastScaffold, assistantText || '', 'concise');
       
       // Update issues state
       const validationResult = validateSpecAgainstScaffold(newSiteSpec, lastScaffold);
@@ -1983,27 +1982,6 @@ Regenerate the problematic sections with valid content.`;
                   </svg>
                 </button>
                 <div className="h-4 w-px bg-border ml-auto shrink-0" />
-                
-                {/* Verbosity Toggle */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 text-xs gap-1 px-2">
-                      <span className="capitalize">{verbosityMode}</span>
-                      <ChevronDown className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-28">
-                    {(['concise', 'normal', 'detailed'] as VerbosityMode[]).map((mode) => (
-                      <DropdownMenuItem
-                        key={mode}
-                        onClick={() => setVerbosityMode(mode)}
-                        className={`capitalize ${verbosityMode === mode ? 'bg-accent' : ''}`}
-                      >
-                        {mode}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
                 
                 <CreditBalance className="shrink-0" />
               </div>
