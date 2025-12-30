@@ -300,7 +300,7 @@ export function HelpChat() {
           <motion.div animate={isOpen ? {} : pulseAnimation}>
             <MessageCircle className="w-4 h-4 text-primary" />
           </motion.div>
-          <span className="text-sm font-medium">Chat</span>
+          <span className="text-sm font-medium">Help</span>
           
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent pointer-events-none"
