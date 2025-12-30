@@ -149,7 +149,7 @@ const QUICK_PROMPTS = [
 // Templates now imported from templateSpecs.ts
 
 const NAV_ITEMS = [
-  { icon: BookOpen, label: 'Resources', action: 'resources' },
+  { icon: BookOpen, label: 'Resources & Tutorials', action: 'resources' },
 ] as const;
 
 // localStorage keys
