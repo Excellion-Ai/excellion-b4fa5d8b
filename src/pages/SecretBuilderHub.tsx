@@ -246,7 +246,40 @@ export default function SecretBuilderHub() {
     if (pendingPrompt) {
       setIdea(pendingPrompt);
     }
-  }, []);
+    
+    // Check for recovery data from abrupt page close
+    const recoveryData = localStorage.getItem('excellion_recovery_data');
+    if (recoveryData) {
+      try {
+        const { projectId, projectName, timestamp } = JSON.parse(recoveryData);
+        const ageMinutes = (Date.now() - timestamp) / (1000 * 60);
+        
+        // If recovery data is fresh (less than 30 minutes old), prompt user
+        if (ageMinutes < 30 && projectId) {
+          toast({
+            title: 'Resume your work?',
+            description: `Continue working on "${projectName}"?`,
+            action: (
+              <Button
+                size="sm"
+                onClick={() => {
+                  navigate('/secret-builder', { state: { projectId } });
+                }}
+              >
+                Open
+              </Button>
+            ),
+            duration: 10000,
+          });
+        }
+        // Clear recovery data after showing prompt
+        localStorage.removeItem('excellion_recovery_data');
+      } catch (err) {
+        console.warn('[Hub] Failed to parse recovery data:', err);
+        localStorage.removeItem('excellion_recovery_data');
+      }
+    }
+  }, [navigate, toast]);
 
   // Fetch projects
   useEffect(() => {
