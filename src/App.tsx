@@ -17,6 +17,7 @@ const ThankYou = lazy(() => import("./pages/ThankYou"));
 const MaintenanceRequest = lazy(() => import("./pages/MaintenanceRequest"));
 const SecretBuilder = lazy(() => import("./pages/SecretBuilder"));
 const SecretBuilderHub = lazy(() => import("./pages/SecretBuilderHub"));
+const BuilderResources = lazy(() => import("./pages/BuilderResources"));
 const Billing = lazy(() => import("./pages/Billing"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
@@ -71,6 +72,7 @@ const App = () => (
         <Route path="/maintenance-request" element={<MaintenanceRequest />} />
         <Route path="/secret-builder-hub" element={<SecretBuilderHub />} />
         <Route path="/secret-builder" element={<SecretBuilder />} />
+        <Route path="/builder-resources" element={<BuilderResources />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />

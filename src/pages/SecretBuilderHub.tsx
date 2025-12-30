@@ -997,7 +997,9 @@ export default function SecretBuilderHub() {
                 variant="ghost"
                 className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 onClick={() => {
-                  // Resources action - no external link
+                  if (item.action === 'resources') {
+                    navigate('/builder-resources');
+                  }
                 }}
               >
                 <item.icon className="w-4 h-4" />
