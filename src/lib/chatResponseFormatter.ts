@@ -184,24 +184,60 @@ export function convertViolationsToIssues(violations: ScaffoldViolation[]): Buil
   });
 }
 
-export function formatBuiltSummary(spec: SiteSpec, verbosity: VerbosityMode): string {
+export function formatBuiltSummary(spec: SiteSpec, verbosity: VerbosityMode, isEdit: boolean = false): string {
   const pageCount = getPageCount(spec);
   const sectionCount = countSections(spec);
   const goal = getPrimaryGoal(spec);
   
+  if (isEdit) {
+    return `Updated site structure. Now has ${pageCount} page${pageCount !== 1 ? 's' : ''} with ${sectionCount} section${sectionCount !== 1 ? 's' : ''}.`;
+  }
+  
   if (verbosity === 'concise') {
-    return `${pageCount}-page site with ${sectionCount} sections, optimized for ${goal}.`;
+    return `Created ${pageCount}-page site with ${sectionCount} sections, optimized for ${goal}.`;
   }
   
   const pageNames = spec.pages?.map(p => p.title || p.path).join(', ') || '';
   return `Created ${pageCount} pages (${pageNames}) with ${sectionCount} total sections. Primary conversion goal: ${goal}.`;
 }
 
+function countEdits(changes: string[]): { total: number; breakdown: string } {
+  const edits = changes.length;
+  if (edits === 0) return { total: 0, breakdown: '' };
+  if (edits === 1) return { total: 1, breakdown: '1 edit' };
+  return { total: edits, breakdown: `${edits} edits` };
+}
+
+function generateActionSummary(spec: SiteSpec, isEdit: boolean = false): string[] {
+  const actions: string[] = [];
+  const pageCount = getPageCount(spec);
+  const sectionCount = countSections(spec);
+  
+  if (!isEdit) {
+    actions.push(`Generated ${pageCount} page${pageCount !== 1 ? 's' : ''}`);
+    actions.push(`Created ${sectionCount} section${sectionCount !== 1 ? 's' : ''}`);
+    
+    // Check for specific section types
+    const hasHero = spec.pages?.some(p => p.sections?.some(s => s.type === 'hero'));
+    const hasContact = spec.pages?.some(p => p.sections?.some(s => s.type === 'contact'));
+    const hasPricing = spec.pages?.some(p => p.sections?.some(s => s.type === 'pricing'));
+    const hasTestimonials = spec.pages?.some(p => p.sections?.some(s => s.type === 'testimonials'));
+    
+    if (hasHero) actions.push('Added hero section with CTA');
+    if (hasContact) actions.push('Added contact form');
+    if (hasPricing) actions.push('Added pricing section');
+    if (hasTestimonials) actions.push('Added testimonials');
+  }
+  
+  return actions;
+}
+
 export function formatChatResponse(
   spec: SiteSpec | null,
   scaffold: GenerationScaffold | null,
   rawAiMessage: string,
-  verbosity: VerbosityMode = 'concise'
+  verbosity: VerbosityMode = 'concise',
+  isEdit: boolean = false
 ): FormattedResponse {
   if (!spec) {
     return {
@@ -216,14 +252,33 @@ export function formatChatResponse(
   const validationResult = validateSpecAgainstScaffold(spec, scaffold);
   const violations = validationResult.violations || [];
   
-  const built = formatBuiltSummary(spec, verbosity);
+  const built = formatBuiltSummary(spec, verbosity, isEdit);
   const nextStep = suggestNextStep(spec, violations);
-  const actions = getActionChips(spec, violations);
+  const actionChips = getActionChips(spec, violations);
+  const actionsSummary = generateActionSummary(spec, isEdit);
   
-  let fullMessage = `**Built:** ${built}\n\n**Next:** ${nextStep}`;
+  // Generate Lovable-style summary
+  const editCount = actionsSummary.length;
+  let fullMessage = '';
+  
+  if (isEdit) {
+    fullMessage = `I made ${editCount} change${editCount !== 1 ? 's' : ''} to your site:\n\n`;
+  } else {
+    fullMessage = `I created your site with ${editCount} component${editCount !== 1 ? 's' : ''}:\n\n`;
+  }
+  
+  // Add bullet points for each action
+  actionsSummary.forEach(action => {
+    fullMessage += `• ${action}\n`;
+  });
+  
+  // Add next suggestion if there are improvements to make
+  if (nextStep && violations.length === 0) {
+    fullMessage += `\n**Suggestion:** ${nextStep}`;
+  }
   
   if (violations.length > 0) {
-    fullMessage += `\n\n⚠️ Blocking issues detected: ${violations.length}`;
+    fullMessage += `\n\n⚠️ ${violations.length} issue${violations.length !== 1 ? 's' : ''} to review`;
   }
   
   if (verbosity === 'concise') {
@@ -236,7 +291,7 @@ export function formatChatResponse(
   return {
     built,
     nextStep,
-    actions,
+    actions: actionChips,
     blockerCount: violations.length,
     fullMessage,
   };
@@ -248,18 +303,37 @@ export function parseStructuredMessage(content: string): {
   nextStep?: string;
   hasBlockers?: boolean;
   blockerCount?: number;
+  editCount?: number;
 } {
+  // Match new Lovable-style format
+  const changesMatch = content.match(/I (?:made|created)[^:]*:\n\n((?:•[^\n]+\n?)+)/s);
+  const suggestionMatch = content.match(/\*\*Suggestion:\*\*\s*(.+?)(?=\n\n|⚠️|$)/s);
+  const blockerMatch = content.match(/⚠️\s*(\d+)\s*issue/);
+  
+  if (changesMatch) {
+    const bulletPoints = changesMatch[1].match(/•/g) || [];
+    return {
+      isStructured: true,
+      built: changesMatch[1]?.trim(),
+      nextStep: suggestionMatch?.[1]?.trim(),
+      hasBlockers: !!blockerMatch,
+      blockerCount: blockerMatch ? parseInt(blockerMatch[1], 10) : 0,
+      editCount: bulletPoints.length,
+    };
+  }
+  
+  // Fallback to legacy format
   const builtMatch = content.match(/\*\*Built:\*\*\s*(.+?)(?=\n\n|\*\*Next)/s);
   const nextMatch = content.match(/\*\*Next(?:\s*best\s*step)?:\*\*\s*(.+?)(?=\n\n|⚠️|$)/s);
-  const blockerMatch = content.match(/⚠️\s*Blocking issues detected:\s*(\d+)/);
+  const legacyBlockerMatch = content.match(/⚠️\s*Blocking issues detected:\s*(\d+)/);
   
   if (builtMatch || nextMatch) {
     return {
       isStructured: true,
       built: builtMatch?.[1]?.trim(),
       nextStep: nextMatch?.[1]?.trim(),
-      hasBlockers: !!blockerMatch,
-      blockerCount: blockerMatch ? parseInt(blockerMatch[1], 10) : 0,
+      hasBlockers: !!legacyBlockerMatch,
+      blockerCount: legacyBlockerMatch ? parseInt(legacyBlockerMatch[1], 10) : 0,
     };
   }
   
