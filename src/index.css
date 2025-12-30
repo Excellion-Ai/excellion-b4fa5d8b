@@ -419,4 +419,28 @@ All colors MUST be HSL.
   .hover-glow:hover {
     box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
   }
+
+  /* Always visible scrollbar */
+  .scrollbar-always-visible {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(270 50% 40% / 0.7) hsl(var(--muted) / 0.3);
+  }
+
+  .scrollbar-always-visible::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-always-visible::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.3);
+    border-radius: 4px;
+  }
+
+  .scrollbar-always-visible::-webkit-scrollbar-thumb {
+    background: hsl(270 50% 40% / 0.7);
+    border-radius: 4px;
+  }
+
+  .scrollbar-always-visible::-webkit-scrollbar-thumb:hover {
+    background: hsl(270 50% 50% / 0.9);
+  }
 }
