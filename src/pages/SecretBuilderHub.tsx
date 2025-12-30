@@ -912,6 +912,10 @@ export default function SecretBuilderHub() {
                 <Users className="w-4 h-4" />
                 <span>Team Members</span>
               </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/knowledge')}>
+                <BookOpen className="w-4 h-4" />
+                <span>Knowledge Base</span>
+              </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/domains')}>
                 <Globe className="w-4 h-4" />
                 <span>Custom Domains</span>
