@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export type CreditActionType = 'chat' | 'generation' | 'edit' | 'image' | 'export' | 'publish';
 
@@ -28,6 +29,10 @@ let globalCreditCache: CreditState | null = null;
 let globalFetchPromise: Promise<void> | null = null;
 let lastFetchTime = 0;
 const CACHE_DURATION = 30000; // 30 seconds cache
+
+// Low credit warning threshold
+const LOW_CREDIT_THRESHOLD = 15;
+let hasShownLowCreditWarning = false;
 
 export function useCredits() {
   const [state, setState] = useState<CreditState>(() => globalCreditCache || {
@@ -92,6 +97,31 @@ export function useCredits() {
         
         globalCreditCache = newState;
         lastFetchTime = Date.now();
+        
+        // Show low credit warning once per session
+        if (
+          newState.authenticated &&
+          newState.balance <= LOW_CREDIT_THRESHOLD &&
+          newState.balance > 0 &&
+          !hasShownLowCreditWarning
+        ) {
+          hasShownLowCreditWarning = true;
+          toast.warning(
+            `You're running low on credits (${newState.balance} remaining). Consider upgrading your plan to continue using AI features.`,
+            {
+              duration: 8000,
+              action: {
+                label: 'Upgrade',
+                onClick: () => window.location.href = '/pricing',
+              },
+            }
+          );
+        }
+        
+        // Reset warning flag if balance goes above threshold (user purchased more)
+        if (newState.balance > LOW_CREDIT_THRESHOLD) {
+          hasShownLowCreditWarning = false;
+        }
         
         if (mountedRef.current) {
           setState(newState);
