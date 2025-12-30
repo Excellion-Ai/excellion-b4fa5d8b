@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useVisualMode, EditableProperty } from './VisualModeContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { 
   X, 
   Type, 
@@ -15,7 +17,9 @@ import {
   Link, 
   Zap,
   ChevronRight,
-  Check
+  Check,
+  Upload,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -51,6 +55,8 @@ interface PropertyEditorProps {
 
 function PropertyEditor({ property, onChange }: PropertyEditorProps) {
   const [localValue, setLocalValue] = useState(property.value);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setLocalValue(property.value);
@@ -59,6 +65,57 @@ function PropertyEditor({ property, onChange }: PropertyEditorProps) {
   const handleChange = (value: string) => {
     setLocalValue(value);
     onChange(value);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please sign in to upload images');
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+      const filePath = `images/${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('builder-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('builder-images')
+        .getPublicUrl(filePath);
+
+      handleChange(publicUrl);
+      toast.success('Image uploaded!');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const getIcon = () => {
@@ -178,14 +235,52 @@ function PropertyEditor({ property, onChange }: PropertyEditorProps) {
 
       {property.type === 'image' && (
         <div className="space-y-2">
-          <Input
-            value={localValue}
-            onChange={(e) => handleChange(e.target.value)}
-            className="text-sm h-8"
-            placeholder="Enter image URL..."
-          />
+          {/* Upload button */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 h-8 text-xs gap-1.5"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              {isUploading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Upload className="w-3.5 h-3.5" />
+              )}
+              {isUploading ? 'Uploading...' : 'Upload Image'}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+          </div>
+          
+          {/* URL input */}
+          <div className="relative">
+            <Input
+              value={localValue}
+              onChange={(e) => handleChange(e.target.value)}
+              className="text-sm h-8 pr-8"
+              placeholder="Or paste image URL..."
+            />
+            {localValue && (
+              <button
+                onClick={() => handleChange('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          
+          {/* Preview */}
           {localValue && (
-            <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
+            <div className="relative w-full h-24 rounded border border-border overflow-hidden bg-muted">
               <img 
                 src={localValue} 
                 alt="Preview" 
