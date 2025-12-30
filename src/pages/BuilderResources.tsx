@@ -236,7 +236,7 @@ const QUICK_TIPS = [
   { title: 'Mobile Preview', description: 'Press Ctrl+3 for mobile view', icon: '📱' },
   { title: 'Free Visual Edits', description: 'Visual mode edits don\'t use credits', icon: '🎨' },
   { title: 'Auto-Save', description: 'Your work is saved automatically', icon: '💾' },
-  { title: 'Help Chat', description: 'Click "Chat" for instant help', icon: '💬' },
+  { title: 'Help Chat', description: 'Click "Help" for instant help', icon: '💬' },
 ];
 
 export default function BuilderResources() {
