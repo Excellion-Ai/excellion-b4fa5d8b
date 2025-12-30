@@ -1188,6 +1188,7 @@ export default function SecretBuilderHub() {
                       onAddAttachment={handleAddAttachment}
                       disabled={isGenerating}
                       attachmentCount={attachments.length}
+                      showScreenshot={false}
                     />
                     
                     {/* Build Assist Button */}
