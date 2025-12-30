@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Github } from "lucide-react";
@@ -119,6 +120,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [lockoutTime, setLockoutTime] = useState(0);
   const [passwordError, setPasswordError] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -232,6 +234,14 @@ const Auth = () => {
         setPasswordError("");
         
         clearLoginAttempts(email);
+        
+        // If "Remember me" is unchecked, store flag to clear session on browser close
+        if (!rememberMe) {
+          sessionStorage.setItem('clearSessionOnClose', 'true');
+        } else {
+          sessionStorage.removeItem('clearSessionOnClose');
+        }
+        
         toast.success("Logged in successfully!");
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -455,6 +465,22 @@ const Auth = () => {
                     {confirmPassword && password !== confirmPassword && (
                       <p className="text-xs text-destructive mt-1">Passwords do not match</p>
                     )}
+                  </div>
+                )}
+
+                {isLogin && (
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked === true)}
+                    />
+                    <label
+                      htmlFor="rememberMe"
+                      className="text-sm text-foreground/80 cursor-pointer select-none"
+                    >
+                      Remember me
+                    </label>
                   </div>
                 )}
 
