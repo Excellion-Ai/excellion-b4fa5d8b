@@ -24,6 +24,7 @@ const Checkout = lazy(() => import("./pages/Checkout"));
 const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
 const GitHubCallback = lazy(() => import("./pages/GitHubCallback"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Settings pages
 const Settings = lazy(() => import("./pages/Settings"));
@@ -93,6 +94,7 @@ const App = () => {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         <Route path="/github-callback" element={<GitHubCallback />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         
         {/* Settings routes */}
         <Route path="/settings" element={<Settings />}>

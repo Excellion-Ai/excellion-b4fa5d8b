@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Github } from "lucide-react";
+import { Github, ArrowLeft } from "lucide-react";
 import diyBackgroundVideo from "@/assets/diy-background.mp4";
 import { z } from "zod";
 
@@ -121,6 +121,8 @@ const Auth = () => {
   const [lockoutTime, setLockoutTime] = useState(0);
   const [passwordError, setPasswordError] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -292,6 +294,38 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    const emailSchema = z.string().email("Invalid email address");
+    const result = emailSchema.safeParse(email);
+    if (!result.success) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setResetEmailSent(true);
+      toast.success("Password reset email sent! Check your inbox.");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background relative">
       {/* Video Background */}
@@ -316,18 +350,84 @@ const Auth = () => {
           <Card className="w-full max-w-md bg-background border-border">
             <CardHeader className="space-y-1">
               <CardTitle className="text-3xl text-center text-foreground">
-                {isLogin ? "Welcome Back" : "Create Account"}
+                {showForgotPassword 
+                  ? "Reset Password" 
+                  : isLogin 
+                    ? "Welcome Back" 
+                    : "Create Account"}
               </CardTitle>
               <CardDescription className="text-center text-foreground/80">
-                {isLogin
-                  ? "Sign in to your account to continue"
-                  : "Sign up to get started with Excellion"}
+                {showForgotPassword
+                  ? "Enter your email to receive a reset link"
+                  : isLogin
+                    ? "Sign in to your account to continue"
+                    : "Sign up to get started with Excellion"}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* OAuth Buttons */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Forgot Password Form */}
+              {showForgotPassword ? (
+                resetEmailSent ? (
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className="text-foreground">
+                      We've sent a password reset link to <strong>{email}</strong>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Check your inbox and click the link to reset your password.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowForgotPassword(false);
+                        setResetEmailSent(false);
+                      }}
+                      className="mt-4"
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Sign In
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="resetEmail" className="text-foreground">Email</Label>
+                      <Input
+                        id="resetEmail"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="bg-background/20 border-white/20 text-foreground"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                      disabled={loading}
+                    >
+                      {loading ? "Sending..." : "Send Reset Link"}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(false)}
+                      className="w-full text-sm text-foreground/80 hover:text-accent transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Back to Sign In
+                    </button>
+                  </form>
+                )
+              ) : (
+                <>
+                  {/* OAuth Buttons */}
+                  <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="outline"
                   onClick={() => handleOAuthLogin("google")}
@@ -498,18 +598,32 @@ const Auth = () => {
                   {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
                 </Button>
               </form>
+
+              {isLogin && (
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="w-full text-sm text-foreground/80 hover:text-accent transition-colors"
+                >
+                  Forgot password?
+                </button>
+              )}
+                </>
+              )}
             </CardContent>
 
-            <CardFooter className="flex flex-col space-y-2">
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-sm text-foreground/80 hover:text-accent transition-colors"
-              >
-                {isLogin
-                  ? "Don't have an account? Sign up"
-                  : "Already have an account? Sign in"}
-              </button>
-            </CardFooter>
+            {!showForgotPassword && (
+              <CardFooter className="flex flex-col space-y-2">
+                <button
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-sm text-foreground/80 hover:text-accent transition-colors"
+                >
+                  {isLogin
+                    ? "Don't have an account? Sign up"
+                    : "Already have an account? Sign in"}
+                </button>
+              </CardFooter>
+            )}
           </Card>
         </main>
 
