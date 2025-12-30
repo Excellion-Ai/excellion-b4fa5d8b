@@ -98,6 +98,18 @@ const authSchema = z.object({
   path: ["confirmPassword"]
 });
 
+// Password strength checker
+const getPasswordStrength = (pwd: string) => {
+  const checks = {
+    length: pwd.length >= 8,
+    uppercase: /[A-Z]/.test(pwd),
+    lowercase: /[a-z]/.test(pwd),
+    number: /[0-9]/.test(pwd),
+  };
+  const passed = Object.values(checks).filter(Boolean).length;
+  return { checks, passed, total: 4 };
+};
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -105,11 +117,14 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [lockoutTime, setLockoutTime] = useState(0);
+  const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
   // Get redirect URL from query params (e.g., /auth?redirect=/checkout?plan=pro)
   const redirectTo = searchParams.get("redirect") || "/";
+  
+  const passwordStrength = getPasswordStrength(password);
 
   useEffect(() => {
     if (lockoutTime > 0) {
@@ -192,10 +207,11 @@ const Auth = () => {
           }
           const remainingAttempts = MAX_ATTEMPTS - (updatedLockout.attemptCount % MAX_ATTEMPTS);
           
-          // Handle specific error messages
+          // Handle specific error messages with clearer feedback
           let errorMessage = error.message;
           if (error.message.includes("Invalid login credentials")) {
-            errorMessage = "Invalid email or password";
+            errorMessage = "Incorrect password. Please check your password and try again.";
+            setPasswordError("Incorrect password");
           } else if (error.message.includes("Email not confirmed")) {
             errorMessage = "Please check your email to confirm your account";
           }
@@ -207,6 +223,8 @@ const Auth = () => {
               : '')
           );
         }
+        
+        setPasswordError("");
         
         clearLoginAttempts(email);
         toast.success("Logged in successfully!");
@@ -364,15 +382,55 @@ const Auth = () => {
                     type="password"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError("");
+                    }}
                     required
                     minLength={8}
-                    className="bg-background/20 border-white/20 text-foreground"
+                    className={`bg-background/20 border-white/20 text-foreground ${
+                      isLogin && passwordError ? "border-destructive" : ""
+                    }`}
                   />
-                  {!isLogin && (
-                    <p className="text-xs text-foreground/60 mt-1">
-                      Must be at least 8 characters with uppercase, lowercase, and number
+                  {isLogin && passwordError && (
+                    <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive" />
+                      {passwordError}
                     </p>
+                  )}
+                  {!isLogin && password && (
+                    <div className="space-y-2 mt-2">
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map((i) => (
+                          <div
+                            key={i}
+                            className={`h-1 flex-1 rounded-full transition-colors ${
+                              i <= passwordStrength.passed
+                                ? passwordStrength.passed <= 2
+                                  ? "bg-destructive"
+                                  : passwordStrength.passed === 3
+                                  ? "bg-yellow-500"
+                                  : "bg-green-500"
+                                : "bg-muted"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="space-y-1">
+                        <p className={`text-xs flex items-center gap-1.5 ${passwordStrength.checks.length ? "text-green-500" : "text-muted-foreground"}`}>
+                          {passwordStrength.checks.length ? "✓" : "○"} At least 8 characters
+                        </p>
+                        <p className={`text-xs flex items-center gap-1.5 ${passwordStrength.checks.uppercase ? "text-green-500" : "text-muted-foreground"}`}>
+                          {passwordStrength.checks.uppercase ? "✓" : "○"} One uppercase letter
+                        </p>
+                        <p className={`text-xs flex items-center gap-1.5 ${passwordStrength.checks.lowercase ? "text-green-500" : "text-muted-foreground"}`}>
+                          {passwordStrength.checks.lowercase ? "✓" : "○"} One lowercase letter
+                        </p>
+                        <p className={`text-xs flex items-center gap-1.5 ${passwordStrength.checks.number ? "text-green-500" : "text-muted-foreground"}`}>
+                          {passwordStrength.checks.number ? "✓" : "○"} One number
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -387,8 +445,13 @@ const Auth = () => {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       minLength={8}
-                      className="bg-background/20 border-white/20 text-foreground"
+                      className={`bg-background/20 border-white/20 text-foreground ${
+                        confirmPassword && password !== confirmPassword ? "border-destructive" : ""
+                      }`}
                     />
+                    {confirmPassword && password !== confirmPassword && (
+                      <p className="text-xs text-destructive mt-1">Passwords do not match</p>
+                    )}
                   </div>
                 )}
 
