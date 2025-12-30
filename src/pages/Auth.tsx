@@ -120,6 +120,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [lockoutTime, setLockoutTime] = useState(0);
   const [passwordError, setPasswordError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
@@ -170,6 +171,33 @@ const Auth = () => {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Clear previous errors
+    setEmailError("");
+    setPasswordError("");
+
+    // Client-side validation for login
+    if (isLogin) {
+      let hasError = false;
+      
+      // Validate email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        setEmailError("Please enter a valid email address");
+        hasError = true;
+      }
+      
+      // Validate password (just check if empty for login)
+      if (!password) {
+        setPasswordError("Please enter your password");
+        hasError = true;
+      }
+      
+      if (hasError) {
+        toast.error("Please fix the errors above");
+        return;
+      }
+    }
 
     // Check rate limiting
     const lockoutInfo = getLockoutInfo(email);
@@ -183,7 +211,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Validate form data
+      // Validate form data (full validation for signup)
       const validationData = isLogin 
         ? { email, password }
         : { email, password, confirmPassword };
@@ -191,8 +219,16 @@ const Auth = () => {
       const result = authSchema.safeParse(validationData);
       
       if (!result.success) {
-        const firstError = result.error.errors[0];
-        toast.error(firstError.message);
+        const errors = result.error.errors;
+        errors.forEach(err => {
+          if (err.path.includes('email')) {
+            setEmailError(err.message);
+          }
+          if (err.path.includes('password')) {
+            setPasswordError(err.message);
+          }
+        });
+        toast.error(errors[0].message);
         setLoading(false);
         return;
       }
@@ -484,10 +520,20 @@ const Auth = () => {
                     type="email"
                     placeholder="name@example.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="bg-background/20 border-white/20 text-foreground"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError("");
+                    }}
+                    className={`bg-background/20 border-white/20 text-foreground ${
+                      emailError ? "border-destructive" : ""
+                    }`}
                   />
+                  {emailError && (
+                    <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive" />
+                      {emailError}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
