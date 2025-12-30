@@ -247,7 +247,7 @@ export function VisualEditPanel() {
       </div>
 
       {/* Properties */}
-      <ScrollArea className="flex-1" scrollbarVariant="purple">
+      <div className="flex-1 overflow-y-auto scrollbar-always-visible">
         <div className="p-4 space-y-4">
           {textProps.length > 0 && (
             <div className="space-y-3">
@@ -313,7 +313,7 @@ export function VisualEditPanel() {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-border bg-muted/30 flex items-center justify-between">
