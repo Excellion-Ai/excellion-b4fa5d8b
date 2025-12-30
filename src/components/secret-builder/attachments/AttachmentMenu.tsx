@@ -28,11 +28,12 @@ interface AttachmentMenuProps {
   disabled?: boolean;
   attachmentCount?: number;
   previewRef?: React.RefObject<HTMLElement>;
+  showScreenshot?: boolean;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0, previewRef }: AttachmentMenuProps) {
+export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0, previewRef, showScreenshot = true }: AttachmentMenuProps) {
   const [open, setOpen] = useState(false);
   const [pasteTextOpen, setPasteTextOpen] = useState(false);
   const [addLinkOpen, setAddLinkOpen] = useState(false);
@@ -182,11 +183,11 @@ export function AttachmentMenu({ onAddAttachment, disabled, attachmentCount = 0,
       label: 'Add link…',
       onClick: () => { setOpen(false); setAddLinkOpen(true); },
     },
-    {
+    ...(showScreenshot ? [{
       icon: Scissors,
       label: 'Screenshot',
       onClick: handleTakeScreenshot,
-    },
+    }] : []),
   ];
 
   const advancedItems = [
