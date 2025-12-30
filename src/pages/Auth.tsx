@@ -210,11 +210,15 @@ const Auth = () => {
           
           // Handle specific error messages with clearer feedback
           let errorMessage = error.message;
-          if (error.message.includes("Invalid login credentials")) {
+          // Always show "Incorrect password" for any login credential error
+          if (error.message.includes("Invalid login credentials") || error.message.includes("invalid")) {
             errorMessage = "Incorrect password. Please check your password and try again.";
             setPasswordError("Incorrect password");
           } else if (error.message.includes("Email not confirmed")) {
             errorMessage = "Please check your email to confirm your account";
+          } else {
+            // For any other login error, assume password is incorrect
+            setPasswordError("Incorrect password");
           }
           
           throw new Error(
@@ -387,7 +391,7 @@ const Auth = () => {
                       setPasswordError("");
                     }}
                     required
-                    minLength={8}
+                    minLength={isLogin ? undefined : 8}
                     className={`bg-background/20 border-white/20 text-foreground ${
                       isLogin && passwordError ? "border-destructive" : ""
                     }`}
