@@ -51,7 +51,8 @@ import {
   Image,
   Download,
   Link,
-  Eye
+  Eye,
+  Headset
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import { ImprovedPromptModal } from '@/components/secret-builder/ImprovedPromptModal';
@@ -755,13 +756,22 @@ export default function SecretBuilderHub() {
 
                 {/* Navigation */}
                 <nav className="px-3 py-2 space-y-1 flex-1 overflow-y-auto">
-                  <Button
+          <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                     onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
                   >
                     <ExternalLink className="w-4 h-4" />
                     <span className="text-sm">Excellion Homepage</span>
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    onClick={() => { navigate('/contact'); setMobileMenuOpen(false); }}
+                  >
+                    <Headset className="w-4 h-4" />
+                    <span className="text-sm">Expert Builders Help</span>
                   </Button>
                   
                   {NAV_ITEMS.map((item) => (
@@ -993,6 +1003,16 @@ export default function SecretBuilderHub() {
           >
             <ExternalLink className="w-4 h-4" />
             <span className="text-sm">Excellion Homepage</span>
+          </Button>
+          
+          {/* Expert Builders Help */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            onClick={() => navigate('/contact')}
+          >
+            <Headset className="w-4 h-4" />
+            <span className="text-sm">Expert Builders Help</span>
           </Button>
           
           {NAV_ITEMS.map((item) => (
