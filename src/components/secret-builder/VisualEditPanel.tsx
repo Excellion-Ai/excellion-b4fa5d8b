@@ -260,24 +260,6 @@ function PropertyEditor({ property, onChange }: PropertyEditorProps) {
             />
           </div>
           
-          {/* URL input */}
-          <div className="relative">
-            <Input
-              value={localValue}
-              onChange={(e) => handleChange(e.target.value)}
-              className="text-sm h-8 pr-8"
-              placeholder="Or paste image URL..."
-            />
-            {localValue && (
-              <button
-                onClick={() => handleChange('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-          
           {/* Preview */}
           {localValue && (
             <div className="relative w-full h-24 rounded border border-border overflow-hidden bg-muted">
