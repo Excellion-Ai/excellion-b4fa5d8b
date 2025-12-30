@@ -6,11 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { FolderKanban, Camera, Trash2, Loader2, Crown } from 'lucide-react';
+import { FolderKanban, Camera, Trash2, Loader2, Crown, Check } from 'lucide-react';
 
 export default function WorkspaceSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [workspace, setWorkspace] = useState<{
     id: string;
@@ -58,6 +59,8 @@ export default function WorkspaceSettings() {
 
       if (error) throw error;
       toast.success('Workspace saved');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (error) {
       console.error('Error saving workspace:', error);
       toast.error('Failed to save workspace');
@@ -210,9 +213,13 @@ export default function WorkspaceSettings() {
               disabled={!isOwner}
             />
           </div>
-          <Button onClick={handleSave} disabled={saving || !isOwner}>
-            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Save Changes
+          <Button onClick={handleSave} disabled={saving || saved || !isOwner}>
+            {saving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : saved ? (
+              <Check className="w-4 h-4 mr-2 text-green-500" />
+            ) : null}
+            {saved ? 'Changes Saved' : 'Save Changes'}
           </Button>
         </CardContent>
       </Card>
