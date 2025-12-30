@@ -9,6 +9,42 @@ const GITHUB_CLIENT_ID = Deno.env.get("GITHUB_CLIENT_ID");
 const GITHUB_CLIENT_SECRET = Deno.env.get("GITHUB_CLIENT_SECRET");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const TOKEN_ENCRYPTION_KEY = Deno.env.get("TOKEN_ENCRYPTION_KEY");
+
+// Encrypt token using AES-256-GCM
+async function encryptToken(token: string): Promise<string> {
+  if (!TOKEN_ENCRYPTION_KEY) {
+    throw new Error("TOKEN_ENCRYPTION_KEY not configured");
+  }
+  
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(TOKEN_ENCRYPTION_KEY.slice(0, 32).padEnd(32, '0'));
+  
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "AES-GCM" },
+    false,
+    ["encrypt"]
+  );
+  
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encodedToken = encoder.encode(token);
+  
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    encodedToken
+  );
+  
+  // Combine IV + encrypted data into single array
+  const combined = new Uint8Array(iv.length + encrypted.byteLength);
+  combined.set(iv);
+  combined.set(new Uint8Array(encrypted), iv.length);
+  
+  // Return as base64
+  return btoa(String.fromCharCode(...combined));
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -30,6 +66,14 @@ Deno.serve(async (req) => {
     if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
       console.error("Missing GitHub OAuth credentials");
       return new Response(JSON.stringify({ error: "GitHub OAuth not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!TOKEN_ENCRYPTION_KEY) {
+      console.error("Missing TOKEN_ENCRYPTION_KEY");
+      return new Response(JSON.stringify({ error: "Token encryption not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -97,12 +141,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Upsert GitHub connection
+    // Encrypt the access token before storing
+    const encryptedToken = await encryptToken(accessToken);
+    console.log("Token encrypted successfully");
+
+    // Upsert GitHub connection with encrypted token
     const { error: upsertError } = await supabaseAdmin
       .from("github_connections")
       .upsert({
         user_id: user.id,
-        access_token: accessToken,
+        access_token: encryptedToken,
         github_username: userData.login,
         github_user_id: String(userData.id),
         updated_at: new Date().toISOString(),
