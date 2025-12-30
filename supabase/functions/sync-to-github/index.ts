@@ -7,6 +7,7 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const TOKEN_ENCRYPTION_KEY = Deno.env.get("TOKEN_ENCRYPTION_KEY");
 
 interface SyncRequest {
   projectId: string;
@@ -15,6 +16,40 @@ interface SyncRequest {
   reactCode?: string;
   repoName?: string;
   commitMessage?: string;
+}
+
+// Decrypt token using AES-256-GCM
+async function decryptToken(encryptedToken: string): Promise<string> {
+  if (!TOKEN_ENCRYPTION_KEY) {
+    throw new Error("TOKEN_ENCRYPTION_KEY not configured");
+  }
+  
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  const keyData = encoder.encode(TOKEN_ENCRYPTION_KEY.slice(0, 32).padEnd(32, '0'));
+  
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "AES-GCM" },
+    false,
+    ["decrypt"]
+  );
+  
+  // Decode base64
+  const combined = Uint8Array.from(atob(encryptedToken), c => c.charCodeAt(0));
+  
+  // Extract IV (first 12 bytes) and encrypted data
+  const iv = combined.slice(0, 12);
+  const encrypted = combined.slice(12);
+  
+  const decrypted = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv },
+    key,
+    encrypted
+  );
+  
+  return decoder.decode(decrypted);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,7 +65,22 @@ async function getGitHubToken(supabaseClient: any, userId: string): Promise<stri
     return null;
   }
 
-  return (data as { access_token: string }).access_token;
+  const encryptedToken = (data as { access_token: string }).access_token;
+  
+  try {
+    // Try to decrypt the token
+    const decryptedToken = await decryptToken(encryptedToken);
+    console.log("Token decrypted successfully");
+    return decryptedToken;
+  } catch (decryptError) {
+    // Token might be unencrypted (legacy) - check if it looks like a GitHub token
+    if (encryptedToken.startsWith("gho_") || encryptedToken.startsWith("ghp_")) {
+      console.log("Legacy unencrypted token detected - user should reconnect GitHub");
+      return encryptedToken;
+    }
+    console.error("Failed to decrypt token:", decryptError);
+    return null;
+  }
 }
 
 async function githubApi(token: string, endpoint: string, options: RequestInit = {}) {
@@ -229,10 +279,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get GitHub token
+    // Get GitHub token (will be decrypted automatically)
     const token = await getGitHubToken(supabaseAdmin, user.id);
     if (!token) {
-      return new Response(JSON.stringify({ error: "GitHub not connected", code: "NOT_CONNECTED" }), {
+      return new Response(JSON.stringify({ error: "GitHub not connected. Please reconnect your GitHub account.", code: "NOT_CONNECTED" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
