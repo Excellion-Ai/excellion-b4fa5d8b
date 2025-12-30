@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Camera, Trash2, Mail, Lock, AlertTriangle, Loader2 } from 'lucide-react';
+import { User, Camera, Trash2, Mail, Lock, AlertTriangle, Loader2, Check } from 'lucide-react';
 
 export default function ProfileSettings() {
   const [user, setUser] = useState<any>(null);
@@ -18,6 +18,7 @@ export default function ProfileSettings() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -86,6 +87,8 @@ export default function ProfileSettings() {
 
       if (error) throw error;
       toast.success('Profile saved successfully');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (error) {
       console.error('Error saving profile:', error);
       toast.error('Failed to save profile');
@@ -294,9 +297,13 @@ export default function ProfileSettings() {
               placeholder="Enter your name"
             />
           </div>
-          <Button onClick={handleSaveProfile} disabled={saving}>
-            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            Save Changes
+          <Button onClick={handleSaveProfile} disabled={saving || saved}>
+            {saving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : saved ? (
+              <Check className="w-4 h-4 mr-2 text-green-500" />
+            ) : null}
+            {saved ? 'Changes Saved' : 'Save Changes'}
           </Button>
         </CardContent>
       </Card>

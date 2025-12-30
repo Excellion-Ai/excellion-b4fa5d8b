@@ -5,11 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bell, Loader2 } from 'lucide-react';
+import { Bell, Loader2, Check } from 'lucide-react';
 
 export default function NotificationsSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [settings, setSettings] = useState({
     notify_build_done: true,
     notify_publish_done: true,
@@ -62,6 +63,8 @@ export default function NotificationsSettings() {
 
       if (error) throw error;
       toast.success('Notification preferences saved');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (error) {
       console.error('Error saving settings:', error);
       toast.error('Failed to save preferences');
@@ -135,9 +138,13 @@ export default function NotificationsSettings() {
             </div>
           ))}
 
-          <Button onClick={handleSave} disabled={saving} className="mt-4">
-            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Save Preferences
+          <Button onClick={handleSave} disabled={saving || saved} className="mt-4">
+            {saving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : saved ? (
+              <Check className="w-4 h-4 mr-2 text-green-500" />
+            ) : null}
+            {saved ? 'Changes Saved' : 'Save Preferences'}
           </Button>
         </CardContent>
       </Card>
