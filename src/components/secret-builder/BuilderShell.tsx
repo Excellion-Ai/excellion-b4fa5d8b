@@ -629,18 +629,29 @@ export function BuilderShell() {
   }, []);
 
   const loadProjectAndMaybeGenerate = async (id: string) => {
+    console.log('[BuilderShell] Loading project:', id);
+    
     const { data, error } = await supabase
       .from('builder_projects')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
       console.error('Failed to load project:', error);
       toast.error('Failed to load project');
       return;
     }
+    
+    if (!data) {
+      console.warn('[BuilderShell] Project not found:', id);
+      toast.error('Project not found - it may have been deleted');
+      return;
+    }
 
+    // Persist last project ID to localStorage for recovery
+    localStorage.setItem('excellion_last_project_id', id);
+    
     setProjectName(data.name);
     
     // Load versions if available
@@ -659,6 +670,7 @@ export function BuilderShell() {
     const hasContent = spec?.html || spec?.siteSpec || (spec?.messages && spec.messages.length > 0);
     
     if (hasContent) {
+      console.log('[BuilderShell] Loading existing content for project:', id);
       // Load existing content
       if (spec?.html) {
         setGeneratedHtml(spec.html);
@@ -928,16 +940,27 @@ export function BuilderShell() {
 
   // Auto-save when siteSpec changes (from inline editing) - debounced, no version save
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedSpecRef = useRef<string | null>(null);
   
   useEffect(() => {
     if (siteSpec && projectId) {
+      // Create a hash of the current spec to avoid unnecessary saves
+      const specHash = JSON.stringify(siteSpec);
+      if (specHash === lastSavedSpecRef.current) {
+        return; // Skip if no actual changes
+      }
+      
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      saveTimeoutRef.current = setTimeout(() => {
+      
+      // Save after 1.5 seconds of inactivity (reduced from 2s for faster saves)
+      saveTimeoutRef.current = setTimeout(async () => {
         const firstUserMessage = messages.find(m => m.role === 'user');
-        saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, false);
-      }, 2000);
+        await saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, false);
+        lastSavedSpecRef.current = specHash;
+        console.log('[BuilderShell] Auto-saved project:', projectId);
+      }, 1500);
     }
     
     return () => {
@@ -963,19 +986,33 @@ export function BuilderShell() {
     return () => window.removeEventListener('keydown', handleKeyboard);
   }, [canUndo, canRedo, undo, redo]);
 
-  // Warn users if they try to leave during generation
+  // Warn users if they try to leave during generation AND auto-save on page close
   useEffect(() => {
-    if (!isGenerating) return;
-    
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = 'Website generation is in progress. Are you sure you want to leave?';
-      return e.returnValue;
+      // Always try to save current state to localStorage for recovery
+      if (siteSpec && projectId) {
+        try {
+          localStorage.setItem('excellion_recovery_data', JSON.stringify({
+            projectId,
+            projectName,
+            timestamp: Date.now(),
+          }));
+        } catch (err) {
+          console.warn('[BuilderShell] Failed to save recovery data:', err);
+        }
+      }
+      
+      // Only show warning during generation
+      if (isGenerating) {
+        e.preventDefault();
+        e.returnValue = 'Website generation is in progress. Are you sure you want to leave?';
+        return e.returnValue;
+      }
     };
     
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isGenerating]);
+  }, [isGenerating, siteSpec, projectId, projectName]);
 
   // Helper to deduct credits via edge function with dynamic cost
   const deductCredits = async (
