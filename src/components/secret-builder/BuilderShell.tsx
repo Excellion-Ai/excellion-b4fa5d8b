@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github, Scan, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github, Scan, Eye, EyeOff, RefreshCw, MessageSquare } from 'lucide-react';
 import { DeviceFrame, DeviceSelector, type DeviceType } from './DeviceFrame';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { TouchTargetAnalyzer, useTouchTargetAnalysis } from './TouchTargetAnalyzer';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
@@ -485,6 +486,10 @@ export function BuilderShell() {
   
   // Keyboard shortcuts state
   const [showShortcutsPanel, setShowShortcutsPanel] = useState(false);
+  
+  // Mobile view state - toggle between chat and preview on small screens
+  const [mobileActiveTab, setMobileActiveTab] = useState<'chat' | 'preview'>('chat');
+  const isMobile = useIsMobile();
   
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
@@ -1370,25 +1375,59 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         throw new Error('Session expired. Please sign in again.');
       }
       
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({ 
-          messages: chatMessages, 
-          modelMode, 
-          projectId,
-          scaffold: generationScaffold,
-          speedMode: messages.length <= 1 ? 'fast' : 'normal' // Fast mode for initial generation
-        }),
-      });
+      // Fetch with retry logic for connection issues
+      const maxRetries = 2;
+      let lastError: Error | null = null;
+      let response: Response | null = null;
+      
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          if (attempt > 0) {
+            console.log(`[handleGenerate] Retry attempt ${attempt}/${maxRetries}`);
+            toast.info(`Retrying connection... (attempt ${attempt + 1})`);
+            // Brief delay before retry
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+          
+          const fetchResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({ 
+              messages: chatMessages, 
+              modelMode, 
+              projectId,
+              scaffold: generationScaffold,
+              speedMode: messages.length <= 1 ? 'fast' : 'normal'
+            }),
+          });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to generate website');
+          if (!fetchResponse.ok) {
+            const error = await fetchResponse.json();
+            throw new Error(error.error || 'Failed to generate website');
+          }
+          
+          response = fetchResponse;
+          break; // Success, exit retry loop
+        } catch (fetchError) {
+          lastError = fetchError instanceof Error ? fetchError : new Error('Unknown error');
+          console.error(`[handleGenerate] Fetch attempt ${attempt} failed:`, lastError.message);
+          
+          // Only retry on network/connection errors, not HTTP errors
+          if (lastError.message.includes('Failed to fetch') || 
+              lastError.message.includes('network') ||
+              lastError.message.includes('connection')) {
+            if (attempt < maxRetries) continue;
+          }
+          throw lastError;
+        }
+      }
+      
+      if (!response) {
+        throw lastError || new Error('Failed to connect after retries');
       }
 
       const reader = response.body?.getReader();
@@ -1396,60 +1435,83 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       let fullResponse = '';
       let textBuffer = '';
       let currentTokenCount = 0;
+      let streamComplete = false;
 
       // Reset speculative state for new generation
       lastParseTokenRef.current = 0;
       setSpeculativeSpec(null);
 
       if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          textBuffer += decoder.decode(value, { stream: true });
-          
-          let newlineIndex: number;
-          while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
-            let line = textBuffer.slice(0, newlineIndex);
-            textBuffer = textBuffer.slice(newlineIndex + 1);
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              streamComplete = true;
+              break;
+            }
             
-            if (line.endsWith('\r')) line = line.slice(0, -1);
-            if (line.startsWith(':') || line.trim() === '') continue;
-            if (!line.startsWith('data: ')) continue;
+            textBuffer += decoder.decode(value, { stream: true });
             
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === '[DONE]') break;
-            
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                fullResponse += content;
-                // Estimate tokens: ~4 chars per token on average
-                const newTokens = Math.ceil(content.length / 4);
-                currentTokenCount += newTokens;
-                setTokenCount(currentTokenCount);
-                
-                // Speculative parsing: attempt to parse partial JSON during stream
-                if (shouldAttemptParse(currentTokenCount, lastParseTokenRef.current)) {
-                  const speculativeResult = speculativeParse(fullResponse, currentTokenCount);
-                  if (speculativeResult && speculativeResult.spec) {
-                    lastParseTokenRef.current = currentTokenCount;
-                    setSpeculativeSpec(prev => 
-                      prev ? mergeSpeculative(prev, speculativeResult.spec!) : speculativeResult.spec
-                    );
-                    console.log('[SPECULATIVE]', {
-                      confidence: speculativeResult.confidence,
-                      fields: speculativeResult.parsedFields,
-                      tokens: currentTokenCount,
-                    });
+            let newlineIndex: number;
+            while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+              let line = textBuffer.slice(0, newlineIndex);
+              textBuffer = textBuffer.slice(newlineIndex + 1);
+              
+              if (line.endsWith('\r')) line = line.slice(0, -1);
+              if (line.startsWith(':') || line.trim() === '') continue;
+              if (!line.startsWith('data: ')) continue;
+              
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr === '[DONE]') {
+                streamComplete = true;
+                break;
+              }
+              
+              try {
+                const parsed = JSON.parse(jsonStr);
+                const content = parsed.choices?.[0]?.delta?.content;
+                if (content) {
+                  fullResponse += content;
+                  // Estimate tokens: ~4 chars per token on average
+                  const newTokens = Math.ceil(content.length / 4);
+                  currentTokenCount += newTokens;
+                  setTokenCount(currentTokenCount);
+                  
+                  // Speculative parsing: attempt to parse partial JSON during stream
+                  if (shouldAttemptParse(currentTokenCount, lastParseTokenRef.current)) {
+                    const speculativeResult = speculativeParse(fullResponse, currentTokenCount);
+                    if (speculativeResult && speculativeResult.spec) {
+                      lastParseTokenRef.current = currentTokenCount;
+                      setSpeculativeSpec(prev => 
+                        prev ? mergeSpeculative(prev, speculativeResult.spec!) : speculativeResult.spec
+                      );
+                      console.log('[SPECULATIVE]', {
+                        confidence: speculativeResult.confidence,
+                        fields: speculativeResult.parsedFields,
+                        tokens: currentTokenCount,
+                      });
+                    }
                   }
                 }
+              } catch {
+                // Partial JSON, continue
               }
-            } catch {
-              // Partial JSON, continue
             }
           }
+        } catch (streamError) {
+          console.error('[handleGenerate] Stream reading error:', streamError);
+          // If we have partial response, try to use it
+          if (fullResponse.length > 100) {
+            console.log('[handleGenerate] Using partial response:', fullResponse.length, 'chars');
+            streamComplete = true; // Mark as complete to try parsing what we have
+          } else {
+            throw streamError;
+          }
+        }
+        
+        // Check if stream was interrupted without completion
+        if (!streamComplete && fullResponse.length < 100) {
+          throw new Error('Generation interrupted. Please try again.');
         }
       }
 
@@ -2002,6 +2064,256 @@ Regenerate the problematic sections with valid content.`;
     }
   };
 
+  // When site generates, switch to preview on mobile
+  useEffect(() => {
+    if (isMobile && siteSpec && !isGenerating) {
+      setMobileActiveTab('preview');
+    }
+  }, [siteSpec, isGenerating, isMobile]);
+
+  // Mobile Layout
+  if (isMobile) {
+    return (
+      <div className="h-screen overflow-hidden bg-background flex flex-col">
+        {/* Mobile Header */}
+        <div className="border-b border-border px-3 py-2 bg-card/50 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (isGenerating) {
+                  toast.warning('Please wait for generation to complete.');
+                  return;
+                }
+                navigate('/secret-builder-hub');
+              }}
+              className="h-8 px-2"
+              disabled={isGenerating}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <button
+              onClick={() => setShowRenameDialog(true)}
+              className="text-sm font-medium text-foreground truncate max-w-[120px]"
+            >
+              {projectName || 'Untitled'}
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <CreditBalance className="shrink-0" />
+            <Button
+              size="sm"
+              disabled={!siteSpec || isPublishing}
+              onClick={handlePublish}
+              className="h-8 px-3 bg-primary"
+            >
+              {isPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Tab Switcher */}
+        <div className="border-b border-border bg-card/30 px-2 shrink-0">
+          <div className="flex">
+            <button
+              onClick={() => setMobileActiveTab('chat')}
+              className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
+                mobileActiveTab === 'chat'
+                  ? 'text-primary border-primary'
+                  : 'text-muted-foreground border-transparent hover:text-foreground'
+              }`}
+            >
+              <MessageSquare className="h-4 w-4" />
+              Chat
+              {isGenerating && <Loader2 className="h-3 w-3 animate-spin" />}
+            </button>
+            <button
+              onClick={() => setMobileActiveTab('preview')}
+              className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
+                mobileActiveTab === 'preview'
+                  ? 'text-primary border-primary'
+                  : 'text-muted-foreground border-transparent hover:text-foreground'
+              }`}
+            >
+              <Monitor className="h-4 w-4" />
+              Preview
+              {siteSpec && <span className="w-2 h-2 rounded-full bg-green-500" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Content */}
+        <div className="flex-1 overflow-hidden">
+          {mobileActiveTab === 'chat' ? (
+            <div className="h-full flex flex-col">
+              <ScrollArea className="flex-1 p-3">
+                <div className="space-y-3">
+                  {messages.length === 0 && !isGenerating && (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground text-sm">
+                        Describe your website idea to get started
+                      </p>
+                    </div>
+                  )}
+                  {messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[90%] rounded-xl px-3 py-2 text-sm ${
+                          msg.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-foreground'
+                        }`}
+                      >
+                        {msg.content.length > 200 
+                          ? `${msg.content.slice(0, 200)}...` 
+                          : msg.content}
+                      </div>
+                    </div>
+                  ))}
+                  {isGenerating && (
+                    <div className="px-1">
+                      <GenerationProgress
+                        tokenCount={tokenCount}
+                        startTime={generationStartTime}
+                        isGenerating={isGenerating}
+                        estimatedTotalTokens={2000}
+                        speculativeSpec={speculativeSpec}
+                      />
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Mobile Input */}
+              <div className="border-t border-border p-3 bg-card/30">
+                <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 py-2">
+                  <Input
+                    value={idea}
+                    onChange={(e) => setIdea(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && !isGenerating) {
+                        e.preventDefault();
+                        handleGenerate();
+                      }
+                    }}
+                    placeholder="Describe your website..."
+                    className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm"
+                    disabled={isGenerating}
+                  />
+                  <Button
+                    size="icon"
+                    onClick={() => handleGenerate()}
+                    disabled={!idea.trim() || isGenerating}
+                    className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90 shrink-0"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Mobile Preview */
+            <div className="h-full bg-muted/30 p-2">
+              <div className="h-full bg-background rounded-lg border border-border overflow-hidden">
+                {siteSpec ? (
+                  <SiteRendererErrorBoundary
+                    key={errorBoundaryKeyRef.current}
+                    siteName={siteSpec.name}
+                    onRetry={handleRetryRender}
+                    onHeal={healCode}
+                  >
+                    <SiteRenderer 
+                      siteSpec={siteSpec}
+                      pageIndex={currentPageIndex}
+                      isLoading={isGenerating}
+                      motionIntensity={motionIntensity}
+                      visualModeActive={false}
+                      onPageChange={setCurrentPageIndex}
+                    />
+                  </SiteRendererErrorBoundary>
+                ) : isGenerating && speculativeSpec?.name ? (
+                  <div className="h-full relative">
+                    <div className="absolute top-2 right-2 z-10 flex items-center gap-2 bg-background/90 px-3 py-1.5 rounded-full border">
+                      <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                      <span className="text-xs text-muted-foreground">Generating...</span>
+                    </div>
+                    <SiteRenderer 
+                      siteSpec={speculativeSpec as SiteSpec}
+                      pageIndex={0}
+                      isLoading={true}
+                      motionIntensity="off"
+                      visualModeActive={false}
+                      onPageChange={() => {}}
+                    />
+                  </div>
+                ) : isGenerating ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center p-4">
+                      <Loader2 className="h-10 w-10 mx-auto mb-3 text-primary animate-spin" />
+                      <p className="text-sm text-muted-foreground">Generating...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center p-4">
+                      <Monitor className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
+                      <p className="text-sm text-muted-foreground">No preview yet</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Dialogs - Reuse from desktop */}
+        <RenameDialog
+          open={showRenameDialog}
+          onOpenChange={setShowRenameDialog}
+          currentName={projectName}
+          onRename={handleRenameProject}
+        />
+        <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Check className="h-5 w-5 text-green-500" />
+                Site Published!
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                <input
+                  type="text"
+                  readOnly
+                  value={publishedUrl || ''}
+                  className="flex-1 bg-transparent text-sm outline-none"
+                />
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyUrl}>
+                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+              <Button className="w-full" onClick={() => publishedUrl && window.open(publishedUrl, '_blank')}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                View Site
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <ShortcutsPanel isOpen={showShortcutsPanel} onClose={() => setShowShortcutsPanel(false)} />
+      </div>
+    );
+  }
+
+  // Desktop Layout
   return (
     <div className="h-screen overflow-hidden bg-background">
       <ResizablePanelGroup direction="horizontal" className="h-full">
