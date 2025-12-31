@@ -60,6 +60,9 @@ export function ImageLibraryDialog({
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [previewImage, setPreviewImage] = useState<GeneratedImage | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(24); // Show 24 images initially (6 rows of 4)
+  
+  const IMAGES_PER_PAGE = 24;
 
   // Filter and search images
   const filteredImages = useMemo(() => {
@@ -69,6 +72,29 @@ export function ImageLibraryDialog({
       return matchesSearch && matchesFilter;
     });
   }, [images, searchQuery, filterType]);
+
+  // Paginated images for display
+  const visibleImages = useMemo(() => {
+    return filteredImages.slice(0, visibleCount);
+  }, [filteredImages, visibleCount]);
+
+  const hasMoreImages = visibleCount < filteredImages.length;
+  const remainingCount = filteredImages.length - visibleCount;
+
+  // Reset pagination when filter/search changes
+  const handleFilterChange = useCallback((newFilter: FilterType) => {
+    setFilterType(newFilter);
+    setVisibleCount(IMAGES_PER_PAGE);
+  }, []);
+
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    setVisibleCount(IMAGES_PER_PAGE);
+  }, []);
+
+  const loadMore = useCallback(() => {
+    setVisibleCount(prev => prev + IMAGES_PER_PAGE);
+  }, []);
 
   // Toggle selection
   const toggleSelection = useCallback((imageName: string) => {
@@ -197,7 +223,7 @@ export function ImageLibraryDialog({
                 <Input
                   placeholder="Search images..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-9 h-9"
                 />
                 {searchQuery && (
@@ -205,7 +231,7 @@ export function ImageLibraryDialog({
                     variant="ghost"
                     size="sm"
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => handleSearchChange('')}
                   >
                     <X className="w-3 h-3" />
                   </Button>
@@ -213,7 +239,7 @@ export function ImageLibraryDialog({
               </div>
 
               {/* Filter Tabs */}
-              <Tabs value={filterType} onValueChange={(v) => setFilterType(v as FilterType)}>
+              <Tabs value={filterType} onValueChange={(v) => handleFilterChange(v as FilterType)}>
                 <TabsList className="h-9">
                   <TabsTrigger value="all" className="text-xs px-3">All</TabsTrigger>
                   <TabsTrigger value="image" className="text-xs px-3">Images</TabsTrigger>
@@ -303,8 +329,9 @@ export function ImageLibraryDialog({
                 </p>
               </div>
             ) : viewMode === 'grid' ? (
+              <>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 pb-4">
-                {filteredImages.map((image, index) => (
+                {visibleImages.map((image, index) => (
                   <div
                     key={`${image.name}-${index}`}
                     className={`group relative aspect-square rounded-lg overflow-hidden border bg-muted/50 transition-all ${
@@ -390,9 +417,23 @@ export function ImageLibraryDialog({
                   </div>
                 ))}
               </div>
+              {/* Load More Button for Grid */}
+              {hasMoreImages && (
+                <div className="flex justify-center py-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={loadMore}
+                    className="gap-2"
+                  >
+                    Load More ({remainingCount} remaining)
+                  </Button>
+                </div>
+              )}
+              </>
             ) : (
+              <>
               <div className="space-y-2 pb-4">
-                {filteredImages.map((image, index) => (
+                {visibleImages.map((image, index) => (
                   <div
                     key={`${image.name}-${index}`}
                     className={`flex items-center gap-4 p-3 rounded-lg border transition-all ${
@@ -484,6 +525,19 @@ export function ImageLibraryDialog({
                   </div>
                 ))}
               </div>
+              {/* Load More Button for List */}
+              {hasMoreImages && (
+                <div className="flex justify-center py-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={loadMore}
+                    className="gap-2"
+                  >
+                    Load More ({remainingCount} remaining)
+                  </Button>
+                </div>
+              )}
+              </>
             )}
           </ScrollArea>
         </DialogContent>
