@@ -242,11 +242,11 @@ const WebBuilderHome = () => {
               <span>AI-Powered Website Builder</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 min-h-[2.5em] sm:min-h-[2em]">
               Your dream website, generated in{" "}
               <span className="text-accent">seconds.</span>
             </h1>
-            <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold">
+            <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold min-h-[3em] sm:min-h-[2em]">
               An AI website builder that generates a complete site in seconds. Make changes by chat, customize pages, and publish with your own domain.
             </p>
 
