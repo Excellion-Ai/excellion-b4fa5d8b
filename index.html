@@ -13,6 +13,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
+    <!-- HTTP/2 Server Push hints for critical resources -->
+    <!-- These link headers hint the browser to preload critical assets early -->
+    <link rel="preload" as="script" href="/src/main.tsx" crossorigin>
+    <link rel="preload" as="style" href="/src/index.css">
+    
     <!-- Direct font file preload - avoids CSS redirect chain -->
     <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" crossorigin>
     
