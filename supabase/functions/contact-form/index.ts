@@ -50,6 +50,28 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Validate input lengths to prevent DoS
+    if (name.length > 100) {
+      return new Response(
+        JSON.stringify({ error: 'Name too long (max 100 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (email.length > 255) {
+      return new Response(
+        JSON.stringify({ error: 'Email too long (max 255 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (message.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: 'Message too long (max 5000 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
