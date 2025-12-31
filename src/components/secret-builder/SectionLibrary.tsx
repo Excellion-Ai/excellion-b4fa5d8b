@@ -101,7 +101,7 @@ const SECTION_TEMPLATES: SectionTemplate[] = [
       subtitle: 'We\'d love to hear from you',
       email: 'hello@example.com',
       phone: '+1 (555) 123-4567',
-      address: '123 Main Street, City, State 12345',
+      address: '123 Main Street, Your City, State 12345',
       formFields: ['name', 'email', 'message'],
     } as ContactContent,
   },
