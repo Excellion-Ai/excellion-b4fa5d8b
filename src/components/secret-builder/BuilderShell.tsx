@@ -1,5 +1,5 @@
 // BuilderShell - Main component for secret builder
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/componen
 import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github, Scan, Eye, EyeOff, RefreshCw, MessageSquare } from 'lucide-react';
 import { DeviceFrame, DeviceSelector, type DeviceType } from './DeviceFrame';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { TouchTargetAnalyzer, useTouchTargetAnalysis } from './TouchTargetAnalyzer';
+import { useTouchTargetAnalysis } from './TouchTargetAnalyzer';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -18,28 +18,43 @@ import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
-import { ThemeEditor } from './ThemeEditor';
-import { LogoUpload } from './LogoUpload';
-import { HelpChat } from './HelpChat';
-import { CodeExport, generateHtmlFromSpec } from './CodeExport';
-import { SectionLibrary } from './SectionLibrary';
 import { GenerationProgress } from './GenerationProgress';
 import { SiteRendererErrorBoundary } from './SiteRendererErrorBoundary';
 
-import { AnalyticsPanel } from './AnalyticsPanel';
-import { CustomDomainsPanel } from './CustomDomainsPanel';
-import { DiffViewer } from './DiffViewer';
-import { BookmarksPanel } from './BookmarksPanel';
-import { KnowledgePanel } from './KnowledgePanel';
-import { PresenceAvatars } from './PresenceAvatars';
-import { PresenceCursor } from './PresenceCursor';
-import { SchemaVizPanel } from './SchemaVizPanel';
-import { ThreeDPanel } from './ThreeDPanel';
-import { SecurityScanPanel } from './SecurityScanPanel';
-import { RenameDialog } from './RenameDialog';
-import { IssuesPanel } from './IssuesPanel';
-import { VersionHistoryPanel, VersionSnapshot } from './VersionHistoryPanel';
-import { ShortcutsPanel, useKeyboardShortcuts } from './ShortcutsPanel';
+// Lazy load heavy panel components for faster FCP/LCP
+const ThemeEditor = lazy(() => import('./ThemeEditor').then(m => ({ default: m.ThemeEditor })));
+const LogoUpload = lazy(() => import('./LogoUpload').then(m => ({ default: m.LogoUpload })));
+const HelpChat = lazy(() => import('./HelpChat').then(m => ({ default: m.HelpChat })));
+const CodeExport = lazy(() => import('./CodeExport').then(m => ({ default: m.CodeExport })));
+const SectionLibrary = lazy(() => import('./SectionLibrary').then(m => ({ default: m.SectionLibrary })));
+const AnalyticsPanel = lazy(() => import('./AnalyticsPanel').then(m => ({ default: m.AnalyticsPanel })));
+const CustomDomainsPanel = lazy(() => import('./CustomDomainsPanel').then(m => ({ default: m.CustomDomainsPanel })));
+const DiffViewer = lazy(() => import('./DiffViewer').then(m => ({ default: m.DiffViewer })));
+const BookmarksPanel = lazy(() => import('./BookmarksPanel').then(m => ({ default: m.BookmarksPanel })));
+const KnowledgePanel = lazy(() => import('./KnowledgePanel').then(m => ({ default: m.KnowledgePanel })));
+const PresenceAvatars = lazy(() => import('./PresenceAvatars').then(m => ({ default: m.PresenceAvatars })));
+const PresenceCursor = lazy(() => import('./PresenceCursor').then(m => ({ default: m.PresenceCursor })));
+const SchemaVizPanel = lazy(() => import('./SchemaVizPanel').then(m => ({ default: m.SchemaVizPanel })));
+const ThreeDPanel = lazy(() => import('./ThreeDPanel').then(m => ({ default: m.ThreeDPanel })));
+const SecurityScanPanel = lazy(() => import('./SecurityScanPanel').then(m => ({ default: m.SecurityScanPanel })));
+const RenameDialog = lazy(() => import('./RenameDialog').then(m => ({ default: m.RenameDialog })));
+const IssuesPanel = lazy(() => import('./IssuesPanel').then(m => ({ default: m.IssuesPanel })));
+const TouchTargetAnalyzer = lazy(() => import('./TouchTargetAnalyzer').then(m => ({ default: m.TouchTargetAnalyzer })));
+const VersionHistoryPanel = lazy(() => import('./VersionHistoryPanel').then(m => ({ default: m.VersionHistoryPanel })));
+const ShortcutsPanel = lazy(() => import('./ShortcutsPanel').then(m => ({ default: m.ShortcutsPanel })));
+
+// Keep the hook import for keyboard shortcuts
+import { useKeyboardShortcuts } from './ShortcutsPanel';
+import type { VersionSnapshot } from './VersionHistoryPanel';
+// Keep generateHtmlFromSpec as direct import since it's a function
+import { generateHtmlFromSpec } from './CodeExport';
+
+// Lazy fallback component
+const PanelLoader = () => (
+  <div className="flex items-center justify-center p-8">
+    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+  </div>
+);
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -2308,7 +2323,9 @@ Regenerate the problematic sections with valid content.`;
             </div>
           </DialogContent>
         </Dialog>
-        <ShortcutsPanel isOpen={showShortcutsPanel} onClose={() => setShowShortcutsPanel(false)} />
+        <Suspense fallback={null}>
+          <ShortcutsPanel isOpen={showShortcutsPanel} onClose={() => setShowShortcutsPanel(false)} />
+        </Suspense>
       </div>
     );
   }
@@ -2504,17 +2521,19 @@ Regenerate the problematic sections with valid content.`;
             {/* Theme Editor - show when site exists */}
             {siteSpec && (
               <div className="border-t border-border p-3 flex flex-wrap gap-2">
-                <ThemeEditor 
-                  theme={siteSpec.theme} 
-                  onUpdateTheme={editor.updateTheme}
-                />
-                <LogoUpload 
-                  logo={siteSpec.logo}
-                  onUpdateLogo={editor.updateLogo}
-                  generatedImages={generatedImages}
-                  isLoadingImages={isLoadingImages}
-                />
-                <HelpChat />
+                <Suspense fallback={<PanelLoader />}>
+                  <ThemeEditor 
+                    theme={siteSpec.theme} 
+                    onUpdateTheme={editor.updateTheme}
+                  />
+                  <LogoUpload 
+                    logo={siteSpec.logo}
+                    onUpdateLogo={editor.updateLogo}
+                    generatedImages={generatedImages}
+                    isLoadingImages={isLoadingImages}
+                  />
+                  <HelpChat />
+                </Suspense>
               </div>
             )}
 
@@ -2579,7 +2598,9 @@ Regenerate the problematic sections with valid content.`;
         <div className="h-12 border-b border-border flex items-center justify-between px-2 sm:px-4 bg-card/30 gap-1 sm:gap-2 overflow-x-auto">
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             {/* Presence Avatars - System toolbar only, NO generated site navigation here */}
-            <PresenceAvatars users={otherUsers} />
+            <Suspense fallback={null}>
+              <PresenceAvatars users={otherUsers} />
+            </Suspense>
           </div>
 
           <div className="flex items-center gap-0.5 sm:gap-1 bg-muted/50 rounded-lg p-0.5 sm:p-1 shrink-0">
@@ -2764,18 +2785,22 @@ Regenerate the problematic sections with valid content.`;
             </Button>
             
             {/* Bookmarks */}
-            <BookmarksPanel
-              projectId={projectId}
-              currentSpec={siteSpec}
-              onRestoreBookmark={(spec) => {
-                setPreviousSpecForDiff(siteSpec);
-                setPendingSpec(spec);
-                setShowDiffViewer(true);
-              }}
-            />
+            <Suspense fallback={<PanelLoader />}>
+              <BookmarksPanel
+                projectId={projectId}
+                currentSpec={siteSpec}
+                onRestoreBookmark={(spec) => {
+                  setPreviousSpecForDiff(siteSpec);
+                  setPendingSpec(spec);
+                  setShowDiffViewer(true);
+                }}
+              />
+            </Suspense>
             
             {/* Knowledge Base */}
-            <KnowledgePanel projectId={projectId} />
+            <Suspense fallback={<PanelLoader />}>
+              <KnowledgePanel projectId={projectId} />
+            </Suspense>
             
             {/* Domains button - hidden, moved to publish dropdown */}
             {/* <Button
@@ -2979,18 +3004,22 @@ Regenerate the problematic sections with valid content.`;
           onMouseLeave={() => updateCursor(null)}
         >
           {/* Other users' cursors */}
-          <PresenceCursor 
-            cursors={otherUsers.filter(u => u.cursor !== null)} 
-            containerRef={previewContainerRef as React.RefObject<HTMLElement>}
-          />
+          <Suspense fallback={null}>
+            <PresenceCursor 
+              cursors={otherUsers.filter(u => u.cursor !== null)} 
+              containerRef={previewContainerRef as React.RefObject<HTMLElement>}
+            />
+          </Suspense>
           
           {/* Touch Target Analyzer */}
           {isTouchAnalyzing && previewMode !== 'desktop' && (
-            <TouchTargetAnalyzer
-              containerRef={previewContainerRef as React.RefObject<HTMLElement>}
-              isActive={isTouchAnalyzing}
-              onClose={stopTouchAnalysis}
-            />
+            <Suspense fallback={<PanelLoader />}>
+              <TouchTargetAnalyzer
+                containerRef={previewContainerRef as React.RefObject<HTMLElement>}
+                isActive={isTouchAnalyzing}
+                onClose={stopTouchAnalysis}
+              />
+            </Suspense>
           )}
           
           <DeviceFrame
@@ -3325,7 +3354,9 @@ Regenerate the problematic sections with valid content.`;
               Track visitors, page views, and traffic sources for your published site.
             </DialogDescription>
           </DialogHeader>
-          <AnalyticsPanel projectId={projectId} />
+          <Suspense fallback={<PanelLoader />}>
+            <AnalyticsPanel projectId={projectId} />
+          </Suspense>
         </DialogContent>
       </Dialog>
 
@@ -3341,7 +3372,7 @@ Regenerate the problematic sections with valid content.`;
               Connect your own domain to your published site with automatic SSL.
             </DialogDescription>
           </DialogHeader>
-          {projectId && <CustomDomainsPanel projectId={projectId} />}
+          {projectId && <Suspense fallback={<PanelLoader />}><CustomDomainsPanel projectId={projectId} /></Suspense>}
         </DialogContent>
       </Dialog>
 
@@ -3358,7 +3389,9 @@ Regenerate the problematic sections with valid content.`;
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
-            <SchemaVizPanel />
+            <Suspense fallback={<PanelLoader />}>
+              <SchemaVizPanel />
+            </Suspense>
           </div>
         </DialogContent>
       </Dialog>
@@ -3376,7 +3409,9 @@ Regenerate the problematic sections with valid content.`;
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-[450px] -mx-6 -mb-6">
-            <ThreeDPanel />
+            <Suspense fallback={<PanelLoader />}>
+              <ThreeDPanel />
+            </Suspense>
           </div>
         </DialogContent>
       </Dialog>
@@ -3394,7 +3429,9 @@ Regenerate the problematic sections with valid content.`;
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
-            <SecurityScanPanel siteSpec={siteSpec} />
+            <Suspense fallback={<PanelLoader />}>
+              <SecurityScanPanel siteSpec={siteSpec} />
+            </Suspense>
           </div>
         </DialogContent>
       </Dialog>
@@ -3412,42 +3449,48 @@ Regenerate the problematic sections with valid content.`;
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
-            <CodeExport siteSpec={siteSpec} projectName={projectName} />
+            <Suspense fallback={<PanelLoader />}>
+              <CodeExport siteSpec={siteSpec} projectName={projectName} />
+            </Suspense>
           </div>
         </DialogContent>
       </Dialog>
 
-      <DiffViewer
-        isOpen={showDiffViewer}
-        onClose={() => {
-          setShowDiffViewer(false);
-          setPendingSpec(null);
-          setPreviousSpecForDiff(null);
-        }}
-        previousSpec={previousSpecForDiff}
-        currentSpec={pendingSpec}
-        onAccept={() => {
-          if (pendingSpec) {
-            setSiteSpec(pendingSpec);
-          }
-          setShowDiffViewer(false);
-          setPendingSpec(null);
-          setPreviousSpecForDiff(null);
-        }}
-        onReject={() => {
-          setShowDiffViewer(false);
-          setPendingSpec(null);
-          setPreviousSpecForDiff(null);
-        }}
-      />
+      <Suspense fallback={null}>
+        <DiffViewer
+          isOpen={showDiffViewer}
+          onClose={() => {
+            setShowDiffViewer(false);
+            setPendingSpec(null);
+            setPreviousSpecForDiff(null);
+          }}
+          previousSpec={previousSpecForDiff}
+          currentSpec={pendingSpec}
+          onAccept={() => {
+            if (pendingSpec) {
+              setSiteSpec(pendingSpec);
+            }
+            setShowDiffViewer(false);
+            setPendingSpec(null);
+            setPreviousSpecForDiff(null);
+          }}
+          onReject={() => {
+            setShowDiffViewer(false);
+            setPendingSpec(null);
+            setPreviousSpecForDiff(null);
+          }}
+        />
+      </Suspense>
 
       {/* Rename Dialog */}
-      <RenameDialog
-        open={showRenameDialog}
-        onOpenChange={setShowRenameDialog}
-        currentName={projectName}
-        onRename={handleRenameProject}
-      />
+      <Suspense fallback={null}>
+        <RenameDialog
+          open={showRenameDialog}
+          onOpenChange={setShowRenameDialog}
+          currentName={projectName}
+          onRename={handleRenameProject}
+        />
+      </Suspense>
 
       {/* Debug Panel - only visible with ?debug=1 */}
       {debugMode && (
@@ -3506,46 +3549,52 @@ Regenerate the problematic sections with valid content.`;
       
       {/* Issues Panel */}
       {showIssuesPanel && (
-        <IssuesPanel
-          issues={currentIssues}
-          onClose={() => setShowIssuesPanel(false)}
-          onFixIssue={(issue) => {
-            if (issue.fixAction?.type === 'add_section' && issue.fixAction.payload?.sectionType) {
-              const sectionType = issue.fixAction.payload.sectionType as string;
-              editor.addSection({
-                id: `${sectionType}-${Date.now()}`,
-                type: sectionType as any,
-                label: sectionType.charAt(0).toUpperCase() + sectionType.slice(1),
-                content: { title: `${sectionType.charAt(0).toUpperCase() + sectionType.slice(1)} Section`, items: [] } as any,
-              });
-              setCurrentIssues(prev => prev.filter(i => i.id !== issue.id));
-              toast.success(`Added ${sectionType} section`);
-            } else if (issue.fixAction?.type === 'edit_content') {
-              setVisualEditsEnabled(true);
-              setShowIssuesPanel(false);
-              toast.info('Visual edits enabled - click content to edit');
-            } else {
-              toast.info('Fix this issue manually in the editor');
-            }
-          }}
-        />
+        <Suspense fallback={<PanelLoader />}>
+          <IssuesPanel
+            issues={currentIssues}
+            onClose={() => setShowIssuesPanel(false)}
+            onFixIssue={(issue) => {
+              if (issue.fixAction?.type === 'add_section' && issue.fixAction.payload?.sectionType) {
+                const sectionType = issue.fixAction.payload.sectionType as string;
+                editor.addSection({
+                  id: `${sectionType}-${Date.now()}`,
+                  type: sectionType as any,
+                  label: sectionType.charAt(0).toUpperCase() + sectionType.slice(1),
+                  content: { title: `${sectionType.charAt(0).toUpperCase() + sectionType.slice(1)} Section`, items: [] } as any,
+                });
+                setCurrentIssues(prev => prev.filter(i => i.id !== issue.id));
+                toast.success(`Added ${sectionType} section`);
+              } else if (issue.fixAction?.type === 'edit_content') {
+                setVisualEditsEnabled(true);
+                setShowIssuesPanel(false);
+                toast.info('Visual edits enabled - click content to edit');
+              } else {
+                toast.info('Fix this issue manually in the editor');
+              }
+            }}
+          />
+        </Suspense>
       )}
       
       {/* Version History Panel */}
-      <VersionHistoryPanel
-        open={showVersionHistory}
-        onOpenChange={setShowVersionHistory}
-        versions={versions}
-        currentSpec={siteSpec}
-        onRestore={handleRestoreVersion}
-        isRestoring={isRestoringVersion}
-      />
+      <Suspense fallback={null}>
+        <VersionHistoryPanel
+          open={showVersionHistory}
+          onOpenChange={setShowVersionHistory}
+          versions={versions}
+          currentSpec={siteSpec}
+          onRestore={handleRestoreVersion}
+          isRestoring={isRestoringVersion}
+        />
+      </Suspense>
       
       {/* Keyboard Shortcuts Panel */}
-      <ShortcutsPanel
-        isOpen={showShortcutsPanel}
-        onClose={() => setShowShortcutsPanel(false)}
-      />
+      <Suspense fallback={null}>
+        <ShortcutsPanel
+          isOpen={showShortcutsPanel}
+          onClose={() => setShowShortcutsPanel(false)}
+        />
+      </Suspense>
     </div>
   );
 }
