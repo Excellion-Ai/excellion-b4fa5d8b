@@ -283,7 +283,7 @@ export function ImageLibraryDialog({
             )}
           </DialogHeader>
 
-          <ScrollArea className="flex-1 px-6 py-4 max-h-[50vh] scrollbar-always-visible" scrollbarVariant="purple">
+          <ScrollArea className="flex-1 px-6 py-4 max-h-[65vh] scrollbar-always-visible" scrollbarVariant="purple">
             {isLoading ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
