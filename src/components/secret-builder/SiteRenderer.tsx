@@ -140,11 +140,12 @@ export function SiteRenderer({
 
   // Only show loading screen if there's no existing site to display
   // Keep showing the current preview while generating updates
+  // Use min-height to prevent CLS when switching states
   if (!siteSpec) {
     if (isLoading) {
       return (
-        <div className="h-full flex items-center justify-center bg-muted/20">
-          <div className="text-center space-y-3">
+        <div className="h-full min-h-[400px] flex items-center justify-center bg-muted/20">
+          <div className="text-center space-y-3 min-h-[80px]">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
             <p className="text-sm text-muted-foreground">Generating site...</p>
           </div>
@@ -153,8 +154,8 @@ export function SiteRenderer({
     }
     
     return (
-      <div className="h-full flex items-center justify-center bg-muted/20">
-        <div className="text-center text-muted-foreground max-w-xs">
+      <div className="h-full min-h-[400px] flex items-center justify-center bg-muted/20">
+        <div className="text-center text-muted-foreground max-w-xs min-h-[80px]">
           <Monitor className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">
             Describe your business to see a live preview.
@@ -168,10 +169,11 @@ export function SiteRenderer({
   const currentPage = pages.length > 0 ? (pages[pageIndex] || pages[0]) : null;
   
   // Show loading state if pages haven't been parsed yet during streaming
+  // Use min-height to prevent CLS when switching states
   if (!currentPage) {
     return (
-      <div className="h-full flex items-center justify-center bg-muted/20">
-        <div className="text-center space-y-3">
+      <div className="h-full min-h-[400px] flex items-center justify-center bg-muted/20">
+        <div className="text-center space-y-3 min-h-[80px]">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
           <p className="text-sm text-muted-foreground">Building your pages...</p>
         </div>
@@ -792,9 +794,9 @@ export function SiteRenderer({
         intensity={motionIntensity}
       >
         <div className="h-full flex flex-col">
-          {/* Preview controls */}
-          <div className="h-10 border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
-            <span className="text-xs text-muted-foreground">
+          {/* Preview controls - fixed height to prevent CLS */}
+          <div className="h-10 min-h-[40px] border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
+            <span className="text-xs text-muted-foreground min-w-[120px]">
               {siteSpec.name || 'Generated Site'}
               {layoutStructure && layoutStructure !== 'standard' && (
                 <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-primary/20 text-primary">

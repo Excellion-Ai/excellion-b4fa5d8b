@@ -49,9 +49,9 @@ import type { VersionSnapshot } from './VersionHistoryPanel';
 // Keep generateHtmlFromSpec as direct import since it's a function
 import { generateHtmlFromSpec } from './CodeExport';
 
-// Lazy fallback component
+// Lazy fallback component with fixed dimensions to prevent CLS
 const PanelLoader = () => (
-  <div className="flex items-center justify-center p-8">
+  <div className="flex items-center justify-center p-8 min-h-[100px] min-w-[100px]">
     <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
   </div>
 );

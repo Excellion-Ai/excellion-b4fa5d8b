@@ -30,7 +30,7 @@ export function CustomSection({ section, theme }: CustomSectionProps) {
       return (
         <section 
           id={section.id}
-          className="py-16 px-6"
+          className="py-16 px-6 min-h-[200px] contain-layout"
           style={{ 
             backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff'
           }}
@@ -53,7 +53,7 @@ export function CustomSection({ section, theme }: CustomSectionProps) {
   return (
     <section 
       id={section.id}
-      className="py-16 px-6"
+      className="py-16 px-6 min-h-[150px] contain-layout"
       style={{ 
         backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff'
       }}

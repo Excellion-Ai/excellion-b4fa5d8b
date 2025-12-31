@@ -150,6 +150,11 @@ All colors MUST be HSL.
   .no-cls {
     contain: layout;
   }
+  
+  /* Layout containment for CLS prevention */
+  .contain-layout {
+    contain: layout;
+  }
 }
 
 @layer utilities {

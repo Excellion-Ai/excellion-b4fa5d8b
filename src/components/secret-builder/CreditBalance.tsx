@@ -13,11 +13,12 @@ export function CreditBalance({ className }: CreditBalanceProps) {
   const { balance, loading, authenticated, plan, totalEarned } = useCredits();
   const navigate = useNavigate();
 
+  // Reserve consistent space for all states to prevent CLS
   if (loading) {
     return (
-      <div className={cn("flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse", className)}>
-        <Coins className="h-3.5 w-3.5" />
-        <span>...</span>
+      <div className={cn("flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse min-w-[90px] min-h-[32px]", className)}>
+        <Coins className="h-3.5 w-3.5 shrink-0" />
+        <span className="w-8">...</span>
       </div>
     );
   }
@@ -28,10 +29,11 @@ export function CreditBalance({ className }: CreditBalanceProps) {
         variant="ghost"
         size="sm"
         onClick={() => navigate('/auth')}
-        className={cn("text-xs gap-1.5", className)}
+        className={cn("text-xs gap-1.5 min-w-[90px] min-h-[32px]", className)}
       >
-        <Coins className="h-3.5 w-3.5" />
-        Sign in for credits
+        <Coins className="h-3.5 w-3.5 shrink-0" />
+        <span className="hidden sm:inline">Sign in for credits</span>
+        <span className="sm:hidden">Sign in</span>
       </Button>
     );
   }
@@ -63,7 +65,7 @@ export function CreditBalance({ className }: CreditBalanceProps) {
             size="sm"
             onClick={() => navigate('/billing')}
             className={cn(
-              "text-xs gap-1 sm:gap-1.5 font-medium px-2 sm:px-3",
+              "text-xs gap-1 sm:gap-1.5 font-medium px-2 sm:px-3 min-w-[90px] min-h-[32px]",
               colorClasses,
               isEmpty && "animate-pulse",
               className

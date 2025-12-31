@@ -40,7 +40,7 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
     return (
       <section 
         id={section.id}
-        className="h-full min-h-[300px] flex flex-col justify-end p-6 lg:p-8 relative"
+        className="h-full min-h-[300px] flex flex-col justify-end p-6 lg:p-8 relative contain-layout"
         style={backgroundStyle}
       >
         {/* Background accent for premium/wild */}
@@ -147,7 +147,7 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
     >
       <section 
         id={section.id}
-        className="flex items-center justify-center px-6 py-12 md:py-16 relative"
+        className="min-h-[300px] flex items-center justify-center px-6 py-12 md:py-16 relative contain-layout"
         style={backgroundStyle}
       >
         {/* Background accent for premium/wild */}

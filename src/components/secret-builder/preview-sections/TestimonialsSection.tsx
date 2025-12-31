@@ -60,7 +60,7 @@ export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateI
   return (
     <section 
       id={section.id}
-      className="py-10 md:py-14 px-4 md:px-8 w-full"
+      className="py-10 md:py-14 px-4 md:px-8 w-full min-h-[300px] contain-layout"
       style={{ 
         backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
       }}

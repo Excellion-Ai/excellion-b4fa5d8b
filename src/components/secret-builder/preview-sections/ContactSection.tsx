@@ -20,7 +20,7 @@ export function ContactSection({ section, theme, onUpdateContent }: ContactSecti
   const address = content?.address || '123 Main Street, City, ST 12345';
 
   return (
-    <section id={section.id} className="py-10 md:py-14 px-6 w-full" style={{ backgroundColor: isDark ? '#0a0a0a' : '#f9fafb' }}>
+    <section id={section.id} className="py-10 md:py-14 px-6 w-full min-h-[400px] contain-layout" style={{ backgroundColor: isDark ? '#0a0a0a' : '#f9fafb' }}>
       <div className="w-full">
         <div className="text-center mb-8">
           <ScrollAnimation animation="fade-up">

@@ -119,11 +119,11 @@ export function GenerationProgress({
   }, [speculativeSpec]);
 
   return (
-    <div className="bg-muted/50 rounded-lg p-3 space-y-3 border border-border/50">
+    <div className="bg-muted/50 rounded-lg p-3 space-y-3 border border-border/50 min-h-[140px]">
       {/* Header with stats */}
-      <div className="flex items-center justify-between text-xs">
-        <div className="flex items-center gap-1.5 text-muted-foreground">
-          <Loader2 className="h-3 w-3 animate-spin text-primary" />
+      <div className="flex items-center justify-between text-xs min-h-[20px]">
+        <div className="flex items-center gap-1.5 text-muted-foreground min-w-[100px]">
+          <Loader2 className="h-3 w-3 animate-spin text-primary shrink-0" />
           <span className="font-medium">{GENERATION_PHASES[currentPhaseIndex].label}</span>
         </div>
         <div className="flex items-center gap-3 text-muted-foreground">

@@ -18,7 +18,7 @@ export function CTASection({ section, theme, onUpdateContent }: CTASectionProps)
   return (
     <section 
       id={section.id}
-      className="py-10 md:py-14 px-6 w-full"
+      className="py-10 md:py-14 px-6 w-full min-h-[200px] contain-layout"
       style={{ 
         background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`
       }}
