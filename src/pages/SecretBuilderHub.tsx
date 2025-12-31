@@ -101,7 +101,7 @@ import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
 import { TEMPLATES } from '@/components/secret-builder/templateSpecs';
 import { InterviewStepper } from '@/components/InterviewStepper';
 import { useInterviewIntake } from '@/hooks/useInterviewIntake';
-import excellionLogo from '@/assets/excellion-logo-small.webp';
+import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
 interface BuilderProject {

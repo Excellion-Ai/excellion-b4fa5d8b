@@ -21,7 +21,7 @@ import {
   ChevronRight,
   BookOpen,
 } from 'lucide-react';
-import excellionLogo from '@/assets/excellion-logo-small.webp';
+import excellionLogo from '@/assets/excellion-logo.png';
 
 const NAV_SECTIONS = [
   {
