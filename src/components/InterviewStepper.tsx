@@ -248,7 +248,7 @@ export function InterviewStepper({
                 <Input
                   value={answers.serviceArea}
                   onChange={(e) => onUpdateAnswer('serviceArea', e.target.value)}
-                  placeholder="e.g., Denver, CO"
+                  placeholder="e.g., City, State or Region"
                   className="bg-background/50 border-border/50"
                 />
               </div>
