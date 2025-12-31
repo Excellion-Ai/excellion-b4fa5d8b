@@ -15,18 +15,17 @@
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     
-    <!-- Google Fonts - Load only essential weights -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <!-- Google Fonts - Optimized loading with font-display swap -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     </noscript>
     
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://excellionwebsites.com/" />
-    
-    
+    <meta property="og:title" content="Excellion Websites | Professional Web Builds in Days, Not Months">
+    <meta property="og:description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses. Book a free 15-minute consultation today.">
     <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/ViJNibNqf3RrjmrhXO3W5aL39vS2/social-images/social-1767004992265-Cropped bot UI.png">
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -35,44 +34,51 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@excellionai" />
-    
-    
+    <meta name="twitter:title" content="Excellion Websites | Professional Web Builds in Days, Not Months">
+    <meta name="twitter:description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses. Book a free 15-minute consultation today.">
     <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/ViJNibNqf3RrjmrhXO3W5aL39vS2/social-images/social-1767004992265-Cropped bot UI.png">
     
-    <!-- Favicon -->
+    <!-- Favicon with modern formats -->
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/favicon.png">
     
     <!-- Theme color for mobile browsers -->
     <meta name="theme-color" content="#0a0a0a">
   
-    <!-- Google tag (gtag.js) - Deferred for performance -->
+    <!-- Critical CSS for above-the-fold content -->
+    <style>
+      /* Prevent FOUT */
+      html { visibility: visible; opacity: 1; }
+      /* Critical body styles */
+      body { margin: 0; background: #0a0a0a; color: #fafafa; font-family: Inter, system-ui, sans-serif; }
+      /* Critical nav skeleton */
+      nav { position: fixed; top: 0; left: 0; right: 0; height: 64px; z-index: 50; }
+    </style>
+
+    <!-- Google Analytics - Defer loading completely -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'AW-17764146565');
       
-      // Defer Google Analytics loading
+      // Only load GA after page is interactive
       if (typeof window !== 'undefined') {
         window.addEventListener('load', function() {
-          var script = document.createElement('script');
-          script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17764146565';
-          script.async = true;
-          document.head.appendChild(script);
+          // Delay GA loading by 3 seconds to prioritize core content
+          setTimeout(function() {
+            gtag('js', new Date());
+            gtag('config', 'AW-17764146565');
+            var script = document.createElement('script');
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17764146565';
+            script.async = true;
+            document.head.appendChild(script);
+          }, 3000);
         });
       }
     </script>
-    <meta property="og:title" content="Excellion Websites | Professional Web Builds in Days, Not Months">
-  <meta name="twitter:title" content="Excellion Websites | Professional Web Builds in Days, Not Months">
-  <meta property="og:description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses. Book a free 15-minute consultation today.">
-  <meta name="twitter:description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses. Book a free 15-minute consultation today.">
 </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Prefetch likely next pages for instant navigation -->
-    <link rel="prefetch" href="/secret-builder-hub" />
   </body>
 </html>

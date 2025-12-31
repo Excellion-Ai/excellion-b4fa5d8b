@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import excellionLogo from "@/assets/excellion-logo.png";
+import excellionLogo from "@/assets/excellion-logo-optimized.webp";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Shield, LogOut, User } from "lucide-react";
 import { useAdmin } from "@/hooks/useAdmin";
