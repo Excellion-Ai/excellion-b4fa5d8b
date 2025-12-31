@@ -8,13 +8,8 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Force GPU acceleration for animations */
-@media (prefers-reduced-motion: no-preference) {
-  * {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-}
+/* GPU acceleration only for animated elements - not globally */
+/* Removed global backface-visibility: hidden as it breaks z-index stacking */
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.

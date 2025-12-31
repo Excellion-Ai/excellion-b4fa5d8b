@@ -197,7 +197,7 @@ const WebBuilderHome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
         <title>Website Builder AI | Build Your Site with AI</title>
