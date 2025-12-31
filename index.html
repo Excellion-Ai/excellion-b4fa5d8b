@@ -55,23 +55,33 @@
       nav { position: fixed; top: 0; left: 0; right: 0; height: 64px; z-index: 50; }
     </style>
 
-    <!-- Google Analytics - Defer loading completely -->
+    <!-- Google Analytics - Load only after user interaction or 5s delay -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       
-      // Only load GA after page is interactive
+      // Load GA only after idle or user interaction
       if (typeof window !== 'undefined') {
-        window.addEventListener('load', function() {
-          // Delay GA loading by 3 seconds to prioritize core content
-          setTimeout(function() {
-            gtag('js', new Date());
-            gtag('config', 'AW-17764146565');
-            var script = document.createElement('script');
-            script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17764146565';
-            script.async = true;
-            document.head.appendChild(script);
-          }, 3000);
+        var gaLoaded = false;
+        function loadGA() {
+          if (gaLoaded) return;
+          gaLoaded = true;
+          gtag('js', new Date());
+          gtag('config', 'AW-17764146565');
+          var script = document.createElement('script');
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17764146565';
+          script.async = true;
+          document.head.appendChild(script);
+        }
+        // Use requestIdleCallback for better performance, fallback to 5s timeout
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(loadGA, { timeout: 5000 });
+        } else {
+          setTimeout(loadGA, 5000);
+        }
+        // Also load on first user interaction
+        ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(e) {
+          document.addEventListener(e, loadGA, { once: true, passive: true });
         });
       }
     </script>

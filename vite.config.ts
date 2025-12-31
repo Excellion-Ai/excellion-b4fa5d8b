@@ -22,7 +22,10 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           // Split vendor chunks for better caching
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-accordion', '@radix-ui/react-tabs'],
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-accordion', '@radix-ui/react-tabs', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover'],
+          'motion': ['framer-motion'],
+          'query': ['@tanstack/react-query'],
+          'supabase': ['@supabase/supabase-js'],
         },
       },
     },
@@ -32,6 +35,7 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
+        pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : [],
       },
     },
     // Optimize chunk size
@@ -40,5 +44,7 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       polyfill: true,
     },
+    // Target modern browsers for smaller bundle
+    target: 'es2020',
   },
 }));
