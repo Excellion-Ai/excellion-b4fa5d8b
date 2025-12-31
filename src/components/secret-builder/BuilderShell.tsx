@@ -506,6 +506,10 @@ export function BuilderShell() {
   const [mobileActiveTab, setMobileActiveTab] = useState<'chat' | 'preview'>('chat');
   const isMobile = useIsMobile();
   
+  // Chat scroll refs for auto-scroll to bottom
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const mobileChatScrollRef = useRef<HTMLDivElement>(null);
+  
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
 
@@ -601,6 +605,19 @@ export function BuilderShell() {
       isSubmittingRef.current = false;
     };
   }, [isGenerating]);
+
+  // Auto-scroll chat to bottom when new messages arrive
+  useEffect(() => {
+    // Use setTimeout to ensure DOM has updated
+    setTimeout(() => {
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+      if (mobileChatScrollRef.current) {
+        mobileChatScrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 100);
+  }, [messages, isGenerating]);
 
   // Immediately load template spec if provided (for instant preview)
   useEffect(() => {
@@ -2200,6 +2217,8 @@ Regenerate the problematic sections with valid content.`;
                       />
                     </div>
                   )}
+                  {/* Scroll anchor */}
+                  <div ref={mobileChatScrollRef} />
                 </div>
               </ScrollArea>
 
@@ -2474,6 +2493,8 @@ Regenerate the problematic sections with valid content.`;
                     />
                   </div>
                 )}
+                {/* Scroll anchor */}
+                <div ref={chatScrollRef} />
               </div>
             </ScrollArea>
 
