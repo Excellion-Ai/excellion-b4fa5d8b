@@ -15,7 +15,8 @@
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     
-    <!-- Google Fonts - Optimized loading with font-display swap -->
+    <!-- Google Fonts - Preload critical font for LCP -->
+    <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
@@ -47,12 +48,20 @@
   
     <!-- Critical CSS for above-the-fold content -->
     <style>
-      /* Prevent FOUT */
+      /* Prevent FOUT - use system font as fallback with matching metrics */
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: local('Inter'), local('system-ui');
+      }
       html { visibility: visible; opacity: 1; }
-      /* Critical body styles */
-      body { margin: 0; background: #0a0a0a; color: #fafafa; font-family: Inter, system-ui, sans-serif; }
-      /* Critical nav skeleton */
+      body { margin: 0; background: #0a0a0a; color: #fafafa; font-family: Inter, system-ui, -apple-system, sans-serif; }
       nav { position: fixed; top: 0; left: 0; right: 0; height: 64px; z-index: 50; }
+      /* Reserve space for hero content to prevent layout shifts */
+      .hero-title { min-height: 2.5em; }
+      .hero-subtitle { min-height: 3em; }
     </style>
 
     <!-- Google Analytics - Load only after user interaction or 5s delay -->
