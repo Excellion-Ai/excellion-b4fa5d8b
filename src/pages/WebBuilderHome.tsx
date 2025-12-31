@@ -207,7 +207,7 @@ const WebBuilderHome = () => {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16" style={{ contain: 'layout' }}>
         {/* Video Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <video
@@ -235,8 +235,8 @@ const WebBuilderHome = () => {
           </video>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-          <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-6 md:py-10 rounded-lg border border-border/50">
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4" style={{ contain: 'layout' }}>
+          <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-6 md:py-10 rounded-lg border border-border/50" style={{ minHeight: '400px' }}>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-6">
               <Sparkles className="w-4 h-4" />
               <span>AI-Powered Website Builder</span>
