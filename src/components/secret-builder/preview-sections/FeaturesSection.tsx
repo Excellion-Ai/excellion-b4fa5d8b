@@ -89,7 +89,7 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
     return (
       <section 
         id={section.id}
-        className="h-full p-5"
+        className="h-full min-h-[200px] p-5 contain-layout"
         style={{ 
           backgroundColor: isDark ? '#111111' : '#ffffff'
         }}
@@ -177,7 +177,7 @@ export function FeaturesSection({ section, theme, asTile = false, onUpdateConten
   return (
     <section 
       id={section.id}
-      className="py-10 md:py-14 px-6 w-full"
+      className="py-10 md:py-14 px-6 w-full min-h-[300px] contain-layout"
       style={{ 
         backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
       }}

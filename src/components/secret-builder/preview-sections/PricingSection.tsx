@@ -45,7 +45,7 @@ export function PricingSection({ section, theme, onUpdateContent, onUpdateItem }
   return (
     <section 
       id={section.id}
-      className="py-10 md:py-14 px-6 w-full"
+      className="py-10 md:py-14 px-6 w-full min-h-[350px] contain-layout"
       style={{ 
         backgroundColor: isDark ? '#111111' : '#ffffff'
       }}

@@ -24,10 +24,10 @@ export function AnimatedSection({
     triggerOnce: true 
   });
 
-  // No animation configured
+  // No animation configured - use contain for CLS prevention
   if (!animation || animation.type === 'none') {
     return (
-      <div id={id} className={className} style={style}>
+      <div id={id} className={cn("contain-layout", className)} style={style}>
         {children}
       </div>
     );
@@ -49,7 +49,7 @@ export function AnimatedSection({
     );
   }
 
-  // Scroll trigger - animate when visible
+  // Scroll trigger - animate when visible with min-height to prevent CLS
   if (animation.trigger === 'scroll') {
     return (
       <div
@@ -57,12 +57,13 @@ export function AnimatedSection({
         ref={ref}
         className={cn(
           className,
-          'animate-on-scroll',
+          'animate-on-scroll contain-layout',
           isVisible && animationClass,
           isVisible && 'is-visible'
         )}
         style={{
           ...style,
+          minHeight: '1px', // Prevent 0-height collapse
           ...(isVisible ? animationStyle : {}),
         }}
       >

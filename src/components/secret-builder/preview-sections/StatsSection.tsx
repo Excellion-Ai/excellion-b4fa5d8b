@@ -21,7 +21,7 @@ export function StatsSection({ content, theme, asTile = false, onUpdateContent, 
     
     return (
       <section 
-        className="h-full p-5 flex flex-col justify-center"
+        className="h-full min-h-[150px] p-5 flex flex-col justify-center contain-layout"
         style={{ backgroundColor: theme.primaryColor + '15' }}
       >
         {content.title && (
@@ -92,7 +92,7 @@ export function StatsSection({ content, theme, asTile = false, onUpdateContent, 
   // Standard full-width layout
   return (
     <section 
-      className="py-16 px-6"
+      className="py-16 px-6 min-h-[200px] contain-layout"
       style={{ backgroundColor: theme.primaryColor + '10' }}
     >
       <div className="max-w-6xl mx-auto">

@@ -24,7 +24,7 @@ export function FAQSection({ section, theme, onUpdateContent }: FAQSectionProps)
   const subtitle = content?.subtitle || section.description || 'Built for reliability and peace of mind';
 
   return (
-    <section id={section.id} className="py-10 md:py-14 px-6 w-full" style={{ backgroundColor: isDark ? '#111111' : '#ffffff' }}>
+    <section id={section.id} className="py-10 md:py-14 px-6 w-full min-h-[250px] contain-layout" style={{ backgroundColor: isDark ? '#111111' : '#ffffff' }}>
       <div className="w-full max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <ScrollAnimation animation="fade-up">
