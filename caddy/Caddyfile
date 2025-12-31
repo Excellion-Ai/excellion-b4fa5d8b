@@ -22,6 +22,19 @@
         on_demand
     }
     
+    # HTTP/2 Server Push hints for critical resources
+    # These Link headers trigger HTTP/2 push for key assets
+    @html_push {
+        path / *.html
+        not path *.js *.css *.woff* *.png *.jpg *.svg
+    }
+    header @html_push Link "</assets/index.css>; rel=preload; as=style, </assets/index.js>; rel=preload; as=script; crossorigin, </fonts/inter-var.woff2>; rel=preload; as=font; type=font/woff2; crossorigin"
+    
+    # Early Hints (103) for even faster resource discovery
+    header @html_push {
+        Link "</assets/index.css>; rel=preload; as=style"
+    }
+    
     # Cache static assets for 1 year (immutable)
     @static {
         path *.js *.css *.woff *.woff2 *.ttf *.eot *.ico *.png *.jpg *.jpeg *.webp *.avif *.gif *.svg *.mp4 *.webm
@@ -56,6 +69,13 @@
     tls {
         on_demand
     }
+    
+    # HTTP/2 Server Push hints for critical resources
+    @html_push {
+        path / *.html
+        not path *.js *.css *.woff* *.png *.jpg *.svg
+    }
+    header @html_push Link "</assets/index.css>; rel=preload; as=style, </assets/index.js>; rel=preload; as=script; crossorigin, </fonts/inter-var.woff2>; rel=preload; as=font; type=font/woff2; crossorigin"
     
     # Cache static assets for 1 year (immutable)
     @static {
