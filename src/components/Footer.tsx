@@ -3,9 +3,9 @@ import excellionLogo from "@/assets/excellion-logo.png";
 
 const Footer = () => {
   return (
-    <footer className="relative z-0 border-t border-border/50 bg-background overflow-hidden" role="contentinfo" style={{ position: 'relative' }}>
-      <div className="container mx-auto px-6 py-12 relative">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8 relative">
+    <footer className="border-t border-border/50 bg-background" role="contentinfo">
+      <div className="container mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
           {/* Brand Column */}
           <div className="space-y-4 md:col-span-4">
             <div className="flex items-center gap-2">
@@ -18,7 +18,7 @@ const Footer = () => {
           </div>
 
           {/* Product Column */}
-          <nav className="space-y-4 md:col-span-2" aria-label="Product links">
+          <div className="space-y-4 md:col-span-2">
             <p className="text-sm font-semibold text-foreground">Product</p>
             <ul className="space-y-2">
               <li>
@@ -32,10 +32,10 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </nav>
+          </div>
 
           {/* Company Column */}
-          <nav className="space-y-4 md:col-span-2" aria-label="Company links">
+          <div className="space-y-4 md:col-span-2">
             <p className="text-sm font-semibold text-foreground">Company</p>
             <ul className="space-y-2">
               <li>
@@ -54,10 +54,10 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </nav>
+          </div>
 
           {/* Support Column */}
-          <nav className="space-y-4 md:col-span-2" aria-label="Support links">
+          <div className="space-y-4 md:col-span-2">
             <p className="text-sm font-semibold text-foreground">Support</p>
             <ul className="space-y-2">
               <li>
@@ -76,10 +76,10 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </nav>
+          </div>
 
           {/* Studio Column */}
-          <nav className="space-y-4 md:col-span-2" aria-label="Builder links">
+          <div className="space-y-4 md:col-span-2">
             <p className="text-sm font-semibold text-foreground">Builder</p>
             <ul className="space-y-2">
               <li>
@@ -88,7 +88,7 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </nav>
+          </div>
         </div>
 
         {/* Bottom Bar */}
