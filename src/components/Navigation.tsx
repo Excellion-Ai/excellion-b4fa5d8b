@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import excellionLogo from "@/assets/excellion-logo-optimized.webp";
+import excellionLogo from "@/assets/excellion-logo-small.webp";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Shield, LogOut, User } from "lucide-react";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -97,6 +97,8 @@ const Navigation = () => {
             width="40" 
             height="40"
             loading="eager"
+            decoding="async"
+            fetchPriority="high"
           />
           <span className="text-lg sm:text-xl font-bold text-foreground">Excellion</span>
         </Link>

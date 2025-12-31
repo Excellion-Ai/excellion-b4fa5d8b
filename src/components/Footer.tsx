@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import excellionLogo from "@/assets/excellion-logo.png";
+import excellionLogo from "@/assets/excellion-logo-small.webp";
 
 const Footer = () => {
   return (
@@ -9,7 +9,7 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="space-y-4 md:col-span-4">
             <div className="flex items-center gap-2">
-              <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
+              <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" width="32" height="32" loading="lazy" />
               <span className="text-xl font-bold text-foreground">Excellion AI</span>
             </div>
             <p className="text-sm text-muted-foreground">
