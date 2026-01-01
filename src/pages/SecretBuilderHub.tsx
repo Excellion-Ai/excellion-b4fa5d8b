@@ -177,7 +177,7 @@ export default function SecretBuilderHub() {
   // Store interviewData from location state (from WebBuilderHome)
   const [interviewDataFromLocation] = useState(locationState?.interviewData || null);
   
-  const [idea, setIdea] = useState(locationState?.initialIdea || '');
+  const [idea, setIdea] = useState('');
   const [projects, setProjects] = useState<BuilderProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -240,12 +240,10 @@ export default function SecretBuilderHub() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Restore pending prompt from localStorage
+  // Check for recovery data from abrupt page close
   useEffect(() => {
-    const pendingPrompt = localStorage.getItem(LS_PENDING_PROMPT);
-    if (pendingPrompt) {
-      setIdea(pendingPrompt);
-    }
+    // Clear any pending prompt - don't auto-fill the input
+    localStorage.removeItem(LS_PENDING_PROMPT);
     
     // Check for recovery data from abrupt page close
     const recoveryData = localStorage.getItem('excellion_recovery_data');
