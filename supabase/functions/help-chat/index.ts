@@ -5,6 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,14 +25,55 @@ serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not configured');
+      console.error('[HELP-CHAT] LOVABLE_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Processing help chat request with', messages.length, 'messages');
+    console.log('[HELP-CHAT] Processing request with', messages.length, 'messages');
+
+    // Fetch global instructions from knowledge base
+    let globalInstructions = "";
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        console.log('[HELP-CHAT] Fetching global instructions...');
+        const globalResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/knowledge_base?name=eq.__global_instructions__&select=content&limit=1`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+          }
+        );
+        
+        if (globalResponse.ok) {
+          const entries = await globalResponse.json();
+          if (entries && entries.length > 0 && entries[0].content) {
+            globalInstructions = entries[0].content;
+            console.log('[HELP-CHAT] Global instructions loaded successfully');
+          } else {
+            console.log('[HELP-CHAT] No global instructions found');
+          }
+        } else {
+          console.log('[HELP-CHAT] Global instructions fetch failed:', globalResponse.status);
+        }
+      } catch (e) {
+        console.error('[HELP-CHAT] Error fetching global instructions:', e);
+      }
+    } else {
+      console.log('[HELP-CHAT] Skipping global instructions (missing env vars)');
+    }
+
+    // Combine system prompts - global instructions enhance the base prompt
+    const basePrompt = systemPrompt || 'You are a helpful assistant.';
+    const enhancedSystemPrompt = globalInstructions 
+      ? `${basePrompt}\n\n## KNOWLEDGE BASE\nUse the following knowledge to answer questions about features, integrations, billing, and technical details:\n\n${globalInstructions}`
+      : basePrompt;
+
+    console.log('[HELP-CHAT] Calling AI with enhanced prompt');
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -40,17 +84,17 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: systemPrompt || 'You are a helpful assistant.' },
+          { role: 'system', content: enhancedSystemPrompt },
           ...messages
         ],
-        max_tokens: 500,
+        max_tokens: 1000,
         temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
+      console.error('[HELP-CHAT] AI API error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -75,14 +119,14 @@ serve(async (req) => {
     const data = await response.json();
     const assistantResponse = data.choices?.[0]?.message?.content || 'No response generated';
 
-    console.log('Help chat response generated successfully');
+    console.log('[HELP-CHAT] Response generated successfully');
 
     return new Response(
       JSON.stringify({ response: assistantResponse }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Help chat error:', error);
+    console.error('[HELP-CHAT] Error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
