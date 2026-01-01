@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, X, Send, Loader2, Sparkles, History, Plus, GripVertical, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+
+const ChatMessage = lazy(() => import('./ChatMessage').then(m => ({ default: m.ChatMessage })));
 
 type Message = {
   id: string;
@@ -499,7 +501,13 @@ export function HelpChat() {
                               : 'bg-muted text-foreground rounded-bl-sm'
                           }`}
                         >
-                          {message.content}
+                          {message.role === 'assistant' ? (
+                            <Suspense fallback={<span>{message.content}</span>}>
+                              <ChatMessage content={message.content} role="assistant" />
+                            </Suspense>
+                          ) : (
+                            message.content
+                          )}
                         </div>
                       </motion.div>
                     ))}
