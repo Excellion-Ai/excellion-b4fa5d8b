@@ -15,20 +15,23 @@ interface StatsSectionProps {
 }
 
 export function StatsSection({ content, theme, asTile = false, onUpdateContent, onUpdateItem }: StatsSectionProps) {
+  // Defensive: ensure content and items exist
+  const safeContent = content || { title: '', subtitle: '', items: [] };
+  const safeItems = Array.isArray(safeContent.items) ? safeContent.items : [];
+  
   // Tile mode for Bento layout - compact vertical stack
   if (asTile) {
-    const displayItems = content.items?.slice(0, 4) || [];
-    
+    const displayItems = safeItems.slice(0, 4);
     return (
       <section 
         className="h-full min-h-[150px] p-5 flex flex-col justify-center contain-layout"
         style={{ backgroundColor: theme.primaryColor + '15' }}
       >
-        {content.title && (
+        {safeContent.title && (
           <ScrollAnimation animation="fade-up">
             {onUpdateContent ? (
               <EditableText
-                value={content.title}
+                value={safeContent.title}
                 onSave={(val) => onUpdateContent('title', val)}
                 as="h3"
                 className="text-sm font-semibold mb-4 opacity-70"
@@ -39,7 +42,7 @@ export function StatsSection({ content, theme, asTile = false, onUpdateContent, 
                 className="text-sm font-semibold mb-4 opacity-70"
                 style={{ color: theme.textColor }}
               >
-                {content.title}
+                {safeContent.title}
               </h3>
             )}
           </ScrollAnimation>
@@ -96,11 +99,11 @@ export function StatsSection({ content, theme, asTile = false, onUpdateContent, 
       style={{ backgroundColor: theme.primaryColor + '10' }}
     >
       <div className="max-w-6xl mx-auto">
-        {content.title && (
+        {safeContent.title && (
           <ScrollAnimation animation="fade-up">
             {onUpdateContent ? (
               <EditableText
-                value={content.title}
+                value={safeContent.title}
                 onSave={(val) => onUpdateContent('title', val)}
                 as="h2"
                 className="text-3xl font-bold text-center mb-12"
@@ -111,13 +114,16 @@ export function StatsSection({ content, theme, asTile = false, onUpdateContent, 
                 className="text-3xl font-bold text-center mb-12"
                 style={{ color: theme.textColor }}
               >
-                {content.title}
+                {safeContent.title}
               </h2>
             )}
           </ScrollAnimation>
         )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {content.items.map((stat, index) => {
+          {safeItems.map((stat, index) => {
+            // Skip undefined or malformed stat items
+            if (!stat || typeof stat.value !== 'string') return null;
+            
             const numericValue = parseInt(stat.value.replace(/[^0-9]/g, ''), 10);
             const hasNumeric = !isNaN(numericValue);
             const prefix = stat.value.match(/^[^0-9]*/)?.[0] || '';
