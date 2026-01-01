@@ -6,27 +6,626 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// ============= CONTENT PIPELINE: Banned Phrases Blocklist =============
+// ============= CONTENT PIPELINE: Types =============
+type BusinessIntent = 'product_store' | 'service_business' | 'booking_business' | 'saas' | 'portfolio';
+
+type BusinessBrief = {
+  businessName: string | null;
+  intent: BusinessIntent;
+  industry: string;
+  location: { city?: string; state?: string; country?: string } | null;
+  offerings: string[];
+  differentiators: string[];
+  tone: string[];
+  primaryGoal: 'calls' | 'bookings' | 'visits' | 'leads' | 'sales' | 'signups' | 'donations' | 'downloads';
+  primaryCTA: string;
+  secondaryCTA: string | null;
+  needsEcommerce: boolean;
+  needsBooking: boolean;
+  needsPoliciesPage: boolean;
+  seo: { primaryKeywords: string[]; serviceAreaKeywords: string[] };
+};
+
+type SitePlan = {
+  pages: Array<{
+    path: string;
+    title: string;
+    sections: string[];
+    heroContent: { headline: string; subheadline: string; cta?: string };
+  }>;
+  navigation: Array<{ label: string; href: string }>;
+  footerLinks: Array<{ label: string; href: string }>;
+  hasCart: boolean;
+};
+
+// ============= CONTENT PIPELINE: Banned Phrases =============
 const BANNED_PHRASES_LIST = [
+  // Generic SaaS/tech
   'welcome to our website', 'discover what we have to offer', 'everything you need to succeed',
-  'custom section content goes here', 'lorem ipsum', 'feature 1', 'feature 2',
+  'custom section content goes here', 'lorem ipsum', 'feature 1', 'feature 2', 'feature 3',
   'fast & reliable', 'fast and reliable', 'built for speed', 'your data is always protected',
   'data protected', '99.9% uptime', 'scalable', 'enterprise-grade', 'api access', 'sla',
-  'ownership & export', 'code ownership', 'start free trial', 'contact sales', 'get demo',
-  'learn more', 'get started', 'explore', 'discover', 'excellion', 'website builder',
+  'ownership & export', 'code ownership', 'excellion', 'website builder', 'hosting',
   'top quality', 'best in class', 'world-class', 'industry-leading', 'cutting-edge',
-  'state-of-the-art', 'next-generation', 'revolutionary', '24/7 support', 'secure',
+  'state-of-the-art', 'next-generation', 'revolutionary', 'transform your business',
+  // Generic CTAs
+  'start free trial', 'contact sales', 'get demo', 'learn more', 'get started', 
+  'explore', 'discover', 'let\'s work together', 'ready to get started',
+  // Generic support claims
+  '24/7 support', 'secure', 'reliable', 'trusted by thousands',
+  // Placeholder content
+  'your tagline here', 'your headline here', 'description goes here', 'content coming soon',
 ];
 
-// Quick validation function
+const SAAS_ONLY_PHRASES = [
+  'free trial', 'pro plan', 'enterprise plan', '/month', 'per user', 'advanced analytics',
+  'unlimited users', 'api calls', 'cloud storage', 'integrations included', 'priority support',
+];
+
+// ============= CONTENT PIPELINE: Intent Detection =============
+function detectBusinessIntent(prompt: string): BusinessIntent {
+  const lower = prompt.toLowerCase();
+  
+  // Product store indicators
+  const productPatterns = [
+    /\b(shop|store|boutique|retailer?|sell|products?|merchandise|inventory)\b/,
+    /\b(lighter|clothing|jewelry|gift|antique|collectible|furniture|electronics)\b/,
+    /\b(e-?commerce|online (store|shop)|cart|checkout)\b/,
+    /\b(dispensary|weed|cannabis|smoke shop)\b/,
+  ];
+  
+  // Booking business indicators
+  const bookingPatterns = [
+    /\b(booking|appointment|reservation|schedule|book (a|an))\b/,
+    /\b(salon|spa|barber|clinic|dental|medical|therapy|consultation)\b/,
+    /\b(restaurant|cafe|table|dine|dining|reserve)\b/,
+    /\b(hotel|motel|inn|lodging|vacation rental|airbnb)\b/,
+  ];
+  
+  // SaaS/tech indicators
+  const saasPatterns = [
+    /\b(saas|software|app|platform|dashboard|tool|solution)\b/,
+    /\b(ai|machine learning|automation|analytics|api|integration)\b/,
+    /\b(subscription|monthly|pricing tier|free trial|enterprise)\b/,
+    /\b(startup|tech|fintech|edtech|healthtech)\b/,
+  ];
+  
+  // Portfolio indicators
+  const portfolioPatterns = [
+    /\b(portfolio|photographer|artist|designer|creative|freelancer)\b/,
+    /\b(gallery|showcase|work samples|projects|case studies)\b/,
+    /\b(agency|studio|branding|illustration|videographer)\b/,
+  ];
+  
+  // Check patterns in priority order
+  for (const pattern of saasPatterns) {
+    if (pattern.test(lower)) return 'saas';
+  }
+  
+  for (const pattern of productPatterns) {
+    if (pattern.test(lower)) return 'product_store';
+  }
+  
+  for (const pattern of bookingPatterns) {
+    if (pattern.test(lower)) return 'booking_business';
+  }
+  
+  for (const pattern of portfolioPatterns) {
+    if (pattern.test(lower)) return 'portfolio';
+  }
+  
+  // Default to service business
+  return 'service_business';
+}
+
+// ============= CONTENT PIPELINE: Business Brief Extraction =============
+function extractBusinessBrief(prompt: string): BusinessBrief {
+  const lower = prompt.toLowerCase();
+  const intent = detectBusinessIntent(prompt);
+  
+  // Extract business name (look for quoted names or "called X", "named X")
+  let businessName: string | null = null;
+  const namePatterns = [
+    /"([^"]+)"/,
+    /called\s+([A-Z][a-zA-Z0-9\s&']+)/,
+    /named\s+([A-Z][a-zA-Z0-9\s&']+)/,
+    /for\s+([A-Z][a-zA-Z0-9\s&']+?)(?:\s+in|\s+located|\s*$)/,
+  ];
+  for (const pattern of namePatterns) {
+    const match = prompt.match(pattern);
+    if (match) {
+      businessName = match[1].trim();
+      break;
+    }
+  }
+  
+  // Extract location
+  let location: BusinessBrief['location'] = null;
+  const cityStateMatch = prompt.match(/\b(?:in|located in|based in)\s+([A-Za-z\s]+),?\s*([A-Z]{2})?\b/i);
+  if (cityStateMatch) {
+    location = { city: cityStateMatch[1].trim(), state: cityStateMatch[2] || undefined };
+  }
+  
+  // Infer industry from keywords
+  const industryPatterns: Record<string, RegExp> = {
+    plumbing: /\b(plumb|pipes?|drain|water heater|leaks?)\b/,
+    hvac: /\b(hvac|heating|cooling|air condition|furnace)\b/,
+    electrical: /\b(electric|wiring|outlet|circuit|panel)\b/,
+    landscaping: /\b(landscap|lawn|garden|yard|mowing)\b/,
+    cleaning: /\b(clean|maid|janitorial|housekeep)\b/,
+    pressure_washing: /\b(pressure wash|power wash)\b/,
+    auto_detailing: /\b(detail|car wash|auto detailing|ceramic coat)\b/,
+    restaurant: /\b(restaurant|cafe|pizza|sushi|food|dining|kitchen)\b/,
+    bakery: /\b(baker|bread|pastry|cake|donut|croissant)\b/,
+    salon: /\b(salon|hair|beauty|nail|spa|barber)\b/,
+    dental: /\b(dent|orthodont|oral surgery)\b/,
+    medical: /\b(medical|clinic|doctor|physician|healthcare)\b/,
+    law: /\b(law|attorney|lawyer|legal|litigation)\b/,
+    accounting: /\b(account|cpa|tax|bookkeep|financial)\b/,
+    real_estate: /\b(real estate|realtor|property|homes? for sale)\b/,
+    fitness: /\b(gym|fitness|yoga|pilates|crossfit|personal train)\b/,
+    photography: /\b(photograph|photo studio|headshot|portrait)\b/,
+    construction: /\b(construct|contractor|build|remodel|renovation)\b/,
+    roofing: /\b(roof|shingle|gutter)\b/,
+    dispensary: /\b(dispensary|cannabis|weed|marijuana|smoke shop)\b/,
+    lighter_shop: /\b(lighter|zippo|torch|collectible lighter)\b/,
+    jewelry: /\b(jewel|ring|necklace|diamond|gold|silver)\b/,
+    clothing: /\b(cloth|fashion|apparel|boutique|wear)\b/,
+    saas: /\b(saas|software|platform|app|dashboard)\b/,
+  };
+  
+  let industry = 'general';
+  for (const [ind, pattern] of Object.entries(industryPatterns)) {
+    if (pattern.test(lower)) {
+      industry = ind;
+      break;
+    }
+  }
+  
+  // Extract offerings from prompt
+  const offerings: string[] = [];
+  const offeringPatterns = [
+    /offer(?:s|ing)?\s+([^,.]+(?:,\s*[^,.]+)*)/i,
+    /specializ(?:es?|ing)\s+in\s+([^,.]+(?:,\s*[^,.]+)*)/i,
+    /services?\s+(?:include|like)\s+([^,.]+(?:,\s*[^,.]+)*)/i,
+    /sell(?:s|ing)?\s+([^,.]+(?:,\s*[^,.]+)*)/i,
+  ];
+  for (const pattern of offeringPatterns) {
+    const match = prompt.match(pattern);
+    if (match) {
+      offerings.push(...match[1].split(/,|and/).map(s => s.trim()).filter(Boolean));
+    }
+  }
+  
+  // Determine primary goal based on intent
+  const goalMap: Record<BusinessIntent, BusinessBrief['primaryGoal']> = {
+    product_store: 'sales',
+    service_business: 'leads',
+    booking_business: 'bookings',
+    saas: 'signups',
+    portfolio: 'leads',
+  };
+  
+  // Determine primary CTA based on intent
+  const ctaMap: Record<BusinessIntent, string> = {
+    product_store: 'Shop Now',
+    service_business: 'Get Free Quote',
+    booking_business: 'Book Now',
+    saas: 'Start Free Trial',
+    portfolio: 'View Work',
+  };
+  
+  // Refine CTA based on specific industry
+  let primaryCTA = ctaMap[intent];
+  if (industry === 'restaurant') primaryCTA = 'View Menu';
+  if (industry === 'dental' || industry === 'medical') primaryCTA = 'Book Appointment';
+  if (industry === 'law' || industry === 'accounting') primaryCTA = 'Free Consultation';
+  if (industry === 'real_estate') primaryCTA = 'View Listings';
+  if (industry === 'fitness') primaryCTA = 'Join Now';
+  
+  // Determine if e-commerce is needed
+  const needsEcommerce = intent === 'product_store' || 
+    /\b(cart|checkout|buy online|shop online|e-?commerce|shipping)\b/.test(lower);
+  
+  // Determine if booking is needed
+  const needsBooking = intent === 'booking_business' ||
+    /\b(book|appointment|reservation|schedule|reserve)\b/.test(lower);
+  
+  // Policies page only for e-commerce or compliance-heavy industries
+  const needsPoliciesPage = needsEcommerce || 
+    /\b(dispensary|cannabis|medical|healthcare|financial|insurance)\b/.test(lower);
+  
+  // Generate SEO keywords
+  const primaryKeywords = [industry.replace(/_/g, ' ')];
+  if (offerings.length > 0) primaryKeywords.push(...offerings.slice(0, 3));
+  if (location?.city) {
+    primaryKeywords.push(`${industry.replace(/_/g, ' ')} ${location.city}`);
+  }
+  
+  return {
+    businessName,
+    intent,
+    industry,
+    location,
+    offerings: offerings.length > 0 ? offerings : inferOfferingsFromIndustry(industry),
+    differentiators: inferDifferentiators(industry, intent),
+    tone: inferTone(intent, industry),
+    primaryGoal: goalMap[intent],
+    primaryCTA,
+    secondaryCTA: intent === 'saas' ? 'See Pricing' : (intent === 'service_business' ? 'Call Now' : null),
+    needsEcommerce,
+    needsBooking,
+    needsPoliciesPage,
+    seo: {
+      primaryKeywords,
+      serviceAreaKeywords: location?.city ? [`${location.city} ${industry.replace(/_/g, ' ')}`] : [],
+    },
+  };
+}
+
+function inferOfferingsFromIndustry(industry: string): string[] {
+  const offeringsMap: Record<string, string[]> = {
+    plumbing: ['Drain Cleaning', 'Pipe Repair', 'Water Heater Installation', 'Emergency Plumbing'],
+    pressure_washing: ['House Washing', 'Driveway Cleaning', 'Deck Restoration', 'Gutter Cleaning'],
+    auto_detailing: ['Full Detail', 'Interior Cleaning', 'Ceramic Coating', 'Paint Correction'],
+    restaurant: ['Lunch Specials', 'Dinner Menu', 'Catering', 'Private Events'],
+    bakery: ['Fresh Bread', 'Custom Cakes', 'Pastries', 'Wedding Cakes'],
+    salon: ['Haircuts', 'Color Services', 'Styling', 'Treatments'],
+    dental: ['Cleanings', 'Fillings', 'Cosmetic Dentistry', 'Implants'],
+    law: ['Personal Injury', 'Family Law', 'Criminal Defense', 'Business Law'],
+    dispensary: ['Flower', 'Edibles', 'Concentrates', 'Pre-Rolls'],
+    lighter_shop: ['Premium Lighters', 'Vintage Collectibles', 'Repairs', 'Accessories'],
+    saas: ['Core Platform', 'Integrations', 'Analytics', 'Team Collaboration'],
+  };
+  return offeringsMap[industry] || ['Quality Service', 'Expert Team', 'Fast Turnaround', 'Fair Pricing'];
+}
+
+function inferDifferentiators(industry: string, intent: BusinessIntent): string[] {
+  if (intent === 'saas') return ['Easy to use', 'Powerful features', 'Trusted by teams'];
+  if (intent === 'product_store') return ['Curated selection', 'Authentic products', 'Expert knowledge'];
+  if (intent === 'booking_business') return ['Convenient scheduling', 'Expert staff', 'Premium experience'];
+  return ['Local experts', 'Fast response', 'Satisfaction guaranteed', 'Fair pricing'];
+}
+
+function inferTone(intent: BusinessIntent, industry: string): string[] {
+  if (intent === 'saas') return ['professional', 'innovative', 'trustworthy'];
+  if (industry === 'law' || industry === 'accounting') return ['professional', 'authoritative', 'trustworthy'];
+  if (industry === 'restaurant' || industry === 'bakery') return ['warm', 'inviting', 'friendly'];
+  if (industry === 'salon' || industry === 'spa') return ['relaxing', 'premium', 'welcoming'];
+  return ['friendly', 'professional', 'reliable'];
+}
+
+// ============= CONTENT PIPELINE: Site Plan Generation =============
+function generateSitePlan(brief: BusinessBrief): SitePlan {
+  const pages: SitePlan['pages'] = [];
+  const navigation: SitePlan['navigation'] = [];
+  
+  // Home page (always included)
+  const homeSections = ['hero', 'features'];
+  if (brief.intent !== 'portfolio') homeSections.push('testimonials');
+  homeSections.push('cta', 'contact');
+  
+  pages.push({
+    path: '/',
+    title: 'Home',
+    sections: homeSections,
+    heroContent: {
+      headline: generateHeadline(brief, 'home'),
+      subheadline: generateSubheadline(brief, 'home'),
+      cta: brief.primaryCTA,
+    },
+  });
+  navigation.push({ label: 'Home', href: '/' });
+  
+  // Services/Menu/Shop page based on intent
+  if (brief.intent === 'product_store') {
+    pages.push({
+      path: '/shop',
+      title: 'Shop',
+      sections: ['hero', 'features', 'cta'],
+      heroContent: {
+        headline: `Browse Our Collection`,
+        subheadline: `Discover ${brief.offerings.slice(0, 2).join(', ')} and more`,
+        cta: 'Shop Now',
+      },
+    });
+    navigation.push({ label: 'Shop', href: '/shop' });
+  } else if (brief.industry === 'restaurant' || brief.industry === 'bakery') {
+    pages.push({
+      path: '/menu',
+      title: 'Menu',
+      sections: ['hero', 'features', 'cta'],
+      heroContent: {
+        headline: `Our Menu`,
+        subheadline: `Fresh, delicious offerings made with care`,
+        cta: brief.needsBooking ? 'Reserve a Table' : 'Order Now',
+      },
+    });
+    navigation.push({ label: 'Menu', href: '/menu' });
+  } else if (brief.intent === 'portfolio') {
+    pages.push({
+      path: '/work',
+      title: 'Work',
+      sections: ['hero', 'features'],
+      heroContent: {
+        headline: `Our Work`,
+        subheadline: `See our latest projects and case studies`,
+        cta: 'View Projects',
+      },
+    });
+    navigation.push({ label: 'Work', href: '/work' });
+  } else if (brief.intent !== 'saas') {
+    pages.push({
+      path: '/services',
+      title: 'Services',
+      sections: ['hero', 'features', 'cta'],
+      heroContent: {
+        headline: `Our Services`,
+        subheadline: brief.offerings.length > 0 
+          ? `Specializing in ${brief.offerings.slice(0, 2).join(' and ')}`
+          : `Professional ${brief.industry.replace(/_/g, ' ')} services`,
+        cta: brief.primaryCTA,
+      },
+    });
+    navigation.push({ label: 'Services', href: '/services' });
+  }
+  
+  // Pricing page (only for SaaS)
+  if (brief.intent === 'saas') {
+    pages.push({
+      path: '/pricing',
+      title: 'Pricing',
+      sections: ['hero', 'pricing', 'faq', 'cta'],
+      heroContent: {
+        headline: `Simple, Transparent Pricing`,
+        subheadline: `Choose the plan that works for your team`,
+        cta: 'Start Free Trial',
+      },
+    });
+    navigation.push({ label: 'Pricing', href: '/pricing' });
+  }
+  
+  // About page
+  pages.push({
+    path: '/about',
+    title: 'About',
+    sections: ['hero', 'features', 'stats'],
+    heroContent: {
+      headline: brief.businessName ? `About ${brief.businessName}` : 'Our Story',
+      subheadline: `${brief.differentiators.slice(0, 2).join('. ')}`,
+    },
+  });
+  navigation.push({ label: 'About', href: '/about' });
+  
+  // Contact page
+  pages.push({
+    path: '/contact',
+    title: 'Contact',
+    sections: ['hero', 'contact'],
+    heroContent: {
+      headline: `Get in Touch`,
+      subheadline: brief.location?.city 
+        ? `Serving ${brief.location.city}${brief.location.state ? `, ${brief.location.state}` : ''}`
+        : `We'd love to hear from you`,
+      cta: brief.intent === 'service_business' ? 'Get Free Quote' : 'Contact Us',
+    },
+  });
+  navigation.push({ label: 'Contact', href: '/contact' });
+  
+  // Footer links (always include legal)
+  const footerLinks: SitePlan['footerLinks'] = [
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' },
+  ];
+  
+  // Only add Policies to navigation if explicitly needed
+  if (brief.needsPoliciesPage) {
+    pages.push({
+      path: '/policies',
+      title: 'Policies',
+      sections: ['hero', 'features'],
+      heroContent: {
+        headline: 'Store Policies',
+        subheadline: 'Shipping, returns, and other important information',
+      },
+    });
+    // Note: NOT added to main navigation - footer only
+  }
+  
+  return {
+    pages,
+    navigation,
+    footerLinks,
+    hasCart: brief.needsEcommerce,
+  };
+}
+
+function generateHeadline(brief: BusinessBrief, page: string): string {
+  if (page !== 'home') return '';
+  
+  const templates: Record<string, string[]> = {
+    plumbing: ['{location} Plumbing You Can Trust', 'Expert Plumbing, Fast Response'],
+    pressure_washing: ['Powerful Cleaning, Stunning Results', 'Restore Your Property\'s Beauty'],
+    auto_detailing: ['Showroom Shine, Every Time', 'Premium Auto Detailing'],
+    restaurant: ['Fresh Flavors, Made with Love', 'Taste the Difference'],
+    bakery: ['Freshly Baked, Made with Love', 'Artisan Baked Goods'],
+    salon: ['Look Your Best', 'Beauty Starts Here'],
+    dental: ['Your Smile, Our Priority', 'Modern Dental Care'],
+    law: ['Fighting for Your Rights', 'Experienced Legal Representation'],
+    dispensary: ['Premium Cannabis, Curated Selection', 'Quality You Can Trust'],
+    lighter_shop: ['Premium Lighters for Collectors', 'Rare & Collectible Lighters'],
+    saas: ['Streamline Your Workflow', 'The Smarter Way to Work'],
+    portfolio: ['Creative Work, Real Results', 'Design That Speaks'],
+  };
+  
+  const industryTemplates = templates[brief.industry] || ['Expert {industry} Services', 'Quality You Can Count On'];
+  let headline = industryTemplates[Math.floor(Math.random() * industryTemplates.length)];
+  
+  if (brief.location?.city) {
+    headline = headline.replace('{location}', brief.location.city);
+  } else {
+    headline = headline.replace('{location} ', '');
+  }
+  headline = headline.replace('{industry}', brief.industry.replace(/_/g, ' '));
+  
+  return headline;
+}
+
+function generateSubheadline(brief: BusinessBrief, page: string): string {
+  if (page !== 'home') return '';
+  
+  let subheadline = '';
+  if (brief.offerings.length > 0) {
+    subheadline = brief.offerings.slice(0, 3).join(', ');
+    if (brief.location?.city) {
+      subheadline += ` in ${brief.location.city}`;
+    }
+  } else if (brief.location?.city) {
+    subheadline = `Serving ${brief.location.city} and surrounding areas`;
+  } else {
+    subheadline = brief.differentiators.slice(0, 2).join('. ');
+  }
+  
+  return subheadline;
+}
+
+// ============= CONTENT PIPELINE: Validation =============
+function validateSectionContent(content: string, brief: BusinessBrief): { valid: boolean; issues: string[] } {
+  const issues: string[] = [];
+  const lower = content.toLowerCase();
+  const isSaas = brief.intent === 'saas';
+  
+  // Check for banned phrases
+  for (const phrase of BANNED_PHRASES_LIST) {
+    if (lower.includes(phrase.toLowerCase())) {
+      // Allow some phrases for SaaS
+      if (isSaas && ['start free trial', 'get demo', 'explore', 'discover'].includes(phrase)) {
+        continue;
+      }
+      issues.push(`Banned phrase: "${phrase}"`);
+    }
+  }
+  
+  // Check for SaaS-only phrases in non-SaaS content
+  if (!isSaas) {
+    for (const phrase of SAAS_ONLY_PHRASES) {
+      if (lower.includes(phrase.toLowerCase())) {
+        issues.push(`SaaS-only phrase in non-SaaS business: "${phrase}"`);
+      }
+    }
+  }
+  
+  // Check for industry relevance (must mention at least one offering or industry term)
+  const industryTerms = [
+    brief.industry.replace(/_/g, ' '),
+    ...brief.offerings.map(o => o.toLowerCase()),
+    ...brief.seo.primaryKeywords.map(k => k.toLowerCase()),
+  ];
+  
+  const hasIndustryRelevance = industryTerms.some(term => lower.includes(term));
+  if (!hasIndustryRelevance && content.length > 50) {
+    issues.push('Content lacks industry-specific terms');
+  }
+  
+  return { valid: issues.length === 0, issues };
+}
+
+function validateSiteSpec(siteSpec: any, brief: BusinessBrief): { valid: boolean; failingSections: Array<{ page: string; section: number; issues: string[] }> } {
+  const failingSections: Array<{ page: string; section: number; issues: string[] }> = [];
+  
+  if (!siteSpec || !siteSpec.pages) {
+    return { valid: false, failingSections: [{ page: 'root', section: 0, issues: ['Invalid site spec structure'] }] };
+  }
+  
+  for (const page of siteSpec.pages) {
+    if (!page.sections) continue;
+    
+    page.sections.forEach((section: any, index: number) => {
+      const sectionText = JSON.stringify(section.content || section);
+      const validation = validateSectionContent(sectionText, brief);
+      
+      if (!validation.valid) {
+        failingSections.push({
+          page: page.path,
+          section: index,
+          issues: validation.issues,
+        });
+      }
+    });
+  }
+  
+  return { valid: failingSections.length === 0, failingSections };
+}
+
+// ============= CONTENT PIPELINE: Prompt Enhancement =============
+function generateContentPipelinePrompt(brief: BusinessBrief, plan: SitePlan): string {
+  return `
+====================================
+## CONTENT PIPELINE - MANDATORY REQUIREMENTS
+====================================
+
+**BUSINESS BRIEF (Extracted from User Prompt):**
+- Business Name: ${brief.businessName || '[Generate appropriate name]'}
+- Business Intent: ${brief.intent.toUpperCase()}
+- Industry: ${brief.industry.replace(/_/g, ' ').toUpperCase()}
+- Location: ${brief.location ? `${brief.location.city || ''} ${brief.location.state || ''}`.trim() : 'Not specified'}
+
+**OFFERINGS (Use these in features/services):**
+${brief.offerings.map(o => `- ${o}`).join('\n')}
+
+**DIFFERENTIATORS (Use in headlines/features):**
+${brief.differentiators.map(d => `- ${d}`).join('\n')}
+
+**TONE/STYLE:** ${brief.tone.join(', ')}
+
+**CONVERSION STRATEGY:**
+- Primary Goal: ${brief.primaryGoal.toUpperCase()}
+- Primary CTA: "${brief.primaryCTA}"
+- Secondary CTA: "${brief.secondaryCTA || 'N/A'}"
+
+**SITE STRUCTURE (Follow this exactly):**
+${plan.pages.map(p => `
+### ${p.title} (${p.path})
+- Sections: ${p.sections.join(', ')}
+- Hero Headline: "${p.heroContent.headline}"
+- Hero Subheadline: "${p.heroContent.subheadline}"
+- Hero CTA: "${p.heroContent.cta || 'No CTA (form below)'}"`).join('\n')}
+
+**NAVIGATION (${plan.navigation.length} items max):**
+${plan.navigation.map(n => `- ${n.label} → ${n.href}`).join('\n')}
+
+**CART ICON:** ${plan.hasCart ? 'YES - Include cart icon in header corner' : 'NO - No cart'}
+
+**FOOTER LINKS:**
+${plan.footerLinks.map(l => `- ${l.label}`).join('\n')}
+
+**SEO KEYWORDS:**
+Primary: ${brief.seo.primaryKeywords.join(', ')}
+${brief.seo.serviceAreaKeywords.length > 0 ? `Local: ${brief.seo.serviceAreaKeywords.join(', ')}` : ''}
+
+====================================
+## ABSOLUTE REQUIREMENTS
+====================================
+1. Every page MUST have a UNIQUE hero section with different headline/subheadline
+2. CTAs must match the business type (use "${brief.primaryCTA}" as primary CTA)
+3. Features must describe actual offerings: ${brief.offerings.slice(0, 3).join(', ')}
+4. NO generic phrases: "Welcome to our website", "Get Started", "Learn More", "Let's Work Together"
+5. ${brief.intent !== 'saas' ? 'NO SaaS terminology: "Fast & Reliable", "Secure", subscription pricing' : 'SaaS terms OK'}
+6. ${brief.location?.city ? `Include location in copy: ${brief.location.city}` : 'No location specified'}
+7. ${!plan.hasCart ? 'DO NOT include Cart, Checkout, or Product pages' : 'Include Shop page with cart functionality'}
+8. Policies page is ${brief.needsPoliciesPage ? 'allowed in footer' : 'NOT needed'} - NEVER in main navigation
+====================================
+`;
+}
+
+// Quick validation function (keeping for backward compatibility)
 function hasBannedContent(text: string, isSaas = false): boolean {
   const lower = text.toLowerCase();
   for (const phrase of BANNED_PHRASES_LIST) {
     if (lower.includes(phrase)) return true;
   }
   if (!isSaas) {
-    const saasOnly = ['free trial', 'pro plan', 'enterprise plan', '/month', 'per user', 'advanced analytics'];
-    for (const phrase of saasOnly) {
+    for (const phrase of SAAS_ONLY_PHRASES) {
       if (lower.includes(phrase)) return true;
     }
   }
@@ -1965,6 +2564,38 @@ ${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.
     // GENERATION/EDIT MODE: Continue with normal SiteSpec generation
     console.log(`[BOT-CHAT:${requestId}] ${messageIntent.toUpperCase()} MODE - Generating SiteSpec`);
     
+    // ============= CONTENT PIPELINE INTEGRATION =============
+    // Extract business brief and generate site plan from user prompt
+    let contentPipelinePrompt = "";
+    let businessBrief: BusinessBrief | null = null;
+    let sitePlan: SitePlan | null = null;
+    
+    if (messageIntent === 'generation') {
+      console.log(`[BOT-CHAT:${requestId}] Running content pipeline...`);
+      
+      try {
+        businessBrief = extractBusinessBrief(lastUserMessageText);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Business Intent: ${businessBrief.intent}`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Industry: ${businessBrief.industry}`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Name: ${businessBrief.businessName || 'Not specified'}`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Needs E-commerce: ${businessBrief.needsEcommerce}`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Needs Booking: ${businessBrief.needsBooking}`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Primary CTA: ${businessBrief.primaryCTA}`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Offerings: ${businessBrief.offerings.join(', ')}`);
+        
+        sitePlan = generateSitePlan(businessBrief);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Site Plan: ${sitePlan.pages.length} pages`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Pages: ${sitePlan.pages.map(p => p.path).join(', ')}`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Has Cart: ${sitePlan.hasCart}`);
+        
+        contentPipelinePrompt = generateContentPipelinePrompt(businessBrief, sitePlan);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Generated prompt enhancement (${contentPipelinePrompt.length} chars)`);
+      } catch (pipelineError) {
+        console.error(`[BOT-CHAT:${requestId}] [PIPELINE] Error:`, pipelineError);
+        // Continue without pipeline if error
+      }
+    }
+    
     // Check for URLs - SKIP in fast mode for speed (reduces 5+ seconds)
     let urlContext = "";
     
@@ -1990,7 +2621,13 @@ ${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.
     // Select base prompt based on mode
     let enhancedPrompt = isFastMode ? FAST_SYSTEM_PROMPT : SYSTEM_PROMPT;
     
-    // Add knowledge base context first (higher priority)
+    // Add CONTENT PIPELINE prompt FIRST (highest priority for generation)
+    if (contentPipelinePrompt) {
+      enhancedPrompt = contentPipelinePrompt + "\n\n" + enhancedPrompt;
+      console.log(`[BOT-CHAT:${requestId}] Content pipeline prompt prepended`);
+    }
+    
+    // Add knowledge base context
     if (knowledgeContext) {
       enhancedPrompt += `\n${knowledgeContext}`;
       console.log(`[BOT-CHAT:${requestId}] Added knowledge base context to prompt`);
