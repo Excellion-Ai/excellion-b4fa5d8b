@@ -74,6 +74,7 @@ import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/di
 import { computeSignature } from '@/lib/layoutSignature';
 import { speculativeParse, shouldAttemptParse, mergeSpeculative } from '@/lib/speculativeParser';
 import { refinePrompt } from '@/lib/promptRefiner';
+import { validateFinalSpec } from '@/lib/contentPipeline/contentValidator';
 import { cn } from '@/lib/utils';
 import { 
   formatChatResponse,
@@ -1684,6 +1685,23 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           // Retry with enhanced prompt including guardrail feedback
           toast.info('Improving generation quality...');
           return handleGenerate(`${ideaToUse}\n\n[QUALITY CONSTRAINTS: ${constraintHint}]`, retryCount + 1);
+        }
+        
+        // ============ FINAL-SPEC VALIDATION ============
+        // Deep scan for banned phrases and placeholders BEFORE rendering
+        const finalValidation = validateFinalSpec(parsedSpec, route.category);
+        console.log('[FINAL_VALIDATION]', {
+          valid: finalValidation.valid,
+          violations: finalValidation.violations.length,
+          hasPlaceholders: finalValidation.hasPlaceholders,
+        });
+        
+        // If banned content found and this is first attempt, retry with strict constraints
+        if (!finalValidation.valid && retryCount < 2) {
+          const bannedPhrases = finalValidation.violations.map(v => v.phrase).join(', ');
+          console.log('[FINAL_VALIDATION] Retrying - found banned content:', bannedPhrases);
+          toast.info('Removing generic content...');
+          return handleGenerate(`${ideaToUse}\n\n[STRICT CONTENT RULES: Remove these banned phrases: ${bannedPhrases}. Generate specific content for this business only.]`, retryCount + 1);
         }
         
         // Record the generation for diversity tracking

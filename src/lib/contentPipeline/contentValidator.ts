@@ -1,7 +1,9 @@
 // ============= Content Validator =============
 // Validates generated content against quality rules
+// SHARED SOURCE OF TRUTH for banned phrases - used by both frontend and edge functions
 
 import { ContentValidationResult, ContentValidationIssue, BusinessBrief } from './types';
+import { SiteSpec } from '@/types/site-spec';
 
 // Absolutely banned phrases - NEVER should appear
 export const BANNED_PHRASES = [
@@ -88,7 +90,7 @@ export const BANNED_PHRASES = [
 ];
 
 // Phrases that are fine for SaaS but banned for other industries
-const SAAS_ONLY_PHRASES = [
+export const SAAS_ONLY_PHRASES = [
   'free trial',
   'pro plan',
   'enterprise plan',
@@ -346,4 +348,79 @@ export function hasBannedContent(text: string, industry = 'service_general'): bo
  */
 export function getBannedPhrasesForPrompt(): string {
   return BANNED_PHRASES.map((p) => `"${p}"`).join(', ');
+}
+
+/**
+ * FINAL-SPEC VALIDATION: Deep scan for banned phrases and placeholders
+ * Used in BuilderShell AFTER spec is assembled but BEFORE rendering
+ */
+export type FinalSpecValidationResult = {
+  valid: boolean;
+  violations: Array<{
+    sectionId: string;
+    phrase: string;
+    location: string;
+  }>;
+  hasPlaceholders: boolean;
+};
+
+export function validateFinalSpec(spec: SiteSpec | null, industry = 'service_general'): FinalSpecValidationResult {
+  const result: FinalSpecValidationResult = {
+    valid: true,
+    violations: [],
+    hasPlaceholders: false,
+  };
+
+  if (!spec) return result;
+
+  // Convert full spec to searchable string
+  const specString = JSON.stringify(spec).toLowerCase();
+
+  // Check for all banned phrases
+  for (const phrase of BANNED_PHRASES) {
+    if (specString.includes(phrase.toLowerCase())) {
+      result.valid = false;
+      result.violations.push({
+        sectionId: 'spec',
+        phrase,
+        location: 'full-spec',
+      });
+    }
+  }
+
+  // Check for SaaS-only phrases in non-SaaS industries
+  if (industry !== 'saas') {
+    for (const phrase of SAAS_ONLY_PHRASES) {
+      if (specString.includes(phrase.toLowerCase())) {
+        result.valid = false;
+        result.violations.push({
+          sectionId: 'spec',
+          phrase: `SaaS-only: ${phrase}`,
+          location: 'full-spec',
+        });
+      }
+    }
+  }
+
+  // Check for placeholder patterns
+  const placeholderPatterns = [
+    /\[.*?\]/g, // [placeholder]
+    /\{.*?\}/g, // {placeholder}
+    /xxx+/gi,
+    /tbd/gi,
+    /lorem ipsum/gi,
+    /custom section content/gi,
+    /add your customer review/gi,
+    /your testimonial goes here/gi,
+  ];
+
+  for (const pattern of placeholderPatterns) {
+    if (pattern.test(specString)) {
+      result.hasPlaceholders = true;
+      result.valid = false;
+      break;
+    }
+  }
+
+  return result;
 }
