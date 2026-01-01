@@ -2,45 +2,46 @@ import { SiteSection, SiteTheme, PricingContent, PricingTier } from '@/types/app
 import { Check } from 'lucide-react';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
 import { EditableText } from '../EditableText';
+import { RenderMode } from '../SiteRenderer';
+import { SetupRequiredCard } from '../SetupRequiredCard';
+import { 
+  BusinessIntent, 
+  PRICING_TITLES, 
+  PRICING_PLANS, 
+  PRICING_FINE_PRINT 
+} from '@/lib/intentAwareFallbacks';
 
 interface PricingSectionProps {
   section: SiteSection;
   theme: SiteTheme;
+  renderMode?: RenderMode;
+  businessIntent?: BusinessIntent;
   onUpdateContent?: (field: keyof PricingContent, value: string) => void;
   onUpdateItem?: (index: number, field: keyof PricingTier, value: string | string[]) => void;
 }
 
-const defaultPlans: PricingTier[] = [
-  { 
-    name: 'Starter', 
-    price: '$9', 
-    period: '/month',
-    features: ['Basic features', 'Email support', '1 user'],
-    highlighted: false
-  },
-  { 
-    name: 'Pro', 
-    price: '$29', 
-    period: '/month',
-    features: ['All Starter features', 'Priority support', '5 users', 'Advanced analytics'],
-    highlighted: true
-  },
-  { 
-    name: 'Enterprise', 
-    price: '$99', 
-    period: '/month',
-    features: ['All Pro features', 'Dedicated support', 'Unlimited users', 'Custom integrations'],
-    highlighted: false
-  },
-];
-
-export function PricingSection({ section, theme, onUpdateContent, onUpdateItem }: PricingSectionProps) {
+export function PricingSection({ 
+  section, 
+  theme, 
+  renderMode = 'preview',
+  businessIntent = 'service_business',
+  onUpdateContent, 
+  onUpdateItem 
+}: PricingSectionProps) {
   const content = section.content as PricingContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
-  const title = content?.title || section.label || 'Pricing';
-  const subtitle = content?.subtitle || section.description || 'Choose the plan that works for you';
-  const items = content?.items || defaultPlans;
+  // Get intent-aware fallbacks
+  const intentTitles = PRICING_TITLES[businessIntent];
+  const intentPlans = PRICING_PLANS[businessIntent];
+  const finePrint = PRICING_FINE_PRINT[businessIntent];
+  
+  const title = content?.title || section.label || intentTitles.title;
+  const subtitle = content?.subtitle || section.description || intentTitles.subtitle;
+  
+  // Use content items if provided, otherwise use intent-aware fallbacks
+  const hasContent = content?.items && content.items.length > 0;
+  const items = hasContent ? content.items : intentPlans;
 
   return (
     <section 
@@ -210,6 +211,21 @@ export function PricingSection({ section, theme, onUpdateContent, onUpdateItem }
             </ScrollAnimation>
           ))}
         </div>
+        
+        {/* Fine print for booking/service intents */}
+        {(businessIntent === 'booking_business' || businessIntent === 'service_business') && (
+          <ScrollAnimation animation="fade-up" delay={500}>
+            <p 
+              className="text-center text-sm mt-8 opacity-70"
+              style={{ 
+                fontFamily: theme.fontBody || 'system-ui',
+                color: isDark ? '#9ca3af' : '#6b7280'
+              }}
+            >
+              {finePrint}
+            </p>
+          </ScrollAnimation>
+        )}
       </div>
     </section>
   );

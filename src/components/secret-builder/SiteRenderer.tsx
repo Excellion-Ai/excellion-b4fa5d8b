@@ -7,6 +7,7 @@ import { MotionIntensity } from '@/lib/motion/types';
 import { MotionProvider, MotionWrapper, SignatureFlourish, BackgroundAccent } from '@/components/motion';
 import { VisualModeProvider } from './VisualModeContext';
 import { VisualEditPanel } from './VisualEditPanel';
+import { BusinessIntent } from '@/lib/intentAwareFallbacks';
 import {
   DndContext,
   closestCenter,
@@ -54,6 +55,7 @@ interface SiteRendererProps {
   pageIndex?: number;
   isLoading: boolean;
   renderMode?: RenderMode;
+  businessIntent?: BusinessIntent;
   onUpdateHeroContent?: (sectionId: string, field: keyof HeroContent, value: string) => void;
   onUpdateFeaturesContent?: (sectionId: string, field: keyof FeaturesContent, value: string) => void;
   onUpdateFeatureItem?: (sectionId: string, index: number, field: keyof FeatureItem, value: string) => void;
@@ -103,6 +105,7 @@ export function SiteRenderer({
   pageIndex = 0,
   isLoading,
   renderMode = 'preview',
+  businessIntent = 'service_business',
   onUpdateHeroContent,
   onUpdateFeaturesContent,
   onUpdateFeatureItem,
@@ -252,6 +255,7 @@ export function SiteRenderer({
         sectionContent = (
           <PricingSection 
             {...commonProps}
+            businessIntent={businessIntent}
             onUpdateContent={onUpdatePricingContent ? (field, value) => onUpdatePricingContent(section.id, field, value) : undefined}
             onUpdateItem={onUpdatePricingItem ? (index, field, value) => onUpdatePricingItem(section.id, index, field, value) : undefined}
           />
@@ -287,6 +291,7 @@ export function SiteRenderer({
         sectionContent = (
           <CTASection 
             {...commonProps}
+            businessIntent={businessIntent}
             onUpdateContent={onUpdateCTAContent ? (field, value) => onUpdateCTAContent(section.id, field, value) : undefined}
           />
         );
