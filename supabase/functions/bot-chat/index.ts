@@ -394,78 +394,75 @@ function extractColorsFromPrompt(prompt: string): { primary?: string; accent?: s
 
 // ULTRA-FAST MODE: Minimized prompt for sub-10s first byte
 // Optimized for streaming: outputs sections sequentially for speculative rendering
-const FAST_SYSTEM_PROMPT = `You are a website builder AI. You create websites and explain what you built in a friendly, specific way.
+const FAST_SYSTEM_PROMPT = `You are a website builder AI. You create websites and explain what you built.
 
-## ⚠️ CRITICAL: SUMMARY FORMAT (READ FIRST) ⚠️
+## RESPONSE FORMAT (MANDATORY)
 
-Your response MUST begin with a conversational summary. This is what the user reads - make it SPECIFIC to their business!
+START your response with a friendly summary describing SPECIFIC content you created. Then output JSON.
 
-**REQUIRED FORMAT:**
-
+TEMPLATE:
+---
 Here's what I created for [Business Name]:
 
-• **Hero:** "[Exact headline you wrote]" with a [describe visual style] background
-• **Features:** [Count] key offerings - [list 2-3 actual feature titles from the site]
-• **[Section Name]:** [What's in it - be specific to their industry]
-• **Design:** [Color name] (#hex) theme with [font] typography
+• **Hero:** "[Your headline]" with [background style]
+• **[Section]:** [Specific content you added]
+• **Design:** [Color] (#hex) theme
 
-**BANNED RESPONSES (will be rejected):**
-❌ "Built: • Generated 6 pages • Created 16 sections" 
-❌ "Added hero section with CTA • Added contact form"
-❌ Any response starting with "Built:" followed by generic bullets
-❌ Counting pages/sections without describing content
-
-**CORRECT EXAMPLE:**
-Here's what I created for Tony's Pizzeria:
-
-• **Hero:** "Authentic Italian, Delivered Hot" with a warm pizzeria kitchen background
-• **Menu Features:** 6 signature pizzas - Margherita, Pepperoni Supreme, BBQ Chicken, Hawaiian, Meat Lovers, Veggie Deluxe
-• **About:** Our story section highlighting 25 years of family tradition
-• **Contact:** Order form with phone, delivery address, and special requests
-• **Design:** Warm red (#dc2626) theme with Playfair Display headings
-
+\`\`\`json
+{...SiteSpec...}
+\`\`\`
 ---
 
-BANNED CONTENT: "Excellion", "website builder", "hosting", "export", "code ownership", meta-references.
+FORBIDDEN PATTERNS (NEVER use these):
+- "Built: • Generated X pages"
+- "Created X sections"
+- "Added hero section with CTA"
+- Any generic counting of pages/sections
 
-OUTPUT ORDER (for streaming):
-1. Conversational summary FIRST (as shown above)
-2. \`\`\`json block with SiteSpec
+CORRECT RESPONSE EXAMPLE:
+---
+Here's what I created for Bella's Bakery:
 
-FORMAT:
+• **Hero:** "Freshly Baked, Made with Love" with a warm bakery interior background
+• **Menu:** 8 specialty items - Croissants, Sourdough, Cinnamon Rolls, Baguettes
+• **About:** Our story of three generations of bakers
+• **Contact:** Order form with pickup date and special requests
+
 \`\`\`json
-{"name":"Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","backgroundColor":"#0a0a0a","textColor":"#ffffff","darkMode":true,"fontHeading":"Inter","fontBody":"Inter"},"businessModel":"SERVICE_BASED","layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
+{"name":"Bella's Bakery"...}
 \`\`\`
+---
+
+OUTPUT JSON STRUCTURE:
+{"name":"Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","backgroundColor":"#0a0a0a","textColor":"#ffffff","darkMode":true,"fontHeading":"Inter","fontBody":"Inter"},"businessModel":"SERVICE_BASED","layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
 
 SECTIONS: hero, features, testimonials, pricing, faq, contact, cta, stats
-- hero: {headline, subheadline, ctas:[{label,href,variant:"primary"}], backgroundImage:"GENERATE: scene - NO TEXT"}
-- features: {title, items:[{title,description,icon}]} (4-6 items, icons: Star,Zap,Shield,Clock,CheckCircle,Award,Heart,Target,Lightbulb,Rocket)
-- testimonials: {title, items:[{name:"Customer Name",role:"",quote:"Add review here",rating:5}]}
-- faq: {title, items:[{question,answer}]} - about USER'S business only
-- contact: {title, formFields:["name","email","message"]}
+DEFAULT COLORS: Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6, Salon=#be185d
 
-DEFAULT COLORS (ONLY use if no custom colors specified):
-Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6, Salon=#be185d, Construction=#ca8a04, Fitness=#dc2626, RealEstate=#0d9488, Default=#2563eb
+BANNED CONTENT: "Excellion", "website builder", "hosting", "export", "code ownership"
 
-RULES: 
-- Industry-specific content only
-- Home page max 5 sections
-- GENERATE: prefix for images (NO TEXT in images)
-- Custom colors in prompt ALWAYS override defaults
-
-## EDIT MODE (when user asks to change something)
-
-For edits, explain ONLY what changed:
-
-Here's what I updated:
-
-• Changed hero headline from "[old]" to "[new]"
-• Added [new section] with [specific content]
-• Updated colors from [old] to [new] (#hex)
-
-PRESERVE everything not explicitly requested to change. Be surgical.`;
+For EDITS, only describe what changed:
+• Changed headline from "[old]" to "[new]"
+• Added [section] with [content]`;
 
 const QUESTION_SYSTEM_PROMPT_INLINE = `You answer questions about the website being built. Do NOT generate JSON or SiteSpec. Respond conversationally with helpful advice about their project.`;
+
+// Few-shot example message to inject before user messages (forces format compliance)
+const FEW_SHOT_EXAMPLE = {
+  role: "assistant",
+  content: `Here's what I created for Urban Fitness Gym:
+
+• **Hero:** "Transform Your Body, Transform Your Life" with an energetic gym workout background
+• **Classes:** 6 fitness programs - HIIT, Yoga, Spin, Boxing, Strength Training, CrossFit
+• **Trainers:** Team section featuring certified personal trainers
+• **Pricing:** 3 membership tiers - Basic, Premium, Elite
+• **Design:** Bold red (#dc2626) theme with Inter typography
+
+\`\`\`json
+{"name":"Urban Fitness Gym","theme":{"primaryColor":"#dc2626","secondaryColor":"#1e40af","accentColor":"#f59e0b","backgroundColor":"#0a0a0a","textColor":"#ffffff","darkMode":true,"fontHeading":"Inter","fontBody":"Inter"}...}
+\`\`\`
+`
+};
 
 
 const SYSTEM_PROMPT = `## ⚠️ CRITICAL: SUMMARY FORMAT (READ THIS FIRST - HIGHEST PRIORITY) ⚠️
@@ -1728,6 +1725,8 @@ If you cannot fulfill these requirements, explain why in your conversational res
         model: selectedModel,
         messages: [
           { role: "system", content: enhancedPrompt },
+          // Inject few-shot example for first generation to enforce format
+          ...(messages.length <= 1 ? [FEW_SHOT_EXAMPLE, { role: "user", content: "Great format! Now build my site:" }] : []),
           ...messages,
         ],
         stream: true,
