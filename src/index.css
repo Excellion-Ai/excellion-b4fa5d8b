@@ -443,4 +443,14 @@ All colors MUST be HSL.
   .scrollbar-always-visible::-webkit-scrollbar-thumb:hover {
     background: hsl(270 50% 50% / 0.9);
   }
+
+  /* Minimal chat loading bar animation */
+  @keyframes chat-loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+  }
+
+  .animate-chat-loading {
+    animation: chat-loading 1.5s ease-in-out infinite;
+  }
 }
