@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure, TestimonialItem, PricingTier, FAQItem, StatsItem, ServiceItem, TeamMember, GalleryItem, PortfolioItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent, StatsContent } from '@/types/site-spec';
@@ -8,6 +8,7 @@ import { MotionProvider, MotionWrapper, SignatureFlourish, BackgroundAccent } fr
 import { VisualModeProvider } from './VisualModeContext';
 import { VisualEditPanel } from './VisualEditPanel';
 import { BusinessIntent } from '@/lib/intentAwareFallbacks';
+import { fillMissingSiteContent } from '@/lib/siteSpecValidator';
 import {
   DndContext,
   closestCenter,
@@ -172,7 +173,15 @@ export function SiteRenderer({
     );
   }
 
-  const { theme, pages = [], navigation = [], footer, layoutStructure } = siteSpec;
+  // In preview mode, auto-fill missing content with intent-aware fallbacks
+  const effectiveSpec = useMemo(() => {
+    if (renderMode === 'preview') {
+      return fillMissingSiteContent(siteSpec, businessIntent);
+    }
+    return siteSpec;
+  }, [siteSpec, renderMode, businessIntent]);
+
+  const { theme, pages = [], navigation = [], footer, layoutStructure } = effectiveSpec;
   const currentPage = pages.length > 0 ? (pages[pageIndex] || pages[0]) : null;
   
   // Show loading state if pages haven't been parsed yet during streaming
