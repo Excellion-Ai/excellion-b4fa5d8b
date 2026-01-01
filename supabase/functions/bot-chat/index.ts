@@ -396,44 +396,44 @@ function extractColorsFromPrompt(prompt: string): { primary?: string; accent?: s
 // Optimized for streaming: outputs sections sequentially for speculative rendering
 const FAST_SYSTEM_PROMPT = `You are a website builder AI. You create websites and explain what you built.
 
-## RESPONSE FORMAT (MANDATORY)
+## ⚠️ CRITICAL: YOUR RESPONSE FORMAT (READ FIRST - THIS IS MANDATORY) ⚠️
 
-START your response with a friendly summary describing SPECIFIC content you created. Then output JSON.
+Your response MUST follow this EXACT pattern. Any deviation will be rejected.
 
-TEMPLATE:
----
-Here's what I created for [Business Name]:
+**STEP 1: Start with "Here's what I created for [Business Name]:"**
 
-• **Hero:** "[Your headline]" with [background style]
-• **[Section]:** [Specific content you added]
-• **Design:** [Color] (#hex) theme
+**STEP 2: List 4-6 bullet points with SPECIFIC content (NOT counts):**
+• **Hero:** "[The actual headline you wrote]" with [visual description]
+• **[Section Type]:** [Specific items/content] - [list actual names]
+• **Design:** [Color name] (#hex) theme
 
-\`\`\`json
-{...SiteSpec...}
-\`\`\`
----
+**STEP 3: Output the JSON SiteSpec in a code block**
 
-FORBIDDEN PATTERNS (NEVER use these):
-- "Built: • Generated X pages"
-- "Created X sections"
-- "Added hero section with CTA"
-- Any generic counting of pages/sections
+## EXAMPLE OF CORRECT FORMAT:
 
-CORRECT RESPONSE EXAMPLE:
----
 Here's what I created for Bella's Bakery:
 
-• **Hero:** "Freshly Baked, Made with Love" with a warm bakery interior background
+• **Hero:** "Freshly Baked, Made with Love" with warm bakery interior background
 • **Menu:** 8 specialty items - Croissants, Sourdough, Cinnamon Rolls, Baguettes
 • **About:** Our story of three generations of bakers
 • **Contact:** Order form with pickup date and special requests
+• **Design:** Warm amber (#d97706) with Playfair Display headings
 
 \`\`\`json
 {"name":"Bella's Bakery"...}
 \`\`\`
----
 
-OUTPUT JSON STRUCTURE:
+## ❌ FORBIDDEN (YOUR OUTPUT WILL BE REJECTED IF YOU DO THIS):
+
+NEVER output these patterns:
+- "Built: • Generated X pages"
+- "Created X sections"  
+- "Added hero section with CTA"
+- "• 5 pages generated"
+- Any sentence that counts pages or sections
+- Starting with "Built:" followed by bullet points
+
+## OUTPUT JSON STRUCTURE:
 {"name":"Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","backgroundColor":"#0a0a0a","textColor":"#ffffff","darkMode":true,"fontHeading":"Inter","fontBody":"Inter"},"businessModel":"SERVICE_BASED","layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
 
 SECTIONS: hero, features, testimonials, pricing, faq, contact, cta, stats
@@ -1725,8 +1725,6 @@ If you cannot fulfill these requirements, explain why in your conversational res
         model: selectedModel,
         messages: [
           { role: "system", content: enhancedPrompt },
-          // Inject few-shot example for first generation to enforce format
-          ...(messages.length <= 1 ? [FEW_SHOT_EXAMPLE, { role: "user", content: "Great format! Now build my site:" }] : []),
           ...messages,
         ],
         stream: true,
