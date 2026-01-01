@@ -276,8 +276,18 @@ function inferOfferingsFromIndustry(industry: string): string[] {
     dispensary: ['Flower', 'Edibles', 'Concentrates', 'Pre-Rolls'],
     lighter_shop: ['Premium Lighters', 'Vintage Collectibles', 'Repairs', 'Accessories'],
     saas: ['Core Platform', 'Integrations', 'Analytics', 'Team Collaboration'],
+    yoga: ['Group Classes', 'Private Sessions', 'Workshops', 'Teacher Training'],
+    fitness: ['Personal Training', 'Group Fitness', 'Nutrition Coaching', 'Memberships'],
+    real_estate: ['Buying', 'Selling', 'Rentals', 'Property Management'],
+    photography: ['Portraits', 'Events', 'Commercial', 'Editing'],
+    hvac: ['AC Repair', 'Heating Service', 'Installation', 'Maintenance'],
+    landscaping: ['Lawn Care', 'Design', 'Hardscaping', 'Seasonal Cleanup'],
+    electrician: ['Wiring', 'Panel Upgrades', 'Lighting', 'Emergency Service'],
+    roofing: ['Repairs', 'Replacement', 'Inspections', 'Storm Damage'],
+    cleaning: ['Deep Cleaning', 'Regular Service', 'Move-In/Out', 'Commercial'],
   };
-  return offeringsMap[industry] || ['Quality Service', 'Expert Team', 'Fast Turnaround', 'Fair Pricing'];
+  // Return empty array for unknown industries - forces AI to generate specific content
+  return offeringsMap[industry] || [];
 }
 
 function inferDifferentiators(industry: string, intent: BusinessIntent): string[] {

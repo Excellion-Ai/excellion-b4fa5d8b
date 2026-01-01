@@ -35,14 +35,9 @@ const SECTION_TEMPLATES: SectionTemplate[] = [
     icon: <Grid3X3 className="h-5 w-5" />,
     description: 'Showcase your product features or services',
     defaultContent: {
-      title: 'Our Features',
-      subtitle: 'Everything you need to succeed',
-      items: [
-        { title: 'Feature One', description: 'Description of your first feature' },
-        { title: 'Feature Two', description: 'Description of your second feature' },
-        { title: 'Feature Three', description: 'Description of your third feature' },
-        { title: 'Feature Four', description: 'Description of your fourth feature' },
-      ],
+      title: 'What We Offer',
+      subtitle: '',
+      items: [],
     } as FeaturesContent,
   },
   {

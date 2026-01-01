@@ -16,10 +16,10 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   const { intensity } = useMotionProfile();
   
-  const headline = content?.headline || siteName;
-  const subheadline = content?.subheadline || section.description || 'Welcome to our website. Discover what we have to offer.';
-  const ctaText = content?.ctaText || 'Get Started';
-  const secondaryCtaText = content?.secondaryCtaText || 'Learn More';
+  const headline = content?.headline || siteName || '';
+  const subheadline = content?.subheadline || section.description || '';
+  const ctaText = content?.ctaText || '';
+  const secondaryCtaText = content?.secondaryCtaText || '';
   const backgroundImage = content?.backgroundImage;
   const logo = (content as any)?.logo;
 

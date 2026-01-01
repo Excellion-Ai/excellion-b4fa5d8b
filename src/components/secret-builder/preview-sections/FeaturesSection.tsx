@@ -63,21 +63,18 @@ const iconComponents: Record<string, React.ComponentType<{ className?: string; s
   Phone, Mail, MessageCircle, Send
 };
 
-const defaultFeatures: FeatureItem[] = [
-  { icon: 'Zap', title: 'Fast & Reliable', description: 'Built for speed and performance' },
-  { icon: 'Shield', title: 'Secure', description: 'Your data is always protected' },
-  { icon: 'Clock', title: '24/7 Support', description: "We're here whenever you need us" },
-  { icon: 'Star', title: 'Top Quality', description: 'Excellence in everything we do' },
-];
+// No default features - force AI to generate specific content
+// Empty array will signal a generation issue that needs to be fixed
+const defaultFeatures: FeatureItem[] = [];
 
 export function FeaturesSection({ section, theme, asTile = false, onUpdateContent, onUpdateItem }: FeaturesSectionProps) {
   const content = section.content as FeaturesContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   const { intensity, hasMicroEffect } = useMotionProfile();
   
-  const title = content?.title || section.label || 'Features';
-  const subtitle = content?.subtitle || section.description || 'Everything you need to succeed';
-  const items = content?.items || defaultFeatures;
+  const title = content?.title || section.label || 'What We Offer';
+  const subtitle = content?.subtitle || section.description || '';
+  const items = content?.items?.length ? content.items : defaultFeatures;
 
   // Ensure even number of items for symmetry
   const displayItems = items.length % 2 !== 0 ? items.slice(0, items.length - 1) : items;
