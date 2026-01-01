@@ -127,6 +127,28 @@ export const VALUE_PROPS_BY_INDUSTRY: Record<string, ValuePropsTemplate> = {
     ],
   },
   
+  gym: {
+    title: 'Your Fitness Journey Starts Here',
+    subtitle: 'Equipment, classes, and community',
+    items: [
+      { title: 'State-of-Art Equipment', description: 'Premium machines, free weights, and cardio', icon: 'Dumbbell' },
+      { title: 'Expert Personal Trainers', description: 'Certified coaches to help you reach your goals', icon: 'Award' },
+      { title: 'Group Fitness Classes', description: 'HIIT, spin, yoga, and more included', icon: 'Users' },
+      { title: 'Flexible Memberships', description: 'No contracts, freeze anytime, cancel easily', icon: 'Calendar' },
+    ],
+  },
+  
+  fitness: {
+    title: 'Results You Can See',
+    subtitle: 'Your transformation starts today',
+    items: [
+      { title: 'Personalized Training', description: 'Workouts tailored to your goals and fitness level', icon: 'Target' },
+      { title: 'Clean Modern Facility', description: 'Well-maintained equipment in a motivating space', icon: 'Sparkles' },
+      { title: 'Supportive Community', description: 'Train alongside people who push you to be better', icon: 'Heart' },
+      { title: 'Convenient Hours', description: 'Early morning to late night, work out on your schedule', icon: 'Clock' },
+    ],
+  },
+  
   law_firm: {
     title: 'Why Clients Trust Us',
     subtitle: 'Experienced legal representation',

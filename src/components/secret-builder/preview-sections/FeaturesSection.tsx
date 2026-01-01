@@ -20,14 +20,25 @@ import { EditableElement } from '../EditableElement';
 import { ScrollAnimation, StaggerContainer } from '../animations/ScrollAnimations';
 import { SetupRequiredCard, isPlaceholderContent } from '../SetupRequiredCard';
 
+import type { RenderMode } from '../SiteRenderer';
+
 interface FeaturesSectionProps {
   section: SiteSection;
   theme: SiteTheme;
   asTile?: boolean;
+  renderMode?: RenderMode;
   onUpdateContent?: (field: keyof FeaturesContent, value: string) => void;
   onUpdateItem?: (index: number, field: keyof FeatureItem, value: string) => void;
   onGenerateContent?: () => void;
 }
+
+// Preview-mode fallback features when content is empty
+const PREVIEW_FALLBACK_FEATURES: FeatureItem[] = [
+  { icon: 'Star', title: 'Premium Quality', description: 'We deliver excellence in everything we do, backed by years of expertise.' },
+  { icon: 'Users', title: 'Expert Team', description: 'Our dedicated professionals bring skill and passion to every project.' },
+  { icon: 'Clock', title: 'Reliable Service', description: 'Count on us for consistent, timely delivery every single time.' },
+  { icon: 'Award', title: 'Proven Results', description: 'Join hundreds of satisfied customers who trust our work.' },
+];
 
 // 100+ industry-specific icons for dynamic feature rendering
 const iconComponents: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
@@ -84,23 +95,27 @@ function hasBannedFeatureContent(items: FeatureItem[]): boolean {
   return false;
 }
 
-export function FeaturesSection({ section, theme, asTile = false, onUpdateContent, onUpdateItem, onGenerateContent }: FeaturesSectionProps) {
+export function FeaturesSection({ section, theme, asTile = false, renderMode = 'preview', onUpdateContent, onUpdateItem, onGenerateContent }: FeaturesSectionProps) {
   const content = section.content as FeaturesContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   const { intensity, hasMicroEffect } = useMotionProfile();
   
   const title = content?.title || section.label || 'What We Offer';
   const subtitle = content?.subtitle || section.description || '';
-  const items = content?.items?.length ? content.items : [];
+  const rawItems = content?.items?.length ? content.items : [];
   
   // Check if content is empty, placeholder, or has banned phrases
-  const isEmpty = items.length === 0;
-  const hasPlaceholder = items.some(item => isPlaceholderContent(item.title) || isPlaceholderContent(item.description));
-  const hasBanned = hasBannedFeatureContent(items);
+  const isEmpty = rawItems.length === 0;
+  const hasPlaceholder = rawItems.some(item => isPlaceholderContent(item.title) || isPlaceholderContent(item.description));
+  const hasBanned = hasBannedFeatureContent(rawItems);
   const needsSetup = isEmpty || hasPlaceholder || hasBanned;
 
-  // If content needs setup, show the setup card
-  if (needsSetup && !asTile) {
+  // In preview mode, use fallback content instead of SetupRequiredCard
+  // In editor mode, show the setup card for empty/placeholder content
+  const items = needsSetup && renderMode === 'preview' ? PREVIEW_FALLBACK_FEATURES : rawItems;
+
+  // Only show SetupRequiredCard in editor mode when content needs setup
+  if (needsSetup && renderMode === 'editor' && !asTile) {
     return (
       <section 
         id={section.id}

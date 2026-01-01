@@ -12,7 +12,8 @@ export type NicheCategory =
   | 'real_estate' 
   | 'nonprofit' 
   | 'portfolio' 
-  | 'community';
+  | 'community'
+  | 'fitness';
 
 export type ConversionGoal = 
   | 'buy_now' 
@@ -114,6 +115,11 @@ const CATEGORY_PATTERNS: { patterns: RegExp[]; category: NicheCategory; baseInte
     patterns: [/\b(community|membership|club|forum|group|network|association)\b/i],
     baseIntegrations: ['stripe', 'email_capture'],
   },
+  {
+    category: 'fitness',
+    patterns: [/\b(gym|fitness|yoga|pilates|crossfit|personal train|workout|strength|boxing|martial art|athletic)\b/i],
+    baseIntegrations: ['stripe', 'calendly'],
+  },
 ];
 
 // Integration keyword additions
@@ -134,10 +140,18 @@ function detectGoal(input: string, category: NicheCategory): ConversionGoal {
       return 'book';
     }
     if (/\b(order|delivery|pickup|takeout)\b/i.test(input)) {
-      return 'buy_now'; // Online ordering
+      return 'buy_now';
     }
-    // Default for restaurants is to drive visits/orders
     return 'buy_now';
+  }
+
+  // Fitness-specific goal detection
+  if (category === 'fitness') {
+    if (/\b(book|class|session|schedule)\b/i.test(input)) {
+      return 'book';
+    }
+    // Default for fitness is membership subscription
+    return 'subscribe';
   }
 
   for (const { pattern, goal } of GOAL_PATTERNS) {

@@ -77,6 +77,12 @@ const CATEGORY_PALETTES: Record<NicheCategory, Partial<SiteTheme>> = {
     accentColor: '#34d399',
     darkMode: false,
   },
+  fitness: {
+    primaryColor: '#dc2626',
+    secondaryColor: '#b91c1c',
+    accentColor: '#f59e0b',
+    darkMode: true,
+  },
 };
 
 // Map niche category to business model
@@ -93,13 +99,14 @@ const CATEGORY_TO_BUSINESS: Record<NicheCategory, BusinessModel> = {
   nonprofit: 'SERVICE_BASED',
   portfolio: 'PORTFOLIO_IDENTITY',
   community: 'SERVICE_BASED',
+  fitness: 'SERVICE_BASED',
 };
 
 // Layout by category - with more variety
 const CATEGORY_LAYOUT: Record<NicheCategory, LayoutStructure> = {
   ecommerce: 'bento',
   reseller: 'layered',
-  restaurant: 'standard', // Restaurants typically use standard layouts
+  restaurant: 'standard',
   local_service: 'standard',
   saas: 'bento',
   course: 'layered',
@@ -109,6 +116,7 @@ const CATEGORY_LAYOUT: Record<NicheCategory, LayoutStructure> = {
   nonprofit: 'standard',
   portfolio: 'layered',
   community: 'bento',
+  fitness: 'standard',
 };
 
 // Vibes to layout mapping for variety
