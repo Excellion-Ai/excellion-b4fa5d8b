@@ -539,7 +539,7 @@ function generateCTASection(content: any): string {
   return (
     <section className="py-20 px-4 bg-gray-100/5">
       <div className="max-w-4xl mx-auto text-center">
-        <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">${content.headline || 'Ready to Get Started?'}</h2>
+        <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">${content.headline || 'Let\'s Work Together'}</h2>
         ${content.subheadline ? `<p className="text-xl opacity-70 mb-8">${content.subheadline}</p>` : '<div className="mb-8" />'}
         ${primaryCta ? `<a href="${primaryCta.href}" className="inline-block px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-all">${primaryCta.label}</a>` : ''}
       </div>

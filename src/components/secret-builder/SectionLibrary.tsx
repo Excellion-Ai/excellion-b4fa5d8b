@@ -111,10 +111,10 @@ const SECTION_TEMPLATES: SectionTemplate[] = [
     icon: <Zap className="h-5 w-5" />,
     description: 'Encourage visitors to take action',
     defaultContent: {
-      headline: 'Ready to Get Started?',
-      subheadline: 'Join thousands of satisfied customers today.',
+      headline: 'Let\'s Work Together',
+      subheadline: 'We\'re here to help. Reach out today.',
       ctas: [
-        { label: 'Start Free Trial', href: '#', variant: 'primary' },
+        { label: 'Contact Us', href: '#contact', variant: 'primary' },
       ],
     } as CTAContent,
   },

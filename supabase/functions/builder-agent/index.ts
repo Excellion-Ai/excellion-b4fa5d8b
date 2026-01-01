@@ -508,9 +508,9 @@ OUTPUT FORMAT (JSON):
             "type": "cta",
             "label": "CTA",
             "content": {
-              "headline": "Ready to get started?",
-              "subheadline": "Contact us today",
-              "ctaText": "Get in Touch",
+              "headline": "Let's Work Together",
+              "subheadline": "We're here to help. Reach out today.",
+              "ctaText": "Contact Us",
               "ctaLink": "/contact"
             }
           }

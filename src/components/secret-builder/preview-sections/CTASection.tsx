@@ -11,9 +11,9 @@ interface CTASectionProps {
 export function CTASection({ section, theme, onUpdateContent }: CTASectionProps) {
   const content = section.content as CTAContent | undefined;
   
-  const headline = content?.headline || section.label || 'Ready to Get Started?';
-  const subheadline = content?.subheadline || section.description || 'Join thousands of satisfied customers and transform your business today.';
-  const ctaText = content?.ctaText || 'Start Free Trial';
+  const headline = content?.headline || section.label || 'Let\'s Work Together';
+  const subheadline = content?.subheadline || section.description || 'We\'re here to help. Reach out today.';
+  const ctaText = content?.ctaText || 'Contact Us';
   
   return (
     <section 
@@ -75,7 +75,7 @@ export function CTASection({ section, theme, onUpdateContent }: CTASectionProps)
             <button
               className="px-8 py-3 rounded-lg font-semibold border-2 border-white text-white transition-all hover:bg-white/10 shrink-0"
             >
-              Contact Sales
+              Learn More
             </button>
           </div>
         </ScrollAnimation>
