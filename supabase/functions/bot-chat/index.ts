@@ -931,29 +931,49 @@ CRITICAL: Generate ONLY pages that make sense for the business. Most small busin
 ## 3C. INDUSTRY-SPECIFIC CONTENT (NO GENERIC TECH COPY)
 ====================================
 
-CRITICAL: Feature cards, value propositions, and CTAs MUST match the actual business type.
+CRITICAL: ALL CONTENT - Features, FAQs, CTAs, Stats, Testimonials - MUST match the actual business type.
 
-**NEVER USE THESE GENERIC PHRASES FOR NON-TECH BUSINESSES:**
+**BANNED TECH/SAAS PHRASES FOR NON-TECH BUSINESSES:**
 ❌ "Fast & Reliable" / "Built for speed and performance"
-❌ "Secure" / "Your data is always protected"
+❌ "Secure" / "Your data is always protected"  
 ❌ "Scalable" / "Grows with your business"
 ❌ "24/7 Uptime" / "Always available"
+❌ "Ownership & Export" / "Export your code"
+❌ "Enterprise-grade hosting" / "99.9% uptime SLA"
+❌ "Support Response" / "Priority support"
+❌ "Start Free Trial" / "Contact Sales"
+❌ "API" / "Integration" / "Dashboard"
 
-**INDUSTRY-APPROPRIATE FEATURES:**
+**SECTION-BY-SECTION CONTENT RULES:**
 
-| Business Type | Good Features | Bad Features (Don't Use) |
-|--------------|---------------|--------------------------|
-| Lighter Shop | Premium Quality, Wide Selection, Expert Knowledge, Authentic Brands | Fast, Secure, Scalable, Data Protected |
-| Restaurant | Fresh Ingredients, Family Recipes, Cozy Atmosphere, Local Sourcing | Fast & Reliable, 24/7 Uptime, Secure |
-| Law Firm | Experienced Attorneys, Proven Results, Personal Attention, Free Consultation | Fast, Scalable, Data Protected |
-| Plumber | Licensed & Insured, Same-Day Service, Honest Pricing, Local Family Owned | Fast API, Secure, 24/7 Uptime |
-| Salon | Skilled Stylists, Relaxing Atmosphere, Premium Products, Personalized Care | Reliable, Secure, Scalable |
-| Photography | Creative Vision, Professional Equipment, Quick Turnaround, Custom Packages | Fast, Secure, Data Protected |
+### FEATURES - Match the actual product/service:
+| Business Type | Good Features | BANNED Features |
+|--------------|---------------|-----------------|
+| Lighter Shop | Premium Materials, Rare Collectibles, Expert Curation, Authentic Brands, Lifetime Warranty | Fast, Secure, Scalable, API, Uptime |
+| Restaurant | Fresh Ingredients, Family Recipes, Local Sourcing, Cozy Atmosphere | Reliable, Secure, 24/7 Uptime |
+| Law Firm | Experienced Attorneys, Proven Track Record, Personal Attention | Fast, Scalable, Data Protected |
+| Any Physical Store | Quality Products, Expert Staff, Wide Selection, Convenient Location | Tech jargon of any kind |
 
-**RULE: Read the business type, then generate features that someone in THAT industry would actually say to customers.**
+### FAQs - Ask questions customers would ACTUALLY ask:
+| Business Type | Good FAQ Questions | BANNED FAQ Topics |
+|--------------|-------------------|-------------------|
+| Lighter Shop | "What brands do you carry?", "Do you repair lighters?", "Can I trade in my old lighter?", "Do you have gift wrapping?" | Ownership, Export, Uptime, SLA, Support Tiers |
+| Restaurant | "Do you take reservations?", "Is there parking?", "Do you cater events?", "Are there vegetarian options?" | Security, Data, API, Enterprise |
+| Law Firm | "What's your fee structure?", "How long do cases take?", "Do you offer free consultations?" | Hosting, Uptime, Export, Code |
+| Any Physical Store | "What are your hours?", "Do you offer delivery?", "Do you have a warranty?" | ANY tech/SaaS terminology |
 
-A lighter shop owner would say: "Handcrafted quality" / "Rare collectibles" / "Expert advice"
-A lighter shop owner would NEVER say: "Built for speed" / "Your data is protected"
+### CTAs - Match how the business actually gets customers:
+| Business Type | Good CTAs | BANNED CTAs |
+|--------------|-----------|-------------|
+| Lighter Shop | "Visit Our Store", "Browse Collection", "Get Directions", "Call Us" | Start Free Trial, Contact Sales, Get Demo |
+| Restaurant | "Make a Reservation", "View Menu", "Order Online", "Call to Book" | Start Trial, Contact Sales, Get Started |
+| Law Firm | "Schedule Consultation", "Call Now", "Get Free Case Review" | Start Free Trial, Contact Sales |
+| Any Physical Store | "Visit Us", "Call Now", "Get Directions", "Shop Now" | Start Free Trial, Contact Sales, Get Demo |
+
+**THE GOLDEN RULE:** Before writing ANY content, ask: "Would the owner of THIS business actually say this to a customer walking into their store?"
+
+A lighter shop owner would say: "We carry Zippo, Dupont, and rare vintage pieces"
+A lighter shop owner would NEVER say: "Built for reliability and peace of mind" or "Enterprise-grade with 99.9% SLA"
 
 ====================================
 ## 4. ARCHITECTURAL VARIETY PROTOCOL - LAYOUT SELECTION
