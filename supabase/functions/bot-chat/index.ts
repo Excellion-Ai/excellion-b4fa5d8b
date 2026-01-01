@@ -904,14 +904,47 @@ Once you detect the industry, USE THESE EXACT TEMPLATES for content generation:
 - **Theme**: primaryColor: "#78350f" (warm brown), secondaryColor: "#f59e0b" (gold)
 - **NEVER USE**: "Start Free Trial", "Contact Sales", "Get Demo", "99.9% uptime", "Ownership & Export"
 
-### CATCH-ALL: ANY PHYSICAL STORE OR SERVICE NOT LISTED ABOVE
-For ANY business not explicitly listed, follow these rules:
-- **CTAs MUST be physical-world appropriate**: "Visit Us", "Call Now", "Get Quote", "Book Appointment", "Shop Now", "Get Directions"
-- **NEVER USE SaaS CTAs**: "Start Free Trial", "Contact Sales", "Get Demo", "Sign Up", "Create Account"
-- **FAQs MUST be about the actual business**: Store hours, payment methods, shipping, returns, warranties, service areas
-- **NEVER USE tech FAQs**: Code ownership, uptime, SLA, export, hosting, support tiers
-- **Features MUST describe the product/service**: Quality, selection, expertise, convenience, value
-- **NEVER USE tech features**: Speed, security, scalability, reliability, data protection
+### 🚨 UNIVERSAL CATCH-ALL: APPLIES TO EVERY BUSINESS NOT EXPLICITLY LISTED 🚨
+
+**THIS SECTION IS THE MOST IMPORTANT - IT APPLIES TO 100% OF WEBSITES:**
+
+Before generating ANY content for ANY section, ask: "What would this business owner actually say?"
+
+**UNIVERSAL CONTENT GENERATION RULES:**
+
+1. **HEADLINES must describe what the business DOES:**
+   - Car Detailing: "Your Car Deserves a Showroom Shine"
+   - Florist: "Beautiful Blooms for Every Occasion"
+   - Tattoo Shop: "Custom Ink, Lasting Impressions"
+   - NEVER: "Welcome to our website", "Discover what we offer", "Transform your business"
+
+2. **CTA BUTTONS must match the customer action:**
+   - Service Business: "Get Free Quote", "Book Appointment", "Call Now", "Schedule Service"
+   - Retail Store: "Browse Collection", "Shop Now", "Visit Store", "View Products"
+   - Restaurant: "View Menu", "Order Now", "Make Reservation"
+   - NEVER: "Get Started", "Learn More", "Start Free Trial", "Contact Sales"
+
+3. **FEATURES must describe actual offerings:**
+   - Describe what you SELL or what SERVICE you provide
+   - Use industry-specific language the business owner would use
+   - NEVER: "Fast & Reliable", "Secure", "Scalable", "Top Quality", "Excellence"
+
+4. **CTA SECTION (final call-to-action) must be industry-specific:**
+   - Headline: Question or statement about the service ("Ready for a Deep Clean?", "Craving Something Delicious?")
+   - Subheadline: What the customer should do ("Book your appointment today", "Order for pickup or delivery")
+   - NEVER: "Ready to Get Started?", "Join thousands of customers", "Transform your business today"
+
+5. **FAQs must be real questions customers ask:**
+   - "What are your hours?", "Do you offer delivery?", "What's included in the price?"
+   - NEVER: "Ownership & Export", "Uptime SLA", "Data security", tech jargon
+
+6. **PRICING (if included) must match business model:**
+   - Service quotes: "Starting at $X", "Request Quote", "Call for Pricing"
+   - Retail: Actual product prices
+   - Restaurant: Menu prices
+   - NEVER: "$29/month", "Pro Plan", "Enterprise", subscription tiers for physical businesses
+
+**THE GOLDEN TEST:** Read every sentence out loud. Would the owner of a [car wash / florist / tattoo shop / bakery] actually say this? If not, rewrite it.
 
 ====================================
 ## 2B. AI-GENERATED IMAGES (NO STOCK PHOTOS)
