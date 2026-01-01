@@ -737,6 +737,8 @@ export function BuilderShell() {
 
   // Handle new project creation from hub (createProject flag)
   const hasCreatedProjectRef = useRef(false);
+  // Track if project creation is in progress to prevent race conditions in saveProject
+  const projectCreationInProgressRef = useRef(false);
   // Store initialIdea in ref to avoid stale closures
   const initialIdeaRef = useRef(initialIdea);
   initialIdeaRef.current = initialIdea;
@@ -762,6 +764,7 @@ export function BuilderShell() {
         
         // Create project in background (don't block generation)
         let createdProjectId: string | null = null;
+        projectCreationInProgressRef.current = true;
         try {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
@@ -794,10 +797,13 @@ export function BuilderShell() {
             console.warn('[BuilderShell] No user found for project creation');
             toast.error('Please sign in to generate websites');
             generationInitiatedRef.current = false; // Reset on auth failure
+            projectCreationInProgressRef.current = false;
             return;
           }
         } catch (projectErr) {
           console.error('[BuilderShell] Project creation failed:', projectErr);
+        } finally {
+          projectCreationInProgressRef.current = false;
         }
         
         // Trigger generation directly - handleGenerate manages its own locks
@@ -894,6 +900,12 @@ export function BuilderShell() {
         console.error('Failed to update project:', error);
       }
     } else {
+      // Don't create a new project if one is already being created (prevents duplicates)
+      if (projectCreationInProgressRef.current || hasCreatedProjectRef.current) {
+        console.log('[BuilderShell] Skipping saveProject insert - project creation already in progress or completed');
+        return;
+      }
+      
       // New project - include initial version if saveVersion is true
       if (saveVersion && currentSiteSpec) {
         const newVersion: VersionSnapshot = {
