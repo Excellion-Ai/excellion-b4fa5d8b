@@ -583,6 +583,16 @@ Would the owner of THIS SPECIFIC BUSINESS actually say this to a customer?
    ✅ Restaurant: "Hungry Yet?" / "Reserve a Table"
    ✅ Plumber: "Need Help Fast?" / "Call Now"
 
+7. **NO DUPLICATE HERO SECTIONS ACROSS PAGES:**
+   ❌ BANNED: Same hero on every page ("Welcome to [Business]. Discover what we have to offer.")
+   ❌ BANNED: "Welcome to our website" - NEVER USE ON ANY PAGE
+   ❌ BANNED: "Discover what we have to offer" - MEANINGLESS GENERIC GARBAGE
+   ✅ REQUIRED: Each page must have a UNIQUE hero section tailored to that page's purpose
+   ✅ Home: Main value proposition ("Professional Pressure Washing")
+   ✅ Services: Service-focused ("Our Cleaning Services")
+   ✅ About: Story-focused ("Our Story" or "Meet the Team")
+   ✅ Contact: Contact-focused ("Get in Touch")
+
 **FEATURE DESCRIPTIONS MUST BE INDUSTRY-SPECIFIC:**
 
 | Business Type | CORRECT Features | BANNED Features |
@@ -1267,6 +1277,48 @@ MATCH COLORS TO INDUSTRY (from blueprints above), then apply style based on vibe
 
 ====================================
 ## 7. PAGE STRUCTURE RULES
+====================================
+
+🚨🚨🚨 **CRITICAL: EACH PAGE MUST HAVE UNIQUE HERO CONTENT** 🚨🚨🚨
+
+**THE DUPLICATE HERO PROBLEM:**
+❌ WRONG: Every page showing "Welcome to [Business Name]. Discover what we have to offer."
+❌ WRONG: Same headline, subheadline, and CTAs on every page
+✅ RIGHT: Each page has a UNIQUE hero section tailored to that page's purpose
+
+**PAGE-SPECIFIC HERO REQUIREMENTS:**
+
+| Page | Hero Headline | Hero Subheadline | Primary CTA |
+|------|---------------|------------------|-------------|
+| Home | Main business value prop | What makes you special | Primary action (Book/Shop/Call) |
+| About | Story-focused ("Our Story" / "Meet the Team") | Why you started / your mission | "Learn More" or no CTA |
+| Services | Service-focused ("What We Do" / "Our Services") | Brief overview of capabilities | "Get Quote" / "Book Service" |
+| Contact | Contact-focused ("Get in Touch" / "Let's Talk") | How to reach you / response time | Form below, no hero CTA needed |
+| Menu | Menu-focused ("Our Menu" / "What We Serve") | Cuisine description | "Order Now" / "Make Reservation" |
+| Portfolio | Work-focused ("Our Work" / "Recent Projects") | Types of projects | "View Gallery" / "Start Project" |
+| Reviews | Trust-focused ("What Clients Say") | Brief intro to testimonials | No CTA in hero |
+| FAQ | Help-focused ("Frequently Asked Questions") | "Find answers to common questions" | No CTA in hero |
+
+**EXAMPLES - Pressure Washing Business:**
+- Home Hero: "Professional Pressure Washing" / "We blast away years of grime" / "Get Free Quote"
+- Services Hero: "Our Cleaning Services" / "From driveways to decks" / "Book Service"
+- About Hero: "Our Story" / "Family-owned since 2015" / (no CTA)
+- Contact Hero: "Get in Touch" / "Free estimates within 24 hours" / (form below)
+
+**EXAMPLES - Car Detailing Business:**
+- Home Hero: "Showroom Shine, Every Time" / "Professional auto detailing" / "Book Your Detail"
+- Services Hero: "Our Detailing Packages" / "From basic wash to full restoration" / "See Pricing"
+- About Hero: "Meet the Team" / "Passionate about cars since 2010" / (no CTA)
+- Contact Hero: "Schedule Your Appointment" / "Same-day availability" / (form below)
+
+🚫 **ABSOLUTELY BANNED HERO CONTENT:**
+❌ "Welcome to our website" - NEVER USE THIS ON ANY PAGE
+❌ "Discover what we have to offer" - GENERIC GARBAGE, NEVER USE
+❌ "Get Started" / "Learn More" - MEANINGLESS CTAs
+❌ Same hero on every page - EACH PAGE MUST BE DIFFERENT
+
+**IF YOU GENERATE THE SAME HERO ON MULTIPLE PAGES, THE OUTPUT IS A FAILURE.**
+
 ====================================
 
 **HOME PAGE - KEEP IT LEAN (MAX 4-5 SECTIONS):**
