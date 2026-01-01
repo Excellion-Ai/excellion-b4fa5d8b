@@ -1283,8 +1283,45 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Fetch knowledge base entries - SKIP in fast mode for speed
+    // Fetch knowledge base entries - includes GLOBAL instructions for all projects
     let knowledgeContext = "";
+    
+    // Always fetch global instructions (even in fast mode - they're critical for quality)
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        console.log(`[BOT-CHAT:${requestId}] Fetching global instructions...`);
+        const globalResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/knowledge_base?name=eq.__global_instructions__&select=content&limit=1`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+          }
+        );
+        
+        if (globalResponse.ok) {
+          const globalEntries = await globalResponse.json();
+          if (globalEntries && globalEntries.length > 0 && globalEntries[0].content) {
+            knowledgeContext += `
+====================================
+## GLOBAL INSTRUCTIONS (Applies to ALL Projects)
+====================================
+
+${globalEntries[0].content}
+
+`;
+            console.log(`[BOT-CHAT:${requestId}] Global instructions loaded`);
+          }
+        } else {
+          console.log(`[BOT-CHAT:${requestId}] Global instructions fetch failed: ${globalResponse.status}`);
+        }
+      } catch (globalError) {
+        console.error(`[BOT-CHAT:${requestId}] Error fetching global instructions:`, globalError);
+      }
+    }
+    
+    // Fetch project-specific knowledge (skip in fast mode for speed)
     if (!isFastMode && projectId && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
       try {
         console.log(`[BOT-CHAT:${requestId}] Fetching knowledge base for project: ${projectId}`);
@@ -1300,23 +1337,25 @@ serve(async (req) => {
         
         if (kbResponse.ok) {
           const kbEntries = await kbResponse.json();
-          console.log(`[BOT-CHAT:${requestId}] Knowledge base entries found: ${kbEntries?.length || 0}`);
-          if (kbEntries && kbEntries.length > 0) {
-            knowledgeContext = `
+          // Filter out global instructions from project entries
+          const projectEntries = kbEntries.filter((e: { name: string }) => e.name !== '__global_instructions__');
+          console.log(`[BOT-CHAT:${requestId}] Project knowledge entries found: ${projectEntries?.length || 0}`);
+          if (projectEntries && projectEntries.length > 0) {
+            knowledgeContext += `
 ## PROJECT KNOWLEDGE BASE
-${kbEntries.map((entry: { name: string; content: string }) => `### ${entry.name}\n${entry.content}`).join('\n---\n')}
+${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.name}\n${entry.content}`).join('\n---\n')}
 `;
           }
         } else {
-          console.log(`[BOT-CHAT:${requestId}] Knowledge base fetch failed: ${kbResponse.status}`);
+          console.log(`[BOT-CHAT:${requestId}] Project knowledge fetch failed: ${kbResponse.status}`);
         }
       } catch (kbError) {
-        console.error(`[BOT-CHAT:${requestId}] Error fetching knowledge base:`, kbError);
+        console.error(`[BOT-CHAT:${requestId}] Error fetching project knowledge:`, kbError);
       }
     } else if (isFastMode) {
-      console.log(`[BOT-CHAT:${requestId}] Skipping knowledge base fetch (fast mode)`);
-    } else {
-      console.log(`[BOT-CHAT:${requestId}] Skipping knowledge base fetch (no projectId or missing env vars)`);
+      console.log(`[BOT-CHAT:${requestId}] Skipping project knowledge fetch (fast mode)`);
+    } else if (!projectId) {
+      console.log(`[BOT-CHAT:${requestId}] Skipping project knowledge fetch (no projectId)`);
     }
 
     // Check for URLs - SKIP in fast mode for speed (reduces 5+ seconds)
