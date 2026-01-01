@@ -1769,11 +1769,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         content: formattedResponse.fullMessage || assistantText || 'Website generated! Check the preview on the right.',
         htmlCode: undefined,
       };
-      const allMessages = [...messages, userMessage, assistantMessage];
-      setMessages(allMessages);
-
-      const firstUserMessage = allMessages.find(m => m.role === 'user');
-      await saveProject(null, allMessages, firstUserMessage?.content || ideaToUse, newSiteSpec, true); // Save version on AI generation
+      // Use functional update to append assistant message (userMessage was already added at start)
+      setMessages((prev) => {
+        const allMessages = [...prev, assistantMessage];
+        // Save in the next tick with the new messages
+        setTimeout(async () => {
+          const firstUserMessage = allMessages.find(m => m.role === 'user');
+          await saveProject(null, allMessages, firstUserMessage?.content || ideaToUse, newSiteSpec, true);
+        }, 0);
+        return allMessages;
+      });
     } catch (error) {
       console.error('Generation error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate. Please try again.');
