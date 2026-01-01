@@ -109,8 +109,11 @@ serve(async (req) => {
       niche,
       imageType = 'hero',
       customPrompt,
-      count = 1
+      count = 1,
+      saveToLibrary = true // Only save to library if explicitly requested (manual generation)
     } = await req.json();
+    
+    console.log(`[NICHE-IMAGE] saveToLibrary: ${saveToLibrary}`);
 
     console.log(`[NICHE-IMAGE] Request received: ${businessName}, niche: ${niche}, type: ${imageType}`);
 
@@ -203,26 +206,22 @@ Specific request: ${basePrompt}`;
       const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       
       if (imageUrl) {
-        console.log(`[NICHE-IMAGE] Got base64 image, uploading to storage...`);
-        
-        // Upload to Supabase Storage for persistence with user isolation
-        if (supabaseUrl && serviceKey && userId) {
+        // Only upload to library if saveToLibrary is true (manual generation)
+        // Auto-generated site images are NOT saved to library to avoid clutter
+        if (saveToLibrary && supabaseUrl && serviceKey && userId) {
+          console.log(`[NICHE-IMAGE] Saving to library for user: ${userId}`);
           const persistedUrl = await uploadToStorage(imageUrl, supabaseUrl, serviceKey, userId);
           if (persistedUrl) {
             images.push(persistedUrl);
-            console.log(`[NICHE-IMAGE] Generated image ${i + 1}/${count} successfully: ${persistedUrl}`);
+            console.log(`[NICHE-IMAGE] Generated image ${i + 1}/${count} saved to library: ${persistedUrl}`);
           } else {
-            // Fall back to base64 if storage upload fails
             images.push(imageUrl);
             console.log(`[NICHE-IMAGE] Storage upload failed, using base64 for image ${i + 1}/${count}`);
           }
-        } else if (supabaseUrl && serviceKey) {
-          // No userId - store in shared folder as fallback (for unauthenticated requests)
-          const persistedUrl = await uploadToStorage(imageUrl, supabaseUrl, serviceKey, 'shared');
-          images.push(persistedUrl || imageUrl);
         } else {
+          // Auto-generated images: just return the base64/URL without saving to library
           images.push(imageUrl);
-          console.log(`[NICHE-IMAGE] No storage config, using base64 for image ${i + 1}/${count}`);
+          console.log(`[NICHE-IMAGE] Image ${i + 1}/${count} generated (not saved to library, saveToLibrary=${saveToLibrary})`);
         }
       } else {
         console.error('[NICHE-IMAGE] No image in AI response');

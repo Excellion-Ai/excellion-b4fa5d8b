@@ -126,7 +126,8 @@ serve(async (req) => {
 
     console.log("Authenticated user:", user.id);
 
-    const { prompt, width = 1024, height = 1024, referenceImage, type = 'image' } = await req.json();
+    const { prompt, width = 1024, height = 1024, referenceImage, type = 'image', saveToLibrary = true } = await req.json();
+    console.log("saveToLibrary:", saveToLibrary);
 
     if (!prompt) {
       return new Response(
@@ -204,52 +205,56 @@ serve(async (req) => {
       throw new Error("No image generated");
     }
 
-    // Optionally upload to Supabase Storage for persistence
+    // Only upload to Supabase Storage if saveToLibrary is true (manual generation)
+    // Auto-generated site images should NOT be saved to library
     let publicUrl = imageData;
     
-    try {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL");
-      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-      
-      if (supabaseUrl && supabaseKey && imageData.startsWith("data:image")) {
-        const supabase = createClient(supabaseUrl, supabaseKey);
+    if (saveToLibrary) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
         
-        // Convert base64 to blob
-        const base64Data = imageData.split(",")[1];
-        const byteCharacters = atob(base64Data);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        
-        // Determine folder based on type parameter (logo vs image)
-        const assetType = type === 'logo' ? 'logos' : 'images';
-        const fileName = `${assetType}/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("builder-images")
-          .upload(fileName, byteArray, {
-            contentType: "image/png",
-            upsert: false,
-          });
-
-        if (!uploadError && uploadData) {
-          const { data: urlData } = supabase.storage
-            .from("builder-images")
-            .getPublicUrl(fileName);
+        if (supabaseUrl && supabaseKey && imageData.startsWith("data:image")) {
+          const supabase = createClient(supabaseUrl, supabaseKey);
           
-          if (urlData?.publicUrl) {
-            publicUrl = urlData.publicUrl;
-            console.log("Image uploaded to storage:", publicUrl);
+          // Convert base64 to blob
+          const base64Data = imageData.split(",")[1];
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
           }
-        } else {
-          console.log("Storage upload failed, using base64:", uploadError);
+          const byteArray = new Uint8Array(byteNumbers);
+          
+          // Determine folder based on type parameter (logo vs image)
+          const assetType = type === 'logo' ? 'logos' : 'images';
+          const fileName = `${assetType}/${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("builder-images")
+            .upload(fileName, byteArray, {
+              contentType: "image/png",
+              upsert: false,
+            });
+
+          if (!uploadError && uploadData) {
+            const { data: urlData } = supabase.storage
+              .from("builder-images")
+              .getPublicUrl(fileName);
+            
+            if (urlData?.publicUrl) {
+              publicUrl = urlData.publicUrl;
+              console.log("Image saved to library:", publicUrl);
+            }
+          } else {
+            console.log("Storage upload failed, using base64:", uploadError);
+          }
         }
+      } catch (storageError) {
+        console.error("Storage upload error:", storageError);
       }
-    } catch (storageError) {
-      console.error("Storage upload error:", storageError);
-      // Continue with base64 image
+    } else {
+      console.log("Image generated but not saved to library (saveToLibrary=false)");
     }
 
     // Log successful API usage
