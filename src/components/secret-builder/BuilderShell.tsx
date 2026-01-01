@@ -73,6 +73,7 @@ import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
 import { speculativeParse, shouldAttemptParse, mergeSpeculative } from '@/lib/speculativeParser';
+import { refinePrompt } from '@/lib/promptRefiner';
 import { cn } from '@/lib/utils';
 import { 
   formatChatResponse,
@@ -100,7 +101,8 @@ type GenerationStep = {
 type Message = {
   id: string;
   role: 'user' | 'assistant';
-  content: string;
+  content: string; // Display text (what user sees)
+  executionPrompt?: string; // What was sent to API (shadow prompt)
   htmlCode?: string;
   attachments?: { name: string; url: string; type: string }[];
 };
@@ -502,6 +504,14 @@ export function BuilderShell() {
   
   // Keyboard shortcuts state
   const [showShortcutsPanel, setShowShortcutsPanel] = useState(false);
+  
+  // Auto-improve (shadow prompt) toggle
+  const [autoImproveEnabled, setAutoImproveEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('excellion-auto-improve') !== 'false';
+    }
+    return true;
+  });
   
   // Mobile view state - toggle between chat and preview on small screens
   const [mobileActiveTab, setMobileActiveTab] = useState<'chat' | 'preview'>('chat');
@@ -1356,10 +1366,25 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       // Don't return - continue with generation without attachments
     }
 
+    // Shadow prompt: apply auto-improve in background
+    let executionPrompt = enhancedIdea;
+    if (autoImproveEnabled && messages.length === 0) {
+      try {
+        const result = await refinePrompt(ideaToUse, { source: 'builder' });
+        if (!result.fallback && result.refinedPrompt) {
+          executionPrompt = result.refinedPrompt;
+          console.log(`[ShadowPrompt] Refined in ${result.latencyMs}ms`);
+        }
+      } catch (refineError) {
+        console.warn('[ShadowPrompt] Refiner error, using original:', refineError);
+      }
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: ideaToUse, // Display original text to user
+      executionPrompt, // Shadow: what actually goes to API
       attachments: attachmentData.length > 0 ? attachmentData : undefined,
     };
     setMessages((prev) => [...prev, userMessage]);
@@ -1387,7 +1412,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       setTokenCount(0);
       setGenerationStartTime(Date.now());
       
-      // Build chat messages, including images for the latest user message
+      // Build chat messages, using executionPrompt for API (shadow execution)
       const chatMessages = [...messages, userMessage].map((m, idx, arr) => {
         const isLatestUserMessage = idx === arr.length - 1 && m.role === 'user';
         
@@ -1396,15 +1421,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           return {
             role: m.role,
             content: [
-              { type: 'text', text: enhancedIdea }, // Use enhanced idea with image URLs
+              { type: 'text', text: m.executionPrompt || executionPrompt }, // Use shadow prompt
               ...imageDataForApi,
             ],
           };
         }
         
+        // Use executionPrompt for user messages (shadow execution)
         return {
           role: m.role,
-          content: m.content,
+          content: m.role === 'user' ? (m.executionPrompt || m.content) : m.content,
         };
       });
 
@@ -2406,75 +2432,66 @@ Regenerate the problematic sections with valid content.`;
               </div>
             </div>
             
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
+            <ScrollArea className="flex-1 px-4 py-6">
+              <div className="space-y-4 max-w-2xl mx-auto">
                 {messages.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground text-sm">
-                      Describe your business idea to get started
+                  <div className="text-center py-16">
+                    <p className="text-muted-foreground/60 text-sm">
+                      Describe your website idea to get started
                     </p>
                   </div>
                 )}
-                {messages.map((msg) => {
-                  const parsed = msg.role === 'assistant' ? parseStructuredMessage(msg.content) : null;
-                  
-                  return (
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      "flex w-full",
+                      msg.role === 'user' ? 'justify-end' : 'justify-start'
+                    )}
+                  >
                     <div
-                      key={msg.id}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      className={cn(
+                        "max-w-[85%] rounded-2xl px-4 py-3",
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted/50'
+                      )}
                     >
-                      <div
-                        className={`max-w-[85%] rounded-xl px-4 py-2 text-sm ${
-                          msg.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-foreground'
-                        }`}
-                      >
-                        {/* Show attachments if present */}
-                        {msg.attachments && msg.attachments.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {msg.attachments.map((att, idx) => (
-                              <div key={idx} className="relative">
-                                {att.type.startsWith('image/') && att.url ? (
-                                  <img 
-                                    src={att.url} 
-                                    alt={att.name} 
-                                    className="max-h-32 max-w-full rounded-lg object-cover" 
-                                  />
-                                ) : (
-                                  <div className="flex items-center gap-1 bg-black/20 rounded px-2 py-1 text-xs">
-                                    <Upload className="h-3 w-3" />
-                                    <span className="truncate max-w-[100px]">{att.name}</span>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {/* Render with proper markdown formatting */}
-                        {msg.role === 'assistant' ? (
-                          <Suspense fallback={<span>{msg.content}</span>}>
-                            <ChatMessage content={msg.content} role="assistant" />
-                          </Suspense>
-                        ) : (
-                          <span>{msg.content}</span>
-                        )}
-                      </div>
+                      {/* Show attachments if present */}
+                      {msg.attachments && msg.attachments.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {msg.attachments.map((att, idx) => (
+                            <div key={idx} className="relative">
+                              {att.type.startsWith('image/') && att.url ? (
+                                <img 
+                                  src={att.url} 
+                                  alt={att.name} 
+                                  className="max-h-32 max-w-full rounded-lg object-cover" 
+                                />
+                              ) : (
+                                <div className="flex items-center gap-1 bg-black/20 rounded px-2 py-1 text-xs">
+                                  <Upload className="h-3 w-3" />
+                                  <span className="truncate max-w-[100px]">{att.name}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* User: raw text only | Assistant: markdown */}
+                      {msg.role === 'user' ? (
+                        <p className="text-sm whitespace-pre-wrap break-words">
+                          {msg.content}
+                        </p>
+                      ) : (
+                        <Suspense fallback={<span className="text-sm">{msg.content}</span>}>
+                          <ChatMessage content={msg.content} role="assistant" />
+                        </Suspense>
+                      )}
                     </div>
-                  );
-                })}
-                {isGenerating && (
-                  <div className="px-1">
-                    <GenerationProgress
-                      tokenCount={tokenCount}
-                      startTime={generationStartTime}
-                      isGenerating={isGenerating}
-                      estimatedTotalTokens={messages.length <= 1 ? 2000 : 1500}
-                      speculativeSpec={speculativeSpec}
-                    />
                   </div>
-                )}
+                ))}
                 {/* Scroll anchor */}
                 <div ref={chatScrollRef} />
               </div>
@@ -2541,52 +2558,65 @@ Regenerate the problematic sections with valid content.`;
             )}
 
 
-            <div className="border-t border-border p-4">
+            {/* Minimalist Input Area */}
+            <div className="border-t border-border p-4 bg-background/50">
               {/* Attachments preview */}
-              <AttachmentChips 
-                attachments={attachments} 
-                onRemove={removeAttachment} 
-              />
+              {attachments.length > 0 && (
+                <div className="mb-3">
+                  <AttachmentChips 
+                    attachments={attachments} 
+                    onRemove={removeAttachment} 
+                  />
+                </div>
+              )}
               
-              <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 py-2">
-                <AttachmentMenu
-                  onAddAttachment={handleAddAttachment}
-                  disabled={isGenerating}
-                  attachmentCount={attachments.length}
-                  previewRef={previewContainerRef as React.RefObject<HTMLElement>}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  onClick={() => {
-                    setVisualEditsEnabled(!visualEditsEnabled);
-                    toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
-                  }}
-                  title={visualEditsEnabled ? 'Disable visual edits' : 'Enable visual edits'}
-                >
-                  <MousePointer2 className={`h-4 w-4 ${visualEditsEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
-                </Button>
-                <Input
-                  value={idea}
-                  onChange={(e) => setIdea(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Describe your website idea..."
-                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
-                  disabled={isGenerating}
-                />
-                <Button
-                  size="icon"
-                  onClick={() => handleGenerate()}
-                  disabled={!idea.trim() || isGenerating}
-                  className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
-                >
-                  {isGenerating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
+              {/* Clean input with thin loading bar */}
+              <div className="relative">
+                {isGenerating && (
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-muted overflow-hidden rounded-t-lg z-10">
+                    <div className="h-full w-1/3 bg-primary animate-chat-loading" />
+                  </div>
+                )}
+                
+                <div className="flex items-end gap-2 border border-border rounded-lg bg-background px-3 py-3">
+                  <AttachmentMenu
+                    onAddAttachment={handleAddAttachment}
+                    disabled={isGenerating}
+                    attachmentCount={attachments.length}
+                    previewRef={previewContainerRef as React.RefObject<HTMLElement>}
+                  />
+                  
+                  <textarea
+                    value={idea}
+                    onChange={(e) => {
+                      setIdea(e.target.value);
+                      // Auto-resize
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (idea.trim() && !isGenerating) {
+                          handleGenerate();
+                        }
+                      }
+                    }}
+                    placeholder="Describe your website idea..."
+                    disabled={isGenerating}
+                    rows={1}
+                    className="flex-1 min-h-[24px] max-h-[200px] resize-none border-0 bg-transparent text-sm focus:outline-none focus:ring-0 placeholder:text-muted-foreground/60"
+                  />
+                  
+                  <Button
+                    size="icon"
+                    onClick={() => handleGenerate()}
+                    disabled={!idea.trim() || isGenerating}
+                    className="h-8 w-8 shrink-0 rounded-full"
+                  >
                     <Send className="h-4 w-4" />
-                  )}
-                </Button>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
