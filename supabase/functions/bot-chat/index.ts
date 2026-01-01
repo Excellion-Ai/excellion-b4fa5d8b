@@ -575,11 +575,20 @@ Would the owner of THIS SPECIFIC BUSINESS actually say this to a customer?
    - Restaurants have menus, not "plans"
    - Law firms have consultation fees, not tiers
 
+6. **NO GENERIC CTA SECTIONS** - The final CTA section MUST be industry-specific:
+   ❌ BANNED HEADLINES: "Ready to Get Started?", "Get Started Today", "Transform Your Business"
+   ❌ BANNED SUBHEADLINES: "Join thousands of customers", "Transform your business today", "Take the first step"
+   ❌ BANNED BUTTONS: "Start Free Trial", "Contact Sales", "Get Started"
+   ✅ Car Detailing: "Ready for a Showroom Shine?" / "Book Your Detail"
+   ✅ Restaurant: "Hungry Yet?" / "Reserve a Table"
+   ✅ Plumber: "Need Help Fast?" / "Call Now"
+
 **FEATURE DESCRIPTIONS MUST BE INDUSTRY-SPECIFIC:**
 
 | Business Type | CORRECT Features | BANNED Features |
 |--------------|------------------|-----------------|
 | Pressure Washing | "Deep Cleaning Power", "Eco-Friendly Solutions", "Same-Day Service", "100% Satisfaction Guarantee" | "Fast & Reliable", "Secure", "Scalable", "Enterprise-grade" |
+| Car Detailing | "Showroom Shine", "Paint Correction", "Ceramic Coating", "Interior Deep Clean" | "Fast & Reliable", "Data protected", "Top Quality" |
 | Lighter Shop | "Rare Collectibles", "Authentic Brands", "Expert Repairs", "Lifetime Warranty" | "Built for speed", "Data protected", "24/7 uptime" |
 | Bakery | "Baked Fresh Daily", "Custom Orders", "Local Ingredients", "Family Recipes" | "Fast performance", "Secure checkout", "Priority support" |
 | Restaurant | "Farm-to-Table", "Chef's Specials", "Private Events", "Outdoor Seating" | "Reliable", "Scalable", "API integration" |
@@ -1468,12 +1477,26 @@ Use 4-6 FAQs from the industry blueprint
   "formFields": ["name", "email", "message"]
 }
 
-**cta**:
+**cta** (CRITICAL - MUST BE INDUSTRY-SPECIFIC):
 {
   "headline": "Industry-specific call to action",
-  "subheadline": "Supporting text",
+  "subheadline": "Supporting text specific to THIS business",
   "ctas": [{ "label": "Industry CTA", "href": "#contact", "variant": "primary" }]
 }
+
+🚨 **CTA SECTION BANNED CONTENT:**
+❌ BANNED HEADLINES: "Ready to Get Started?", "Get Started Today", "Transform Your Business", "Join Us Today"
+❌ BANNED SUBHEADLINES: "Join thousands of customers", "Transform your business today", "Take the first step"
+❌ BANNED BUTTONS: "Start Free Trial", "Contact Sales", "Get Started", "Learn More"
+
+✅ CORRECT BY BUSINESS TYPE:
+| Business | Headline | Subheadline | CTA |
+|----------|----------|-------------|-----|
+| Car Detailing | "Ready for a Showroom Shine?" | "Book your detail today and see the difference." | "Book Your Detail" |
+| Restaurant | "Hungry Yet?" | "Make a reservation or order for pickup." | "Reserve a Table" |
+| Plumber | "Need Help Fast?" | "Call now for same-day emergency service." | "Call Now" |
+| Law Firm | "Ready to Discuss Your Case?" | "Schedule your free consultation today." | "Free Consultation" |
+| Lighter Shop | "Visit Our Collection" | "Stop by or browse our selection online." | "Get Directions" |
 
 **stats**:
 {
