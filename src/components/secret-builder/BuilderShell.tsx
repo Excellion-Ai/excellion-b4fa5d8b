@@ -262,6 +262,7 @@ async function generateImageForPrompt(
       niche,
       imageType: 'hero',
       customPrompt: prompt,
+      saveToLibrary: false, // Auto-generated site images don't go to library
     }),
   });
 
@@ -1916,10 +1917,12 @@ Regenerate the problematic sections with valid content.`;
             niche: detectedNiche,
             imageType: 'hero',
             customPrompt: imagePrompt,
+            saveToLibrary: true, // Manual generation saves to library
           }
         : { 
             prompt: imagePrompt,
-            referenceImage: imageAttachment || undefined
+            referenceImage: imageAttachment || undefined,
+            saveToLibrary: true, // Manual generation saves to library
           };
 
       console.log('[IMAGE-GEN] Calling endpoint:', endpoint);
