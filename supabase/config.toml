@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.customer-portal]
 verify_jwt = false
+
+[functions.purge-old-analytics]
+verify_jwt = false
