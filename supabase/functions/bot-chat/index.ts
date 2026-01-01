@@ -6,6 +6,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ============= CONTENT PIPELINE: Banned Phrases Blocklist =============
+const BANNED_PHRASES_LIST = [
+  'welcome to our website', 'discover what we have to offer', 'everything you need to succeed',
+  'custom section content goes here', 'lorem ipsum', 'feature 1', 'feature 2',
+  'fast & reliable', 'fast and reliable', 'built for speed', 'your data is always protected',
+  'data protected', '99.9% uptime', 'scalable', 'enterprise-grade', 'api access', 'sla',
+  'ownership & export', 'code ownership', 'start free trial', 'contact sales', 'get demo',
+  'learn more', 'get started', 'explore', 'discover', 'excellion', 'website builder',
+  'top quality', 'best in class', 'world-class', 'industry-leading', 'cutting-edge',
+  'state-of-the-art', 'next-generation', 'revolutionary', '24/7 support', 'secure',
+];
+
+// Quick validation function
+function hasBannedContent(text: string, isSaas = false): boolean {
+  const lower = text.toLowerCase();
+  for (const phrase of BANNED_PHRASES_LIST) {
+    if (lower.includes(phrase)) return true;
+  }
+  if (!isSaas) {
+    const saasOnly = ['free trial', 'pro plan', 'enterprise plan', '/month', 'per user', 'advanced analytics'];
+    for (const phrase of saasOnly) {
+      if (lower.includes(phrase)) return true;
+    }
+  }
+  return false;
+}
+
 // URL detection regex
 const URL_REGEX = /https?:\/\/[^\s<>"{}|\\^`[\]]+/gi;
 
