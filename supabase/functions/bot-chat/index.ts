@@ -342,7 +342,7 @@ function detectMessageIntent(message: string): 'question' | 'generation' | 'edit
 }
 
 // Conversational system prompt for answering questions (not generating sites)
-const QUESTION_SYSTEM_PROMPT = `You are a helpful website building assistant for the Excellion Builder. 
+const QUESTION_SYSTEM_PROMPT = `You are a helpful website building assistant. 
 
 Your role is to ANSWER QUESTIONS and provide guidance - NOT to generate websites. The user is asking you a question about their website project, features, or options.
 

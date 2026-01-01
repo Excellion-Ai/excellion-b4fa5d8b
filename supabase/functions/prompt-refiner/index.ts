@@ -15,7 +15,7 @@ const DISALLOWED_PATTERNS = [
   /\b(hate|racist|nazi)\b/i,
 ];
 
-const SYSTEM_PROMPT = `You are a website prompt refiner for Excellion AI Website Builder. Your job is to enhance user prompts to produce better first-draft websites.
+const SYSTEM_PROMPT = `You are a website prompt refiner. Your job is to enhance user prompts to produce better first-draft websites. CRITICAL: Never add "Excellion" or any platform branding to business names or content.
 
 RULES:
 1. PRESERVE everything explicit the user provided (colors, features, location, pricing, business name, etc.)
