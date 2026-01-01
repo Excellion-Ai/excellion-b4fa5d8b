@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,6 +25,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
+const ChatMessage = lazy(() => import('@/components/secret-builder/ChatMessage').then(m => ({ default: m.ChatMessage })));
 
 interface BuilderChatProps {
   messages: Message[];
@@ -71,20 +73,7 @@ const VIBES = [
   { value: 'bold', label: 'Bold' },
 ] as const;
 
-function formatMessageContent(content: string) {
-  return content.split('\n').map((line, i) => {
-    if (line.startsWith('**') && line.endsWith('**')) {
-      return <strong key={i} className="block mt-3 mb-1 text-foreground font-semibold">{line.replace(/\*\*/g, '')}</strong>;
-    }
-    if (line.startsWith('• ')) {
-      return <span key={i} className="block ml-3 text-muted-foreground leading-relaxed">{line}</span>;
-    }
-    if (line.trim() === '') {
-      return <span key={i} className="block h-2" />;
-    }
-    return <span key={i} className="block leading-relaxed">{line}</span>;
-  });
-}
+// Removed manual formatMessageContent - now using ChatMessage component with react-markdown
 
 export function BuilderChat({
   messages,
@@ -307,9 +296,13 @@ export function BuilderChat({
                     : "bg-card border border-border/50"
                 )}
               >
-                <div className="whitespace-pre-wrap leading-relaxed">
-                  {formatMessageContent(message.content)}
-                </div>
+                {message.role === 'assistant' ? (
+                  <Suspense fallback={<span className="text-sm">{message.content}</span>}>
+                    <ChatMessage content={message.content} role="assistant" />
+                  </Suspense>
+                ) : (
+                  <span className="text-sm">{message.content}</span>
+                )}
               </div>
               {message.role === 'user' && (
                 <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">

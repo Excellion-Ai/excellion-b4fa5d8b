@@ -42,6 +42,7 @@ const IssuesPanel = lazy(() => import('./IssuesPanel').then(m => ({ default: m.I
 const TouchTargetAnalyzer = lazy(() => import('./TouchTargetAnalyzer').then(m => ({ default: m.TouchTargetAnalyzer })));
 const VersionHistoryPanel = lazy(() => import('./VersionHistoryPanel').then(m => ({ default: m.VersionHistoryPanel })));
 const ShortcutsPanel = lazy(() => import('./ShortcutsPanel').then(m => ({ default: m.ShortcutsPanel })));
+const ChatMessage = lazy(() => import('./ChatMessage').then(m => ({ default: m.ChatMessage })));
 
 // Keep the hook import for keyboard shortcuts
 import { useKeyboardShortcuts } from './ShortcutsPanel';
@@ -2451,42 +2452,11 @@ Regenerate the problematic sections with valid content.`;
                           </div>
                         )}
                         
-                        {/* Structured message rendering */}
-                        {parsed?.isStructured ? (
-                          <div className="space-y-2">
-                            {parsed.built && (
-                              <p><span className="font-semibold">Built:</span> {parsed.built}</p>
-                            )}
-                            {parsed.nextStep && (
-                              <p><span className="font-semibold">Next:</span> {parsed.nextStep}</p>
-                            )}
-                            {parsed.hasBlockers && (
-                              <div className="flex items-center gap-2 text-yellow-500 mt-2">
-                                <AlertTriangle className="h-4 w-4" />
-                                <span>Blocking issues: {parsed.blockerCount}</span>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-6 text-xs ml-auto"
-                                  onClick={() => setShowIssuesPanel(true)}
-                                >
-                                  Open Issues
-                                </Button>
-                              </div>
-                            )}
-                            {/* View code link */}
-                            {siteSpec && (
-                              <Button
-                                variant="link"
-                                size="sm"
-                                className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
-                                onClick={() => setShowCodeDialog(true)}
-                              >
-                                <Code className="h-3 w-3 mr-1" />
-                                View code
-                              </Button>
-                            )}
-                          </div>
+                        {/* Render with proper markdown formatting */}
+                        {msg.role === 'assistant' ? (
+                          <Suspense fallback={<span>{msg.content}</span>}>
+                            <ChatMessage content={msg.content} role="assistant" />
+                          </Suspense>
                         ) : (
                           <span>{msg.content}</span>
                         )}
