@@ -47,6 +47,11 @@ export const BANNED_PHRASES = [
   'lets work together',
   "let's work together",
   'ready to get started',
+  "we're here to help",
+  'were here to help',
+  'reach out today',
+  'contact us today',
+  'we are here to help',
   
   // Meta/builder references
   'excellion',

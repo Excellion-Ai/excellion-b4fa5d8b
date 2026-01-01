@@ -72,6 +72,7 @@ import { getPacksForIntegrations, mergeIntegrationPages, type IntegrationPack } 
 import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
+import { conversionGoalToIntent, type BusinessIntent } from '@/lib/intentAwareFallbacks';
 import { speculativeParse, shouldAttemptParse, mergeSpeculative } from '@/lib/speculativeParser';
 import { refinePrompt } from '@/lib/promptRefiner';
 import { validateFinalSpec } from '@/lib/contentPipeline/contentValidator';
@@ -3105,6 +3106,10 @@ Regenerate the problematic sections with valid content.`;
                       siteSpec={siteSpec}
                       pageIndex={currentPageIndex}
                       isLoading={isGenerating}
+                      businessIntent={(() => {
+                        const route = routeNiche(siteSpec.description || siteSpec.name || idea || '');
+                        return conversionGoalToIntent(route.goal);
+                      })()}
                       onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
                       onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
                       onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}

@@ -1,19 +1,38 @@
 import { SiteSection, SiteTheme, CTAContent } from '@/types/app-spec';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
 import { EditableText } from '../EditableText';
+import { RenderMode } from '../SiteRenderer';
+import { 
+  BusinessIntent, 
+  CTA_CONTENT, 
+  SECONDARY_CTA 
+} from '@/lib/intentAwareFallbacks';
 
 interface CTASectionProps {
   section: SiteSection;
   theme: SiteTheme;
+  renderMode?: RenderMode;
+  businessIntent?: BusinessIntent;
   onUpdateContent?: (field: keyof CTAContent, value: string) => void;
 }
 
-export function CTASection({ section, theme, onUpdateContent }: CTASectionProps) {
+export function CTASection({ 
+  section, 
+  theme, 
+  renderMode = 'preview',
+  businessIntent = 'service_business',
+  onUpdateContent 
+}: CTASectionProps) {
   const content = section.content as CTAContent | undefined;
   
-  const headline = content?.headline || section.label || 'Let\'s Work Together';
-  const subheadline = content?.subheadline || section.description || 'We\'re here to help. Reach out today.';
-  const ctaText = content?.ctaText || 'Contact Us';
+  // Get intent-aware fallback content
+  const intentCTA = CTA_CONTENT[businessIntent];
+  const secondaryCTA = SECONDARY_CTA[businessIntent];
+  
+  // Use provided content or intent-aware fallbacks (never generic)
+  const headline = content?.headline || intentCTA.headline;
+  const subheadline = content?.subheadline || intentCTA.subheadline;
+  const ctaText = content?.ctaText || intentCTA.ctaText;
   
   return (
     <section 
@@ -75,7 +94,7 @@ export function CTASection({ section, theme, onUpdateContent }: CTASectionProps)
             <button
               className="px-8 py-3 rounded-lg font-semibold border-2 border-white text-white transition-all hover:bg-white/10 shrink-0"
             >
-              Learn More
+              {secondaryCTA.text}
             </button>
           </div>
         </ScrollAnimation>
