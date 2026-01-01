@@ -443,14 +443,22 @@ DEFAULT COLORS: Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6
 
 **BANNED FOR ALL NON-TECH BUSINESSES (violating = failed output):**
 ❌ NO subscription pricing: "$29/month", "Pro Plan", "Enterprise", "Starter features", "X users"
-❌ NO tech features: "Fast & Reliable", "Secure", "Data protected", "Built for speed", "Top Quality / Excellence"
+❌ NO tech features: "Fast & Reliable", "Secure", "Data protected", "Built for speed", "Top Quality / Excellence", "24/7 Support", "Everything you need to succeed"
 ❌ NO generic CTAs: "Get Started", "Learn More", "Explore", "Contact Sales", "Start Free Trial"
+❌ NO generic hero: "Welcome to our website", "Discover what we have to offer", "Welcome to [Name]" 
 ❌ NO tech FAQs: "Ownership", "uptime", "SLA", "export", "API"
 
 **REQUIRED - MATCH THE BUSINESS:**
-✅ Features = actual product/service (Pressure Washer: "Deep Cleaning Power", NOT "Fast & Reliable")
-✅ CTAs = specific action ("Get Free Estimate", "View Menu", NOT "Get Started")
+✅ Features = actual product/service (Lighter Shop: "Premium Zippos", "Rare Collectibles", NOT "Fast & Reliable", "Secure")
+✅ CTAs = specific action ("Browse Collection", "View Menu", NOT "Get Started", "Learn More")
+✅ Hero headline = what the business does ("Premium Lighters for Collectors", NOT "Welcome to our website")
 ✅ FAQs = real customer questions (hours, delivery, returns - NOT tech jargon)
+
+**E-COMMERCE DETECTION:**
+If the business SELLS PRODUCTS (lighter shop, clothing store, jewelry, gift shop, etc.):
+✅ INCLUDE: Shop page, Cart icon in header corner
+✅ CTAs: "Browse Collection", "Shop Now", "View Products"
+❌ But still NO tech features: "Fast & Reliable", "Secure", "Data protected"
 
 BANNED CONTENT: "Excellion", "website builder", "hosting", "export", "code ownership", "$X/month SaaS pricing for physical businesses"
 
@@ -1109,55 +1117,57 @@ EVERY page you generate MUST have a clear PURPOSE. If you can't explain why that
 
 **✅ CORRECT PAGE STRUCTURES BY BUSINESS TYPE:**
 
-| Business Type | Pages to Create | NEVER Create |
-|--------------|-----------------|--------------|
-| Physical Retail Store (lighter shop, gift shop, clothing) | Home, About, Contact | Shop, Product, Cart, Checkout, Policies in nav |
-| Restaurant/Cafe | Home, Menu, About, Contact | Shop, Product, Cart |
-| Service Provider (plumber, lawyer, consultant) | Home, Services, About, Contact | Shop, Product, Cart, Checkout |
-| E-commerce ONLY (online-only store) | Home, Shop, Cart, About, Contact | Product as separate nav link, Policies in header |
-| Portfolio (artist, photographer) | Home, Portfolio/Work, About, Contact | Shop, Cart, Checkout |
+| Business Type | Pages to Create | Cart? | NEVER Create |
+|--------------|-----------------|-------|--------------|
+| Product Retail (lighter shop, clothing, jewelry, gift shop) | Home, Shop/Collection, About, Contact | YES (icon in header) | Policies in nav |
+| Restaurant/Cafe | Home, Menu, About, Contact | NO | Shop, Product, Cart |
+| Service Provider (plumber, lawyer, consultant) | Home, Services, About, Contact | NO | Shop, Product, Cart, Checkout |
+| E-commerce (online-only store) | Home, Shop, About, Contact | YES (icon in header) | Policies in header |
+| Portfolio (artist, photographer) | Home, Portfolio/Work, About, Contact | NO | Shop, Cart, Checkout |
+
+**🛒 SMART CART LOGIC:**
+- **INCLUDE cart icon** when business SELLS PHYSICAL PRODUCTS (lighter shop, clothing store, jewelry, gift shop, etc.)
+- Cart should be an ICON in the header corner, NOT a navigation text link
+- **DO NOT include cart** for: restaurants (they have menus), service providers (they quote jobs), portfolios (they showcase work)
 
 **🚨 THE "FLAMED" EXAMPLE - WHAT WENT WRONG:**
 ❌ WRONG: Home, Shop, Product, Cart, Checkout, Policies, Contact (7 nav items!)
-✅ CORRECT: Home, Shop, About, Contact (4 nav items, Cart as icon)
+✅ CORRECT: Home, Shop, About, Contact (4 nav items, Cart as icon in corner)
 
 **ASK YOURSELF:**
-1. "Does this business ACTUALLY need an online shop?" (Most physical stores don't)
-2. "Is this page redundant with another?" (Shop = Products = Store)
+1. "Does this business SELL PHYSICAL PRODUCTS?" → If yes, include Shop page + Cart icon
+2. "Is this page redundant with another?" (Shop = Products = Store = Collection)
 3. "Should this be in the footer instead?" (Policies, Terms, Privacy = YES)
 
 **PAGE SELECTION BY BUSINESS TYPE:**
 
-| Business Type | Essential Pages | Optional | NEVER Include |
-|--------------|-----------------|----------|---------------|
-| Local Store (lighter shop, gift shop) | Home, About, Contact | Gallery | Shop, Product, Cart, Checkout |
-| Restaurant/Cafe | Home, Menu, About, Contact | Reservations | Shop, Product |
-| Service Provider (plumber, lawyer) | Home, Services, About, Contact | Testimonials page | Shop, Product, Cart |
-| E-commerce (online store) | Home, Shop, Product, Cart | About | - |
-| Portfolio (artist, photographer) | Home, Portfolio, About, Contact | Services | Shop, Cart |
+| Business Type | Essential Pages | Optional | Cart Icon? |
+|--------------|-----------------|----------|------------|
+| Product Store (lighter shop, gift shop, clothing) | Home, Shop/Collection, About, Contact | Gallery | YES |
+| Restaurant/Cafe | Home, Menu, About, Contact | Reservations | NO |
+| Service Provider (plumber, lawyer) | Home, Services, About, Contact | Testimonials page | NO |
+| E-commerce (online store) | Home, Shop, About, Contact | - | YES |
+| Portfolio (artist, photographer) | Home, Portfolio, About, Contact | Services | NO |
 
 **NAVIGATION ENFORCEMENT RULES:**
 1. Main nav: 4-5 links MAXIMUM (Home + 3-4 key pages)
 2. Legal/Policies: FOOTER LINKS ONLY - if you put Policies in header nav, OUTPUT IS REJECTED
-3. Cart: ICON ONLY in top-right corner - not a text navigation link
+3. Cart: ICON ONLY in top-right corner (for product-selling businesses) - not a text navigation link
 4. Checkout: Never in navigation - accessed from cart page only
-5. NO DUPLICATE PAGES: Shop OR Products (not both), About OR Our Story (not both)
+5. NO DUPLICATE PAGES: Shop OR Products OR Collection (pick one name only)
 
-**EXAMPLE - "Flamed" E-commerce Store (CORRECTED):**
-✅ CORRECT NAV: Home, Shop, About, Contact (+ Cart icon in corner)
-❌ WRONG NAV: Home, Shop, Product, Cart, Checkout, Policies, Contact
-
-**EXAMPLE - Physical Lighter Shop:**
-✅ CORRECT NAV: Home, Collection, About, Contact
-❌ WRONG NAV: Home, Shop, Product, Cart, Checkout, Policies
+**EXAMPLE - Lighter Shop (SELLS PRODUCTS):**
+✅ CORRECT NAV: Home, Collection, About, Contact (+ Cart icon in corner)
+✅ Also correct: Home, Shop, About, Contact (+ Cart icon in corner)
+❌ WRONG NAV: Home, About, Contact (missing Shop/Collection for a product store!)
 
 **EXAMPLE - Restaurant:**
 ✅ CORRECT NAV: Home, Menu, About, Contact (maybe Reservations)
-❌ WRONG NAV: Home, Shop, Product, Cart, Checkout
+❌ WRONG NAV: Home, Shop, Product, Cart, Checkout (restaurants don't use cart!)
 
 **EXAMPLE - Law Firm:**
 ✅ CORRECT NAV: Home, Practice Areas, About, Contact
-❌ WRONG NAV: Home, Services, What We Do, About, Contact, Policies (redundant + policies in nav)
+❌ WRONG NAV: Home, Shop, Cart (law firms don't sell products!)
 
 ====================================
 ## 3C. INDUSTRY-SPECIFIC CONTENT (NO GENERIC TECH COPY)
