@@ -12,6 +12,20 @@ const supabaseAdmin = createClient(
   { auth: { persistSession: false } }
 );
 
+// Correct Price IDs from Stripe
+const PRICE_IDS = {
+  // Monthly
+  starter_monthly: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",
+  pro_monthly: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",
+  agency_monthly: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",
+  // Annual
+  starter_annual: "price_1SgKPjPCTHzXvqDgQP63Wygw",
+  pro_annual: "price_1SgKQHPCTHzXvqDgNxuBVF8D",
+  agency_annual: "price_1SgKQdPCTHzXvqDgCsz1sXw5",
+  // Sprint Pass (one-time fee)
+  sprint_fee: "price_1SgsMOPCTHzXvqDg7Q23a28h",
+};
+
 const PLAN_CREDITS: Record<string, number> = {
   starter: 50,
   pro: 100,
@@ -106,6 +120,22 @@ async function updateUserPlan(userId: string, plan: string, sprintExpiresAt?: st
   }
 }
 
+function getPlanFromPriceId(priceId: string): string {
+  switch (priceId) {
+    case PRICE_IDS.starter_monthly:
+    case PRICE_IDS.starter_annual:
+      return "starter";
+    case PRICE_IDS.pro_monthly:
+    case PRICE_IDS.pro_annual:
+      return "pro";
+    case PRICE_IDS.agency_monthly:
+    case PRICE_IDS.agency_annual:
+      return "agency";
+    default:
+      return "free";
+  }
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   logStep("Handling checkout.session.completed", { sessionId: session.id });
 
@@ -129,7 +159,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   for (const item of lineItems.data) {
     const priceId = item.price?.id;
     
-    if (priceId === "price_1RZd1yIoRCjttqsGIRBqWpN6") {
+    // Check for Sprint Pass one-time fee
+    if (priceId === PRICE_IDS.sprint_fee) {
       await grantCredits(userId, SPRINT_PASS_CREDITS, "Sprint Pass bonus credits", "sprint_pass");
       const sprintExpires = new Date();
       sprintExpires.setDate(sprintExpires.getDate() + 7);
@@ -179,18 +210,10 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   }
 
   const priceId = subscription.items.data[0]?.price?.id;
-  let plan = "free";
-
-  if (priceId === "price_1RY11AIoRCjttqsGnCkZYtxU" || priceId === "price_starter_annual") {
-    plan = "starter";
-  } else if (priceId === "price_1RY11AIoRCjttqsGjwsmBp1E" || priceId === "price_pro_annual") {
-    plan = "pro";
-  } else if (priceId === "price_1RY11AIoRCjttqsG87OIrPUB" || priceId === "price_agency_annual") {
-    plan = "agency";
-  }
+  const plan = getPlanFromPriceId(priceId || "");
 
   await updateUserPlan(userId, plan);
-  logStep("Plan updated", { plan });
+  logStep("Plan updated", { plan, priceId });
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
@@ -215,19 +238,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
   const priceId = subscription.items.data[0]?.price?.id;
   
-  let plan = "free";
-  let credits = 0;
-
-  if (priceId === "price_1RY11AIoRCjttqsGnCkZYtxU" || priceId === "price_starter_annual") {
-    plan = "starter";
-    credits = PLAN_CREDITS.starter;
-  } else if (priceId === "price_1RY11AIoRCjttqsGjwsmBp1E" || priceId === "price_pro_annual") {
-    plan = "pro";
-    credits = PLAN_CREDITS.pro;
-  } else if (priceId === "price_1RY11AIoRCjttqsG87OIrPUB" || priceId === "price_agency_annual") {
-    plan = "agency";
-    credits = PLAN_CREDITS.agency;
-  }
+  const plan = getPlanFromPriceId(priceId || "");
+  const credits = PLAN_CREDITS[plan] || 0;
 
   if (credits > 0) {
     await grantCredits(userId, credits, `Monthly ${plan} plan credits`, "subscription_renewal");
