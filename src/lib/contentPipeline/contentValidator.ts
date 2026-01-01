@@ -4,7 +4,7 @@
 import { ContentValidationResult, ContentValidationIssue, BusinessBrief } from './types';
 
 // Absolutely banned phrases - NEVER should appear
-const BANNED_PHRASES = [
+export const BANNED_PHRASES = [
   // Generic placeholders
   'welcome to our website',
   'discover what we have to offer',
@@ -20,7 +20,7 @@ const BANNED_PHRASES = [
   'insert text',
   'placeholder',
 
-  // Tech/SaaS phrases for non-tech
+  // Generic tech/SaaS phrases for non-tech businesses
   'fast & reliable',
   'fast and reliable',
   'built for speed',
@@ -33,8 +33,8 @@ const BANNED_PHRASES = [
   'sla',
   'ownership & export',
   'code ownership',
-
-  // Banned CTAs
+  
+  // Banned generic CTAs
   'start free trial',
   'contact sales',
   'get demo',
@@ -42,12 +42,17 @@ const BANNED_PHRASES = [
   'get started',
   'explore',
   'discover',
+  'lets work together',
+  "let's work together",
+  'ready to get started',
   
   // Meta/builder references
   'excellion',
   'website builder',
   'ai builder',
   'powered by',
+  'built with',
+  'made with',
 
   // Generic quality claims without substance
   'top quality',
@@ -58,6 +63,28 @@ const BANNED_PHRASES = [
   'state-of-the-art',
   'next-generation',
   'revolutionary',
+  'game-changing',
+  'innovative solutions',
+  'synergy',
+  'leverage',
+  'optimize your workflow',
+  
+  // Generic testimonials/reviews
+  'amazing service',
+  'great experience',
+  'highly recommend',
+  'john d.',
+  'jane s.',
+  'satisfied customer',
+  'happy client',
+  
+  // Empty/stub content
+  'coming soon',
+  'under construction',
+  'stay tuned',
+  'check back later',
+  'sample text',
+  'example text',
 ];
 
 // Phrases that are fine for SaaS but banned for other industries

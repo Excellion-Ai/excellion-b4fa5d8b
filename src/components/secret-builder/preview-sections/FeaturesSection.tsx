@@ -12,11 +12,13 @@ import {
   Shirt, Diamond, Flower2, Gem, Home, Bed, Sofa, Bath, Trees,
   Monitor, Code, Cpu, Wifi, Database, Cloud, Globe,
   Plane, MapPin, Compass, Ship, Train, GraduationCap, BookOpen, Pencil,
-  Lock, ShieldCheck, Fingerprint, Phone, Mail, MessageCircle, Send
+  Lock, ShieldCheck, Fingerprint, Phone, Mail, MessageCircle, Send,
+  RefreshCw, Calendar, CreditCard, Tag, Smartphone, TrendingUp, Download, PieChart
 } from 'lucide-react';
 import { EditableText } from '../EditableText';
 import { EditableElement } from '../EditableElement';
 import { ScrollAnimation, StaggerContainer } from '../animations/ScrollAnimations';
+import { SetupRequiredCard, isPlaceholderContent } from '../SetupRequiredCard';
 
 interface FeaturesSectionProps {
   section: SiteSection;
@@ -24,9 +26,10 @@ interface FeaturesSectionProps {
   asTile?: boolean;
   onUpdateContent?: (field: keyof FeaturesContent, value: string) => void;
   onUpdateItem?: (index: number, field: keyof FeatureItem, value: string) => void;
+  onGenerateContent?: () => void;
 }
 
-// 80+ industry-specific icons for dynamic feature rendering
+// 100+ industry-specific icons for dynamic feature rendering
 const iconComponents: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   // Core/Generic
   Zap, Shield, Clock, Star, Wrench, Heart, Users, Award, Target, Truck,
@@ -60,21 +63,58 @@ const iconComponents: Record<string, React.ComponentType<{ className?: string; s
   // Security
   Lock, ShieldCheck, Fingerprint,
   // Communication
-  Phone, Mail, MessageCircle, Send
+  Phone, Mail, MessageCircle, Send,
+  // Additional value prop icons
+  RefreshCw, Calendar, CreditCard, Tag, Smartphone, TrendingUp, Download, PieChart
 };
 
-// No default features - force AI to generate specific content
-// Empty array will signal a generation issue that needs to be fixed
-const defaultFeatures: FeatureItem[] = [];
+// Check if features contain banned generic content
+function hasBannedFeatureContent(items: FeatureItem[]): boolean {
+  const bannedTitles = [
+    'fast & reliable', 'secure', '24/7 support', 'top quality',
+    'feature 1', 'feature 2', 'service 1', 'service 2',
+  ];
+  
+  for (const item of items) {
+    const title = (item.title || '').toLowerCase();
+    if (bannedTitles.some(banned => title.includes(banned))) {
+      return true;
+    }
+  }
+  return false;
+}
 
-export function FeaturesSection({ section, theme, asTile = false, onUpdateContent, onUpdateItem }: FeaturesSectionProps) {
+export function FeaturesSection({ section, theme, asTile = false, onUpdateContent, onUpdateItem, onGenerateContent }: FeaturesSectionProps) {
   const content = section.content as FeaturesContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   const { intensity, hasMicroEffect } = useMotionProfile();
   
   const title = content?.title || section.label || 'What We Offer';
   const subtitle = content?.subtitle || section.description || '';
-  const items = content?.items?.length ? content.items : defaultFeatures;
+  const items = content?.items?.length ? content.items : [];
+  
+  // Check if content is empty, placeholder, or has banned phrases
+  const isEmpty = items.length === 0;
+  const hasPlaceholder = items.some(item => isPlaceholderContent(item.title) || isPlaceholderContent(item.description));
+  const hasBanned = hasBannedFeatureContent(items);
+  const needsSetup = isEmpty || hasPlaceholder || hasBanned;
+
+  // If content needs setup, show the setup card
+  if (needsSetup && !asTile) {
+    return (
+      <section 
+        id={section.id}
+        className="py-10 md:py-14 px-6 w-full min-h-[300px] contain-layout flex items-center justify-center"
+        style={{ backgroundColor: isDark ? '#0a0a0a' : '#f9fafb' }}
+      >
+        <SetupRequiredCard 
+          type="features"
+          sectionLabel={title !== 'What We Offer' ? title : undefined}
+          onGenerate={onGenerateContent}
+        />
+      </section>
+    );
+  }
 
   // Ensure even number of items for symmetry
   const displayItems = items.length % 2 !== 0 ? items.slice(0, items.length - 1) : items;
