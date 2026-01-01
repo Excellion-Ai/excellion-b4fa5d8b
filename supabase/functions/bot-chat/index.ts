@@ -807,6 +807,30 @@ Once you detect the industry, USE THESE EXACT TEMPLATES for content generation:
 - **Testimonials Context**: Lives changed, community impact, welcoming atmosphere, transparency
 - **Theme**: primaryColor: "#7c3aed" (purple), secondaryColor: "#f59e0b" (gold)
 
+### SPECIALTY RETAIL / HOBBY SHOPS (Lighters, Cigars, Collectibles, Antiques, Comics, etc.)
+- **Headlines**: "Curated Collections for Connoisseurs", "Your Destination for [Product]", "Quality You Can Trust", "Rare Finds, Expert Service"
+- **CTAs**: "Browse Collection", "Visit Our Store", "Shop Now", "Get Directions", "Call Us", "View Inventory"
+- **Features/Services**:
+  - "Expert Curation" - "Hand-selected items from around the world"
+  - "Authentic Products" - "100% genuine, verified quality"
+  - "Knowledgeable Staff" - "Passionate experts ready to help"
+  - "Wide Selection" - "From everyday essentials to rare collectibles"
+  - "Trade-In Welcome" - "Upgrade your collection with us"
+  - "Gift Wrapping" - "Perfect presents for any occasion"
+- **FAQs**: "What brands do you carry?", "Do you buy/trade items?", "Do you ship orders?", "Do you offer gift cards?", "What are your store hours?", "Do you have layaway?"
+- **Testimonials Context**: Product quality, knowledgeable staff, unique finds, fair prices
+- **Theme**: primaryColor: "#78350f" (warm brown), secondaryColor: "#f59e0b" (gold)
+- **NEVER USE**: "Start Free Trial", "Contact Sales", "Get Demo", "99.9% uptime", "Ownership & Export"
+
+### CATCH-ALL: ANY PHYSICAL STORE OR SERVICE NOT LISTED ABOVE
+For ANY business not explicitly listed, follow these rules:
+- **CTAs MUST be physical-world appropriate**: "Visit Us", "Call Now", "Get Quote", "Book Appointment", "Shop Now", "Get Directions"
+- **NEVER USE SaaS CTAs**: "Start Free Trial", "Contact Sales", "Get Demo", "Sign Up", "Create Account"
+- **FAQs MUST be about the actual business**: Store hours, payment methods, shipping, returns, warranties, service areas
+- **NEVER USE tech FAQs**: Code ownership, uptime, SLA, export, hosting, support tiers
+- **Features MUST describe the product/service**: Quality, selection, expertise, convenience, value
+- **NEVER USE tech features**: Speed, security, scalability, reliability, data protection
+
 ====================================
 ## 2B. AI-GENERATED IMAGES (NO STOCK PHOTOS)
 ====================================
@@ -858,6 +882,38 @@ EXAMPLE hero section for Tony's Pizza:
 ====================================
 ## 3. THE "NO-GO" ZONE (STRICT CONSTRAINTS)
 ====================================
+
+**🚨 ABSOLUTE #1 RULE - THINK LIKE THE BUSINESS OWNER 🚨**
+Before writing ANY content (CTAs, FAQs, features), ask yourself:
+"Would the owner of a [BUSINESS TYPE] actually say this to a customer?"
+
+A lighter shop owner would say: "Browse our collection", "Visit our store"
+A lighter shop owner would NEVER say: "Start Free Trial", "Contact Sales"
+
+**BANNED SAAS/TECH CTAS (NEVER USE FOR PHYSICAL BUSINESSES):**
+[❌ BANNED]: "Start Free Trial" - Only SaaS companies offer trials
+[❌ BANNED]: "Contact Sales" - Only enterprise B2B uses this
+[❌ BANNED]: "Get Demo" - Only software companies demo products
+[❌ BANNED]: "Sign Up" / "Create Account" - Only for apps/platforms
+[❌ BANNED]: "Get Started" - Too generic, doesn't match physical stores
+
+**CORRECT CTAs BY BUSINESS TYPE:**
+- Physical Store: "Visit Us", "Shop Now", "Browse Collection", "Get Directions", "Call Us"
+- Restaurant: "View Menu", "Make Reservation", "Order Online", "Order Delivery"
+- Service Business: "Get Quote", "Book Appointment", "Schedule Service", "Call Now"
+- Professional: "Free Consultation", "Schedule Meeting", "Contact Us"
+
+**BANNED TECH/SAAS FAQS (NEVER USE FOR NON-TECH):**
+[❌ BANNED]: "Ownership & Export" / "You own 100% of your code"
+[❌ BANNED]: "Security & Uptime" / "99.9% uptime SLA"
+[❌ BANNED]: "Support Response" / "Priority support"
+[❌ BANNED]: Any mention of code, hosting, API, enterprise, SLA
+
+**BANNED TECH/SAAS FEATURES (NEVER USE FOR NON-TECH):**
+[❌ BANNED]: "Fast & Reliable" / "Built for speed"
+[❌ BANNED]: "Secure" / "Data protected"
+[❌ BANNED]: "Scalable" / "Grows with your business"
+[❌ BANNED]: Any mention of uptime, performance, infrastructure
 
 You are strictly FORBIDDEN from generating these patterns:
 
