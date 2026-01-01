@@ -928,6 +928,34 @@ CRITICAL: Generate ONLY pages that make sense for the business. Most small busin
 ❌ WRONG: Home, Shop, Product, Pricing (law firms don't have shopping carts)
 
 ====================================
+## 3C. INDUSTRY-SPECIFIC CONTENT (NO GENERIC TECH COPY)
+====================================
+
+CRITICAL: Feature cards, value propositions, and CTAs MUST match the actual business type.
+
+**NEVER USE THESE GENERIC PHRASES FOR NON-TECH BUSINESSES:**
+❌ "Fast & Reliable" / "Built for speed and performance"
+❌ "Secure" / "Your data is always protected"
+❌ "Scalable" / "Grows with your business"
+❌ "24/7 Uptime" / "Always available"
+
+**INDUSTRY-APPROPRIATE FEATURES:**
+
+| Business Type | Good Features | Bad Features (Don't Use) |
+|--------------|---------------|--------------------------|
+| Lighter Shop | Premium Quality, Wide Selection, Expert Knowledge, Authentic Brands | Fast, Secure, Scalable, Data Protected |
+| Restaurant | Fresh Ingredients, Family Recipes, Cozy Atmosphere, Local Sourcing | Fast & Reliable, 24/7 Uptime, Secure |
+| Law Firm | Experienced Attorneys, Proven Results, Personal Attention, Free Consultation | Fast, Scalable, Data Protected |
+| Plumber | Licensed & Insured, Same-Day Service, Honest Pricing, Local Family Owned | Fast API, Secure, 24/7 Uptime |
+| Salon | Skilled Stylists, Relaxing Atmosphere, Premium Products, Personalized Care | Reliable, Secure, Scalable |
+| Photography | Creative Vision, Professional Equipment, Quick Turnaround, Custom Packages | Fast, Secure, Data Protected |
+
+**RULE: Read the business type, then generate features that someone in THAT industry would actually say to customers.**
+
+A lighter shop owner would say: "Handcrafted quality" / "Rare collectibles" / "Expert advice"
+A lighter shop owner would NEVER say: "Built for speed" / "Your data is protected"
+
+====================================
 ## 4. ARCHITECTURAL VARIETY PROTOCOL - LAYOUT SELECTION
 ====================================
 
