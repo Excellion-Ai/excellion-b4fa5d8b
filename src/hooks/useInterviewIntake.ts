@@ -98,7 +98,7 @@ export const OFFER_SUGGESTIONS: Record<WebsiteType, string[]> = {
   saas: ['Start free trial', 'Book a demo', 'Integrations', 'Pricing', 'Security'],
   coaching: ['Free consultation', '1-on-1 coaching', 'Group sessions', 'Course access', 'Testimonials'],
   event: ['Buy tickets', 'View schedule', 'VIP access', 'Location info', 'Contact organizer'],
-  other: ['Fast turnaround', 'Friendly support', 'Guaranteed quality', 'Custom solutions', 'Get started today'],
+  other: ['Request a quote', 'View our work', 'About us', 'Contact us', 'Our services'],
 };
 
 export const COLOR_THEME_PRESETS: Record<Exclude<ColorThemePreset, 'custom'>, { 

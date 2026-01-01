@@ -78,7 +78,7 @@ export function CustomSection({ section, theme }: CustomSectionProps) {
               color: isDarkMode ? '#9ca3af' : '#6b7280'
             }}
           >
-            {section.description || content?.body || 'Custom section content goes here.'}
+            {section.description || content?.body || ''}
           </p>
         </ScrollAnimation>
       </div>

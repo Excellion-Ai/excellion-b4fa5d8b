@@ -73,7 +73,7 @@ const INDUSTRY_HERO_TEMPLATES: Record<string, Record<string, { headline: string;
   },
   'saas': {
     '/': { headline: 'The Smarter Way to Work', subheadline: 'Powerful tools that help your team do more.' },
-    '/features': { headline: 'Features', subheadline: 'Everything you need to succeed.' },
+    '/features': { headline: 'Platform Features', subheadline: 'Built for modern teams and workflows.' },
     '/pricing': { headline: 'Simple Pricing', subheadline: 'Plans that grow with your business.' },
     '/contact': { headline: 'Get in Touch', subheadline: 'Questions? We\'re here to help.' },
   },
