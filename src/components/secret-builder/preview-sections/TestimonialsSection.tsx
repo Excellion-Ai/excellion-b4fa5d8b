@@ -5,6 +5,7 @@ import { ScrollAnimation } from '../animations/ScrollAnimations';
 import { EditableText } from '../EditableText';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { SetupRequiredCard } from '../SetupRequiredCard';
 
 interface TestimonialsSectionProps {
   section: SiteSection;
@@ -13,42 +14,42 @@ interface TestimonialsSectionProps {
   onUpdateItem?: (index: number, field: keyof TestimonialItem, value: string) => void;
 }
 
-const templateTestimonials: TestimonialItem[] = [
-  { 
-    name: 'Customer Name', 
-    role: 'Your Client',
-    quote: 'Add your customer review here. Connect Google Reviews to display real feedback from your customers.',
-    rating: 5
-  },
-  { 
-    name: 'Happy Customer', 
-    role: 'Verified Buyer',
-    quote: 'Your testimonial goes here. Replace this with a real review from Google, Yelp, or another review platform.',
-    rating: 5
-  },
-  { 
-    name: 'Your Client', 
-    role: 'Satisfied Customer',
-    quote: 'Click to edit this placeholder. Import real reviews to build trust with potential customers.',
-    rating: 5
-  },
-];
-
 export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateItem }: TestimonialsSectionProps) {
   const content = section.content as TestimonialsContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
-  const title = content?.title || section.label || 'What Our Customers Say';
-  const subtitle = content?.subtitle || section.description || 'Trusted by thousands of happy customers';
-  const items = content?.items || templateTestimonials;
+  const title = content?.title || '';
+  const subtitle = content?.subtitle || '';
+  const items = content?.items || [];
 
-  const isTemplateContent = items.some(item => 
-    item.name === 'Customer Name' || 
-    item.name === 'Happy Customer' || 
-    item.name === 'Your Client' ||
-    item.quote.includes('Add your customer review') ||
-    item.quote.includes('Your testimonial goes here')
-  );
+  // If no testimonials exist, show SetupRequiredCard
+  if (items.length === 0) {
+    return (
+      <section 
+        id={section.id}
+        className="py-10 md:py-14 px-4 md:px-8 w-full min-h-[300px] contain-layout"
+        style={{ 
+          backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
+        }}
+      >
+        <SetupRequiredCard 
+          type="testimonials"
+          sectionLabel={section.label || 'Customer Reviews'}
+          onGenerate={() => {
+            toast.info('Generate testimonials via the chat panel', {
+              description: 'Ask the AI to "add customer testimonials" to generate reviews for your business.',
+            });
+          }}
+          onManualAdd={() => {
+            toast.info('Connect Google Reviews', {
+              description: 'To import real reviews, visit your Google Business Profile and copy your reviews, or use a reviews widget service.',
+              duration: 8000,
+            });
+          }}
+        />
+      </section>
+    );
+  }
 
   const handleConnectGoogleReviews = () => {
     toast.info('Google Reviews Integration', {
@@ -70,7 +71,7 @@ export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateI
           <ScrollAnimation animation="fade-up">
             {onUpdateContent ? (
               <EditableText
-                value={title}
+                value={title || 'What Our Customers Say'}
                 onSave={(val) => onUpdateContent('title', val)}
                 as="h2"
                 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
@@ -87,14 +88,14 @@ export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateI
                   color: isDark ? '#ffffff' : '#111827'
                 }}
               >
-                {title}
+                {title || 'What Our Customers Say'}
               </h2>
             )}
           </ScrollAnimation>
           <ScrollAnimation animation="fade-up" delay={100}>
             {onUpdateContent ? (
               <EditableText
-                value={subtitle}
+                value={subtitle || 'Real feedback from real customers'}
                 onSave={(val) => onUpdateContent('subtitle', val)}
                 as="p"
                 className="text-base md:text-lg max-w-2xl mx-auto px-4"
@@ -111,28 +112,26 @@ export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateI
                   color: isDark ? '#9ca3af' : '#6b7280'
                 }}
               >
-                {subtitle}
+                {subtitle || 'Real feedback from real customers'}
               </p>
             )}
           </ScrollAnimation>
           
-          {isTemplateContent && (
-            <ScrollAnimation animation="fade-up" delay={150}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleConnectGoogleReviews}
-                className="mt-4 gap-2"
-                style={{
-                  borderColor: theme.primaryColor,
-                  color: theme.primaryColor,
-                }}
-              >
-                <ExternalLink className="w-4 h-4" />
-                Connect Google Reviews
-              </Button>
-            </ScrollAnimation>
-          )}
+          <ScrollAnimation animation="fade-up" delay={150}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleConnectGoogleReviews}
+              className="mt-4 gap-2"
+              style={{
+                borderColor: theme.primaryColor,
+                color: theme.primaryColor,
+              }}
+            >
+              <ExternalLink className="w-4 h-4" />
+              Connect Google Reviews
+            </Button>
+          </ScrollAnimation>
         </div>
         
         <div 

@@ -18,138 +18,33 @@ export interface ValuePropsTemplate {
 // Intent-based value prop templates
 export const VALUE_PROPS_BY_INTENT: Record<BusinessIntent, ValuePropsTemplate> = {
   product_store: {
-    title: 'Why Shop With Us',
-    subtitle: 'Quality products and exceptional service',
-    items: [
-      {
-        title: 'Curated Selection',
-        description: 'Hand-picked products that meet our high quality standards',
-        icon: 'Diamond',
-      },
-      {
-        title: 'Easy Returns',
-        description: 'Hassle-free 30-day return policy on all orders',
-        icon: 'RefreshCw',
-      },
-      {
-        title: 'Fast Shipping',
-        description: 'Most orders ship within 24 hours',
-        icon: 'Truck',
-      },
-      {
-        title: 'Secure Checkout',
-        description: 'Your payment information is always protected',
-        icon: 'ShieldCheck',
-      },
-    ],
+    title: '', // Empty - must be populated by AI or triggers SetupRequiredCard
+    subtitle: '',
+    items: [], // Empty - forces AI generation or SetupRequiredCard display
   },
   
   service_business: {
-    title: 'Why Choose Us',
-    subtitle: 'Trusted by homeowners and businesses',
-    items: [
-      {
-        title: 'Licensed & Insured',
-        description: 'Fully bonded professionals you can trust with your property',
-        icon: 'ShieldCheck',
-      },
-      {
-        title: 'Free Estimates',
-        description: 'Transparent pricing with no hidden fees or surprises',
-        icon: 'Calculator',
-      },
-      {
-        title: 'Satisfaction Guaranteed',
-        description: 'We stand behind our work with a 100% satisfaction guarantee',
-        icon: 'Award',
-      },
-      {
-        title: 'Local & Reliable',
-        description: 'Family-owned business serving our community',
-        icon: 'Home',
-      },
-    ],
+    title: '', // Empty - must be populated by AI or triggers SetupRequiredCard
+    subtitle: '',
+    items: [], // Empty - forces AI generation or SetupRequiredCard display
   },
   
   booking_business: {
-    title: 'The Experience',
-    subtitle: 'What makes us different',
-    items: [
-      {
-        title: 'Easy Online Booking',
-        description: 'Schedule your appointment in seconds, 24/7',
-        icon: 'Calendar',
-      },
-      {
-        title: 'Expert Staff',
-        description: 'Trained professionals dedicated to your satisfaction',
-        icon: 'Users',
-      },
-      {
-        title: 'Flexible Scheduling',
-        description: 'Convenient hours including evenings and weekends',
-        icon: 'Clock',
-      },
-      {
-        title: 'Personalized Service',
-        description: 'Tailored experiences based on your preferences',
-        icon: 'Heart',
-      },
-    ],
+    title: '', // Empty - must be populated by AI or triggers SetupRequiredCard
+    subtitle: '',
+    items: [], // Empty - forces AI generation or SetupRequiredCard display
   },
   
   saas: {
-    title: 'Why Teams Choose Us',
-    subtitle: 'Built for modern workflows',
-    items: [
-      {
-        title: 'Instant Setup',
-        description: 'Get started in minutes with no complex configuration',
-        icon: 'Zap',
-      },
-      {
-        title: 'Powerful Integrations',
-        description: 'Connect with the tools you already use',
-        icon: 'Plug',
-      },
-      {
-        title: 'Real-time Collaboration',
-        description: 'Work together seamlessly with your team',
-        icon: 'Users',
-      },
-      {
-        title: 'Enterprise Security',
-        description: 'SOC 2 compliant with bank-level encryption',
-        icon: 'Shield',
-      },
-    ],
+    title: '', // Empty - must be populated by AI or triggers SetupRequiredCard
+    subtitle: '',
+    items: [], // Empty - forces AI generation or SetupRequiredCard display
   },
   
   portfolio: {
-    title: 'My Approach',
-    subtitle: 'What sets my work apart',
-    items: [
-      {
-        title: 'Creative Vision',
-        description: 'Unique perspective that brings your ideas to life',
-        icon: 'Sparkles',
-      },
-      {
-        title: 'Attention to Detail',
-        description: 'Every project receives meticulous care and precision',
-        icon: 'Eye',
-      },
-      {
-        title: 'Collaborative Process',
-        description: 'Your input shapes the final result at every stage',
-        icon: 'MessageCircle',
-      },
-      {
-        title: 'Timely Delivery',
-        description: 'Reliable deadlines without compromising quality',
-        icon: 'Clock',
-      },
-    ],
+    title: '', // Empty - must be populated by AI or triggers SetupRequiredCard
+    subtitle: '',
+    items: [], // Empty - forces AI generation or SetupRequiredCard display
   },
 };
 
