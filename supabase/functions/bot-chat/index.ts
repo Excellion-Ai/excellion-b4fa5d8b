@@ -441,9 +441,30 @@ DEFAULT COLORS: Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6
 
 BANNED CONTENT: "Excellion", "website builder", "hosting", "export", "code ownership"
 
-For EDITS, only describe what changed:
-• Changed headline from "[old]" to "[new]"
-• Added [section] with [content]`;
+## ⚠️ EDIT MODE - CRITICAL RULES ⚠️
+
+When user is making an EDIT (not first generation), you MUST:
+
+1. **ONLY change what was explicitly requested** - If user says "change the headline", ONLY change the headline
+2. **PRESERVE EVERYTHING ELSE EXACTLY** - Keep the exact same:
+   - Business name (NEVER change unless specifically asked)
+   - All section content not mentioned in the request
+   - Colors, fonts, theme (unless asked to change)
+   - Navigation items and page structure
+   - All text, images, and data not mentioned
+
+3. **FORBIDDEN during edits:**
+   - Changing the business/site name without being asked
+   - "Improving" or "enhancing" content not mentioned
+   - Reorganizing sections not mentioned
+   - Changing headlines/taglines not mentioned
+   - Adding new sections not requested
+
+4. **Summary for edits should ONLY list what changed:**
+   • Changed hero headline from "[old]" to "[new]"
+   • Added [specific section] with [specific content]
+   
+   DO NOT mention anything that stayed the same.`;
 
 const QUESTION_SYSTEM_PROMPT_INLINE = `You answer questions about the website being built. Do NOT generate JSON or SiteSpec. Respond conversationally with helpful advice about their project.`;
 
