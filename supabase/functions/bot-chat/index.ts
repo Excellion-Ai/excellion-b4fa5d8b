@@ -7,12 +7,21 @@ const corsHeaders = {
 };
 
 // ============= CONTENT PIPELINE: Types =============
-type BusinessIntent = 'product_store' | 'service_business' | 'booking_business' | 'saas' | 'portfolio';
+type BusinessIntent = 'product_store' | 'service_business' | 'booking_business' | 'saas' | 'portfolio' | 'nonprofit';
+
+type NicheCategory = 
+  | 'jewelry_store' | 'clothing_boutique' | 'home_goods' | 'electronics'
+  | 'fitness_gym' | 'yoga_studio' | 'salon' | 'spa' | 'restaurant' | 'bakery' | 'cafe'
+  | 'plumber' | 'electrician' | 'hvac' | 'roofing' | 'landscaping' | 'cleaning' | 'auto_detailing' | 'pressure_washing'
+  | 'law_firm' | 'accounting' | 'dental' | 'medical' | 'real_estate'
+  | 'photography' | 'design_agency' | 'freelancer' | 'consultant'
+  | 'saas_tool' | 'nonprofit_org' | 'dispensary' | 'pet_services' | 'general';
 
 type BusinessBrief = {
   businessName: string | null;
   intent: BusinessIntent;
   industry: string;
+  nicheCategory: NicheCategory;
   location: { city?: string; state?: string; country?: string } | null;
   offerings: string[];
   differentiators: string[];
@@ -37,6 +46,337 @@ type SitePlan = {
   footerLinks: Array<{ label: string; href: string }>;
   hasCart: boolean;
 };
+
+// ============= PATTERN PACK SYSTEM =============
+type PatternPack = {
+  id: string;
+  label: string;
+  intent: BusinessIntent;
+  nicheCategory?: NicheCategory;
+  pages: string[];
+  sectionOrder: string[];
+  ctaHints: { primary: string[]; secondary: string[] };
+  trustSignals: string[];
+  warnings: string[];
+};
+
+// Condensed Pattern Pack library (30+ packs)
+const PATTERN_PACKS: Record<string, PatternPack> = {
+  // Product Stores
+  jewelry_store: {
+    id: 'jewelry_store', label: 'Jewelry Store', intent: 'product_store', nicheCategory: 'jewelry_store',
+    pages: ['/', '/collection', '/about', '/contact'],
+    sectionOrder: ['hero', 'features', 'gallery', 'testimonials', 'cta', 'contact'],
+    ctaHints: { primary: ['Browse Collection', 'Shop Now', 'View Pieces'], secondary: ['Visit Store', 'Custom Orders'] },
+    trustSignals: ['Certified Jeweler', 'Lifetime Warranty', 'Free Sizing', 'GIA Certified'],
+    warnings: ['Never use SaaS pricing tiers', 'Never mention subscriptions']
+  },
+  clothing_boutique: {
+    id: 'clothing_boutique', label: 'Clothing Boutique', intent: 'product_store', nicheCategory: 'clothing_boutique',
+    pages: ['/', '/shop', '/about', '/contact'],
+    sectionOrder: ['hero', 'features', 'gallery', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Shop Now', 'Browse Collection', 'New Arrivals'], secondary: ['Visit Store', 'Style Guide'] },
+    trustSignals: ['Free Shipping', 'Easy Returns', 'Curated Selection', 'Sustainable Fashion'],
+    warnings: ['No tech terminology']
+  },
+  dispensary: {
+    id: 'dispensary', label: 'Cannabis Dispensary', intent: 'product_store', nicheCategory: 'dispensary',
+    pages: ['/', '/menu', '/about', '/contact'],
+    sectionOrder: ['hero', 'features', 'gallery', 'faq', 'contact'],
+    ctaHints: { primary: ['View Menu', 'Browse Products', 'Shop Now'], secondary: ['Visit Store', 'Deals'] },
+    trustSignals: ['Licensed Dispensary', 'Lab Tested', 'Expert Budtenders', 'Loyalty Program'],
+    warnings: ['Include age verification disclaimer', 'Follow local regulations']
+  },
+  // Booking Businesses
+  fitness_gym: {
+    id: 'fitness_gym', label: 'Fitness Gym', intent: 'booking_business', nicheCategory: 'fitness_gym',
+    pages: ['/', '/classes', '/trainers', '/pricing', '/contact'],
+    sectionOrder: ['hero', 'features', 'pricing', 'team', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Join Now', 'Start Free Trial', 'Book Class'], secondary: ['View Schedule', 'Tour Facility'] },
+    trustSignals: ['Certified Trainers', 'Modern Equipment', 'Flexible Hours', 'First Week Free'],
+    warnings: []
+  },
+  yoga_studio: {
+    id: 'yoga_studio', label: 'Yoga Studio', intent: 'booking_business', nicheCategory: 'yoga_studio',
+    pages: ['/', '/classes', '/instructors', '/pricing', '/contact'],
+    sectionOrder: ['hero', 'features', 'pricing', 'team', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Book Class', 'View Schedule', 'Try Free Class'], secondary: ['Meet Instructors', 'Pricing'] },
+    trustSignals: ['Certified Instructors', 'All Levels Welcome', 'Private Sessions', 'Workshops'],
+    warnings: []
+  },
+  salon: {
+    id: 'salon', label: 'Hair Salon / Spa', intent: 'booking_business', nicheCategory: 'salon',
+    pages: ['/', '/services', '/team', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'team', 'gallery', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Book Appointment', 'Schedule Now', 'View Services'], secondary: ['Meet Team', 'Gallery'] },
+    trustSignals: ['Licensed Stylists', 'Premium Products', 'Relaxing Atmosphere', 'Online Booking'],
+    warnings: []
+  },
+  spa: {
+    id: 'spa', label: 'Day Spa', intent: 'booking_business', nicheCategory: 'spa',
+    pages: ['/', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'features', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Book Treatment', 'Reserve Now', 'View Spa Menu'], secondary: ['Gift Cards', 'Packages'] },
+    trustSignals: ['Licensed Therapists', 'Organic Products', 'Serene Environment', 'Couples Treatments'],
+    warnings: []
+  },
+  restaurant: {
+    id: 'restaurant', label: 'Restaurant', intent: 'booking_business', nicheCategory: 'restaurant',
+    pages: ['/', '/menu', '/about', '/contact'],
+    sectionOrder: ['hero', 'features', 'gallery', 'testimonials', 'cta', 'contact'],
+    ctaHints: { primary: ['View Menu', 'Reserve Table', 'Order Now'], secondary: ['Private Events', 'Catering'] },
+    trustSignals: ['Fresh Ingredients', 'Award-Winning Chef', 'Local Favorite', 'Private Dining'],
+    warnings: ['No SaaS pricing']
+  },
+  bakery: {
+    id: 'bakery', label: 'Bakery / Cafe', intent: 'booking_business', nicheCategory: 'bakery',
+    pages: ['/', '/menu', '/about', '/contact'],
+    sectionOrder: ['hero', 'features', 'gallery', 'testimonials', 'cta'],
+    ctaHints: { primary: ['View Menu', 'Order Now', 'Custom Orders'], secondary: ['Visit Us', 'Catering'] },
+    trustSignals: ['Baked Fresh Daily', 'Family Recipes', 'Local Ingredients', 'Custom Cakes'],
+    warnings: []
+  },
+  dental: {
+    id: 'dental', label: 'Dental Practice', intent: 'booking_business', nicheCategory: 'dental',
+    pages: ['/', '/services', '/team', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'team', 'testimonials', 'faq', 'cta'],
+    ctaHints: { primary: ['Book Appointment', 'Schedule Visit', 'Request Appointment'], secondary: ['Meet Our Team', 'New Patients'] },
+    trustSignals: ['Modern Technology', 'Gentle Care', 'Insurance Accepted', 'Family Friendly'],
+    warnings: []
+  },
+  medical: {
+    id: 'medical', label: 'Medical Practice', intent: 'booking_business', nicheCategory: 'medical',
+    pages: ['/', '/services', '/providers', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'team', 'testimonials', 'faq', 'cta'],
+    ctaHints: { primary: ['Book Appointment', 'Schedule Visit', 'Patient Portal'], secondary: ['Our Providers', 'New Patients'] },
+    trustSignals: ['Board Certified', 'Accepting New Patients', 'Insurance Accepted', 'Telehealth Available'],
+    warnings: ['HIPAA compliance language']
+  },
+  // Service Businesses
+  plumber: {
+    id: 'plumber', label: 'Plumbing Service', intent: 'service_business', nicheCategory: 'plumber',
+    pages: ['/', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'features', 'testimonials', 'cta', 'contact'],
+    ctaHints: { primary: ['Get Free Quote', 'Call Now', 'Request Service'], secondary: ['View Services', 'Emergency Service'] },
+    trustSignals: ['Licensed & Insured', '24/7 Emergency', 'Free Estimates', 'Satisfaction Guaranteed'],
+    warnings: ['Never use SaaS/tech terminology', 'Use plumbing imagery only']
+  },
+  electrician: {
+    id: 'electrician', label: 'Electrical Service', intent: 'service_business', nicheCategory: 'electrician',
+    pages: ['/', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'features', 'testimonials', 'cta', 'contact'],
+    ctaHints: { primary: ['Get Free Quote', 'Call Now', 'Request Service'], secondary: ['View Services', 'Emergency Service'] },
+    trustSignals: ['Licensed & Insured', '24/7 Emergency', 'Free Estimates', 'Code Compliant'],
+    warnings: ['Never use plumbing imagery']
+  },
+  hvac: {
+    id: 'hvac', label: 'HVAC Service', intent: 'service_business', nicheCategory: 'hvac',
+    pages: ['/', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'features', 'testimonials', 'cta', 'contact'],
+    ctaHints: { primary: ['Get Free Quote', 'Schedule Service', 'Call Now'], secondary: ['View Services', 'Maintenance Plans'] },
+    trustSignals: ['Licensed & Insured', 'NATE Certified', 'Free Estimates', 'Financing Available'],
+    warnings: []
+  },
+  roofing: {
+    id: 'roofing', label: 'Roofing Company', intent: 'service_business', nicheCategory: 'roofing',
+    pages: ['/', '/services', '/gallery', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'gallery', 'testimonials', 'cta', 'contact'],
+    ctaHints: { primary: ['Get Free Estimate', 'Call Now', 'Request Inspection'], secondary: ['View Work', 'Financing'] },
+    trustSignals: ['Licensed & Insured', 'Free Inspections', 'Storm Damage Experts', 'Warranty Included'],
+    warnings: []
+  },
+  landscaping: {
+    id: 'landscaping', label: 'Landscaping Service', intent: 'service_business', nicheCategory: 'landscaping',
+    pages: ['/', '/services', '/gallery', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'gallery', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Get Free Quote', 'Schedule Consultation', 'View Services'], secondary: ['See Our Work', 'Design Services'] },
+    trustSignals: ['Licensed & Insured', 'Free Estimates', 'Award-Winning Designs', 'Weekly Maintenance'],
+    warnings: []
+  },
+  cleaning: {
+    id: 'cleaning', label: 'Cleaning Service', intent: 'service_business', nicheCategory: 'cleaning',
+    pages: ['/', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'features', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Get Free Quote', 'Book Cleaning', 'Schedule Service'], secondary: ['View Services', 'Pricing'] },
+    trustSignals: ['Insured & Bonded', 'Background Checked', 'Eco-Friendly', 'Satisfaction Guaranteed'],
+    warnings: []
+  },
+  auto_detailing: {
+    id: 'auto_detailing', label: 'Auto Detailing', intent: 'service_business', nicheCategory: 'auto_detailing',
+    pages: ['/', '/services', '/gallery', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'gallery', 'pricing', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Book Detail', 'Get Quote', 'Schedule Now'], secondary: ['View Services', 'Packages'] },
+    trustSignals: ['Mobile Service', 'Premium Products', 'Satisfaction Guaranteed', 'Ceramic Coating'],
+    warnings: []
+  },
+  pressure_washing: {
+    id: 'pressure_washing', label: 'Pressure Washing', intent: 'service_business', nicheCategory: 'pressure_washing',
+    pages: ['/', '/services', '/gallery', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'gallery', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Get Free Quote', 'Schedule Service', 'Call Now'], secondary: ['View Work', 'Services'] },
+    trustSignals: ['Fully Insured', 'Free Estimates', 'Same-Day Service', 'Eco-Friendly'],
+    warnings: ['Never use tech terminology']
+  },
+  // Professional Services
+  law_firm: {
+    id: 'law_firm', label: 'Law Firm', intent: 'service_business', nicheCategory: 'law_firm',
+    pages: ['/', '/practice-areas', '/attorneys', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'team', 'stats', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Free Consultation', 'Schedule Consultation', 'Call Now'], secondary: ['Practice Areas', 'Meet Our Team'] },
+    trustSignals: ['Decades of Experience', 'Millions Recovered', 'Free Consultations', 'No Fee Unless You Win'],
+    warnings: ['Must comply with bar advertising rules', 'Avoid guarantees']
+  },
+  accounting: {
+    id: 'accounting', label: 'Accounting / CPA', intent: 'service_business', nicheCategory: 'accounting',
+    pages: ['/', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'features', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Free Consultation', 'Schedule Meeting', 'Get Started'], secondary: ['View Services', 'Tax Resources'] },
+    trustSignals: ['CPA Certified', 'Decades of Experience', 'Personalized Service', 'Year-Round Support'],
+    warnings: []
+  },
+  real_estate: {
+    id: 'real_estate', label: 'Real Estate Agent', intent: 'service_business', nicheCategory: 'real_estate',
+    pages: ['/', '/listings', '/about', '/contact'],
+    sectionOrder: ['hero', 'features', 'gallery', 'testimonials', 'cta', 'contact'],
+    ctaHints: { primary: ['View Listings', 'Schedule Showing', 'Free Home Valuation'], secondary: ['Buyer Guide', 'Seller Guide'] },
+    trustSignals: ['Top Producer', 'Local Expert', 'Free Home Valuation', 'Personalized Service'],
+    warnings: []
+  },
+  // Portfolio & Creative
+  photography: {
+    id: 'photography', label: 'Photography', intent: 'portfolio', nicheCategory: 'photography',
+    pages: ['/', '/portfolio', '/about', '/contact'],
+    sectionOrder: ['hero', 'gallery', 'services', 'testimonials', 'cta'],
+    ctaHints: { primary: ['View Portfolio', 'Book Session', 'Get Quote'], secondary: ['About Me', 'Services'] },
+    trustSignals: ['Award-Winning', 'Published Work', 'Custom Packages', 'Quick Turnaround'],
+    warnings: []
+  },
+  design_agency: {
+    id: 'design_agency', label: 'Design Agency', intent: 'portfolio', nicheCategory: 'design_agency',
+    pages: ['/', '/work', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'portfolio', 'services', 'team', 'testimonials', 'cta'],
+    ctaHints: { primary: ['View Work', 'Start Project', 'Get Quote'], secondary: ['Our Process', 'Services'] },
+    trustSignals: ['Award-Winning', 'Strategic Approach', 'Full-Service', 'Results-Driven'],
+    warnings: []
+  },
+  freelancer: {
+    id: 'freelancer', label: 'Freelancer / Consultant', intent: 'portfolio', nicheCategory: 'freelancer',
+    pages: ['/', '/work', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'portfolio', 'testimonials', 'cta'],
+    ctaHints: { primary: ['View Work', 'Hire Me', 'Get in Touch'], secondary: ['Services', 'About'] },
+    trustSignals: ['Years of Experience', 'Proven Results', 'Flexible Availability', 'Direct Communication'],
+    warnings: []
+  },
+  // SaaS
+  saas_tool: {
+    id: 'saas_tool', label: 'SaaS Product', intent: 'saas', nicheCategory: 'saas_tool',
+    pages: ['/', '/features', '/pricing', '/about', '/contact'],
+    sectionOrder: ['hero', 'features', 'pricing', 'testimonials', 'faq', 'cta'],
+    ctaHints: { primary: ['Start Free Trial', 'Get Started', 'Try Free'], secondary: ['See Pricing', 'Book Demo'] },
+    trustSignals: ['Trusted by 1000+ Teams', 'Enterprise Security', '99.9% Uptime', 'Free Trial'],
+    warnings: []
+  },
+  // Nonprofit
+  nonprofit_org: {
+    id: 'nonprofit_org', label: 'Nonprofit Organization', intent: 'nonprofit', nicheCategory: 'nonprofit_org',
+    pages: ['/', '/mission', '/programs', '/about', '/contact'],
+    sectionOrder: ['hero', 'features', 'stats', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Donate Now', 'Get Involved', 'Join Us'], secondary: ['Our Mission', 'Volunteer'] },
+    trustSignals: ['501(c)(3) Status', 'Transparent Impact', 'Community Focused', 'Volunteer-Driven'],
+    warnings: []
+  },
+  pet_services: {
+    id: 'pet_services', label: 'Pet Services', intent: 'booking_business', nicheCategory: 'pet_services',
+    pages: ['/', '/services', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'features', 'testimonials', 'cta'],
+    ctaHints: { primary: ['Book Appointment', 'View Services', 'Schedule Now'], secondary: ['Meet Team', 'Gallery'] },
+    trustSignals: ['Certified Staff', 'Safe Environment', 'Pet First Aid', 'Webcam Access'],
+    warnings: []
+  },
+};
+
+// Default packs by intent
+const DEFAULT_PACKS: Record<BusinessIntent, string> = {
+  product_store: 'jewelry_store',
+  service_business: 'plumber',
+  booking_business: 'restaurant',
+  saas: 'saas_tool',
+  portfolio: 'photography',
+  nonprofit: 'nonprofit_org',
+};
+
+// Map industry to niche category
+function industryToNicheCategory(industry: string): NicheCategory {
+  const mapping: Record<string, NicheCategory> = {
+    plumbing: 'plumber', hvac: 'hvac', electrical: 'electrician', electrician: 'electrician',
+    landscaping: 'landscaping', cleaning: 'cleaning', pressure_washing: 'pressure_washing',
+    auto_detailing: 'auto_detailing', restaurant: 'restaurant', bakery: 'bakery', cafe: 'cafe',
+    salon: 'salon', spa: 'spa', dental: 'dental', medical: 'medical', law: 'law_firm',
+    accounting: 'accounting', real_estate: 'real_estate', fitness: 'fitness_gym', yoga: 'yoga_studio',
+    photography: 'photography', dispensary: 'dispensary', lighter_shop: 'jewelry_store',
+    jewelry: 'jewelry_store', clothing: 'clothing_boutique', saas: 'saas_tool',
+    roofing: 'roofing', pet_services: 'pet_services',
+  };
+  return mapping[industry] || 'general';
+}
+
+// Get best pattern pack for a business
+function getPatternPack(brief: BusinessBrief): PatternPack {
+  // Try exact niche match first
+  const nicheCategory = brief.nicheCategory || industryToNicheCategory(brief.industry);
+  if (PATTERN_PACKS[nicheCategory]) {
+    return PATTERN_PACKS[nicheCategory];
+  }
+  
+  // Fall back to intent default
+  const defaultPackId = DEFAULT_PACKS[brief.intent];
+  if (PATTERN_PACKS[defaultPackId]) {
+    return PATTERN_PACKS[defaultPackId];
+  }
+  
+  // Ultimate fallback
+  return PATTERN_PACKS['plumber'];
+}
+
+// Generate prompt injection from pattern pack
+function generatePatternPackPrompt(pack: PatternPack, brief: BusinessBrief): string {
+  return `
+====================================
+## PATTERN PACK: ${pack.label} (${pack.id})
+====================================
+
+**BUSINESS TYPE:** ${pack.intent.replace(/_/g, ' ').toUpperCase()}
+${pack.nicheCategory ? `**NICHE:** ${pack.nicheCategory.replace(/_/g, ' ')}` : ''}
+
+**RECOMMENDED PAGE STRUCTURE:**
+${pack.pages.map(p => `- ${p}`).join('\n')}
+
+**SECTION ORDER (follow this for home page):**
+${pack.sectionOrder.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+
+**CTA PATTERNS (use these exact phrases):**
+Primary CTAs: ${pack.ctaHints.primary.join(', ')}
+Secondary CTAs: ${pack.ctaHints.secondary.join(', ')}
+
+**TRUST SIGNALS (include 2-3 of these):**
+${pack.trustSignals.map(t => `✓ ${t}`).join('\n')}
+
+${pack.warnings.length > 0 ? `**⚠️ WARNINGS:**\n${pack.warnings.map(w => `- ${w}`).join('\n')}` : ''}
+
+**BUSINESS CONTEXT:**
+- Name: ${brief.businessName || '[Generate appropriate name]'}
+- Industry: ${brief.industry.replace(/_/g, ' ')}
+- Location: ${brief.location?.city || 'Not specified'}
+- Offerings: ${brief.offerings.length > 0 ? brief.offerings.join(', ') : 'Generate industry-specific offerings'}
+- Primary Goal: ${brief.primaryGoal}
+- Primary CTA: ${brief.primaryCTA}
+
+====================================
+CRITICAL: Generate content SPECIFIC to this ${pack.label} business.
+Use the CTA patterns above. Include trust signals. Follow section order.
+====================================
+`;
+}
 
 // ============= CONTENT PIPELINE: Banned Phrases =============
 const BANNED_PHRASES_LIST = [
@@ -204,6 +544,7 @@ function extractBusinessBrief(prompt: string): BusinessBrief {
     booking_business: 'bookings',
     saas: 'signups',
     portfolio: 'leads',
+    nonprofit: 'donations',
   };
   
   // Determine primary CTA based on intent
@@ -213,6 +554,7 @@ function extractBusinessBrief(prompt: string): BusinessBrief {
     booking_business: 'Book Now',
     saas: 'Start Free Trial',
     portfolio: 'View Work',
+    nonprofit: 'Donate Now',
   };
   
   // Refine CTA based on specific industry
@@ -246,13 +588,14 @@ function extractBusinessBrief(prompt: string): BusinessBrief {
     businessName,
     intent,
     industry,
+    nicheCategory: industryToNicheCategory(industry),
     location,
     offerings: offerings.length > 0 ? offerings : inferOfferingsFromIndustry(industry),
     differentiators: inferDifferentiators(industry, intent),
     tone: inferTone(intent, industry),
     primaryGoal: goalMap[intent],
     primaryCTA,
-    secondaryCTA: intent === 'saas' ? 'See Pricing' : (intent === 'service_business' ? 'Call Now' : null),
+    secondaryCTA: intent === 'saas' ? 'See Pricing' : (intent === 'service_business' ? 'Call Now' : (intent === 'nonprofit' ? 'Get Involved' : null)),
     needsEcommerce,
     needsBooking,
     needsPoliciesPage,
@@ -2575,10 +2918,12 @@ ${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.
     console.log(`[BOT-CHAT:${requestId}] ${messageIntent.toUpperCase()} MODE - Generating SiteSpec`);
     
     // ============= CONTENT PIPELINE INTEGRATION =============
-    // Extract business brief and generate site plan from user prompt
+    // Extract business brief, select pattern pack, and generate site plan from user prompt
     let contentPipelinePrompt = "";
+    let patternPackPrompt = "";
     let businessBrief: BusinessBrief | null = null;
     let sitePlan: SitePlan | null = null;
+    let selectedPack: PatternPack | null = null;
     
     if (messageIntent === 'generation') {
       console.log(`[BOT-CHAT:${requestId}] Running content pipeline...`);
@@ -2587,11 +2932,23 @@ ${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.
         businessBrief = extractBusinessBrief(lastUserMessageText);
         console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Business Intent: ${businessBrief.intent}`);
         console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Industry: ${businessBrief.industry}`);
+        console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Niche Category: ${businessBrief.nicheCategory}`);
         console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Name: ${businessBrief.businessName || 'Not specified'}`);
         console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Needs E-commerce: ${businessBrief.needsEcommerce}`);
         console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Needs Booking: ${businessBrief.needsBooking}`);
         console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Primary CTA: ${businessBrief.primaryCTA}`);
         console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Offerings: ${businessBrief.offerings.join(', ')}`);
+        
+        // Select Pattern Pack based on business brief
+        selectedPack = getPatternPack(businessBrief);
+        console.log(`[BOT-CHAT:${requestId}] [PATTERN PACK] Selected: ${selectedPack.id} (${selectedPack.label})`);
+        console.log(`[BOT-CHAT:${requestId}] [PATTERN PACK] Pages: ${selectedPack.pages.join(', ')}`);
+        console.log(`[BOT-CHAT:${requestId}] [PATTERN PACK] Section Order: ${selectedPack.sectionOrder.join(', ')}`);
+        console.log(`[BOT-CHAT:${requestId}] [PATTERN PACK] Primary CTAs: ${selectedPack.ctaHints.primary.join(', ')}`);
+        
+        // Generate Pattern Pack prompt injection
+        patternPackPrompt = generatePatternPackPrompt(selectedPack, businessBrief);
+        console.log(`[BOT-CHAT:${requestId}] [PATTERN PACK] Generated prompt injection (${patternPackPrompt.length} chars)`);
         
         sitePlan = generateSitePlan(businessBrief);
         console.log(`[BOT-CHAT:${requestId}] [PIPELINE] Site Plan: ${sitePlan.pages.length} pages`);
@@ -2631,7 +2988,13 @@ ${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.
     // Select base prompt based on mode
     let enhancedPrompt = isFastMode ? FAST_SYSTEM_PROMPT : SYSTEM_PROMPT;
     
-    // Add CONTENT PIPELINE prompt FIRST (highest priority for generation)
+    // Add PATTERN PACK prompt FIRST (highest priority - niche-specific structure)
+    if (patternPackPrompt) {
+      enhancedPrompt = patternPackPrompt + "\n\n" + enhancedPrompt;
+      console.log(`[BOT-CHAT:${requestId}] Pattern pack prompt prepended`);
+    }
+    
+    // Add CONTENT PIPELINE prompt (business brief + site plan)
     if (contentPipelinePrompt) {
       enhancedPrompt = contentPipelinePrompt + "\n\n" + enhancedPrompt;
       console.log(`[BOT-CHAT:${requestId}] Content pipeline prompt prepended`);
