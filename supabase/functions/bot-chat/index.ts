@@ -887,6 +887,47 @@ You are strictly FORBIDDEN from generating these patterns:
 *If you generate fake reviews with fake names - the output is a FAILURE.*
 
 ====================================
+## 3B. SMART PAGE SELECTION (DON'T OVER-GENERATE)
+====================================
+
+CRITICAL: Generate ONLY pages that make sense for the business. Most small businesses need 3-5 pages MAX.
+
+**DEFAULT PAGES FOR MOST BUSINESSES:**
+- Home (always)
+- About (optional but common)
+- Services/What We Do (for service businesses)
+- Contact (always)
+
+**DO NOT GENERATE THESE UNLESS EXPLICITLY REQUESTED:**
+- Shop/Product/Cart/Checkout pages → Only for explicit e-commerce businesses
+- Policies/Legal pages → Put these in FOOTER ONLY, never in main navigation
+- Multiple service sub-pages → Unless specifically requested
+
+**PAGE SELECTION BY BUSINESS TYPE:**
+
+| Business Type | Essential Pages | Optional | NEVER Include |
+|--------------|-----------------|----------|---------------|
+| Local Store (lighter shop, gift shop) | Home, About, Contact | Gallery | Shop, Product, Cart, Checkout |
+| Restaurant/Cafe | Home, Menu, About, Contact | Reservations | Shop, Product |
+| Service Provider (plumber, lawyer) | Home, Services, About, Contact | Testimonials page | Shop, Product, Cart |
+| E-commerce (online store) | Home, Shop, Product, Cart | About | - |
+| Portfolio (artist, photographer) | Home, Portfolio, About, Contact | Services | Shop, Cart |
+
+**NAVIGATION RULES:**
+1. Main nav: 4-5 links MAX (Home + 3-4 key pages)
+2. Legal/Policies: FOOTER LINKS ONLY - never main navigation
+3. Utility pages (Cart, Checkout): Only if e-commerce
+4. About/Contact: Can combine if business is simple
+
+**EXAMPLE - A Physical Lighter Shop:**
+✅ CORRECT: Home, About, Contact (maybe Gallery for collection)
+❌ WRONG: Home, Shop, Product, Cart, Checkout, Policies (overkill for physical store)
+
+**EXAMPLE - A Law Firm:**
+✅ CORRECT: Home, Practice Areas, About, Contact
+❌ WRONG: Home, Shop, Product, Pricing (law firms don't have shopping carts)
+
+====================================
 ## 4. ARCHITECTURAL VARIETY PROTOCOL - LAYOUT SELECTION
 ====================================
 
