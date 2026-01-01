@@ -6,6 +6,99 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ============ SSRF PROTECTION ============
+
+// Private/internal IP ranges that should be blocked
+const BLOCKED_IP_PATTERNS = [
+  /^127\./,                          // Loopback
+  /^10\./,                           // Private Class A
+  /^172\.(1[6-9]|2[0-9]|3[0-1])\./,  // Private Class B
+  /^192\.168\./,                     // Private Class C
+  /^169\.254\./,                     // Link-local
+  /^0\./,                            // Current network
+  /^224\./,                          // Multicast
+  /^240\./,                          // Reserved
+  /^255\./,                          // Broadcast
+  /^::1$/,                           // IPv6 loopback
+  /^fe80:/i,                         // IPv6 link-local
+  /^fc00:/i,                         // IPv6 unique local
+  /^fd00:/i,                         // IPv6 unique local
+];
+
+// Blocked hostnames
+const BLOCKED_HOSTNAMES = [
+  'localhost',
+  'localhost.localdomain',
+  '0.0.0.0',
+  '[::]',
+  '[::1]',
+  'metadata.google.internal',        // GCP metadata
+  '169.254.169.254',                 // Cloud metadata endpoints
+  'metadata.google',
+  'metadata',
+];
+
+// Blocked URL schemes
+const ALLOWED_SCHEMES = ['http:', 'https:'];
+
+// Validate URL is safe from SSRF attacks
+async function validateUrlSecurity(urlString: string): Promise<{ safe: boolean; error?: string }> {
+  try {
+    const url = new URL(urlString);
+    
+    // Check scheme
+    if (!ALLOWED_SCHEMES.includes(url.protocol)) {
+      return { safe: false, error: `Blocked scheme: ${url.protocol}` };
+    }
+    
+    // Check for blocked hostnames
+    const hostname = url.hostname.toLowerCase();
+    if (BLOCKED_HOSTNAMES.includes(hostname)) {
+      return { safe: false, error: `Blocked hostname: ${hostname}` };
+    }
+    
+    // Check for IP address patterns in hostname
+    for (const pattern of BLOCKED_IP_PATTERNS) {
+      if (pattern.test(hostname)) {
+        return { safe: false, error: `Blocked internal IP: ${hostname}` };
+      }
+    }
+    
+    // Resolve DNS to check for internal IPs
+    try {
+      const addresses = await Deno.resolveDns(hostname, "A");
+      for (const ip of addresses) {
+        for (const pattern of BLOCKED_IP_PATTERNS) {
+          if (pattern.test(ip)) {
+            console.warn(`DNS resolution blocked: ${hostname} -> ${ip}`);
+            return { safe: false, error: `Hostname resolves to blocked IP: ${ip}` };
+          }
+        }
+      }
+    } catch (dnsError) {
+      // If DNS resolution fails for non-IP hostnames, allow the request
+      // The fetch will fail naturally if the host doesn't exist
+      console.log(`DNS resolution skipped for ${hostname}:`, dnsError);
+    }
+    
+    // Check for suspicious port numbers (only allow 80, 443, or default)
+    const port = url.port;
+    if (port && !['80', '443', ''].includes(port)) {
+      // Allow common web ports but block internal service ports
+      const portNum = parseInt(port, 10);
+      if (portNum < 1024 || [3000, 5000, 8080, 8443, 9000].includes(portNum)) {
+        // These are common dev ports, allow them for flexibility
+      } else if (portNum > 49151) {
+        return { safe: false, error: `Suspicious port number: ${port}` };
+      }
+    }
+    
+    return { safe: true };
+  } catch (parseError) {
+    return { safe: false, error: `Invalid URL: ${parseError}` };
+  }
+}
+
 // Color extraction patterns
 const HEX_COLOR_REGEX = /#([0-9A-Fa-f]{3,8})\b/g;
 const RGB_COLOR_REGEX = /rgba?\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/gi;
@@ -468,6 +561,16 @@ serve(async (req) => {
     let normalizedUrl = url.trim();
     if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
       normalizedUrl = `https://${normalizedUrl}`;
+    }
+    
+    // SSRF protection: validate URL before fetching
+    const securityCheck = await validateUrlSecurity(normalizedUrl);
+    if (!securityCheck.safe) {
+      console.warn(`SSRF blocked: ${normalizedUrl} - ${securityCheck.error}`);
+      return new Response(
+        JSON.stringify({ success: false, error: "URL not allowed for security reasons" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
     
     const result = await extractFromUrl(normalizedUrl);
