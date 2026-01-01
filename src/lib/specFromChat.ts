@@ -196,10 +196,10 @@ function generateSectionContent(
       };
     case 'cta':
       return {
-        headline: 'Ready to Get Started?',
-        subheadline: 'Take the next step today',
+        headline: 'Let\'s Work Together',
+        subheadline: 'We\'re here to help. Reach out today.',
         ctas: [
-          { label: archetype.ctaRules.primary, href: '#contact', variant: 'primary' },
+          { label: archetype.ctaRules.primary || 'Contact Us', href: '#contact', variant: 'primary' },
         ],
       };
     case 'stats':
