@@ -272,6 +272,97 @@ setInterval(() => {
   }
 }, 60000);
 
+// Detect if user message is a question vs generation/edit request
+function detectMessageIntent(message: string): 'question' | 'generation' | 'edit' {
+  const lowerMsg = message.toLowerCase().trim();
+  
+  // Question indicators (asking for advice/information, not action)
+  const questionPatterns = [
+    /^(what|how|why|when|where|which|who|should|would|could|can|is|are|do|does|will)\s/i,
+    /\?$/,
+    /^tell me (about|more)/i,
+    /^explain/i,
+    /^describe/i,
+    /^suggest/i,
+    /^recommend/i,
+    /^help me (understand|decide|choose|figure out)/i,
+    /^i('m| am) (wondering|curious|thinking|not sure)/i,
+    /what (should|would|could) (i|we|the site|this)/i,
+    /how (should|would|could|do|does)/i,
+    /any (suggestions|recommendations|ideas|tips)/i,
+    /best (way|practice|approach|option)/i,
+  ];
+  
+  // Generation indicators (creating something new)
+  const generationPatterns = [
+    /^(build|create|make|generate|design|construct)\s/i,
+    /^(i need|i want|give me)\s+(a |an )?(website|site|page|landing)/i,
+    /^(here's|here is)\s+(my|the|a)\s+(idea|prompt|request)/i,
+    /website (for|about)/i,
+    /landing page/i,
+    /^(saas|restaurant|law firm|dental|medical|fitness|salon|construction)/i,
+  ];
+  
+  // Edit indicators (modifying existing)
+  const editPatterns = [
+    /^(add|change|update|modify|replace|remove|delete|fix|adjust|tweak)/i,
+    /^(make|turn)\s+(the|it|this)/i,
+    /^(can you|please|could you)\s+(add|change|update|modify|remove|fix)/i,
+    /(bigger|smaller|larger|different|another|new)\s+(color|font|image|section|text)/i,
+  ];
+  
+  // Check for generation first (usually the initial request)
+  for (const pattern of generationPatterns) {
+    if (pattern.test(lowerMsg)) {
+      return 'generation';
+    }
+  }
+  
+  // Then check for edits
+  for (const pattern of editPatterns) {
+    if (pattern.test(lowerMsg)) {
+      return 'edit';
+    }
+  }
+  
+  // Finally check for questions
+  for (const pattern of questionPatterns) {
+    if (pattern.test(lowerMsg)) {
+      return 'question';
+    }
+  }
+  
+  // Default: if short message with no clear intent, likely generation
+  // If longer message without generation keywords, might be a question
+  if (lowerMsg.length > 100 && !lowerMsg.includes('website') && !lowerMsg.includes('site')) {
+    return 'question';
+  }
+  
+  return 'generation';
+}
+
+// Conversational system prompt for answering questions (not generating sites)
+const QUESTION_SYSTEM_PROMPT = `You are a helpful website building assistant for the Excellion Builder. 
+
+Your role is to ANSWER QUESTIONS and provide guidance - NOT to generate websites. The user is asking you a question about their website project, features, or options.
+
+IMPORTANT:
+- Respond conversationally with helpful advice
+- Do NOT output any JSON or SiteSpec
+- Do NOT generate or modify the website
+- Keep responses concise and actionable (2-4 paragraphs max)
+- If the user seems to want to make changes, ask clarifying questions or suggest they phrase it as a request (e.g., "Would you like me to add a pricing section with these plans?")
+
+You have access to knowledge about:
+- Website design best practices
+- Industry-specific recommendations
+- Pricing strategies and subscription models
+- Stripe integration and payment flows
+- E-commerce and booking functionality
+- SEO and conversion optimization
+
+Be friendly, helpful, and specific to their industry/use case when possible.`;
+
 // Extract color specifications from user prompt
 function extractColorsFromPrompt(prompt: string): { primary?: string; accent?: string; backgroundMode?: 'dark' | 'light' } | null {
   // Look for hex colors specified in the prompt
@@ -1358,20 +1449,77 @@ ${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.
       console.log(`[BOT-CHAT:${requestId}] Skipping project knowledge fetch (no projectId)`);
     }
 
-    // Check for URLs - SKIP in fast mode for speed (reduces 5+ seconds)
+    // Get the last user message for intent detection
     const lastUserMessage = [...messages].reverse().find((m: any) => m.role === "user");
-    let urlContext = "";
-    
-    if (!isFastMode && lastUserMessage?.content) {
-      let textContent = "";
+    let lastUserMessageText = "";
+    if (lastUserMessage?.content) {
       if (typeof lastUserMessage.content === "string") {
-        textContent = lastUserMessage.content;
+        lastUserMessageText = lastUserMessage.content;
       } else if (Array.isArray(lastUserMessage.content)) {
         const textPart = lastUserMessage.content.find((part: any) => part.type === "text");
-        textContent = textPart?.text || "";
+        lastUserMessageText = textPart?.text || "";
+      }
+    }
+    
+    // Detect intent: question, generation, or edit
+    const messageIntent = detectMessageIntent(lastUserMessageText);
+    console.log(`[BOT-CHAT:${requestId}] Intent detected: ${messageIntent} for message: "${lastUserMessageText.slice(0, 60)}..."`);
+    
+    // QUESTION MODE: If user is asking a question, respond conversationally (no SiteSpec)
+    if (messageIntent === 'question') {
+      console.log(`[BOT-CHAT:${requestId}] QUESTION MODE - Responding conversationally`);
+      
+      // Build conversational prompt with knowledge
+      let questionPrompt = QUESTION_SYSTEM_PROMPT;
+      if (knowledgeContext) {
+        questionPrompt += `\n\n## KNOWLEDGE BASE (Use this to answer questions)\n${knowledgeContext}`;
+      }
+      if (context?.businessName || context?.industry) {
+        questionPrompt += `\n\nCurrent Project Context:`;
+        if (context.businessName) questionPrompt += `\n- Business Name: ${context.businessName}`;
+        if (context.industry) questionPrompt += `\n- Industry: ${context.industry}`;
       }
       
-      const urls = textContent.match(URL_REGEX);
+      const questionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: "system", content: questionPrompt },
+            ...messages,
+          ],
+          stream: true,
+          max_tokens: 1500,
+        }),
+      });
+      
+      if (!questionResponse.ok) {
+        const errorText = await questionResponse.text();
+        console.error(`[BOT-CHAT:${requestId}] Question mode AI error: ${questionResponse.status}`, errorText);
+        return new Response(JSON.stringify({ error: "AI service error" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      console.log(`[BOT-CHAT:${requestId}] QUESTION MODE - Streaming response`);
+      return new Response(questionResponse.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+    
+    // GENERATION/EDIT MODE: Continue with normal SiteSpec generation
+    console.log(`[BOT-CHAT:${requestId}] ${messageIntent.toUpperCase()} MODE - Generating SiteSpec`);
+    
+    // Check for URLs - SKIP in fast mode for speed (reduces 5+ seconds)
+    let urlContext = "";
+    
+    if (!isFastMode && lastUserMessageText) {
+      const urls = lastUserMessageText.match(URL_REGEX);
       if (urls && urls.length > 0) {
         console.log(`[BOT-CHAT:${requestId}] Found URL, extracting (2s timeout): ${urls[0]}`);
         const extractionPromise = extractFromUrl(urls[0]);
