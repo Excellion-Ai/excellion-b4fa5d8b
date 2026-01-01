@@ -193,7 +193,7 @@ export function ImageLibraryDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
             <div className="flex items-center justify-between">
               <DialogTitle className="flex items-center gap-2">
@@ -309,7 +309,7 @@ export function ImageLibraryDialog({
             )}
           </DialogHeader>
 
-          <ScrollArea className="flex-1 px-6 py-4 max-h-[65vh] scrollbar-always-visible" scrollbarVariant="purple">
+          <ScrollArea className="flex-1 min-h-0 px-6 py-4 overflow-y-auto" scrollbarVariant="purple">
             {isLoading ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
