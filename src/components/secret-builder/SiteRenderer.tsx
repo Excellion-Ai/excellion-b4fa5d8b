@@ -47,10 +47,13 @@ import { ScrollAnimation, StaggerContainer } from './animations/ScrollAnimations
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
+export type RenderMode = 'preview' | 'editor';
+
 interface SiteRendererProps {
   siteSpec: SiteSpec | null;
   pageIndex?: number;
   isLoading: boolean;
+  renderMode?: RenderMode;
   onUpdateHeroContent?: (sectionId: string, field: keyof HeroContent, value: string) => void;
   onUpdateFeaturesContent?: (sectionId: string, field: keyof FeaturesContent, value: string) => void;
   onUpdateFeatureItem?: (sectionId: string, index: number, field: keyof FeatureItem, value: string) => void;
@@ -99,6 +102,7 @@ export function SiteRenderer({
   siteSpec, 
   pageIndex = 0,
   isLoading,
+  renderMode = 'preview',
   onUpdateHeroContent,
   onUpdateFeaturesContent,
   onUpdateFeatureItem,
@@ -222,7 +226,7 @@ export function SiteRenderer({
   const renderSection = (section: SiteSection, asTile: boolean = false) => {
     const key = section.id;
     const legacySection = toLegacySection(section);
-    const commonProps = { section: legacySection, theme: legacyTheme, asTile };
+    const commonProps = { section: legacySection, theme: legacyTheme, asTile, renderMode };
 
     let sectionContent;
     switch (section.type) {

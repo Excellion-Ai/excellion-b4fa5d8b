@@ -21,6 +21,7 @@ const FORBIDDEN_BY_CATEGORY: Record<NicheCategory, string[]> = {
   nonprofit: ['add to cart', 'checkout', 'book appointment', 'pricing tiers', 'buy now'],
   portfolio: ['add to cart', 'order now', 'donate', 'reserve table', 'curriculum'],
   community: ['order food', 'get estimate', 'view listings', 'test drive', 'browse inventory'],
+  fitness: ['add to cart', 'order food', 'view listings', 'curriculum', 'checkout cart'],
 };
 
 // Required persona keywords per category
@@ -37,6 +38,7 @@ const REQUIRED_KEYWORDS: Record<NicheCategory, string[]> = {
   nonprofit: ['impact', 'mission', 'donate', 'support', 'community'],
   portfolio: ['work', 'project', 'creative', 'design', 'portfolio'],
   community: ['join', 'member', 'community', 'connect', 'belong'],
+  fitness: ['gym', 'fitness', 'class', 'train', 'workout', 'member', 'strong'],
 };
 
 // Generic phrases that indicate low-quality generation

@@ -6,24 +6,36 @@ import { EditableText } from '../EditableText';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { SetupRequiredCard } from '../SetupRequiredCard';
+import type { RenderMode } from '../SiteRenderer';
 
 interface TestimonialsSectionProps {
   section: SiteSection;
   theme: SiteTheme;
+  renderMode?: RenderMode;
   onUpdateContent?: (field: keyof TestimonialsContent, value: string) => void;
   onUpdateItem?: (index: number, field: keyof TestimonialItem, value: string) => void;
 }
 
-export function TestimonialsSection({ section, theme, onUpdateContent, onUpdateItem }: TestimonialsSectionProps) {
+// Preview-mode fallback testimonials
+const PREVIEW_FALLBACK_TESTIMONIALS: TestimonialItem[] = [
+  { name: 'Sarah M.', role: 'Verified Customer', quote: 'Absolutely fantastic experience! The team went above and beyond to deliver exactly what I needed. Highly recommend!', rating: 5 },
+  { name: 'James K.', role: 'Local Business Owner', quote: 'Professional, reliable, and great results. I\'ve been a repeat customer for over a year now.', rating: 5 },
+  { name: 'Maria L.', role: 'Happy Client', quote: 'The quality exceeded my expectations. Will definitely be coming back for more!', rating: 5 },
+];
+
+export function TestimonialsSection({ section, theme, renderMode = 'preview', onUpdateContent, onUpdateItem }: TestimonialsSectionProps) {
   const content = section.content as TestimonialsContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
   const title = content?.title || '';
   const subtitle = content?.subtitle || '';
-  const items = content?.items || [];
+  const rawItems = content?.items || [];
 
-  // If no testimonials exist, show SetupRequiredCard
-  if (items.length === 0) {
+  // In preview mode, use fallback content instead of SetupRequiredCard
+  const items = rawItems.length === 0 && renderMode === 'preview' ? PREVIEW_FALLBACK_TESTIMONIALS : rawItems;
+
+  // Only show SetupRequiredCard in editor mode when content is empty
+  if (rawItems.length === 0 && renderMode === 'editor') {
     return (
       <section 
         id={section.id}
