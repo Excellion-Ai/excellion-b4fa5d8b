@@ -2,10 +2,183 @@
 // Ensures complete first-draft rendering based on business intent
 
 import { PrimaryGoal } from './contentPipeline/types';
-import { PricingTier, CTAContent, FeatureItem, HeroVariant, FeaturesVariant } from '@/types/app-spec';
+import { PricingTier, CTAContent, FeatureItem, HeroVariant, FeaturesVariant, SiteSection } from '@/types/app-spec';
 import { NicheCategory, ConversionGoal } from './nicheRouter';
 
 export type BusinessIntent = 'booking_business' | 'service_business' | 'product_store' | 'saas' | 'nonprofit' | 'portfolio';
+
+// ====================================
+// STRICT INDUSTRY THEME MAP
+// Forces specific fonts, colors, and layouts by industry
+// ====================================
+
+export type IndustryType = 'professional' | 'creative' | 'service_contractor' | 'generic';
+
+export type IndustryThemeOverride = {
+  industry: IndustryType;
+  fontFamily: 'serif' | 'sans' | 'sans-bold';
+  primaryColor?: string;
+  heroVariant: HeroVariant;
+  featuresVariant: FeaturesVariant;
+  forceSections?: SiteSection['type'][];
+};
+
+// Strict theme overrides by industry
+export const INDUSTRY_THEME_MAP: Record<IndustryType, IndustryThemeOverride> = {
+  // Professional/Legal: Serif fonts, slate colors, conservative layouts
+  professional: {
+    industry: 'professional',
+    fontFamily: 'serif',
+    primaryColor: '#1e293b', // slate-800
+    heroVariant: 'centered',
+    featuresVariant: 'grid',
+  },
+  // Creative/Fashion: Bold sans, minimal impact hero
+  creative: {
+    industry: 'creative',
+    fontFamily: 'sans-bold',
+    heroVariant: 'glassmorphism',
+    featuresVariant: 'bento',
+  },
+  // Service/Contractor: Split layout, trust-focused
+  service_contractor: {
+    industry: 'service_contractor',
+    fontFamily: 'sans',
+    heroVariant: 'split',
+    featuresVariant: 'grid',
+    forceSections: ['testimonials'], // Force trust/reviews section
+  },
+  // Generic fallback
+  generic: {
+    industry: 'generic',
+    fontFamily: 'sans',
+    heroVariant: 'centered',
+    featuresVariant: 'grid',
+  },
+};
+
+// Keywords to detect industry type
+const PROFESSIONAL_KEYWORDS = [
+  'law', 'lawyer', 'attorney', 'legal', 'law firm',
+  'accountant', 'accounting', 'cpa', 'tax',
+  'consultant', 'consulting', 'advisory',
+  'financial', 'finance', 'wealth', 'investment',
+  'insurance', 'broker', 'mortgage',
+  'medical', 'doctor', 'physician', 'clinic', 'healthcare',
+  'corporate', 'executive', 'professional services',
+];
+
+const CREATIVE_KEYWORDS = [
+  'design', 'designer', 'creative', 'agency',
+  'fashion', 'boutique', 'clothing', 'apparel',
+  'photography', 'photographer', 'studio',
+  'art', 'artist', 'gallery',
+  'music', 'musician', 'producer',
+  'film', 'video', 'production',
+  'branding', 'brand', 'marketing agency',
+  'architecture', 'architect', 'interior design',
+];
+
+const SERVICE_CONTRACTOR_KEYWORDS = [
+  'plumber', 'plumbing', 'electrician', 'electrical',
+  'hvac', 'heating', 'cooling', 'air conditioning',
+  'contractor', 'construction', 'builder', 'roofing', 'roofer',
+  'landscaping', 'lawn', 'tree service',
+  'cleaning', 'maid', 'janitorial',
+  'pest control', 'exterminator',
+  'auto repair', 'mechanic', 'auto shop',
+  'handyman', 'home repair', 'renovation', 'remodeling',
+  'painting', 'painter', 'flooring',
+  'moving', 'movers', 'hauling',
+];
+
+// Detect industry type from input text
+export function detectIndustryType(input: string): IndustryType {
+  const lowerInput = input.toLowerCase();
+  
+  // Check professional keywords first (highest priority for conservative styling)
+  for (const keyword of PROFESSIONAL_KEYWORDS) {
+    if (lowerInput.includes(keyword)) {
+      return 'professional';
+    }
+  }
+  
+  // Check creative keywords
+  for (const keyword of CREATIVE_KEYWORDS) {
+    if (lowerInput.includes(keyword)) {
+      return 'creative';
+    }
+  }
+  
+  // Check service/contractor keywords
+  for (const keyword of SERVICE_CONTRACTOR_KEYWORDS) {
+    if (lowerInput.includes(keyword)) {
+      return 'service_contractor';
+    }
+  }
+  
+  return 'generic';
+}
+
+// Get theme override for an industry
+export function getIndustryTheme(input: string): IndustryThemeOverride {
+  const industry = detectIndustryType(input);
+  return INDUSTRY_THEME_MAP[industry];
+}
+
+// Apply theme to font family CSS
+export function getIndustryFontFamily(override: IndustryThemeOverride): { heading: string; body: string } {
+  switch (override.fontFamily) {
+    case 'serif':
+      return {
+        heading: 'Playfair Display, Georgia, serif',
+        body: 'Lora, Georgia, serif',
+      };
+    case 'sans-bold':
+      return {
+        heading: 'Inter, system-ui, sans-serif',
+        body: 'Inter, system-ui, sans-serif',
+      };
+    case 'sans':
+    default:
+      return {
+        heading: 'Inter, system-ui, sans-serif',
+        body: 'Inter, system-ui, sans-serif',
+      };
+  }
+}
+
+// Trust/Reviews section template for contractors
+export const TRUST_REVIEWS_SECTION: SiteSection = {
+  id: 'trust-reviews',
+  type: 'testimonials',
+  label: 'What Our Customers Say',
+  description: 'Real reviews from satisfied customers',
+  content: {
+    title: 'Trusted by Homeowners',
+    subtitle: '5-star reviews from real customers',
+    testimonials: [
+      {
+        quote: 'Fast, professional, and fairly priced. They showed up on time and fixed the problem right away.',
+        author: 'Sarah M.',
+        role: 'Homeowner',
+        rating: 5,
+      },
+      {
+        quote: 'I\'ve used them for years. Always reliable and they stand behind their work.',
+        author: 'Mike R.',
+        role: 'Repeat Customer',
+        rating: 5,
+      },
+      {
+        quote: 'Called with an emergency and they were there within the hour. Highly recommend!',
+        author: 'Jennifer K.',
+        role: 'Verified Customer',
+        rating: 5,
+      },
+    ],
+  },
+};
 
 // ====================================
 // NICHE-SPECIFIC CONTENT SCHEMAS
