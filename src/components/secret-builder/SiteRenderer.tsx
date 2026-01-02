@@ -37,6 +37,9 @@ import {
   ServicesSection,
   TeamSection,
   PortfolioSection,
+  BeforeAfterSection,
+  ProcessStepsSection,
+  LogoGridSection,
 } from './preview-sections';
 import { EditableText } from './EditableText';
 import { DraggableSection } from './DraggableSection';
@@ -331,6 +334,15 @@ export function SiteRenderer({
         break;
       case 'portfolio':
         sectionContent = <PortfolioSection {...commonProps} />;
+        break;
+      case 'before-after':
+        sectionContent = <BeforeAfterSection {...commonProps} />;
+        break;
+      case 'process-steps':
+        sectionContent = <ProcessStepsSection {...commonProps} />;
+        break;
+      case 'logo-grid':
+        sectionContent = <LogoGridSection {...commonProps} />;
         break;
       default:
         sectionContent = <CustomSection {...commonProps} />;

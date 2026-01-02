@@ -11,3 +11,6 @@ export { GallerySection } from './GallerySection';
 export { ServicesSection } from './ServicesSection';
 export { TeamSection } from './TeamSection';
 export { PortfolioSection } from './PortfolioSection';
+export { BeforeAfterSection } from './BeforeAfterSection';
+export { ProcessStepsSection } from './ProcessStepsSection';
+export { LogoGridSection } from './LogoGridSection';

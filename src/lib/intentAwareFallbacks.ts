@@ -324,3 +324,70 @@ export const PRICING_FINE_PRINT: Record<BusinessIntent, string> = {
   nonprofit: 'All donations are tax-deductible.',
   portfolio: 'Deposits secure your date. Flexible payment plans available.',
 };
+
+// Industry-specific pricing tier names
+export const INDUSTRY_PRICING_TIERS: Record<string, { names: string[]; period?: string }> = {
+  gym: { names: ['Drop-In', 'Monthly', 'Annual'], period: '/visit' },
+  fitness: { names: ['Drop-In', 'Monthly', 'Annual'], period: '/visit' },
+  yoga: { names: ['Single Class', 'Monthly Unlimited', 'Yearly'], period: '/class' },
+  salon: { names: ['Express', 'Signature', 'Luxe'] },
+  spa: { names: ['Escape', 'Revive', 'Ultimate'] },
+  contractor: { names: ['Basic', 'Standard', 'Full-Service'] },
+  plumber: { names: ['Service Call', 'Standard Repair', 'Complete Job'] },
+  electrician: { names: ['Diagnostic', 'Standard', 'Premium'] },
+  restaurant: { names: ['Lunch Special', 'Dinner', 'Private Dining'] },
+  bakery: { names: ['Single Item', 'Dozen', 'Custom Order'] },
+  photography: { names: ['Mini Session', 'Full Session', 'All-Day Coverage'] },
+  wedding_planner: { names: ['Day-Of Coordination', 'Partial Planning', 'Full Service'] },
+  veterinary: { names: ['Wellness Visit', 'Comprehensive Care', 'Premium Plan'] },
+  insurance: { names: ['Basic Coverage', 'Standard Protection', 'Premium Shield'] },
+  event_planner: { names: ['Consultation', 'Partial Planning', 'Full Production'] },
+};
+
+// Extended CTA variations by industry
+export const INDUSTRY_CTA_VARIATIONS: Record<string, { primary: string[]; secondary: string[] }> = {
+  plumber: {
+    primary: ['Get Free Quote', 'Call Now', 'Request Service', 'Emergency? Call Now'],
+    secondary: ['View Services', 'Service Areas', 'About Us'],
+  },
+  electrician: {
+    primary: ['Get Free Estimate', 'Call Now', 'Request Service', '24/7 Emergency'],
+    secondary: ['Our Services', 'See Our Work', 'Why Choose Us'],
+  },
+  hvac: {
+    primary: ['Schedule Service', 'Get Free Quote', 'Call Now'],
+    secondary: ['Maintenance Plans', 'Financing Options', 'Service Areas'],
+  },
+  restaurant: {
+    primary: ['View Menu', 'Reserve Table', 'Order Online', 'Call to Order'],
+    secondary: ['Private Events', 'Catering', 'Gift Cards'],
+  },
+  gym: {
+    primary: ['Join Now', 'Start Free Trial', 'Book a Tour'],
+    secondary: ['View Classes', 'Meet Trainers', 'See Pricing'],
+  },
+  salon: {
+    primary: ['Book Appointment', 'Schedule Now', 'Book Online'],
+    secondary: ['View Services', 'Meet Our Team', 'Gallery'],
+  },
+  wedding_planner: {
+    primary: ['Book Consultation', 'View Packages', 'Start Planning'],
+    secondary: ['Portfolio', 'About', 'Testimonials'],
+  },
+  general_contractor: {
+    primary: ['Get Free Estimate', 'Request Bid', 'Call Now'],
+    secondary: ['View Projects', 'Our Process', 'About Us'],
+  },
+  veterinary: {
+    primary: ['Book Appointment', 'Emergency? Call Now', 'New Patient Form'],
+    secondary: ['Our Services', 'Meet Our Team', 'Pet Resources'],
+  },
+  insurance: {
+    primary: ['Get Free Quote', 'Compare Plans', 'Call Agent'],
+    secondary: ['Coverage Options', 'About Us', 'File Claim'],
+  },
+  event_planner: {
+    primary: ['Plan Your Event', 'Get Quote', 'Schedule Consultation'],
+    secondary: ['Past Events', 'Services', 'About'],
+  },
+};

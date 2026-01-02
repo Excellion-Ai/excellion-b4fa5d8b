@@ -30,6 +30,9 @@ export type SectionType =
   | 'gallery'
   | 'services'
   | 'portfolio'
+  | 'before-after'
+  | 'process-steps'
+  | 'logo-grid'
   | 'custom';
 
 // Theme configuration
