@@ -117,6 +117,41 @@ export const CONTRACTOR_SCHEMA: NicheContentSchema = {
   secondaryCta: 'View Our Work',
 };
 
+// Ecommerce niche
+export const ECOMMERCE_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Shop the Latest Trends',
+  heroSubheadline: 'Discover curated products handpicked for you. Free shipping on orders over $50.',
+  heroVariant: 'split-image-right',
+  featuresTitle: 'Why Shop With Us',
+  featuresVariant: 'bento-box',
+  features: [
+    { icon: 'Package', title: 'Fast Shipping', description: 'Free delivery on orders over $50' },
+    { icon: 'RefreshCw', title: 'Easy Returns', description: '30-day hassle-free returns' },
+    { icon: 'Shield', title: 'Secure Checkout', description: 'Your payment info is always protected' },
+    { icon: 'Star', title: 'Top Quality', description: 'Every item inspected before shipping' },
+    { icon: 'Gift', title: 'Gift Wrapping', description: 'Beautiful packaging available' },
+    { icon: 'Headphones', title: 'Customer Support', description: 'Real humans ready to help' },
+  ],
+  primaryCta: 'Shop Now',
+  secondaryCta: 'View Collections',
+};
+
+// Generic fallback for unknown niches
+export const GENERIC_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Your Business Name',
+  heroSubheadline: 'We help you achieve your goals with quality products and services.',
+  heroVariant: 'simple-centered',
+  featuresTitle: 'Why Choose Us',
+  featuresVariant: 'grid-3',
+  features: [
+    { icon: 'Star', title: 'Quality', description: 'We deliver excellence in everything we do' },
+    { icon: 'Shield', title: 'Reliability', description: 'Count on us to be there when you need us' },
+    { icon: 'Headphones', title: 'Support', description: 'Our team is here to help you succeed' },
+  ],
+  primaryCta: 'Get Started',
+  secondaryCta: 'Learn More',
+};
+
 // Map niche keywords to schemas
 export const NICHE_SCHEMAS: Record<string, NicheContentSchema> = {
   // Dental
@@ -152,10 +187,20 @@ export const NICHE_SCHEMAS: Record<string, NicheContentSchema> = {
   remodeling: CONTRACTOR_SCHEMA,
   renovation: CONTRACTOR_SCHEMA,
   handyman: CONTRACTOR_SCHEMA,
+  
+  // Ecommerce
+  shop: ECOMMERCE_SCHEMA,
+  store: ECOMMERCE_SCHEMA,
+  fashion: ECOMMERCE_SCHEMA,
+  buy: ECOMMERCE_SCHEMA,
+  ecommerce: ECOMMERCE_SCHEMA,
+  'e-commerce': ECOMMERCE_SCHEMA,
+  boutique: ECOMMERCE_SCHEMA,
+  retail: ECOMMERCE_SCHEMA,
 };
 
-// Get niche schema from input text
-export function getNicheSchema(input: string): NicheContentSchema | null {
+// Get niche schema from input text - returns GENERIC_SCHEMA as fallback, never null
+export function getNicheSchema(input: string): NicheContentSchema {
   const lowerInput = input.toLowerCase();
   
   for (const [keyword, schema] of Object.entries(NICHE_SCHEMAS)) {
@@ -164,7 +209,8 @@ export function getNicheSchema(input: string): NicheContentSchema | null {
     }
   }
   
-  return null;
+  // Return generic fallback instead of contractor-specific text
+  return GENERIC_SCHEMA;
 }
 
 // Map primary goal to business intent
