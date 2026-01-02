@@ -1701,7 +1701,10 @@ NEVER output these patterns:
 - Starting with "Built:" followed by bullet points
 
 ## OUTPUT JSON STRUCTURE:
-{"name":"Name","theme":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","backgroundColor":"#0a0a0a","textColor":"#ffffff","darkMode":true,"fontHeading":"Inter","fontBody":"Inter"},"businessModel":"SERVICE_BASED","layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
+{"name":"Name","businessIntent":"service_business","theme":{"primaryColor":"#hex","secondaryColor":"#hex","accentColor":"#hex","backgroundColor":"#0a0a0a","textColor":"#ffffff","darkMode":true,"fontHeading":"Inter","fontBody":"Inter"},"businessModel":"SERVICE_BASED","layoutStructure":"standard","navigation":[{"label":"Home","href":"/"}],"pages":[{"path":"/","title":"Home","sections":[...]}],"footer":{"copyright":"© 2024"}}
+
+REQUIRED: "businessIntent" MUST be one of: "product_store" | "service_business" | "booking_business" | "saas" | "portfolio" | "nonprofit"
+This field is CRITICAL - it tells the frontend what type of content to display. Match it to the detected business type!
 
 SECTIONS: hero, features, testimonials, pricing, faq, contact, cta, stats
 DEFAULT COLORS: Restaurant=#dc2626, Medical=#0891b2, Legal=#1e3a5f, Tech=#3b82f6, Salon=#be185d

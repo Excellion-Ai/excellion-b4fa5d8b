@@ -109,7 +109,7 @@ export function SiteRenderer({
   pageIndex = 0,
   isLoading,
   renderMode = 'preview',
-  businessIntent = 'service_business',
+  businessIntent: propBusinessIntent,  // NUCLEAR FIX: Make optional, read from siteSpec
   onUpdateHeroContent,
   onUpdateFeaturesContent,
   onUpdateFeatureItem,
@@ -176,9 +176,14 @@ export function SiteRenderer({
     );
   }
 
+  // NUCLEAR FIX: Read businessIntent from siteSpec, fallback to prop, then default
+  const businessIntent = (siteSpec as any)?.businessIntent || propBusinessIntent || 'service_business';
+  console.log('[SiteRenderer] Using businessIntent:', businessIntent, 'from siteSpec:', !!(siteSpec as any)?.businessIntent);
+
   // In preview mode, auto-fill missing content with intent-aware fallbacks
   const effectiveSpec = useMemo(() => {
     if (renderMode === 'preview') {
+      // NUCLEAR FIX: Pass the effective intent from siteSpec
       return fillMissingSiteContent(siteSpec, businessIntent);
     }
     return siteSpec;
