@@ -4,6 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   Sparkles, 
   ArrowRight, 
@@ -16,7 +22,8 @@ import {
   Phone,
   Mail,
   Loader2,
-  Zap
+  Zap,
+  X
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
@@ -58,8 +65,6 @@ const notMagicItems = [
   "Doesn't run your ads or marketing for you – it focuses on the site."
 ];
 
-type InputMode = 'quick' | 'interview';
-
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
@@ -68,7 +73,7 @@ const WebBuilderHome = () => {
   const [emailCaptureSuccess, setEmailCaptureSuccess] = useState(false);
   const [formErrors, setFormErrors] = useState<{ niche?: string; email?: string }>({});
   const [user, setUser] = useState<User | null>(null);
-  const [inputMode, setInputMode] = useState<InputMode>('quick');
+  const [buildAssistOpen, setBuildAssistOpen] = useState(false);
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   
@@ -120,9 +125,9 @@ const WebBuilderHome = () => {
     };
   }, []);
 
-  const handleStart = () => {
-    const promptToUse = inputMode === 'interview' ? interview.composedPrompt : prompt;
-    const structuredData = inputMode === 'interview' ? interview.structuredData : null;
+  const handleStart = (useInterview = false) => {
+    const promptToUse = useInterview ? interview.composedPrompt : prompt;
+    const structuredData = useInterview ? interview.structuredData : null;
     
     if (promptToUse.trim()) {
       const builderData = {
@@ -201,18 +206,13 @@ const WebBuilderHome = () => {
     }
   };
 
-  const handleSwitchMode = (mode: InputMode) => {
-    // Preserve state when switching
-    if (mode === 'interview' && prompt.trim()) {
-      interview.setQuickPrompt(prompt);
-    } else if (mode === 'quick' && interview.quickPrompt) {
-      setPrompt(interview.quickPrompt);
-    }
-    setInputMode(mode);
-  };
-
   const handleInterviewSubmit = () => {
-    handleStart();
+    setBuildAssistOpen(false);
+    handleStart(true);
+  };
+  
+  const handleQuickStart = () => {
+    handleStart(false);
   };
 
   return (
@@ -269,26 +269,15 @@ const WebBuilderHome = () => {
               An AI website builder that generates a complete site in seconds. Make changes by chat, customize pages, and publish with your own domain.
             </p>
 
-            {/* Mode Toggle */}
+            {/* Mode Toggle - Quick Prompt + Build Assist Button */}
             <div className="max-w-2xl mx-auto mb-4">
               <div className="inline-flex p-1 rounded-lg bg-background/30 border border-border/30 backdrop-blur-sm">
-                <button
-                  onClick={() => handleSwitchMode('quick')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    inputMode === 'quick'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground/70 hover:text-foreground'
-                  }`}
-                >
+                <span className="px-4 py-1.5 rounded-md text-sm font-medium bg-primary text-primary-foreground">
                   Quick Prompt
-                </button>
+                </span>
                 <button
-                  onClick={() => handleSwitchMode('interview')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    inputMode === 'interview'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground/70 hover:text-foreground'
-                  }`}
+                  onClick={() => setBuildAssistOpen(true)}
+                  className="px-4 py-1.5 rounded-md text-sm font-medium transition-all text-foreground/70 hover:text-foreground"
                 >
                   <Zap className="w-3.5 h-3.5 inline mr-1" />
                   Build Assist
@@ -296,94 +285,92 @@ const WebBuilderHome = () => {
               </div>
             </div>
 
-            {/* Input Area */}
+            {/* Input Area - Quick Prompt Only */}
             <div className="max-w-2xl mx-auto">
               <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-4">
-                {inputMode === 'quick' ? (
-                  <>
-                    {/* Quick Prompt Mode */}
-                    <div className="relative">
-                      <Textarea
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
-                        rows={1}
-                        style={{ height: 'auto' }}
-                        onInput={(e) => {
-                          const target = e.target as HTMLTextAreaElement;
-                          target.style.height = 'auto';
-                          target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-                        }}
-                      />
-                      {!prompt && (
-                        <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
-                          <AnimatedPlaceholder 
-                            suggestions={placeholderSuggestions}
-                            typingSpeed={25}
-                            deletingSpeed={15}
-                            pauseDuration={2000}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-end mt-3">
-                      <Button onClick={handleStart} size="icon" className="h-10 w-10">
-                        <ArrowRight className="w-5 h-5" />
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  /* Build Assist Mode */
-                  <InterviewStepper
-                    step={interview.step}
-                    totalSteps={interview.totalSteps}
-                    answers={interview.answers}
-                    canProceed={interview.canProceed}
-                    canSubmit={interview.canSubmit}
-                    onUpdateAnswer={interview.updateAnswer}
-                    onUpdateOffer={interview.updateOffer}
-                    onNext={interview.nextStep}
-                    onBack={interview.prevStep}
-                    onSkip={interview.skipStep}
-                    onSubmit={handleInterviewSubmit}
-                    onSwitchToQuickPrompt={() => handleSwitchMode('quick')}
+                {/* Quick Prompt Mode */}
+                <div className="relative">
+                  <Textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
+                    rows={1}
+                    style={{ height: 'auto' }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                    }}
                   />
-                )}
+                  {!prompt && (
+                    <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
+                      <AnimatedPlaceholder 
+                        suggestions={placeholderSuggestions}
+                        typingSpeed={25}
+                        deletingSpeed={15}
+                        pauseDuration={2000}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-end mt-3">
+                  <Button onClick={handleQuickStart} size="icon" className="h-10 w-10">
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                </div>
               </div>
 
-              {/* Quick Prompt extras */}
-              {inputMode === 'quick' && (
-                <>
-                  {/* Suggestion Chips */}
-                  <div className="flex flex-wrap justify-center gap-2 mt-4">
-                    {suggestionChips.map((chip, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleChipClick(chip)}
-                        className="px-3 py-1.5 rounded-full text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
-                      >
-                        {chip}
-                      </button>
-                    ))}
-                  </div>
+              {/* Suggestion Chips */}
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {suggestionChips.map((chip, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleChipClick(chip)}
+                    className="px-3 py-1.5 rounded-full text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
 
-                  {/* Interview prompt link */}
-                  <p className="text-xs text-foreground/60 mt-4 font-light">
-                    No credit card required.{' '}
-                    <button
-                      onClick={() => handleSwitchMode('interview')}
-                      className="text-primary hover:underline"
-                    >
-                      Want a better first draft? Try Build Assist (60 sec)
-                    </button>
-                  </p>
-                </>
-              )}
+              {/* Build Assist link */}
+              <p className="text-xs text-foreground/60 mt-4 font-light">
+                No credit card required.{' '}
+                <button
+                  onClick={() => setBuildAssistOpen(true)}
+                  className="text-primary hover:underline"
+                >
+                  Want a better first draft? Try Build Assist (60 sec)
+                </button>
+              </p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Build Assist Dialog */}
+      <Dialog open={buildAssistOpen} onOpenChange={setBuildAssistOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card border-border">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle className="text-lg font-semibold text-foreground">Build Assist</DialogTitle>
+          </DialogHeader>
+          <InterviewStepper
+            step={interview.step}
+            totalSteps={interview.totalSteps}
+            answers={interview.answers}
+            canProceed={interview.canProceed}
+            canSubmit={interview.canSubmit}
+            onUpdateAnswer={interview.updateAnswer}
+            onUpdateOffer={interview.updateOffer}
+            onNext={interview.nextStep}
+            onBack={interview.prevStep}
+            onSkip={interview.skipStep}
+            onSubmit={handleInterviewSubmit}
+            onSwitchToQuickPrompt={() => setBuildAssistOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* How It Works Section */}
       <section id="how-it-works" className="py-20 px-4 border-t border-border/50 scroll-mt-20">
