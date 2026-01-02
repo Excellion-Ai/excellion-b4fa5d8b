@@ -2272,17 +2272,6 @@ Regenerate the problematic sections with valid content.`;
                       </div>
                     </div>
                   ))}
-                  {isGenerating && (
-                    <div className="px-1">
-                      <GenerationProgress
-                        tokenCount={tokenCount}
-                        startTime={generationStartTime}
-                        isGenerating={isGenerating}
-                        estimatedTotalTokens={2000}
-                        speculativeSpec={speculativeSpec}
-                      />
-                    </div>
-                  )}
                   {/* Scroll anchor */}
                   <div ref={mobileChatScrollRef} />
                 </div>
