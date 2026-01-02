@@ -92,7 +92,7 @@ const STEP_QUESTIONS = {
   2: { message: "Great choice! What's your business called?", sub: "This will appear throughout your site" },
   3: { message: "Do you serve customers locally, online, or both?", sub: "This helps us add the right features" },
   4: { message: "What's the #1 thing you want visitors to do?", sub: "This becomes your main call-to-action" },
-  5: { message: "What are your top offers or services?", sub: "These become your homepage highlights (optional)" },
+  5: { message: "Why should customers choose you?", sub: "Add up to 3 short reasons. These become your homepage highlights." },
   6: { message: "Last step! Pick a color theme for your site.", sub: "Don't worry, you can change it later" },
 };
 
@@ -239,9 +239,9 @@ export function InterviewStepper({
                     onChange={(e) => onUpdateOffer(i as 0 | 1 | 2, e.target.value)}
                     onBlur={(e) => onUpdateOffer(i as 0 | 1 | 2, e.target.value.trim())}
                     placeholder={
-                      i === 0 ? "e.g., Free estimates" :
-                      i === 1 ? "e.g., Same-day service" :
-                      "e.g., Licensed & insured"
+                      i === 0 ? "e.g., 5-star rated" :
+                      i === 1 ? "e.g., Fast turnaround" :
+                      "e.g., Upfront pricing"
                     }
                     maxLength={60}
                     className="h-12 bg-card/60 border-border/50 pr-12 text-center"
