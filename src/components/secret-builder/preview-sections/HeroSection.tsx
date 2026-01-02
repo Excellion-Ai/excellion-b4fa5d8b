@@ -58,11 +58,39 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
   
   const headline = content?.headline || siteName || '';
   const subheadline = content?.subheadline || section.description || '';
-  const ctaText = content?.ctaText || '';
-  const secondaryCtaText = content?.secondaryCtaText || '';
   const backgroundImage = content?.backgroundImage;
   const logo = (content as any)?.logo;
   const variant: HeroVariant = content?.variant || 'simple-centered';
+
+  // CHILD-PROOF CTA EXTRACTION: Handle both flat and array formats
+  // Fallback chain: ctaText -> ctas[0].label -> ctas[0].text -> ctas[0].title -> cta.label -> cta.text -> cta.title
+  const getCTALabel = (index: 0 | 1): string => {
+    const c = content as any;
+    if (!c) return '';
+    
+    // Flat format (preferred)
+    if (index === 0 && c.ctaText) return c.ctaText;
+    if (index === 1 && c.secondaryCtaText) return c.secondaryCtaText;
+    
+    // Array format: ctas[]
+    if (Array.isArray(c.ctas) && c.ctas[index]) {
+      const cta = c.ctas[index];
+      return cta?.label || cta?.text || cta?.title || '';
+    }
+    
+    // Object format: cta / secondaryCta
+    if (index === 0 && c.cta) {
+      return c.cta?.label || c.cta?.text || c.cta?.title || '';
+    }
+    if (index === 1 && c.secondaryCta) {
+      return c.secondaryCta?.label || c.secondaryCta?.text || c.secondaryCta?.title || '';
+    }
+    
+    return '';
+  };
+  
+  const ctaText = getCTALabel(0);
+  const secondaryCtaText = getCTALabel(1);
 
   const backgroundStyle = backgroundImage
     ? {
@@ -147,31 +175,25 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
           
           <MotionWrapper variant="section" delay={0.3}>
             <div className="flex flex-wrap gap-3">
-              {(() => {
-                const primaryLabel = ctaText || (content as any)?.cta?.label || (content as any)?.cta?.text || '';
-                return primaryLabel.trim() ? (
-                  <MotionButton
-                    className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all"
-                    style={{ backgroundColor: theme.primaryColor }}
-                  >
-                    {primaryLabel}
-                  </MotionButton>
-                ) : null;
-              })()}
-              {(() => {
-                const secondaryLabel = secondaryCtaText || (content as any)?.secondaryCta?.label || (content as any)?.secondaryCta?.text || '';
-                return secondaryLabel.trim() ? (
-                  <MotionButton
-                    className="px-5 py-2 rounded-lg font-semibold border text-sm transition-all"
-                    style={{ 
-                      borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
-                      color: backgroundImage ? '#ffffff' : theme.primaryColor
-                    }}
-                  >
-                    {secondaryLabel}
-                  </MotionButton>
-                ) : null;
-              })()}
+              {ctaText.trim() && (
+                <MotionButton
+                  className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all"
+                  style={{ backgroundColor: theme.primaryColor }}
+                >
+                  {ctaText}
+                </MotionButton>
+              )}
+              {secondaryCtaText.trim() && (
+                <MotionButton
+                  className="px-5 py-2 rounded-lg font-semibold border text-sm transition-all"
+                  style={{ 
+                    borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
+                    color: backgroundImage ? '#ffffff' : theme.primaryColor
+                  }}
+                >
+                  {secondaryCtaText}
+                </MotionButton>
+              )}
             </div>
           </MotionWrapper>
         </div>
@@ -265,31 +287,25 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
       </motion.div>
       
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center">
-        {(() => {
-          const primaryLabel = ctaText || (content as any)?.cta?.label || (content as any)?.cta?.text || '';
-          return primaryLabel.trim() ? (
-            <MotionButton
-              className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
-              style={{ backgroundColor: theme.primaryColor }}
-            >
-              {primaryLabel}
-            </MotionButton>
-          ) : null;
-        })()}
-        {(() => {
-          const secondaryLabel = secondaryCtaText || (content as any)?.secondaryCta?.label || (content as any)?.secondaryCta?.text || '';
-          return secondaryLabel.trim() ? (
-            <MotionButton
-              className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
-              style={{ 
-                borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
-                color: backgroundImage ? '#ffffff' : theme.primaryColor
-              }}
-            >
-              {secondaryLabel}
-            </MotionButton>
-          ) : null;
-        })()}
+        {ctaText.trim() && (
+          <MotionButton
+            className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
+            style={{ backgroundColor: theme.primaryColor }}
+          >
+            {ctaText}
+          </MotionButton>
+        )}
+        {secondaryCtaText.trim() && (
+          <MotionButton
+            className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
+            style={{ 
+              borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
+              color: backgroundImage ? '#ffffff' : theme.primaryColor
+            }}
+          >
+            {secondaryCtaText}
+          </MotionButton>
+        )}
       </motion.div>
     </motion.div>
   );
@@ -368,31 +384,25 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
         </motion.div>
         
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
-          {(() => {
-            const primaryLabel = ctaText || (content as any)?.cta?.label || (content as any)?.cta?.text || '';
-            return primaryLabel.trim() ? (
-              <MotionButton
-                className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
-                style={{ backgroundColor: theme.primaryColor }}
-              >
-                {primaryLabel}
-              </MotionButton>
-            ) : null;
-          })()}
-          {(() => {
-            const secondaryLabel = secondaryCtaText || (content as any)?.secondaryCta?.label || (content as any)?.secondaryCta?.text || '';
-            return secondaryLabel.trim() ? (
-              <MotionButton
-                className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
-                style={{ 
-                  borderColor: theme.primaryColor,
-                  color: theme.primaryColor
-                }}
-              >
-                {secondaryLabel}
-              </MotionButton>
-            ) : null;
-          })()}
+          {ctaText.trim() && (
+            <MotionButton
+              className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
+              style={{ backgroundColor: theme.primaryColor }}
+            >
+              {ctaText}
+            </MotionButton>
+          )}
+          {secondaryCtaText.trim() && (
+            <MotionButton
+              className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
+              style={{ 
+                borderColor: theme.primaryColor,
+                color: theme.primaryColor
+              }}
+            >
+              {secondaryCtaText}
+            </MotionButton>
+          )}
         </motion.div>
       </motion.div>
       
@@ -486,17 +496,14 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
       </motion.div>
       
       <motion.div variants={itemVariants}>
-        {(() => {
-          const primaryLabel = ctaText || (content as any)?.cta?.label || (content as any)?.cta?.text || '';
-          return primaryLabel.trim() ? (
-            <MotionButton
-              className="px-12 py-4 rounded-full font-bold text-lg text-white transition-all shadow-lg hover:shadow-xl"
-              style={{ backgroundColor: theme.primaryColor }}
-            >
-              {primaryLabel}
-            </MotionButton>
-          ) : null;
-        })()}
+        {ctaText.trim() && (
+          <MotionButton
+            className="px-12 py-4 rounded-full font-bold text-lg text-white transition-all shadow-lg hover:shadow-xl"
+            style={{ backgroundColor: theme.primaryColor }}
+          >
+            {ctaText}
+          </MotionButton>
+        )}
       </motion.div>
     </motion.div>
   );
