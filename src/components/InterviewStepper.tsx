@@ -84,6 +84,7 @@ const COLOR_THEME_OPTIONS = [
   { value: 'forest_cream' as ColorThemePreset, label: 'Natural', primary: '#064e3b', accent: '#FDF6E3' },
   { value: 'charcoal_blue' as ColorThemePreset, label: 'Tech', primary: '#1f2937', accent: '#3b82f6' },
   { value: 'warm_sand' as ColorThemePreset, label: 'Warm', primary: '#d4a574', accent: '#8b5a2b' },
+  { value: 'bold_red' as ColorThemePreset, label: 'Bold', primary: '#7f1d1d', accent: '#fbbf24' },
   { value: 'custom' as ColorThemePreset, label: 'Custom' },
 ];
 

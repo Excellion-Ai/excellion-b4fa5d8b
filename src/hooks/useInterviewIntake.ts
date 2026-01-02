@@ -28,6 +28,7 @@ export type ColorThemePreset =
   | 'forest_cream' 
   | 'charcoal_blue' 
   | 'warm_sand' 
+  | 'bold_red'
   | 'custom';
 
 export interface ColorThemeCustom {
@@ -113,6 +114,7 @@ export const COLOR_THEME_PRESETS: Record<Exclude<ColorThemePreset, 'custom'>, {
   forest_cream: { primary: '#064e3b', accent: '#FDF6E3', backgroundMode: 'light', label: 'Forest + Cream (Natural)' },
   charcoal_blue: { primary: '#1f2937', accent: '#3b82f6', backgroundMode: 'dark', label: 'Charcoal + Blue (Modern Tech)' },
   warm_sand: { primary: '#d4a574', accent: '#8b5a2b', backgroundMode: 'light', label: 'Warm Sand + Clay (Warm)' },
+  bold_red: { primary: '#7f1d1d', accent: '#fbbf24', backgroundMode: 'dark', label: 'Bold Red + Gold (Bold)' },
 };
 
 const COLOR_THEME_LABELS: Record<ColorThemePreset, string> = {
@@ -122,6 +124,7 @@ const COLOR_THEME_LABELS: Record<ColorThemePreset, string> = {
   forest_cream: 'Forest + Cream (Natural)',
   charcoal_blue: 'Charcoal + Blue (Modern Tech)',
   warm_sand: 'Warm Sand + Clay (Warm)',
+  bold_red: 'Bold Red + Gold (Bold)',
   custom: 'Custom',
 };
 
