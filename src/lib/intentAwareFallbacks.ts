@@ -193,18 +193,18 @@ export const PLUMBER_SCHEMA: NicheContentSchema = {
   secondaryCta: 'Call Now',
 };
 
-// Generic fallback for unknown niches - COMPLETELY NEUTRAL
+// Generic fallback for unknown niches - COMPLETELY NEUTRAL (NO SAAS/TECH TERMS)
 export const GENERIC_SCHEMA: NicheContentSchema = {
-  heroHeadline: 'Quality Services You Can Trust',
-  heroSubheadline: 'Dedicated to excellence and committed to your satisfaction',
+  heroHeadline: 'Quality Solutions for Your Business',
+  heroSubheadline: 'Professional service you can count on',
   heroVariant: 'simple-centered',
   featuresTitle: 'Why Choose Us',
   featuresVariant: 'grid-3',
   features: [
     { icon: 'Users', title: 'Professional Team', description: 'Experienced professionals ready to help' },
-    { icon: 'Shield', title: 'Reliable Support', description: 'Count on us when you need us most' },
-    { icon: 'Star', title: 'Excellence', description: 'Quality results, every time' },
-    { icon: 'Clock', title: 'Timely Service', description: 'Respect for your schedule and deadlines' },
+    { icon: 'Shield', title: 'Reliable Service', description: 'Count on us when you need us most' },
+    { icon: 'Heart', title: 'Customer Focus', description: 'Your satisfaction is our priority' },
+    { icon: 'Clock', title: 'Timely Results', description: 'Respect for your schedule and deadlines' },
   ],
   primaryCta: 'Contact Us',
   secondaryCta: 'Learn More',
