@@ -291,12 +291,16 @@ export type SitePage = {
   sections: SiteSection[];
 };
 
+// Business intent types for content matching
+export type BusinessIntent = 'product_store' | 'service_business' | 'booking_business' | 'saas' | 'portfolio' | 'nonprofit';
+
 // The complete SiteSpec - source of truth for preview rendering
 export type SiteSpec = {
   name: string;
   description?: string;
   logo?: string;  // Logo URL for the site
   businessModel: BusinessModel;
+  businessIntent?: BusinessIntent;  // NUCLEAR FIX: Intent for content matching
   layoutStructure?: LayoutStructure;  // Layout paradigm for the site
   theme: SiteTheme;
   navigation: NavItem[];

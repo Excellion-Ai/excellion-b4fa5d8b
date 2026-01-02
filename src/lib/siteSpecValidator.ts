@@ -466,67 +466,53 @@ export const STATS_FALLBACK_BY_INTENT: Record<BusinessIntent, StatsContent> = {
 // ============= FILL MISSING CONTENT FUNCTION =============
 // Used in preview mode to auto-fill empty sections
 
+// NUCLEAR FIX: Only fill TRULY empty sections (no content object at all)
+// If AI returns empty items array, PRESERVE IT - do not replace with fallback
 export function fillMissingSectionContent(
   section: SiteSection,
   intent: BusinessIntent
 ): SiteSection {
   const content = section.content as any;
   
-  switch (section.type) {
-    case 'features':
-    case 'services':
-      if (!content?.items || content.items.length === 0) {
-        return {
-          ...section,
-          content: FEATURES_FALLBACK_BY_INTENT[intent] || FEATURES_FALLBACK_BY_INTENT.service_business,
-        };
-      }
-      break;
-      
-    case 'testimonials':
-      if (!content?.items || content.items.length === 0) {
-        return {
-          ...section,
-          content: TESTIMONIALS_FALLBACK_BY_INTENT[intent] || TESTIMONIALS_FALLBACK_BY_INTENT.service_business,
-        };
-      }
-      break;
-      
-    case 'faq':
-      if (!content?.items || content.items.length === 0) {
-        return {
-          ...section,
-          content: FAQ_FALLBACK_BY_INTENT[intent] || FAQ_FALLBACK_BY_INTENT.service_business,
-        };
-      }
-      break;
-      
-    case 'stats':
-      if (!content?.items || content.items.length === 0) {
-        return {
-          ...section,
-          content: STATS_FALLBACK_BY_INTENT[intent] || STATS_FALLBACK_BY_INTENT.service_business,
-        };
-      }
-      break;
+  // NUCLEAR FIX: Only replace if content is completely null/undefined
+  // If content exists (even with empty items), PRESERVE the AI's work
+  if (!content) {
+    console.log('[FALLBACK] Section has NO content, applying fallback:', section.type, 'intent:', intent);
+    switch (section.type) {
+      case 'features':
+      case 'services':
+        return { ...section, content: FEATURES_FALLBACK_BY_INTENT[intent] || FEATURES_FALLBACK_BY_INTENT.service_business };
+      case 'testimonials':
+        return { ...section, content: TESTIMONIALS_FALLBACK_BY_INTENT[intent] || TESTIMONIALS_FALLBACK_BY_INTENT.service_business };
+      case 'faq':
+        return { ...section, content: FAQ_FALLBACK_BY_INTENT[intent] || FAQ_FALLBACK_BY_INTENT.service_business };
+      case 'stats':
+        return { ...section, content: STATS_FALLBACK_BY_INTENT[intent] || STATS_FALLBACK_BY_INTENT.service_business };
+    }
   }
   
+  // AI returned content (even if items is empty) - PRESERVE IT
   return section;
 }
 
 // Fill all missing sections in a SiteSpec for preview mode
+// NUCLEAR FIX: Read intent from siteSpec.businessIntent if available
 export function fillMissingSiteContent(
   spec: SiteSpec,
-  intent: BusinessIntent
+  fallbackIntent: BusinessIntent = 'service_business'
 ): SiteSpec {
   if (!spec.pages) return spec;
+  
+  // NUCLEAR FIX: Use businessIntent from spec if available, otherwise fallback
+  const effectiveIntent = (spec as any).businessIntent || fallbackIntent;
+  console.log('[FILL] Using businessIntent:', effectiveIntent, 'from spec:', !!(spec as any).businessIntent);
   
   return {
     ...spec,
     pages: spec.pages.map(page => ({
       ...page,
       sections: (page.sections || []).map(section => 
-        fillMissingSectionContent(section, intent)
+        fillMissingSectionContent(section, effectiveIntent)
       ),
     })),
   };
