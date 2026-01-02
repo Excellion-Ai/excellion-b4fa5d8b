@@ -1169,16 +1169,26 @@ export default function SecretBuilderHub() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    {/* Build Website button - Railway API */}
+                    {/* Build Website button - uses original flow + Railway API in background */}
                     <Button 
-                      onClick={() => railwayGen.generateSite(idea)}
-                      disabled={!idea.trim() || railwayGen.isGenerating}
+                      onClick={() => {
+                        // Also fire Railway API in background (fire and forget)
+                        railwayGen.generateSite(idea);
+                        // Use original generation flow for navigation + progress
+                        handleGenerate();
+                      }}
+                      disabled={!idea.trim() || isGenerating}
                       className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
                     >
-                      {railwayGen.isGenerating ? (
+                      {isRefining ? (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
+                          Polishing…
+                        </>
+                      ) : isGenerating ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Building…
+                          Generating…
                         </>
                       ) : (
                         <>
@@ -1191,56 +1201,6 @@ export default function SecretBuilderHub() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Generated Code Display */}
-            {railwayGen.generatedCode && (
-              <Card className="mt-4 border-primary/30 bg-card/50">
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      Generated Website Code
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          navigator.clipboard.writeText(railwayGen.generatedCode || '');
-                          toast({ title: 'Code copied to clipboard' });
-                        }}
-                        className="h-8 text-xs"
-                      >
-                        <Copy className="w-3.5 h-3.5 mr-1" />
-                        Copy
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => railwayGen.reset()}
-                        className="h-8 text-xs text-muted-foreground"
-                      >
-                        <X className="w-3.5 h-3.5 mr-1" />
-                        Clear
-                      </Button>
-                    </div>
-                  </div>
-                  <ScrollArea className="h-[300px] w-full rounded-md border bg-muted/30 p-4">
-                    <pre className="text-xs text-foreground whitespace-pre-wrap font-mono">
-                      {railwayGen.generatedCode}
-                    </pre>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Generation Status */}
-            {railwayGen.isGenerating && railwayGen.status && (
-              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Status: {railwayGen.status}</span>
-              </div>
-            )}
 
             {/* Quick Prompts */}
             <div className="flex flex-wrap gap-2 mt-4 justify-center">
