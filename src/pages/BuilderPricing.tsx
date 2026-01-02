@@ -34,67 +34,61 @@ const PRICE_IDS = {
 const aiBuilderPlans = [
   {
     name: "Free",
-    description: "Discover what Excellion can do",
+    description: "Try it before you pay.",
     monthlyPrice: 0,
     yearlyPrice: 0,
     credits: 20,
     features: [
-      "1 project (draft-only)",
-      "Drafts + editing in Studio",
-      "Basic templates",
-      "Mobile responsive editing",
-      "Community support/docs",
+      "1 draft-only project (can't publish)",
+      "Generate a full website draft for your business",
+      "Edit content + layout in Studio",
     ],
     note: "Publishing requires Starter or higher.",
-    cta: "Get Started",
+    cta: "Start Free",
     highlighted: false,
   },
   {
     name: "Starter",
-    description: "Launch your first website",
+    description: "Get your website live.",
     monthlyPrice: 15,
     yearlyPrice: 150,
     credits: 200,
     features: [
-      "Unlimited published sites + domains",
-      "No watermark",
-      "Basic SEO (Title/Meta/OG)",
-      "Simple analytics (views/visitors)",
+      "Publish your site + connect your domain",
+      "Enough build credits for a full site + key edits",
+      "Basic SEO + simple traffic stats",
     ],
-    cta: "Get Started",
+    cta: "Get Starter",
     highlighted: false,
   },
   {
     name: "Pro",
-    description: "For serious builders",
+    description: "More building power + better features.",
     monthlyPrice: 29,
     yearlyPrice: 290,
     credits: 500,
     badge: "Best Seller",
     features: [
-      "Unlimited published sites + domains",
-      "Integrations: Stripe, Calendly, Mailchimp",
-      "Advanced components: pricing, CMS, galleries",
+      "More build credits for more edits and improvements",
+      "Add payments, bookings, and email signups (integrations)",
+      "More advanced sections (pricing, gallery, menus, etc.)",
       "Code export (Annual only)",
     ],
-    cta: "Get Started",
+    cta: "Get Pro",
     highlighted: true,
   },
   {
     name: "Agency",
-    description: "For teams managing clients",
+    description: "For people building lots of sites.",
     monthlyPrice: 129,
     yearlyPrice: 1290,
     credits: 3000,
     features: [
-      "Unlimited published sites + domains",
-      "White-label dashboard",
-      "Team seats + roles",
-      "Client management & billing transfer",
-      "Priority build queue",
-      "Full code export included",
+      "Highest build credits for high volume work",
+      "Multiple team seats",
+      "White-label options + code export",
     ],
-    cta: "Get Started",
+    cta: "Get Agency",
     highlighted: false,
   },
 ];
@@ -252,9 +246,9 @@ const BuilderPricing = () => {
                   <Zap className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 30 days</p>
+                <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 30 days</p>
                   <p className="text-sm text-muted-foreground">
-                    First-time only. Includes +150 credits. Full Pro access for 30 days. Auto-renews to Pro $29/mo unless you cancel.
+                    Launch fast for cheap. Includes 150 build credits for generating + modifying your website for 30 days. Renews to Pro ($29/mo) unless you cancel.
                   </p>
                 </div>
               </div>
@@ -275,15 +269,19 @@ const BuilderPricing = () => {
                     <ul className="space-y-3 mt-4">
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">+150 credits (rollover forever)</span>
+                        <span className="text-foreground">150 build credits for generating + modifying your website</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">First-time only — one Sprint Pass per account</span>
+                        <span className="text-foreground">One Sprint Pass per account</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">Auto-renews to Pro ($29/mo) after 30 days unless canceled</span>
+                        <span className="text-foreground">Renews to Pro ($29/mo) after 30 days unless you cancel</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                        <span className="text-foreground text-sm">Cancel anytime before renewal</span>
                       </li>
                     </ul>
                     <div className="mt-6">
@@ -341,37 +339,40 @@ const BuilderPricing = () => {
             </div>
             
             {/* How Credits Work Link */}
-            <Dialog open={creditsModalOpen} onOpenChange={setCreditsModalOpen}>
-              <DialogTrigger asChild>
-                <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <Info className="w-4 h-4" />
-                  How credits work
-                </button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>How Credits Work</DialogTitle>
-                </DialogHeader>
-                <ul className="space-y-4 mt-4">
-                  <li className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                    <span className="text-foreground">Credits are used for AI actions (generation, rewrites, rebuilds).</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                    <span className="text-foreground">Credits roll over forever (no expiry, no cap).</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                    <span className="text-foreground">Free credits are always spendable on Free (draft-only).</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                    <span className="text-foreground">Paid credits are spendable only while a paid plan is active; if you cancel, your paid credits are preserved and unlock again when you resubscribe.</span>
-                  </li>
-                </ul>
-              </DialogContent>
-            </Dialog>
+            <div className="flex flex-col items-center gap-1">
+              <Dialog open={creditsModalOpen} onOpenChange={setCreditsModalOpen}>
+                <DialogTrigger asChild>
+                  <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <Info className="w-4 h-4" />
+                    How credits work
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>How Build Credits Work</DialogTitle>
+                  </DialogHeader>
+                  <ul className="space-y-4 mt-4">
+                    <li className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                      <span className="text-foreground">Build credits = what you spend to generate and modify your website.</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                      <span className="text-foreground">Credits roll over forever (no expiry, no cap).</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                      <span className="text-foreground">Free credits are always spendable on Free (draft-only).</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                      <span className="text-foreground">Paid credits are spendable only while a paid plan is active; if you cancel, your paid credits are preserved and unlock again when you resubscribe.</span>
+                    </li>
+                  </ul>
+                </DialogContent>
+              </Dialog>
+              <span className="text-xs text-muted-foreground">Build credits = what you spend to generate and modify your website.</span>
+            </div>
           </div>
 
           {/* AI Builder Cards */}
@@ -410,7 +411,7 @@ const BuilderPricing = () => {
                   <div className="mt-2">
                     <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent/15 text-accent px-2.5 py-1 rounded-full">
                       <Sparkles className="w-3 h-3" />
-                      {plan.credits} AI credits/mo • rollover
+                      {plan.credits} build credits / month (rolls over)
                     </span>
                   </div>
                   <div className="h-6 mt-2">
