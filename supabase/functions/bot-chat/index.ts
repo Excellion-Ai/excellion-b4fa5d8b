@@ -2955,6 +2955,46 @@ serve(async (req) => {
     // Fetch knowledge base entries - includes GLOBAL instructions for all projects
     let knowledgeContext = "";
     
+    // DESIGN RULES - Hardcoded style guide to prevent ugly sites
+    const DESIGN_RULES = `
+====================================
+## DESIGN RULES (STRICT - VIOLATING = REJECTED OUTPUT)
+====================================
+
+### TYPOGRAPHY
+- Hero headlines: MAXIMUM 8 WORDS, punchy fragments only
+- Subheadlines: MAXIMUM 15 WORDS
+- No stacked text blocks - use grids
+
+### LAYOUT
+- PREFER Bento-style grids over stacked sections
+- Never stack 3+ text blocks vertically
+- Minimum py-16 between sections, py-24 for heroes
+- Use split-image-right for visual businesses
+
+### BANNED WORDS (INSTANT REJECTION)
+❌ "Unlock", "Elevate", "Synergy", "Leverage", "Empower"
+❌ "Revolutionary", "Cutting-edge", "Best-in-class", "World-class"
+❌ "Game-changing", "Next-level", "Seamless", "Holistic"
+❌ "Welcome to [Name]", "We're passionate about..."
+❌ "Your trusted partner", "Excellence in everything"
+❌ "Take it to the next level", "One-stop shop"
+
+### QUALITY TESTS
+1. 3-Second Test: Can value be understood in 3 seconds?
+2. Specificity Rule: "Same-day repairs, 2-year warranty" beats "Quality service"
+3. Human Voice: Would the owner actually say this face-to-face?
+
+### VARIANT HINTS
+- Hero split-image-right → visual businesses, portfolios
+- Hero minimal-impact → luxury, high-end
+- Features bento-box → tech, creative agencies
+- Features zigzag-large → process-heavy, detailed services
+`;
+    
+    knowledgeContext += DESIGN_RULES;
+    console.log(`[BOT-CHAT:${requestId}] Design rules injected`);
+    
     // Always fetch global instructions (even in fast mode - they're critical for quality)
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
       try {
