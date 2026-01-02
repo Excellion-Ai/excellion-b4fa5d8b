@@ -3,19 +3,11 @@ import { Check } from 'lucide-react';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
 import { EditableText } from '../EditableText';
 import { RenderMode } from '../SiteRenderer';
-import { SetupRequiredCard } from '../SetupRequiredCard';
-import { 
-  BusinessIntent, 
-  PRICING_TITLES, 
-  PRICING_PLANS, 
-  PRICING_FINE_PRINT 
-} from '@/lib/intentAwareFallbacks';
 
 interface PricingSectionProps {
   section: SiteSection;
   theme: SiteTheme;
   renderMode?: RenderMode;
-  businessIntent?: BusinessIntent;
   onUpdateContent?: (field: keyof PricingContent, value: string) => void;
   onUpdateItem?: (index: number, field: keyof PricingTier, value: string | string[]) => void;
 }
@@ -24,32 +16,37 @@ export function PricingSection({
   section, 
   theme, 
   renderMode = 'preview',
-  businessIntent = 'service_business',
   onUpdateContent, 
   onUpdateItem 
 }: PricingSectionProps) {
   const content = section.content as PricingContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
-  // Get intent-aware fallbacks
-  const intentTitles = PRICING_TITLES[businessIntent];
-  const intentPlans = PRICING_PLANS[businessIntent];
-  const finePrint = PRICING_FINE_PRINT[businessIntent];
+  // SPEC-FIRST: Use exactly what AI provided
+  const title = content?.title || section.label || 'Pricing';
+  const subtitle = content?.subtitle || section.description || '';
+  const items = content?.items || [];
   
-  const title = content?.title || section.label || intentTitles.title;
-  const subtitle = content?.subtitle || section.description || intentTitles.subtitle;
-  
-  // Use content items if provided, otherwise use intent-aware fallbacks
-  const hasContent = content?.items && content.items.length > 0;
-  const items = hasContent ? content.items : intentPlans;
+  // If no pricing items, show empty state
+  if (items.length === 0) {
+    return (
+      <section 
+        id={section.id}
+        className="py-10 md:py-14 px-6 w-full min-h-[200px] contain-layout flex items-center justify-center"
+        style={{ backgroundColor: isDark ? '#111111' : '#ffffff' }}
+      >
+        <div className="text-center" style={{ color: isDark ? '#6b7280' : '#9ca3af' }}>
+          <p className="text-sm">Pricing section - add your packages</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section 
       id={section.id}
       className="py-10 md:py-14 px-6 w-full min-h-[350px] contain-layout"
-      style={{ 
-        backgroundColor: isDark ? '#111111' : '#ffffff'
-      }}
+      style={{ backgroundColor: isDark ? '#111111' : '#ffffff' }}
     >
       <div className="w-full">
         <div className="text-center mb-8">
@@ -77,30 +74,32 @@ export function PricingSection({
               </h2>
             )}
           </ScrollAnimation>
-          <ScrollAnimation animation="fade-up" delay={100}>
-            {onUpdateContent ? (
-              <EditableText
-                value={subtitle}
-                onSave={(val) => onUpdateContent('subtitle', val)}
-                as="p"
-                className="text-lg max-w-2xl mx-auto"
-                style={{ 
-                  fontFamily: theme.fontBody || 'system-ui',
-                  color: isDark ? '#9ca3af' : '#6b7280'
-                }}
-              />
-            ) : (
-              <p 
-                className="text-lg max-w-2xl mx-auto"
-                style={{ 
-                  fontFamily: theme.fontBody || 'system-ui',
-                  color: isDark ? '#9ca3af' : '#6b7280'
-                }}
-              >
-                {subtitle}
-              </p>
-            )}
-          </ScrollAnimation>
+          {subtitle && (
+            <ScrollAnimation animation="fade-up" delay={100}>
+              {onUpdateContent ? (
+                <EditableText
+                  value={subtitle}
+                  onSave={(val) => onUpdateContent('subtitle', val)}
+                  as="p"
+                  className="text-lg max-w-2xl mx-auto"
+                  style={{ 
+                    fontFamily: theme.fontBody || 'system-ui',
+                    color: isDark ? '#9ca3af' : '#6b7280'
+                  }}
+                />
+              ) : (
+                <p 
+                  className="text-lg max-w-2xl mx-auto"
+                  style={{ 
+                    fontFamily: theme.fontBody || 'system-ui',
+                    color: isDark ? '#9ca3af' : '#6b7280'
+                  }}
+                >
+                  {subtitle}
+                </p>
+              )}
+            </ScrollAnimation>
+          )}
         </div>
         
         <div 
@@ -170,14 +169,16 @@ export function PricingSection({
                       {plan.price}
                     </span>
                   )}
-                  <span 
-                    className="text-sm md:text-base"
-                    style={{ 
-                      color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (isDark ? '#9ca3af' : '#6b7280')
-                    }}
-                  >
-                    {plan.period}
-                  </span>
+                  {plan.period && (
+                    <span 
+                      className="text-sm md:text-base"
+                      style={{ 
+                        color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (isDark ? '#9ca3af' : '#6b7280')
+                      }}
+                    >
+                      {plan.period}
+                    </span>
+                  )}
                 </div>
                 <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 flex-grow">
                   {plan.features.map((feature, featureIndex) => (
@@ -211,21 +212,6 @@ export function PricingSection({
             </ScrollAnimation>
           ))}
         </div>
-        
-        {/* Fine print for booking/service intents */}
-        {(businessIntent === 'booking_business' || businessIntent === 'service_business') && (
-          <ScrollAnimation animation="fade-up" delay={500}>
-            <p 
-              className="text-center text-sm mt-8 opacity-70"
-              style={{ 
-                fontFamily: theme.fontBody || 'system-ui',
-                color: isDark ? '#9ca3af' : '#6b7280'
-              }}
-            >
-              {finePrint}
-            </p>
-          </ScrollAnimation>
-        )}
       </div>
     </section>
   );

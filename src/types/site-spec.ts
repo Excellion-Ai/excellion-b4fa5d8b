@@ -1,14 +1,35 @@
 // ============= SiteSpec Types =============
 // The source of truth for rendering any generated website in the preview frame
+// SPEC-FIRST ARCHITECTURE: AI outputs complete, valid specs - no fallbacks
 
 export type BusinessModel = 'SERVICE_BASED' | 'RETAIL_COMMERCE' | 'HOSPITALITY' | 'PORTFOLIO_IDENTITY';
+
+// Business intent - what type of business is this?
+export type BusinessIntent = 
+  | 'product_store' 
+  | 'service_business' 
+  | 'booking_business' 
+  | 'saas' 
+  | 'portfolio' 
+  | 'nonprofit'
+  | 'restaurant'
+  | 'gym'
+  | 'salon'
+  | 'lawyer'
+  | 'contractor'
+  | 'landscaping'
+  | 'dental'
+  | 'medical'
+  | 'real_estate';
 
 // Layout structure paradigms - controls overall page composition
 export type LayoutStructure = 
   | 'standard'      // Traditional vertical stack (backwards compatible)
   | 'bento'         // CSS Grid asymmetric tiles (SaaS/Tech)
+  | 'split'         // Split-screen immersive (Portfolios/Luxury)
   | 'layered'       // Z-index overlapping elements (Creative/Agency)
-  | 'horizontal';   // Horizontal scroll sections (Showcases)
+  | 'horizontal'    // Horizontal scroll sections (Showcases)
+  | 'minimal';      // Clean, minimal layout
 
 // Grid configuration for bento/tile-based layouts
 export type GridConfig = {
@@ -291,16 +312,13 @@ export type SitePage = {
   sections: SiteSection[];
 };
 
-// Business intent types for content matching
-export type BusinessIntent = 'product_store' | 'service_business' | 'booking_business' | 'saas' | 'portfolio' | 'nonprofit';
-
 // The complete SiteSpec - source of truth for preview rendering
 export type SiteSpec = {
   name: string;
   description?: string;
-  logo?: string;  // Logo URL for the site
+  logo?: string;
   businessModel: BusinessModel;
-  businessIntent?: BusinessIntent;  // NUCLEAR FIX: Intent for content matching
+  businessIntent?: BusinessIntent;  // AI-detected business type
   layoutStructure?: LayoutStructure;  // Layout paradigm for the site
   theme: SiteTheme;
   navigation: NavItem[];

@@ -1,6 +1,6 @@
 // Universal Niche Router - Deterministic category + goal + integrations detection
+// SPEC-FIRST: No content schemas or fallbacks
 
-import { getNicheSchema, NicheContentSchema } from './intentAwareFallbacks';
 import { HeroVariant, FeaturesVariant } from '@/types/app-spec';
 
 export type NicheCategory = 
@@ -45,13 +45,11 @@ export type NicheRoute = {
   integrationsNeeded: IntegrationType[];
   confidence: number;
   clarifyingQuestions?: string[];
-  // NEW: Content schema for this niche
-  contentSchema?: NicheContentSchema;
   preferredHeroVariant?: HeroVariant;
   preferredFeaturesVariant?: FeaturesVariant;
 };
 
-// Goal word patterns - highest priority
+// Goal word patterns
 const GOAL_PATTERNS: { pattern: RegExp; goal: ConversionGoal }[] = [
   { pattern: /\b(order|checkout|buy|cart|purchase|shop)\b/i, goal: 'buy_now' },
   { pattern: /\b(book|appointment|schedule|session|consult)\b/i, goal: 'book' },
@@ -153,30 +151,19 @@ const INTEGRATION_KEYWORDS: { pattern: RegExp; integration: IntegrationType }[] 
 ];
 
 function detectGoal(input: string, category: NicheCategory): ConversionGoal {
-  // Restaurant-specific goal detection
   if (category === 'restaurant') {
-    if (/\b(reservation|reserve|table|book|booking)\b/i.test(input)) {
-      return 'book';
-    }
-    if (/\b(order|delivery|pickup|takeout)\b/i.test(input)) {
-      return 'buy_now';
-    }
+    if (/\b(reservation|reserve|table|book|booking)\b/i.test(input)) return 'book';
+    if (/\b(order|delivery|pickup|takeout)\b/i.test(input)) return 'buy_now';
     return 'buy_now';
   }
 
-  // Fitness-specific goal detection
   if (category === 'fitness') {
-    if (/\b(book|class|session|schedule)\b/i.test(input)) {
-      return 'book';
-    }
-    // Default for fitness is membership subscription
+    if (/\b(book|class|session|schedule)\b/i.test(input)) return 'book';
     return 'subscribe';
   }
 
   for (const { pattern, goal } of GOAL_PATTERNS) {
-    if (pattern.test(input)) {
-      return goal;
-    }
+    if (pattern.test(input)) return goal;
   }
   return 'visit';
 }
@@ -184,9 +171,7 @@ function detectGoal(input: string, category: NicheCategory): ConversionGoal {
 function detectCategory(input: string): { category: NicheCategory; baseIntegrations: IntegrationType[] } {
   for (const { patterns, category, baseIntegrations } of CATEGORY_PATTERNS) {
     for (const pattern of patterns) {
-      if (pattern.test(input)) {
-        return { category, baseIntegrations };
-      }
+      if (pattern.test(input)) return { category, baseIntegrations };
     }
   }
   return { category: 'local_service', baseIntegrations: ['email_capture', 'maps'] };
@@ -196,9 +181,7 @@ function detectIntegrations(input: string, baseIntegrations: IntegrationType[]):
   const integrations = new Set<IntegrationType>(baseIntegrations);
   
   for (const { pattern, integration } of INTEGRATION_KEYWORDS) {
-    if (pattern.test(input)) {
-      integrations.add(integration);
-    }
+    if (pattern.test(input)) integrations.add(integration);
   }
   
   return Array.from(integrations);
@@ -207,7 +190,6 @@ function detectIntegrations(input: string, baseIntegrations: IntegrationType[]):
 function calculateConfidence(input: string, category: NicheCategory, goal: ConversionGoal): number {
   let confidence = 0.5;
   
-  // Category match adds confidence
   const categoryMatch = CATEGORY_PATTERNS.find(p => p.category === category);
   if (categoryMatch) {
     for (const pattern of categoryMatch.patterns) {
@@ -218,12 +200,7 @@ function calculateConfidence(input: string, category: NicheCategory, goal: Conve
     }
   }
   
-  // Goal match adds confidence
-  if (goal !== 'visit') {
-    confidence += 0.15;
-  }
-  
-  // Longer, more specific input adds confidence
+  if (goal !== 'visit') confidence += 0.15;
   if (input.length > 50) confidence += 0.1;
   if (input.length > 100) confidence += 0.05;
   
@@ -249,25 +226,13 @@ function generateClarifyingQuestions(confidence: number, category: NicheCategory
 export function routeNiche(input: string): NicheRoute {
   const lowerInput = input.toLowerCase();
   
-  // Detect category first so we can use category-specific goal detection
   const { category, baseIntegrations } = detectCategory(lowerInput);
   const goal = detectGoal(lowerInput, category);
   const integrationsNeeded = detectIntegrations(lowerInput, baseIntegrations);
   const confidence = calculateConfidence(lowerInput, category, goal);
   const clarifyingQuestions = generateClarifyingQuestions(confidence, category, goal);
   
-  // Get niche-specific content schema
-  const contentSchema = getNicheSchema(input);
-  
-  console.log('[NicheRouter] Detected:', { 
-    category, 
-    goal, 
-    integrationsNeeded, 
-    confidence,
-    hasContentSchema: !!contentSchema,
-    preferredHeroVariant: contentSchema?.heroVariant,
-    preferredFeaturesVariant: contentSchema?.featuresVariant,
-  });
+  console.log('[NicheRouter] Detected:', { category, goal, integrationsNeeded, confidence });
   
   return {
     category,
@@ -275,8 +240,5 @@ export function routeNiche(input: string): NicheRoute {
     integrationsNeeded,
     confidence,
     clarifyingQuestions,
-    contentSchema,
-    preferredHeroVariant: contentSchema?.heroVariant,
-    preferredFeaturesVariant: contentSchema?.featuresVariant,
   };
 }

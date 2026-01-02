@@ -1,14 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure, TestimonialItem, PricingTier, FAQItem, StatsItem, ServiceItem, TeamMember, GalleryItem, PortfolioItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent, StatsContent } from '@/types/site-spec';
+import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure, TestimonialItem, PricingTier, FAQItem, StatsItem, ServiceItem, TeamMember, GalleryItem, PortfolioItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent, StatsContent, BusinessIntent } from '@/types/site-spec';
 import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
 import { MotionIntensity } from '@/lib/motion/types';
 import { MotionProvider, MotionWrapper, SignatureFlourish, BackgroundAccent } from '@/components/motion';
 import { VisualModeProvider } from './VisualModeContext';
 import { VisualEditPanel } from './VisualEditPanel';
-import { BusinessIntent } from '@/lib/intentAwareFallbacks';
-import { fillMissingSiteContent } from '@/lib/siteSpecValidator';
 import {
   DndContext,
   closestCenter,
@@ -45,7 +43,6 @@ import { EditableText } from './EditableText';
 import { DraggableSection } from './DraggableSection';
 import { AnimatedSection } from './AnimatedSection';
 import { BentoLayout, BentoPillNav } from './layouts/BentoLayout';
-
 import { LayeredLayout, LayeredNav, LayeredHero, LayeredContentSection } from './layouts/LayeredLayout';
 import { HorizontalLayout, HorizontalNav, HorizontalHero, HorizontalScrollSection, HorizontalCard } from './layouts/HorizontalLayout';
 import { ScrollAnimation, StaggerContainer } from './animations/ScrollAnimations';
@@ -176,18 +173,12 @@ export function SiteRenderer({
     );
   }
 
-  // NUCLEAR FIX: Read businessIntent from siteSpec, fallback to prop, then default
-  const businessIntent = (siteSpec as any)?.businessIntent || propBusinessIntent || 'service_business';
-  console.log('[SiteRenderer] Using businessIntent:', businessIntent, 'from siteSpec:', !!(siteSpec as any)?.businessIntent);
+  // SPEC-FIRST: Read businessIntent from siteSpec, use as-is
+  const businessIntent = siteSpec?.businessIntent || 'service_business';
+  console.log('[SiteRenderer] Using businessIntent:', businessIntent);
 
-  // In preview mode, auto-fill missing content with intent-aware fallbacks
-  const effectiveSpec = useMemo(() => {
-    if (renderMode === 'preview') {
-      // NUCLEAR FIX: Pass the effective intent from siteSpec
-      return fillMissingSiteContent(siteSpec, businessIntent);
-    }
-    return siteSpec;
-  }, [siteSpec, renderMode, businessIntent]);
+  // SPEC-FIRST: No fallback filling - render exactly what AI provided
+  const effectiveSpec = siteSpec;
 
   const { theme, pages = [], navigation = [], footer, layoutStructure } = effectiveSpec;
   const currentPage = pages.length > 0 ? (pages[pageIndex] || pages[0]) : null;
@@ -272,7 +263,6 @@ export function SiteRenderer({
         sectionContent = (
           <PricingSection 
             {...commonProps}
-            businessIntent={businessIntent}
             onUpdateContent={onUpdatePricingContent ? (field, value) => onUpdatePricingContent(section.id, field, value) : undefined}
             onUpdateItem={onUpdatePricingItem ? (index, field, value) => onUpdatePricingItem(section.id, index, field, value) : undefined}
           />
@@ -308,7 +298,6 @@ export function SiteRenderer({
         sectionContent = (
           <CTASection 
             {...commonProps}
-            businessIntent={businessIntent}
             onUpdateContent={onUpdateCTAContent ? (field, value) => onUpdateCTAContent(section.id, field, value) : undefined}
           />
         );
