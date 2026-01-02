@@ -163,7 +163,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     if (priceId === PRICE_IDS.sprint_fee) {
       await grantCredits(userId, SPRINT_PASS_CREDITS, "Sprint Pass bonus credits", "sprint_pass");
       const sprintExpires = new Date();
-      sprintExpires.setDate(sprintExpires.getDate() + 7);
+      sprintExpires.setDate(sprintExpires.getDate() + 30);
       await updateUserPlan(userId, "pro", sprintExpires.toISOString());
       logStep("Sprint Pass processed");
     }

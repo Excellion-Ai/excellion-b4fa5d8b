@@ -252,9 +252,9 @@ const BuilderPricing = () => {
                   <Zap className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 7 days</p>
+                  <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 30 days</p>
                   <p className="text-sm text-muted-foreground">
-                    First-time only. Includes +150 credits. Full Pro access for 7 days. Auto-renews to Pro $29/mo unless you cancel.
+                    First-time only. Includes +150 credits. Full Pro access for 30 days. Auto-renews to Pro $29/mo unless you cancel.
                   </p>
                 </div>
               </div>
@@ -279,15 +279,11 @@ const BuilderPricing = () => {
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">Publishing + custom domain enabled during Sprint</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                         <span className="text-foreground">First-time only — one Sprint Pass per account</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">Auto-renews to Pro ($29/mo) after 7 days unless canceled</span>
+                        <span className="text-foreground">Auto-renews to Pro ($29/mo) after 30 days unless canceled</span>
                       </li>
                     </ul>
                     <div className="mt-6">
