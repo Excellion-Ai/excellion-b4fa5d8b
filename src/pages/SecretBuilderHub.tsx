@@ -1169,35 +1169,11 @@ export default function SecretBuilderHub() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Button 
-                      onClick={() => handleGenerate()}
-                      disabled={!idea.trim() || isGenerating}
-                      className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
-                    >
-                      {isRefining ? (
-                        <>
-                          <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
-                          Polishing…
-                        </>
-                      ) : isGenerating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating…
-                        </>
-                      ) : (
-                        <>
-                          Generate
-                          <Send className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
-                    
                     {/* Build Website button - Railway API */}
                     <Button 
                       onClick={() => railwayGen.generateSite(idea)}
                       disabled={!idea.trim() || railwayGen.isGenerating}
-                      variant="outline"
-                      className="h-9 px-5 border-primary/50 hover:bg-primary/10"
+                      className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
                     >
                       {railwayGen.isGenerating ? (
                         <>
@@ -1206,24 +1182,11 @@ export default function SecretBuilderHub() {
                         </>
                       ) : (
                         <>
-                          <Rocket className="w-4 h-4 mr-2" />
                           Build Website
+                          <Send className="w-4 h-4 ml-2" />
                         </>
                       )}
                     </Button>
-                    
-                    {/* View improved prompt link - only show if we have a refined prompt */}
-                    {lastRefinedPrompt && lastRefinedPrompt !== idea && !isGenerating && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-xs text-muted-foreground hover:text-primary gap-1"
-                        onClick={() => setShowImprovedPromptModal(true)}
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        View improved
-                      </Button>
-                    )}
                   </div>
                 </div>
               </CardContent>
