@@ -101,6 +101,7 @@ import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
 import { TEMPLATES } from '@/components/secret-builder/templateSpecs';
 import { InterviewStepper } from '@/components/InterviewStepper';
 import { useInterviewIntake } from '@/hooks/useInterviewIntake';
+import { useRailwayGeneration } from '@/hooks/useRailwayGeneration';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
@@ -207,6 +208,9 @@ export default function SecretBuilderHub() {
   
   // Interview intake hook
   const interview = useInterviewIntake(idea);
+  
+  // Railway generation hook
+  const railwayGen = useRailwayGeneration();
   
   // Theme state for quick toggle
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -1188,6 +1192,26 @@ export default function SecretBuilderHub() {
                       )}
                     </Button>
                     
+                    {/* Build Website button - Railway API */}
+                    <Button 
+                      onClick={() => railwayGen.generateSite(idea)}
+                      disabled={!idea.trim() || railwayGen.isGenerating}
+                      variant="outline"
+                      className="h-9 px-5 border-primary/50 hover:bg-primary/10"
+                    >
+                      {railwayGen.isGenerating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Building…
+                        </>
+                      ) : (
+                        <>
+                          <Rocket className="w-4 h-4 mr-2" />
+                          Build Website
+                        </>
+                      )}
+                    </Button>
+                    
                     {/* View improved prompt link - only show if we have a refined prompt */}
                     {lastRefinedPrompt && lastRefinedPrompt !== idea && !isGenerating && (
                       <Button
@@ -1204,6 +1228,56 @@ export default function SecretBuilderHub() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Generated Code Display */}
+            {railwayGen.generatedCode && (
+              <Card className="mt-4 border-primary/30 bg-card/50">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      Generated Website Code
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(railwayGen.generatedCode || '');
+                          toast({ title: 'Code copied to clipboard' });
+                        }}
+                        className="h-8 text-xs"
+                      >
+                        <Copy className="w-3.5 h-3.5 mr-1" />
+                        Copy
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => railwayGen.reset()}
+                        className="h-8 text-xs text-muted-foreground"
+                      >
+                        <X className="w-3.5 h-3.5 mr-1" />
+                        Clear
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-[300px] w-full rounded-md border bg-muted/30 p-4">
+                    <pre className="text-xs text-foreground whitespace-pre-wrap font-mono">
+                      {railwayGen.generatedCode}
+                    </pre>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Generation Status */}
+            {railwayGen.isGenerating && railwayGen.status && (
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Status: {railwayGen.status}</span>
+              </div>
+            )}
 
             {/* Quick Prompts */}
             <div className="flex flex-wrap gap-2 mt-4 justify-center">

@@ -304,6 +304,36 @@ export type Database = {
           },
         ]
       }
+      generated_sites: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          prompt: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          prompt: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          prompt?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       github_connections: {
         Row: {
           access_token: string
