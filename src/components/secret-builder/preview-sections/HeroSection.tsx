@@ -1,8 +1,11 @@
-import { SiteSection, SiteTheme, HeroContent, HeroVariant } from '@/types/app-spec';
+import { SiteSection, SiteTheme, HeroContent } from '@/types/app-spec';
 import { EditableText } from '../EditableText';
 import { EditableElement } from '../EditableElement';
-import { MotionWrapper, MotionButton, SignatureFlourish, BackgroundAccent, useMotionProfile } from '@/components/motion';
+import { MotionButton, SignatureFlourish, BackgroundAccent, useMotionProfile } from '@/components/motion';
 import { motion } from 'framer-motion';
+
+// Hero variants: 'split' | 'centered' | 'glassmorphism'
+export type HeroVariant = 'split' | 'centered' | 'glassmorphism';
 
 interface HeroSectionProps {
   section: SiteSection;
@@ -12,43 +15,22 @@ interface HeroSectionProps {
   onUpdateContent?: (field: keyof HeroContent, value: string) => void;
 }
 
-// Animation variants for entrance effects
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
   },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6 },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
 const slideInRight = {
   hidden: { opacity: 0, x: 60 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.8 },
-  },
-};
-
-const scaleIn = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.7 },
-  },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.8 } },
 };
 
 export function HeroSection({ section, theme, siteName, asTile = false, onUpdateContent }: HeroSectionProps) {
@@ -60,258 +42,86 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
   const subheadline = content?.subheadline || section.description || '';
   const backgroundImage = content?.backgroundImage;
   const logo = (content as any)?.logo;
-  const variant: HeroVariant = content?.variant || 'simple-centered';
+  
+  // Map old variants to new ones, default to 'centered'
+  const rawVariant = content?.variant || 'centered';
+  const variant: HeroVariant = 
+    rawVariant === 'split-image-right' ? 'split' :
+    rawVariant === 'minimal-impact' ? 'glassmorphism' :
+    rawVariant === 'simple-centered' ? 'centered' :
+    (rawVariant as HeroVariant) || 'centered';
 
-  // CHILD-PROOF CTA EXTRACTION: Handle both flat and array formats
-  // Fallback chain: ctaText -> ctas[0].label -> ctas[0].text -> ctas[0].title -> cta.label -> cta.text -> cta.title
+  // Child-proof CTA extraction
   const getCTALabel = (index: 0 | 1): string => {
     const c = content as any;
     if (!c) return '';
-    
-    // Flat format (preferred)
     if (index === 0 && c.ctaText) return c.ctaText;
     if (index === 1 && c.secondaryCtaText) return c.secondaryCtaText;
-    
-    // Array format: ctas[]
     if (Array.isArray(c.ctas) && c.ctas[index]) {
       const cta = c.ctas[index];
       return cta?.label || cta?.text || cta?.title || '';
     }
-    
-    // Object format: cta / secondaryCta
-    if (index === 0 && c.cta) {
-      return c.cta?.label || c.cta?.text || c.cta?.title || '';
-    }
-    if (index === 1 && c.secondaryCta) {
-      return c.secondaryCta?.label || c.secondaryCta?.text || c.secondaryCta?.title || '';
-    }
-    
+    if (index === 0 && c.cta) return c.cta?.label || c.cta?.text || c.cta?.title || '';
+    if (index === 1 && c.secondaryCta) return c.secondaryCta?.label || c.secondaryCta?.text || c.secondaryCta?.title || '';
     return '';
   };
   
   const ctaText = getCTALabel(0);
   const secondaryCtaText = getCTALabel(1);
 
-  const backgroundStyle = backgroundImage
-    ? {
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }
-    : {
-        background: isDark
-          ? `linear-gradient(135deg, ${theme.primaryColor}20, ${theme.secondaryColor}20)`
-          : `linear-gradient(135deg, ${theme.primaryColor}10, ${theme.secondaryColor}10)`,
-      };
-
-  // Tile mode for Bento layout - compact, asymmetric
+  // Tile mode for Bento layout
   if (asTile) {
     return (
       <section 
         id={section.id}
         className="h-full min-h-[300px] flex flex-col justify-end p-6 lg:p-8 relative contain-layout"
-        style={backgroundStyle}
+        style={{
+          backgroundImage: backgroundImage 
+            ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${backgroundImage})`
+            : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          background: !backgroundImage 
+            ? `linear-gradient(135deg, ${theme.primaryColor}20, ${theme.secondaryColor}20)`
+            : undefined,
+        }}
       >
-        {intensity !== 'off' && intensity !== 'subtle' && (
-          <BackgroundAccent position="hero" />
-        )}
-        {intensity !== 'off' && <SignatureFlourish position="hero" />}
-        
         <div className="max-w-xl overflow-hidden relative z-10">
-          <MotionWrapper variant="hero">
-            {onUpdateContent ? (
-              <EditableText
-                value={headline}
-                onSave={(val) => onUpdateContent('headline', val)}
-                as="h1"
-                className="text-2xl lg:text-4xl font-bold mb-3 break-words"
-                style={{ 
-                  fontFamily: theme.fontHeading || 'system-ui',
-                  color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
-                  overflowWrap: 'anywhere'
-                }}
-              />
-            ) : (
-              <h1 
-                className="text-2xl lg:text-4xl font-bold mb-3 break-words"
-                style={{ 
-                  fontFamily: theme.fontHeading || 'system-ui',
-                  color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
-                  overflowWrap: 'anywhere'
-                }}
+          <h1 
+            className="text-2xl lg:text-4xl font-bold mb-3 break-words"
+            style={{ 
+              fontFamily: theme.fontHeading || 'system-ui',
+              color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
+            }}
+          >
+            {headline}
+          </h1>
+          <p 
+            className="text-sm lg:text-base mb-5 opacity-80 break-words"
+            style={{ 
+              fontFamily: theme.fontBody || 'system-ui',
+              color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
+            }}
+          >
+            {subheadline}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {ctaText.trim() && (
+              <button
+                className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all hover:opacity-90"
+                style={{ backgroundColor: theme.primaryColor }}
               >
-                {headline}
-              </h1>
+                {ctaText}
+              </button>
             )}
-          </MotionWrapper>
-          
-          <MotionWrapper variant="text" delay={0.15}>
-            {onUpdateContent ? (
-              <EditableText
-                value={subheadline}
-                onSave={(val) => onUpdateContent('subheadline', val)}
-                as="p"
-                multiline
-                className="text-sm lg:text-base mb-5 opacity-80 break-words"
-                style={{ 
-                  fontFamily: theme.fontBody || 'system-ui',
-                  color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
-                  overflowWrap: 'anywhere'
-                }}
-              />
-            ) : (
-              <p 
-                className="text-sm lg:text-base mb-5 opacity-80 break-words"
-                style={{ 
-                  fontFamily: theme.fontBody || 'system-ui',
-                  color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
-                  overflowWrap: 'anywhere'
-                }}
-              >
-                {subheadline}
-              </p>
-            )}
-          </MotionWrapper>
-          
-          <MotionWrapper variant="section" delay={0.3}>
-            <div className="flex flex-wrap gap-3">
-              {ctaText.trim() && (
-                <MotionButton
-                  className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all"
-                  style={{ backgroundColor: theme.primaryColor }}
-                >
-                  {ctaText}
-                </MotionButton>
-              )}
-              {secondaryCtaText.trim() && (
-                <MotionButton
-                  className="px-5 py-2 rounded-lg font-semibold border text-sm transition-all"
-                  style={{ 
-                    borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
-                    color: backgroundImage ? '#ffffff' : theme.primaryColor
-                  }}
-                >
-                  {secondaryCtaText}
-                </MotionButton>
-              )}
-            </div>
-          </MotionWrapper>
+          </div>
         </div>
       </section>
     );
   }
 
-  // Render based on variant
-  const renderContent = () => {
-    switch (variant) {
-      case 'split-image-right':
-        return renderSplitImageRight();
-      case 'minimal-impact':
-        return renderMinimalImpact();
-      case 'simple-centered':
-      default:
-        return renderSimpleCentered();
-    }
-  };
-
-  // VARIANT: Simple Centered (default)
-  const renderSimpleCentered = () => (
-    <motion.div 
-      className="max-w-4xl mx-auto text-center overflow-hidden relative z-10"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {logo && (
-        <motion.div variants={itemVariants}>
-          <img 
-            src={logo} 
-            alt={`${siteName} logo`}
-            className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 object-contain aspect-square"
-          />
-        </motion.div>
-      )}
-      <motion.div variants={itemVariants}>
-        {onUpdateContent ? (
-          <EditableText
-            value={headline}
-            onSave={(val) => onUpdateContent('headline', val)}
-            as="h1"
-            className="text-4xl md:text-6xl font-bold mb-6 break-words"
-            style={{ 
-              fontFamily: theme.fontHeading || 'system-ui',
-              color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
-              overflowWrap: 'anywhere'
-            }}
-          />
-        ) : (
-          <h1 
-            className="text-4xl md:text-6xl font-bold mb-6 break-words"
-            style={{ 
-              fontFamily: theme.fontHeading || 'system-ui',
-              color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
-              overflowWrap: 'anywhere'
-            }}
-          >
-            {headline}
-          </h1>
-        )}
-      </motion.div>
-      
-      <motion.div variants={itemVariants}>
-        {onUpdateContent ? (
-          <EditableText
-            value={subheadline}
-            onSave={(val) => onUpdateContent('subheadline', val)}
-            as="p"
-            multiline
-            className="text-lg md:text-xl mb-8 max-w-2xl mx-auto break-words"
-            style={{ 
-              fontFamily: theme.fontBody || 'system-ui',
-              color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
-              overflowWrap: 'anywhere'
-            }}
-          />
-        ) : (
-          <p 
-            className="text-lg md:text-xl mb-8 max-w-2xl mx-auto break-words"
-            style={{ 
-              fontFamily: theme.fontBody || 'system-ui',
-              color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
-              overflowWrap: 'anywhere'
-            }}
-          >
-            {subheadline}
-          </p>
-        )}
-      </motion.div>
-      
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center">
-        {ctaText.trim() && (
-          <MotionButton
-            className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
-            style={{ backgroundColor: theme.primaryColor }}
-          >
-            {ctaText}
-          </MotionButton>
-        )}
-        {secondaryCtaText.trim() && (
-          <MotionButton
-            className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
-            style={{ 
-              borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
-              color: backgroundImage ? '#ffffff' : theme.primaryColor
-            }}
-          >
-            {secondaryCtaText}
-          </MotionButton>
-        )}
-      </motion.div>
-    </motion.div>
-  );
-
-  // VARIANT: Split Image Right (2-column)
-  const renderSplitImageRight = () => (
+  // VARIANT: Split (image right, 2-column layout)
+  const renderSplit = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center max-w-7xl mx-auto relative z-10">
       <motion.div 
         className="text-left overflow-hidden"
@@ -321,11 +131,7 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
       >
         {logo && (
           <motion.div variants={itemVariants}>
-            <img 
-              src={logo} 
-              alt={`${siteName} logo`}
-              className="w-16 h-16 mb-6 object-contain"
-            />
+            <img src={logo} alt={`${siteName} logo`} className="w-16 h-16 mb-6 object-contain" />
           </motion.div>
         )}
         <motion.div variants={itemVariants}>
@@ -335,26 +141,14 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
               onSave={(val) => onUpdateContent('headline', val)}
               as="h1"
               className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 break-words"
-              style={{ 
-                fontFamily: theme.fontHeading || 'system-ui',
-                color: isDark ? '#ffffff' : theme.primaryColor,
-                overflowWrap: 'anywhere'
-              }}
+              style={{ fontFamily: theme.fontHeading, color: isDark ? '#ffffff' : theme.primaryColor }}
             />
           ) : (
-            <h1 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 break-words"
-              style={{ 
-                fontFamily: theme.fontHeading || 'system-ui',
-                color: isDark ? '#ffffff' : theme.primaryColor,
-                overflowWrap: 'anywhere'
-              }}
-            >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 break-words" style={{ fontFamily: theme.fontHeading, color: isDark ? '#ffffff' : theme.primaryColor }}>
               {headline}
             </h1>
           )}
         </motion.div>
-        
         <motion.div variants={itemVariants}>
           {onUpdateContent ? (
             <EditableText
@@ -363,110 +157,65 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
               as="p"
               multiline
               className="text-lg md:text-xl mb-8 break-words"
-              style={{ 
-                fontFamily: theme.fontBody || 'system-ui',
-                color: isDark ? '#e5e5e5' : '#4b5563',
-                overflowWrap: 'anywhere'
-              }}
+              style={{ fontFamily: theme.fontBody, color: isDark ? '#e5e5e5' : '#4b5563' }}
             />
           ) : (
-            <p 
-              className="text-lg md:text-xl mb-8 break-words"
-              style={{ 
-                fontFamily: theme.fontBody || 'system-ui',
-                color: isDark ? '#e5e5e5' : '#4b5563',
-                overflowWrap: 'anywhere'
-              }}
-            >
+            <p className="text-lg md:text-xl mb-8 break-words" style={{ fontFamily: theme.fontBody, color: isDark ? '#e5e5e5' : '#4b5563' }}>
               {subheadline}
             </p>
           )}
         </motion.div>
-        
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
           {ctaText.trim() && (
-            <MotionButton
-              className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
-              style={{ backgroundColor: theme.primaryColor }}
-            >
+            <MotionButton className="px-8 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: theme.primaryColor }}>
               {ctaText}
             </MotionButton>
           )}
           {secondaryCtaText.trim() && (
-            <MotionButton
-              className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
-              style={{ 
-                borderColor: theme.primaryColor,
-                color: theme.primaryColor
-              }}
-            >
+            <MotionButton className="px-8 py-3 rounded-lg font-semibold border-2" style={{ borderColor: theme.primaryColor, color: theme.primaryColor }}>
               {secondaryCtaText}
             </MotionButton>
           )}
         </motion.div>
       </motion.div>
-      
-      <motion.div 
-        className="relative"
-        variants={slideInRight}
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div className="relative" variants={slideInRight} initial="hidden" animate="visible">
         {backgroundImage ? (
-          <img 
-            src={backgroundImage} 
-            alt="Hero visual"
-            className="w-full h-64 lg:h-[500px] object-cover rounded-2xl shadow-2xl"
-          />
+          <img src={backgroundImage} alt="Hero visual" className="w-full h-64 lg:h-[500px] object-cover rounded-2xl shadow-2xl" />
         ) : (
-          <div 
-            className="w-full h-64 lg:h-[500px] rounded-2xl"
-            style={{ 
-              background: `linear-gradient(135deg, ${theme.primaryColor}40, ${theme.secondaryColor}40)`,
-            }}
-          />
+          <div className="w-full h-64 lg:h-[500px] rounded-2xl" style={{ background: `linear-gradient(135deg, ${theme.primaryColor}40, ${theme.secondaryColor}40)` }} />
         )}
       </motion.div>
     </div>
   );
 
-  // VARIANT: Minimal Impact (large typography, minimal elements)
-  const renderMinimalImpact = () => (
+  // VARIANT: Centered (minimalist, text-focused)
+  const renderCentered = () => (
     <motion.div 
-      className="max-w-5xl mx-auto text-center overflow-hidden relative z-10 py-12"
+      className="max-w-4xl mx-auto text-center overflow-hidden relative z-10"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div variants={scaleIn}>
+      {logo && (
+        <motion.div variants={itemVariants}>
+          <img src={logo} alt={`${siteName} logo`} className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 object-contain" />
+        </motion.div>
+      )}
+      <motion.div variants={itemVariants}>
         {onUpdateContent ? (
           <EditableText
             value={headline}
             onSave={(val) => onUpdateContent('headline', val)}
             as="h1"
-            className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 tracking-tight break-words"
-            style={{ 
-              fontFamily: theme.fontHeading || 'system-ui',
-              color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
-              overflowWrap: 'anywhere',
-              lineHeight: 1.1,
-            }}
+            className="text-4xl md:text-6xl font-bold mb-6 break-words"
+            style={{ fontFamily: theme.fontHeading, color: isDark ? '#ffffff' : theme.primaryColor }}
           />
         ) : (
-          <h1 
-            className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 tracking-tight break-words"
-            style={{ 
-              fontFamily: theme.fontHeading || 'system-ui',
-              color: backgroundImage ? '#ffffff' : (isDark ? '#ffffff' : theme.primaryColor),
-              overflowWrap: 'anywhere',
-              lineHeight: 1.1,
-            }}
-          >
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 break-words" style={{ fontFamily: theme.fontHeading, color: isDark ? '#ffffff' : theme.primaryColor }}>
             {headline}
           </h1>
         )}
       </motion.div>
-      
       <motion.div variants={itemVariants}>
         {onUpdateContent ? (
           <EditableText
@@ -474,39 +223,129 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
             onSave={(val) => onUpdateContent('subheadline', val)}
             as="p"
             multiline
-            className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto break-words opacity-70"
-            style={{ 
-              fontFamily: theme.fontBody || 'system-ui',
-              color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
-              overflowWrap: 'anywhere'
-            }}
+            className="text-lg md:text-xl mb-8 max-w-2xl mx-auto break-words"
+            style={{ fontFamily: theme.fontBody, color: isDark ? '#e5e5e5' : '#4b5563' }}
           />
         ) : (
-          <p 
-            className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto break-words opacity-70"
-            style={{ 
-              fontFamily: theme.fontBody || 'system-ui',
-              color: backgroundImage ? '#e5e5e5' : (isDark ? '#e5e5e5' : '#4b5563'),
-              overflowWrap: 'anywhere'
-            }}
-          >
+          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto break-words" style={{ fontFamily: theme.fontBody, color: isDark ? '#e5e5e5' : '#4b5563' }}>
             {subheadline}
           </p>
         )}
       </motion.div>
-      
-      <motion.div variants={itemVariants}>
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center">
         {ctaText.trim() && (
-          <MotionButton
-            className="px-12 py-4 rounded-full font-bold text-lg text-white transition-all shadow-lg hover:shadow-xl"
-            style={{ backgroundColor: theme.primaryColor }}
-          >
+          <MotionButton className="px-8 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: theme.primaryColor }}>
             {ctaText}
+          </MotionButton>
+        )}
+        {secondaryCtaText.trim() && (
+          <MotionButton className="px-8 py-3 rounded-lg font-semibold border-2" style={{ borderColor: theme.primaryColor, color: theme.primaryColor }}>
+            {secondaryCtaText}
           </MotionButton>
         )}
       </motion.div>
     </motion.div>
   );
+
+  // VARIANT: Glassmorphism (text over blurred background image)
+  const renderGlassmorphism = () => (
+    <motion.div 
+      className="max-w-4xl mx-auto text-center overflow-hidden relative z-10"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div 
+        variants={itemVariants}
+        className="backdrop-blur-xl bg-white/10 dark:bg-black/30 border border-white/20 rounded-3xl p-8 md:p-12 shadow-2xl"
+      >
+        {logo && (
+          <img src={logo} alt={`${siteName} logo`} className="w-20 h-20 mx-auto mb-6 object-contain" />
+        )}
+        {onUpdateContent ? (
+          <EditableText
+            value={headline}
+            onSave={(val) => onUpdateContent('headline', val)}
+            as="h1"
+            className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 break-words tracking-tight"
+            style={{ fontFamily: theme.fontHeading, color: '#ffffff', textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}
+          />
+        ) : (
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 break-words tracking-tight" style={{ fontFamily: theme.fontHeading, color: '#ffffff', textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+            {headline}
+          </h1>
+        )}
+        {onUpdateContent ? (
+          <EditableText
+            value={subheadline}
+            onSave={(val) => onUpdateContent('subheadline', val)}
+            as="p"
+            multiline
+            className="text-xl md:text-2xl mb-10 max-w-2xl mx-auto break-words opacity-90"
+            style={{ fontFamily: theme.fontBody, color: '#e5e5e5' }}
+          />
+        ) : (
+          <p className="text-xl md:text-2xl mb-10 max-w-2xl mx-auto break-words opacity-90" style={{ fontFamily: theme.fontBody, color: '#e5e5e5' }}>
+            {subheadline}
+          </p>
+        )}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {ctaText.trim() && (
+            <MotionButton 
+              className="px-10 py-4 rounded-full font-bold text-lg text-white shadow-lg hover:shadow-xl transition-all"
+              style={{ backgroundColor: theme.primaryColor }}
+            >
+              {ctaText}
+            </MotionButton>
+          )}
+          {secondaryCtaText.trim() && (
+            <MotionButton 
+              className="px-10 py-4 rounded-full font-bold text-lg border-2 backdrop-blur-sm"
+              style={{ borderColor: 'rgba(255,255,255,0.5)', color: '#ffffff' }}
+            >
+              {secondaryCtaText}
+            </MotionButton>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+
+  // Switch statement to render chosen layout
+  const renderContent = () => {
+    switch (variant) {
+      case 'split':
+        return renderSplit();
+      case 'glassmorphism':
+        return renderGlassmorphism();
+      case 'centered':
+      default:
+        return renderCentered();
+    }
+  };
+
+  // Background style based on variant
+  const getBackgroundStyle = () => {
+    if (variant === 'glassmorphism' && backgroundImage) {
+      return {
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      };
+    }
+    if (variant === 'split') {
+      return {
+        background: isDark
+          ? `linear-gradient(135deg, ${theme.primaryColor}10, ${theme.secondaryColor}10)`
+          : `linear-gradient(135deg, ${theme.primaryColor}05, ${theme.secondaryColor}05)`,
+      };
+    }
+    return {
+      background: isDark
+        ? `linear-gradient(135deg, ${theme.primaryColor}20, ${theme.secondaryColor}20)`
+        : `linear-gradient(135deg, ${theme.primaryColor}10, ${theme.secondaryColor}10)`,
+    };
+  };
 
   return (
     <EditableElement
@@ -523,20 +362,11 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
     >
       <section 
         id={section.id}
-        className={`min-h-[400px] flex items-center justify-center px-6 relative contain-layout ${
-          variant === 'split-image-right' ? 'py-16 md:py-24' : 'py-12 md:py-16'
-        }`}
-        style={variant === 'split-image-right' ? { 
-          background: isDark
-            ? `linear-gradient(135deg, ${theme.primaryColor}10, ${theme.secondaryColor}10)`
-            : `linear-gradient(135deg, ${theme.primaryColor}05, ${theme.secondaryColor}05)`,
-        } : backgroundStyle}
+        className="min-h-[500px] flex items-center justify-center px-6 relative contain-layout py-16 md:py-24"
+        style={getBackgroundStyle()}
       >
-        {intensity !== 'off' && intensity !== 'subtle' && (
-          <BackgroundAccent position="hero" />
-        )}
+        {intensity !== 'off' && intensity !== 'subtle' && <BackgroundAccent position="hero" />}
         {intensity !== 'off' && <SignatureFlourish position="hero" />}
-        
         {renderContent()}
       </section>
     </EditableElement>
