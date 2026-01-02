@@ -1465,8 +1465,39 @@ function detectMessageIntent(message: string): 'question' | 'generation' | 'edit
   return 'generation';
 }
 
+// ====================================
+// DESIGN DIRECTOR PREAMBLE - Prepended to all system prompts
+// ====================================
+const DESIGN_DIRECTOR_PREAMBLE = `
+====================================
+## YOUR ROLE: SENIOR DESIGN DIRECTOR
+====================================
+
+You are a Senior Design Director with 15+ years of experience creating high-converting websites for Fortune 500 clients. You treat every project like a million-dollar brand engagement.
+
+**YOUR DESIGN PHILOSOPHY (Non-Negotiable):**
+
+1. **CLEAN WHITESPACE** - Breathing room is premium. Sections need generous padding (py-24 minimum). Never crowd elements. White space = sophistication.
+
+2. **BENEFIT-DRIVEN COPY** - Every headline answers "What's in it for me?" No feature lists. Lead with outcomes. "Get Your Saturdays Back" beats "Lawn Care Services."
+
+3. **HIGH-CONTRAST VISUAL HIERARCHY** - Important elements MUST pop. Headlines demand attention. CTAs must be impossible to miss. Background/foreground separation is critical.
+
+**ANTI-PATTERNS TO AVOID (Your Reputation Is On The Line):**
+- Generic marketing fluff ("We're passionate about excellence")
+- Feature dumps without benefits
+- Weak color contrast that makes text hard to read
+- Cramped layouts with no breathing room
+- Headlines that describe instead of persuade
+- CTAs that blend into the background
+
+**YOUR QUALITY STANDARD:**
+Before outputting, ask: "Would a creative director at a top agency approve this?" If uncertain, elevate the design.
+
+`;
+
 // Conversational system prompt for answering questions (not generating sites)
-const QUESTION_SYSTEM_PROMPT = `You are a helpful website building assistant. 
+const QUESTION_SYSTEM_PROMPT = DESIGN_DIRECTOR_PREAMBLE + `You are a helpful website building assistant. 
 
 Your role is to ANSWER QUESTIONS and provide guidance - NOT to generate websites. The user is asking you a question about their website project, features, or options.
 
@@ -1518,7 +1549,7 @@ function extractColorsFromPrompt(prompt: string): { primary?: string; accent?: s
 
 // ULTRA-FAST MODE: Minimized prompt for sub-10s first byte
 // Optimized for streaming: outputs sections sequentially for speculative rendering
-const FAST_SYSTEM_PROMPT = `You are a website builder AI. You create websites and explain what you built.
+const FAST_SYSTEM_PROMPT = DESIGN_DIRECTOR_PREAMBLE + `You are a website builder AI. You create websites and explain what you built.
 
 ## ⚠️ CRITICAL: YOUR RESPONSE FORMAT (READ FIRST - THIS IS MANDATORY) ⚠️
 
@@ -1631,7 +1662,7 @@ const FEW_SHOT_EXAMPLE = {
 };
 
 
-const SYSTEM_PROMPT = `## ⚠️ CRITICAL: SUMMARY FORMAT (READ THIS FIRST - HIGHEST PRIORITY) ⚠️
+const SYSTEM_PROMPT = DESIGN_DIRECTOR_PREAMBLE + `## ⚠️ CRITICAL: SUMMARY FORMAT (READ THIS FIRST - HIGHEST PRIORITY) ⚠️
 
 Your response MUST begin with a conversational, SPECIFIC summary. This is what the user reads!
 
@@ -3034,7 +3065,7 @@ ${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: 'google/gemini-2.5-pro',
           messages: [
             { role: "system", content: questionPrompt },
             ...messages,
@@ -3299,12 +3330,12 @@ If you cannot fulfill these requirements, explain why in your conversational res
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
     console.log(`[BOT-CHAT:${requestId}] Total messages to send: ${messages.length + 1}`);
 
-    // Model selection: gemini-2.5-flash for all generation (balanced speed + quality)
-    // flash-lite was too low quality, flash provides 10-20s generation with better output
-    const selectedModel = 'google/gemini-2.5-flash';
+    // Model selection: gemini-2.5-pro for highest quality reasoning and copy
+    // Upgraded from flash for better intelligence at the cost of ~2x latency
+    const selectedModel = 'google/gemini-2.5-pro';
     
-    // Token limits: 3500 for fast mode (compact but complete), 6000 for refinements
-    const maxTokens = isFastMode ? 3500 : 6000;
+    // Token limits: 4000 for fast mode, 8000 for refinements (pro model handles larger outputs better)
+    const maxTokens = isFastMode ? 4000 : 8000;
     
     console.log(`[BOT-CHAT:${requestId}] Model: ${selectedModel}, Max tokens: ${maxTokens}`);
 
