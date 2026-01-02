@@ -147,21 +147,31 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
           
           <MotionWrapper variant="section" delay={0.3}>
             <div className="flex flex-wrap gap-3">
-              <MotionButton
-                className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all"
-                style={{ backgroundColor: theme.primaryColor }}
-              >
-                {ctaText}
-              </MotionButton>
-              <MotionButton
-                className="px-5 py-2 rounded-lg font-semibold border text-sm transition-all"
-                style={{ 
-                  borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
-                  color: backgroundImage ? '#ffffff' : theme.primaryColor
-                }}
-              >
-                {secondaryCtaText}
-              </MotionButton>
+              {(() => {
+                const primaryLabel = ctaText || (content as any)?.cta?.label || (content as any)?.cta?.text || '';
+                return primaryLabel.trim() ? (
+                  <MotionButton
+                    className="px-5 py-2 rounded-lg font-semibold text-white text-sm transition-all"
+                    style={{ backgroundColor: theme.primaryColor }}
+                  >
+                    {primaryLabel}
+                  </MotionButton>
+                ) : null;
+              })()}
+              {(() => {
+                const secondaryLabel = secondaryCtaText || (content as any)?.secondaryCta?.label || (content as any)?.secondaryCta?.text || '';
+                return secondaryLabel.trim() ? (
+                  <MotionButton
+                    className="px-5 py-2 rounded-lg font-semibold border text-sm transition-all"
+                    style={{ 
+                      borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
+                      color: backgroundImage ? '#ffffff' : theme.primaryColor
+                    }}
+                  >
+                    {secondaryLabel}
+                  </MotionButton>
+                ) : null;
+              })()}
             </div>
           </MotionWrapper>
         </div>
@@ -255,21 +265,31 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
       </motion.div>
       
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center">
-        <MotionButton
-          className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
-          style={{ backgroundColor: theme.primaryColor }}
-        >
-          {ctaText}
-        </MotionButton>
-        <MotionButton
-          className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
-          style={{ 
-            borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
-            color: backgroundImage ? '#ffffff' : theme.primaryColor
-          }}
-        >
-          {secondaryCtaText}
-        </MotionButton>
+        {(() => {
+          const primaryLabel = ctaText || (content as any)?.cta?.label || (content as any)?.cta?.text || '';
+          return primaryLabel.trim() ? (
+            <MotionButton
+              className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
+              style={{ backgroundColor: theme.primaryColor }}
+            >
+              {primaryLabel}
+            </MotionButton>
+          ) : null;
+        })()}
+        {(() => {
+          const secondaryLabel = secondaryCtaText || (content as any)?.secondaryCta?.label || (content as any)?.secondaryCta?.text || '';
+          return secondaryLabel.trim() ? (
+            <MotionButton
+              className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
+              style={{ 
+                borderColor: backgroundImage ? '#ffffff' : theme.primaryColor,
+                color: backgroundImage ? '#ffffff' : theme.primaryColor
+              }}
+            >
+              {secondaryLabel}
+            </MotionButton>
+          ) : null;
+        })()}
       </motion.div>
     </motion.div>
   );
@@ -348,21 +368,31 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
         </motion.div>
         
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
-          <MotionButton
-            className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
-            style={{ backgroundColor: theme.primaryColor }}
-          >
-            {ctaText}
-          </MotionButton>
-          <MotionButton
-            className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
-            style={{ 
-              borderColor: theme.primaryColor,
-              color: theme.primaryColor
-            }}
-          >
-            {secondaryCtaText}
-          </MotionButton>
+          {(() => {
+            const primaryLabel = ctaText || (content as any)?.cta?.label || (content as any)?.cta?.text || '';
+            return primaryLabel.trim() ? (
+              <MotionButton
+                className="px-8 py-3 rounded-lg font-semibold text-white transition-all"
+                style={{ backgroundColor: theme.primaryColor }}
+              >
+                {primaryLabel}
+              </MotionButton>
+            ) : null;
+          })()}
+          {(() => {
+            const secondaryLabel = secondaryCtaText || (content as any)?.secondaryCta?.label || (content as any)?.secondaryCta?.text || '';
+            return secondaryLabel.trim() ? (
+              <MotionButton
+                className="px-8 py-3 rounded-lg font-semibold border-2 transition-all"
+                style={{ 
+                  borderColor: theme.primaryColor,
+                  color: theme.primaryColor
+                }}
+              >
+                {secondaryLabel}
+              </MotionButton>
+            ) : null;
+          })()}
         </motion.div>
       </motion.div>
       
@@ -456,12 +486,17 @@ export function HeroSection({ section, theme, siteName, asTile = false, onUpdate
       </motion.div>
       
       <motion.div variants={itemVariants}>
-        <MotionButton
-          className="px-12 py-4 rounded-full font-bold text-lg text-white transition-all shadow-lg hover:shadow-xl"
-          style={{ backgroundColor: theme.primaryColor }}
-        >
-          {ctaText}
-        </MotionButton>
+        {(() => {
+          const primaryLabel = ctaText || (content as any)?.cta?.label || (content as any)?.cta?.text || '';
+          return primaryLabel.trim() ? (
+            <MotionButton
+              className="px-12 py-4 rounded-full font-bold text-lg text-white transition-all shadow-lg hover:shadow-xl"
+              style={{ backgroundColor: theme.primaryColor }}
+            >
+              {primaryLabel}
+            </MotionButton>
+          ) : null;
+        })()}
       </motion.div>
     </motion.div>
   );
