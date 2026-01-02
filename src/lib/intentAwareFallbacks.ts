@@ -136,19 +136,77 @@ export const ECOMMERCE_SCHEMA: NicheContentSchema = {
   secondaryCta: 'View Collections',
 };
 
-// Generic fallback for unknown niches
+// Fitness / Gym niche
+export const FITNESS_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Train Hard. Get Results.',
+  heroSubheadline: 'State-of-the-art equipment, expert trainers, and classes for every fitness level',
+  heroVariant: 'split-image-right',
+  featuresTitle: 'What We Offer',
+  featuresVariant: 'bento-box',
+  features: [
+    { icon: 'Dumbbell', title: 'Modern Equipment', description: 'Top-of-the-line machines and free weights' },
+    { icon: 'Users', title: 'Group Classes', description: 'Yoga, HIIT, spin, and more—included with membership' },
+    { icon: 'Target', title: 'Personal Training', description: 'One-on-one coaching to reach your goals faster' },
+    { icon: 'Clock', title: 'Open Early & Late', description: 'Workout on your schedule, 5am to 11pm' },
+    { icon: 'Shower', title: 'Locker Rooms', description: 'Clean facilities with showers and towel service' },
+    { icon: 'Zap', title: 'Free Trial', description: 'Try us free for a week—no commitment' },
+  ],
+  primaryCta: 'Start Free Trial',
+  secondaryCta: 'View Class Schedule',
+};
+
+// Salon / Spa niche
+export const SALON_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Look Good. Feel Amazing.',
+  heroSubheadline: 'Expert stylists, relaxing atmosphere, and personalized service',
+  heroVariant: 'split-image-right',
+  featuresTitle: 'Our Services',
+  featuresVariant: 'grid-3',
+  features: [
+    { icon: 'Scissors', title: 'Haircuts & Styling', description: 'Precision cuts and on-trend styling' },
+    { icon: 'Sparkles', title: 'Color Services', description: 'Highlights, balayage, and custom color' },
+    { icon: 'Heart', title: 'Spa Treatments', description: 'Facials, massages, and relaxation' },
+    { icon: 'Star', title: 'Nail Services', description: 'Manicures, pedicures, and nail art' },
+    { icon: 'Gift', title: 'Gift Cards', description: 'The perfect gift for someone special' },
+    { icon: 'Calendar', title: 'Online Booking', description: 'Book your appointment 24/7' },
+  ],
+  primaryCta: 'Book Appointment',
+  secondaryCta: 'View Services',
+};
+
+// Plumber / Home Services niche
+export const PLUMBER_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Fast Fixes. Fair Prices.',
+  heroSubheadline: 'Licensed plumbers available 24/7 for emergencies and repairs',
+  heroVariant: 'simple-centered',
+  featuresTitle: 'Our Services',
+  featuresVariant: 'grid-3',
+  features: [
+    { icon: 'Wrench', title: 'Repairs', description: 'Leaks, clogs, and broken fixtures—fixed fast' },
+    { icon: 'Droplet', title: 'Water Heaters', description: 'Installation and repair, same-day service' },
+    { icon: 'Home', title: 'Remodeling', description: 'Bathroom and kitchen plumbing upgrades' },
+    { icon: 'AlertTriangle', title: '24/7 Emergency', description: 'Call anytime—we respond in under an hour' },
+    { icon: 'Shield', title: 'Licensed & Insured', description: 'Full coverage for your peace of mind' },
+    { icon: 'FileText', title: 'Free Estimates', description: 'Upfront pricing, no surprises' },
+  ],
+  primaryCta: 'Get Free Quote',
+  secondaryCta: 'Call Now',
+};
+
+// Generic fallback for unknown niches - COMPLETELY NEUTRAL
 export const GENERIC_SCHEMA: NicheContentSchema = {
-  heroHeadline: 'Your Business Name',
-  heroSubheadline: 'We help you achieve your goals with quality products and services.',
+  heroHeadline: 'Quality Services You Can Trust',
+  heroSubheadline: 'Dedicated to excellence and committed to your satisfaction',
   heroVariant: 'simple-centered',
   featuresTitle: 'Why Choose Us',
   featuresVariant: 'grid-3',
   features: [
-    { icon: 'Star', title: 'Quality', description: 'We deliver excellence in everything we do' },
-    { icon: 'Shield', title: 'Reliability', description: 'Count on us to be there when you need us' },
-    { icon: 'Headphones', title: 'Support', description: 'Our team is here to help you succeed' },
+    { icon: 'Users', title: 'Professional Team', description: 'Experienced professionals ready to help' },
+    { icon: 'Shield', title: 'Reliable Support', description: 'Count on us when you need us most' },
+    { icon: 'Star', title: 'Excellence', description: 'Quality results, every time' },
+    { icon: 'Clock', title: 'Timely Service', description: 'Respect for your schedule and deadlines' },
   ],
-  primaryCta: 'Get Started',
+  primaryCta: 'Contact Us',
   secondaryCta: 'Learn More',
 };
 
@@ -174,7 +232,33 @@ export const NICHE_SCHEMAS: Record<string, NicheContentSchema> = {
   realty: REAL_ESTATE_SCHEMA,
   broker: REAL_ESTATE_SCHEMA,
   
-  // SaaS
+  // Fitness / Gym
+  gym: FITNESS_SCHEMA,
+  fitness: FITNESS_SCHEMA,
+  'fitness gym': FITNESS_SCHEMA,
+  workout: FITNESS_SCHEMA,
+  crossfit: FITNESS_SCHEMA,
+  yoga: FITNESS_SCHEMA,
+  pilates: FITNESS_SCHEMA,
+  'personal training': FITNESS_SCHEMA,
+  
+  // Salon / Spa
+  salon: SALON_SCHEMA,
+  spa: SALON_SCHEMA,
+  'hair salon': SALON_SCHEMA,
+  barbershop: SALON_SCHEMA,
+  barber: SALON_SCHEMA,
+  nails: SALON_SCHEMA,
+  beauty: SALON_SCHEMA,
+  
+  // Plumber / Home Services
+  plumber: PLUMBER_SCHEMA,
+  plumbing: PLUMBER_SCHEMA,
+  electrician: PLUMBER_SCHEMA,
+  hvac: PLUMBER_SCHEMA,
+  'home repair': PLUMBER_SCHEMA,
+  
+  // SaaS - ONLY for actual software businesses
   saas: SAAS_SCHEMA,
   software: SAAS_SCHEMA,
   app: SAAS_SCHEMA,
