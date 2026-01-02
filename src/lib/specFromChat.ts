@@ -83,6 +83,18 @@ const CATEGORY_PALETTES: Record<NicheCategory, Partial<SiteTheme>> = {
     accentColor: '#f59e0b',
     darkMode: true,
   },
+  dental: {
+    primaryColor: '#0ea5e9',
+    secondaryColor: '#0284c7',
+    accentColor: '#10b981',
+    darkMode: false,
+  },
+  contractor: {
+    primaryColor: '#f59e0b',
+    secondaryColor: '#d97706',
+    accentColor: '#1f2937',
+    darkMode: false,
+  },
 };
 
 // Map niche category to business model
@@ -100,6 +112,8 @@ const CATEGORY_TO_BUSINESS: Record<NicheCategory, BusinessModel> = {
   portfolio: 'PORTFOLIO_IDENTITY',
   community: 'SERVICE_BASED',
   fitness: 'SERVICE_BASED',
+  dental: 'SERVICE_BASED',
+  contractor: 'SERVICE_BASED',
 };
 
 // Layout by category - with more variety
@@ -117,6 +131,8 @@ const CATEGORY_LAYOUT: Record<NicheCategory, LayoutStructure> = {
   portfolio: 'layered',
   community: 'bento',
   fitness: 'standard',
+  dental: 'standard',
+  contractor: 'standard',
 };
 
 // Vibes to layout mapping for variety
