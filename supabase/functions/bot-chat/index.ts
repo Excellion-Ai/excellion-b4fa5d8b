@@ -15,7 +15,8 @@ type NicheCategory =
   | 'plumber' | 'electrician' | 'hvac' | 'roofing' | 'landscaping' | 'cleaning' | 'auto_detailing' | 'pressure_washing'
   | 'law_firm' | 'accounting' | 'dental' | 'medical' | 'real_estate'
   | 'photography' | 'design_agency' | 'freelancer' | 'consultant'
-  | 'saas_tool' | 'nonprofit_org' | 'dispensary' | 'pet_services' | 'general';
+  | 'saas_tool' | 'nonprofit_org' | 'dispensary' | 'pet_services' | 'general'
+  | 'wedding_planner' | 'general_contractor' | 'veterinary_clinic' | 'insurance_agent' | 'event_planner';
 
 type BusinessBrief = {
   businessName: string | null;
@@ -293,6 +294,50 @@ const PATTERN_PACKS: Record<string, PatternPack> = {
     trustSignals: ['Certified Staff', 'Safe Environment', 'Pet First Aid', 'Webcam Access'],
     warnings: []
   },
+  // Wedding & Events
+  wedding_planner: {
+    id: 'wedding_planner', label: 'Wedding Planner', intent: 'booking_business', nicheCategory: 'wedding_planner',
+    pages: ['/', '/services', '/portfolio', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'gallery', 'testimonials', 'process-steps', 'cta'],
+    ctaHints: { primary: ['Book Consultation', 'Start Planning', 'View Packages'], secondary: ['See Our Work', 'Download Guide'] },
+    trustSignals: ['Featured in The Knot', '100+ Weddings Planned', 'Certified Planner', 'Vendor Network'],
+    warnings: ['No tech terminology', 'Focus on emotions and experience']
+  },
+  event_planner: {
+    id: 'event_planner', label: 'Event Planner', intent: 'booking_business', nicheCategory: 'event_planner',
+    pages: ['/', '/services', '/portfolio', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'gallery', 'testimonials', 'process-steps', 'cta'],
+    ctaHints: { primary: ['Plan Your Event', 'Get Quote', 'Book Consultation'], secondary: ['View Past Events', 'Event Ideas'] },
+    trustSignals: ['Full-Service Planning', 'Trusted Vendor Network', 'Stress-Free Events', 'Corporate & Private'],
+    warnings: ['No tech terminology', 'Focus on memorable experiences']
+  },
+  // Construction
+  general_contractor: {
+    id: 'general_contractor', label: 'General Contractor', intent: 'service_business', nicheCategory: 'general_contractor',
+    pages: ['/', '/services', '/projects', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'before-after', 'testimonials', 'process-steps', 'cta'],
+    ctaHints: { primary: ['Get Free Estimate', 'Request Bid', 'Start Your Project'], secondary: ['View Projects', 'Financing Options'] },
+    trustSignals: ['Licensed & Bonded', '25+ Years Experience', 'Local Crews', 'Warranty Included'],
+    warnings: ['No SaaS terminology', 'Focus on craftsmanship and reliability']
+  },
+  // Healthcare
+  veterinary_clinic: {
+    id: 'veterinary_clinic', label: 'Veterinary Clinic', intent: 'booking_business', nicheCategory: 'veterinary_clinic',
+    pages: ['/', '/services', '/team', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'team', 'testimonials', 'faq', 'cta'],
+    ctaHints: { primary: ['Book Appointment', 'Emergency? Call Now', 'New Patient Form'], secondary: ['Meet Our Vets', 'Pet Resources'] },
+    trustSignals: ['Fear-Free Certified', 'Same-Day Appointments', 'Compassionate Care', 'Modern Diagnostics'],
+    warnings: ['Pet-focused language', 'Emphasize care and compassion']
+  },
+  // Financial
+  insurance_agent: {
+    id: 'insurance_agent', label: 'Insurance Agent', intent: 'service_business', nicheCategory: 'insurance_agent',
+    pages: ['/', '/coverage', '/about', '/contact'],
+    sectionOrder: ['hero', 'services', 'features', 'testimonials', 'faq', 'cta'],
+    ctaHints: { primary: ['Get Free Quote', 'Compare Plans', 'Call Your Agent'], secondary: ['Coverage Options', 'File a Claim'] },
+    trustSignals: ['Independent Agent', 'Compare 20+ Carriers', 'Local Service', 'Licensed Professional'],
+    warnings: ['No tech jargon', 'Focus on protection and peace of mind']
+  },
 };
 
 // Default packs by intent
@@ -316,6 +361,12 @@ function industryToNicheCategory(industry: string): NicheCategory {
     photography: 'photography', dispensary: 'dispensary', lighter_shop: 'jewelry_store',
     jewelry: 'jewelry_store', clothing: 'clothing_boutique', saas: 'saas_tool',
     roofing: 'roofing', pet_services: 'pet_services',
+    // New industries
+    wedding: 'wedding_planner', wedding_planner: 'wedding_planner', bridal: 'wedding_planner',
+    contractor: 'general_contractor', construction: 'general_contractor', remodel: 'general_contractor', general_contractor: 'general_contractor',
+    veterinary: 'veterinary_clinic', vet: 'veterinary_clinic', animal_hospital: 'veterinary_clinic', veterinary_clinic: 'veterinary_clinic',
+    insurance: 'insurance_agent', insurance_agent: 'insurance_agent',
+    event: 'event_planner', event_planner: 'event_planner', party: 'event_planner',
   };
   return mapping[industry] || 'general';
 }
@@ -401,6 +452,88 @@ const SAAS_ONLY_PHRASES = [
   'free trial', 'pro plan', 'enterprise plan', '/month', 'per user', 'advanced analytics',
   'unlimited users', 'api calls', 'cloud storage', 'integrations included', 'priority support',
 ];
+
+// ============= FEW-SHOT COPY EXAMPLES =============
+const GOOD_COPY_EXAMPLES = `
+====================================
+## FEW-SHOT EXAMPLES: GOOD vs BAD COPY
+====================================
+
+### PLUMBER ✅ GOOD:
+"Burst pipes at 2am? We answer in 15 minutes or less."
+"Licensed plumbers serving Denver for 25 years."
+"Free estimates. No surprises on your bill."
+
+### PLUMBER ❌ BAD (Never write):
+"Fast & Reliable Service" (generic)
+"Your satisfaction is our priority" (meaningless)
+"Cutting-edge plumbing solutions" (tech jargon)
+
+### GYM ✅ GOOD:
+"First month free. Cancel anytime. No excuses left."
+"6am-10pm. Certified trainers. Real results."
+"Join 500+ members transforming their health."
+
+### GYM ❌ BAD (Never write):
+"Start your fitness journey today" (cliché)
+"State-of-the-art equipment" (overused)
+"We're passionate about fitness" (meaningless)
+
+### RESTAURANT ✅ GOOD:
+"Farm-to-table dining in the heart of downtown Austin."
+"Reservations recommended. Walk-ins welcome at the bar."
+"Family recipes, perfected over 3 generations."
+
+### RESTAURANT ❌ BAD (Never write):
+"Welcome to our restaurant" (obvious)
+"Quality food at affordable prices" (generic)
+"Experience our unique flavors" (vague)
+
+### WEDDING PLANNER ✅ GOOD:
+"Your vision. Our expertise. A day you'll never forget."
+"100+ weddings planned. Zero stressed brides."
+"From venue to vows, we handle every detail."
+
+### WEDDING PLANNER ❌ BAD (Never write):
+"Making your dreams come true" (cliché)
+"Fast & reliable wedding services" (sounds like IT)
+"Contact us for more information" (weak CTA)
+
+### CONTRACTOR ✅ GOOD:
+"Kitchens that make the neighbors jealous."
+"Licensed, bonded, and we clean up after ourselves."
+"Free estimates within 48 hours. No pressure."
+
+### CONTRACTOR ❌ BAD (Never write):
+"Quality craftsmanship" (overused)
+"Your trusted home improvement partner" (corporate)
+"Innovative construction solutions" (tech jargon)
+
+### VETERINARY CLINIC ✅ GOOD:
+"Where tails wag and purrs are louder."
+"Same-day sick visits. Your pet can't wait."
+"Compassionate care for every member of your family."
+
+### VETERINARY CLINIC ❌ BAD (Never write):
+"We love pets" (everyone says this)
+"Professional veterinary services" (generic)
+"Your pet deserves the best" (vague)
+
+### INSURANCE AGENT ✅ GOOD:
+"Compare 20+ carriers in one call. Save hundreds."
+"Local agent, big-name coverage."
+"Your neighbor for 15 years. Your agent for life."
+
+### INSURANCE AGENT ❌ BAD (Never write):
+"Protecting what matters most" (cliché)
+"Comprehensive coverage solutions" (jargon)
+"Peace of mind for you and your family" (overused)
+
+====================================
+RULE: If the copy could apply to ANY business, it's BAD.
+Industry-specific details = GOOD. Generic praise = BAD.
+====================================
+`;
 
 // ============= CONTENT PIPELINE: Intent Detection =============
 function detectBusinessIntent(prompt: string): BusinessIntent {
@@ -512,6 +645,12 @@ function extractBusinessBrief(prompt: string): BusinessBrief {
     jewelry: /\b(jewel|ring|necklace|diamond|gold|silver)\b/,
     clothing: /\b(cloth|fashion|apparel|boutique|wear)\b/,
     saas: /\b(saas|software|platform|app|dashboard)\b/,
+    // New industries
+    wedding: /\b(wedding|bridal|bride|groom|ceremony|reception|nuptial)\b/,
+    contractor: /\b(general contractor|contractor|remodel|renovation|home improvement|addition)\b/,
+    veterinary: /\b(vet|veterinar|animal hospital|pet clinic|dog|cat|pet care|animal care)\b/,
+    insurance: /\b(insurance|coverage|policy|claim|premium|carrier|underwrite)\b/,
+    event: /\b(event plann|corporate event|party plann|conference|gala|celebration)\b/,
   };
   
   let industry = 'general';
@@ -628,6 +767,12 @@ function inferOfferingsFromIndustry(industry: string): string[] {
     electrician: ['Wiring', 'Panel Upgrades', 'Lighting', 'Emergency Service'],
     roofing: ['Repairs', 'Replacement', 'Inspections', 'Storm Damage'],
     cleaning: ['Deep Cleaning', 'Regular Service', 'Move-In/Out', 'Commercial'],
+    // New industries
+    wedding: ['Full Planning', 'Day-Of Coordination', 'Vendor Management', 'Design & Decor'],
+    contractor: ['Kitchen Remodels', 'Bathroom Renovations', 'Room Additions', 'Custom Builds'],
+    veterinary: ['Wellness Exams', 'Vaccinations', 'Surgery', 'Dental Care'],
+    insurance: ['Home Insurance', 'Auto Insurance', 'Life Insurance', 'Business Insurance'],
+    event: ['Corporate Events', 'Private Parties', 'Conferences', 'Galas'],
   };
   // Return empty array for unknown industries - forces AI to generate specific content
   return offeringsMap[industry] || [];
@@ -3049,6 +3194,10 @@ THE USER HAS SPECIFIED CUSTOM COLORS. YOU MUST USE THESE EXACT HEX VALUES:
       // Prepend to enhanced prompt
       enhancedPrompt = colorOverride + enhancedPrompt;
     }
+
+    // Add FEW-SHOT COPY EXAMPLES (content quality guidance)
+    enhancedPrompt += "\n\n" + GOOD_COPY_EXAMPLES;
+    console.log(`[BOT-CHAT:${requestId}] Added few-shot copy examples to prompt`);
 
     // SCAFFOLD ENFORCEMENT: Inject scaffold constraints as hard requirements
     if (scaffold) {
