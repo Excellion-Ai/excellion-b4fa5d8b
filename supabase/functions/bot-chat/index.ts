@@ -1338,49 +1338,70 @@ function validateSpecAgainstScaffold(siteSpec: any, scaffold: any): ValidationRe
 
 // Extract JSON from AI response - uses cleanJsonResponse helper
 function extractJsonFromAIResponse(text: string): any | null {
-  // STEP 1: Strip markdown code blocks first using the helper
+  console.log('[PARSER] Starting JSON extraction, input length:', text.length);
+  
+  // STEP 1: Use robust extraction - find first { and last }
   const cleanedText = cleanJsonResponse(text);
   
-  // STEP 2: Try to parse the cleaned text directly (if it starts with {)
-  if (cleanedText.startsWith('{')) {
-    try {
-      const parsed = JSON.parse(cleanedText);
-      if (parsed.name && parsed.pages && Array.isArray(parsed.pages)) {
-        console.log('[PARSER] Successfully parsed cleaned JSON directly');
-        return parsed;
-      }
-    } catch (e) {
-      console.log('[PARSER] Direct parse failed, trying extraction methods');
-    }
+  if (!cleanedText) {
+    console.error('[PARSER] cleanJsonResponse returned empty string');
+    console.error('[PARSER] Original text (first 500 chars):', text.substring(0, 500));
+    return null;
   }
   
-  // STEP 3: Try to find JSON code block (in case cleaning missed it)
+  console.log('[PARSER] Cleaned text length:', cleanedText.length);
+  
+  // STEP 2: Try to parse the cleaned text
+  try {
+    const parsed = JSON.parse(cleanedText);
+    if (parsed.name && parsed.pages && Array.isArray(parsed.pages)) {
+      console.log('[PARSER] SUCCESS: Parsed JSON with name:', parsed.name, 'and', parsed.pages.length, 'pages');
+      return parsed;
+    } else {
+      console.log('[PARSER] Parsed JSON but missing required fields (name/pages)');
+      console.log('[PARSER] Has name:', !!parsed.name, 'Has pages:', !!parsed.pages, 'Is array:', Array.isArray(parsed.pages));
+    }
+  } catch (e) {
+    const error = e as Error;
+    console.error('[PARSER] JSON.parse failed:', error.message);
+    console.error('[PARSER] Failed text (first 300 chars):', cleanedText.substring(0, 300));
+    console.error('[PARSER] Failed text (last 300 chars):', cleanedText.substring(cleanedText.length - 300));
+  }
+  
+  // STEP 3: Fallback - try to find JSON code block explicitly
+  console.log('[PARSER] Trying fallback: code block extraction');
   const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
   if (jsonMatch) {
     try {
       const parsed = JSON.parse(jsonMatch[1].trim());
       if (parsed.name && parsed.pages && Array.isArray(parsed.pages)) {
+        console.log('[PARSER] SUCCESS via code block fallback');
         return parsed;
       }
     } catch (e) {
-      console.error("Failed to parse JSON from code block:", e);
+      const error = e as Error;
+      console.error('[PARSER] Code block parse failed:', error.message);
     }
   }
   
-  // STEP 4: Fallback - find raw JSON object anywhere in text
+  // STEP 4: Last resort - find any JSON object with name and pages
+  console.log('[PARSER] Trying last resort: regex for name+pages object');
   const rawJsonMatch = text.match(/\{[\s\S]*"name"[\s\S]*"pages"[\s\S]*\}/);
   if (rawJsonMatch) {
     try {
       const parsed = JSON.parse(rawJsonMatch[0]);
       if (parsed.name && parsed.pages) {
+        console.log('[PARSER] SUCCESS via raw regex fallback');
         return parsed;
       }
     } catch (e) {
-      console.error("Failed to parse raw JSON:", e);
+      const error = e as Error;
+      console.error('[PARSER] Raw regex parse failed:', error.message);
     }
   }
   
-  console.error('[PARSER] All extraction methods failed');
+  console.error('[PARSER] ALL extraction methods failed');
+  console.error('[PARSER] Full original text:', text);
   return null;
 }
 
@@ -1532,12 +1553,26 @@ ALWAYS match content to the detected industry:
 // ====================================
 // HELPER: Clean markdown from AI response for parsing
 // ====================================
+// ROBUST JSON EXTRACTION: Find first { and last } to extract pure JSON
+// This handles markdown code blocks, extra text before/after, etc.
 function cleanJsonResponse(aiResponse: string): string {
-  // Strip markdown code blocks that gemini-pro often adds
-  let cleaned = aiResponse.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-  // Remove any leading/trailing whitespace
-  cleaned = cleaned.trim();
-  return cleaned;
+  // Find the first { and last } in the string
+  const firstBrace = aiResponse.indexOf('{');
+  const lastBrace = aiResponse.lastIndexOf('}');
+  
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    console.error('[CLEAN-JSON] No valid JSON braces found');
+    console.error('[CLEAN-JSON] firstBrace:', firstBrace, 'lastBrace:', lastBrace);
+    return '';
+  }
+  
+  // Extract only the content between first { and last }
+  const extracted = aiResponse.substring(firstBrace, lastBrace + 1);
+  
+  console.log('[CLEAN-JSON] Extracted JSON from positions', firstBrace, 'to', lastBrace);
+  console.log('[CLEAN-JSON] Extracted length:', extracted.length);
+  
+  return extracted;
 }
 
 // ====================================
