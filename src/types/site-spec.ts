@@ -60,6 +60,12 @@ export type CTAButton = {
   variant: 'primary' | 'secondary' | 'outline';
 };
 
+// Hero variant layouts
+export type HeroVariant = 'simple-centered' | 'split-image-right' | 'minimal-impact';
+
+// Features variant layouts
+export type FeaturesVariant = 'grid-3' | 'bento-box' | 'zigzag-large';
+
 // Section content types
 export type HeroContent = {
   headline: string;
@@ -70,6 +76,7 @@ export type HeroContent = {
   secondaryCtaText?: string;
   secondaryCtaLink?: string;
   backgroundImage?: string;
+  variant?: HeroVariant;
 };
 
 export type FeatureItem = {
@@ -82,6 +89,7 @@ export type FeaturesContent = {
   title: string;
   subtitle?: string;
   items: FeatureItem[];
+  variant?: FeaturesVariant;
 };
 
 export type TestimonialItem = {
