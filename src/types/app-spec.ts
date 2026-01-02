@@ -48,9 +48,14 @@ export type SectionType =
   | 'portfolio'
   | 'custom';
 
-// Hero and Features variants
-export type HeroVariant = 'simple-centered' | 'split-image-right' | 'minimal-impact';
-export type FeaturesVariant = 'grid-3' | 'bento-box' | 'zigzag-large';
+// Hero and Features variants (includes both old and new naming for backwards compatibility)
+export type HeroVariant = 
+  | 'simple-centered' | 'split-image-right' | 'minimal-impact'  // Legacy names
+  | 'split' | 'centered' | 'glassmorphism';                      // New names
+
+export type FeaturesVariant = 
+  | 'grid-3' | 'bento-box' | 'zigzag-large'  // Legacy names
+  | 'grid' | 'zigzag' | 'bento';              // New names
 
 // Content types for each section
 export type HeroContent = {
