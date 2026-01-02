@@ -121,7 +121,7 @@ serve(async (req) => {
         ],
         mode: "subscription",
         subscription_data: {
-          trial_period_days: 7,
+          trial_period_days: 30,
           metadata: {
             is_sprint: "true",
             user_id: user.id,
@@ -136,9 +136,9 @@ serve(async (req) => {
       });
       logStep("Sprint Pass checkout session created", { sessionId: session.id, url: session.url });
 
-      // Mark Sprint Pass as used and grant +50 credits
+      // Mark Sprint Pass as used and grant +150 credits
       const sprintExpiresAt = new Date();
-      sprintExpiresAt.setDate(sprintExpiresAt.getDate() + 7);
+      sprintExpiresAt.setDate(sprintExpiresAt.getDate() + 30);
 
       // Update user_credits to mark sprint as used and set expiry
       const { error: updateError } = await supabaseClient
