@@ -14,7 +14,7 @@ import { useTouchTargetAnalysis } from './TouchTargetAnalyzer';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { SiteSpec } from '@/types/site-spec';
+import type { SiteSpec, BusinessIntent, LayoutStructure } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
@@ -72,7 +72,7 @@ import { getPacksForIntegrations, mergeIntegrationPages, type IntegrationPack } 
 import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
-import { BusinessIntent } from '@/types/site-spec';
+import type { LayoutStructure as LayoutStructureType } from '@/types/site-spec';
 import { speculativeParse, shouldAttemptParse, mergeSpeculative } from '@/lib/speculativeParser';
 import { refinePrompt } from '@/lib/promptRefiner';
 import { validateFinalSpec } from '@/lib/contentPipeline/contentValidator';
@@ -2819,9 +2819,9 @@ Regenerate the problematic sections with valid content.`;
               variant="outline"
               size="sm"
               onClick={() => {
-                const layouts: LayoutStructure[] = ['standard', 'bento', 'layered', 'horizontal', 'split', 'minimal'];
+                const layouts: LayoutStructureType[] = ['standard', 'bento', 'layered', 'horizontal', 'split', 'minimal'];
                 const currentLayout = siteSpec.layoutStructure || 'standard';
-                const currentIndex = layouts.indexOf(currentLayout as LayoutStructure);
+                const currentIndex = layouts.indexOf(currentLayout as LayoutStructureType);
                 const nextIndex = (currentIndex + 1) % layouts.length;
                 const nextLayout = layouts[nextIndex];
                 setSiteSpec({ ...siteSpec, layoutStructure: nextLayout });
