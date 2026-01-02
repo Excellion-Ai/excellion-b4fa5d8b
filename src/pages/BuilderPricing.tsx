@@ -56,7 +56,7 @@ const aiBuilderPlans = [
     yearlyPrice: 150,
     credits: 200,
     features: [
-      "1 published site (custom domain)",
+      "Unlimited published sites + domains",
       "No watermark",
       "Basic SEO (Title/Meta/OG)",
       "Simple analytics (views/visitors)",
@@ -72,7 +72,7 @@ const aiBuilderPlans = [
     credits: 500,
     badge: "Best Seller",
     features: [
-      "Unlimited drafts + 1 published site",
+      "Unlimited published sites + domains",
       "Integrations: Stripe, Calendly, Mailchimp",
       "Advanced components: pricing, CMS, galleries",
       "Code export (Annual only)",
@@ -87,7 +87,7 @@ const aiBuilderPlans = [
     yearlyPrice: 1290,
     credits: 3000,
     features: [
-      "10 published sites",
+      "Unlimited published sites + domains",
       "White-label dashboard",
       "Team seats + roles",
       "Client management & billing transfer",
