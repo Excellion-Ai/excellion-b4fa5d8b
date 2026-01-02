@@ -63,7 +63,10 @@ type InputMode = 'quick' | 'interview';
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
+  const [niche, setNiche] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailCaptureSuccess, setEmailCaptureSuccess] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ niche?: string; email?: string }>({});
   const [user, setUser] = useState<User | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>('quick');
   const navigate = useNavigate();
@@ -158,7 +161,22 @@ const WebBuilderHome = () => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || isSubmitting) return;
+    setFormErrors({});
+    
+    const errors: { niche?: string; email?: string } = {};
+    if (!niche.trim()) {
+      errors.niche = "Please enter your business or niche";
+    }
+    if (!email.trim()) {
+      errors.email = "Please enter your email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      errors.email = "Please enter a valid email address";
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
     
     setIsSubmitting(true);
     try {
@@ -167,13 +185,14 @@ const WebBuilderHome = () => {
         email: email.trim(),
         project_type: "email_capture",
         source: "web_builder_home",
-        description: "User signed up for examples and guide",
+        description: `Business/Niche: ${niche.trim()} - User requested 3 website examples`,
       });
       
       if (error) throw error;
       
-      toast.success("Thanks! We'll send you examples and tips soon.");
+      setEmailCaptureSuccess(true);
       setEmail("");
+      setNiche("");
     } catch (error) {
       console.error("Email capture error:", error);
       toast.error("Failed to sign up. Please try again.");
@@ -504,35 +523,85 @@ const WebBuilderHome = () => {
 
       {/* Email Capture Section */}
       <section className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-xl mx-auto text-center">
+        <div className="max-w-2xl mx-auto text-center">
           <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            Not ready to build today?
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Drop your email and we'll send you example sites and a short guide on what your website needs to convert in 2025.
-          </p>
-          <form onSubmit={handleEmailSubmit} className="flex gap-3 max-w-md mx-auto">
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="flex-1"
-              required
-              disabled={isSubmitting}
-            />
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                "Send me examples"
-              )}
-            </Button>
-          </form>
+          
+          {emailCaptureSuccess ? (
+            <>
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Check your inbox
+              </h2>
+              <p className="text-muted-foreground/90">
+                We just sent your 3 examples. If you don't see it, check spam/promotions.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Get 3 real website examples for your business
+              </h2>
+              <p className="text-muted-foreground/90 mb-6">
+                Enter your business/niche and email. We'll send a mini pack: layouts, copy structure, and the exact sections that convert.
+              </p>
+              <form onSubmit={handleEmailSubmit} className="max-w-xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="text-left">
+                    <label htmlFor="niche-input" className="block text-sm font-medium text-foreground/80 mb-1.5">
+                      Business / Niche
+                    </label>
+                    <Input
+                      id="niche-input"
+                      type="text"
+                      value={niche}
+                      onChange={(e) => {
+                        setNiche(e.target.value);
+                        if (formErrors.niche) setFormErrors(prev => ({ ...prev, niche: undefined }));
+                      }}
+                      placeholder="e.g., Roofing company, Italian restaurant, personal trainer"
+                      className={`w-full focus:ring-primary focus:border-primary ${formErrors.niche ? 'border-destructive' : ''}`}
+                      disabled={isSubmitting}
+                    />
+                    {formErrors.niche && (
+                      <p className="text-xs text-destructive mt-1">{formErrors.niche}</p>
+                    )}
+                  </div>
+                  <div className="text-left">
+                    <label htmlFor="email-input" className="block text-sm font-medium text-foreground/80 mb-1.5">
+                      Email
+                    </label>
+                    <Input
+                      id="email-input"
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (formErrors.email) setFormErrors(prev => ({ ...prev, email: undefined }));
+                      }}
+                      placeholder="you@domain.com"
+                      className={`w-full focus:ring-primary focus:border-primary ${formErrors.email ? 'border-destructive' : ''}`}
+                      disabled={isSubmitting}
+                    />
+                    {formErrors.email && (
+                      <p className="text-xs text-destructive mt-1">{formErrors.email}</p>
+                    )}
+                  </div>
+                </div>
+                <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto px-8">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send my examples"
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground/70 mt-3">
+                  No spam. Unsubscribe anytime.
+                </p>
+              </form>
+            </>
+          )}
         </div>
       </section>
 
