@@ -137,17 +137,38 @@ export function InterviewStepper({
     switch (step) {
       case 1:
         return (
-          <div className="grid grid-cols-3 gap-3">
-            {WEBSITE_TYPE_OPTIONS.map((option, i) => (
-              <OptionCard
-                key={option.value}
-                icon={option.icon}
-                label={option.label}
-                selected={answers.websiteType === option.value}
-                onClick={() => onUpdateAnswer('websiteType', option.value)}
-                delay={i * 0.05}
-              />
-            ))}
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              {WEBSITE_TYPE_OPTIONS.map((option, i) => (
+                <OptionCard
+                  key={option.value}
+                  icon={option.icon}
+                  label={option.label}
+                  selected={answers.websiteType === option.value}
+                  onClick={() => onUpdateAnswer('websiteType', option.value)}
+                  delay={i * 0.05}
+                />
+              ))}
+            </div>
+            
+            <AnimatePresence>
+              {answers.websiteType === 'other' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="max-w-sm mx-auto pt-2"
+                >
+                  <Input
+                    value={answers.websiteTypeOther}
+                    onChange={(e) => onUpdateAnswer('websiteTypeOther', e.target.value)}
+                    placeholder="Describe your website type..."
+                    className="h-12 bg-card/60 border-border/50 text-center"
+                    autoFocus
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
 
