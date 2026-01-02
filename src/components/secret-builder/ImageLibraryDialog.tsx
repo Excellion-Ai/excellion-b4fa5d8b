@@ -268,44 +268,61 @@ export function ImageLibraryDialog({
               </div>
             </div>
 
-            {/* Bulk Actions */}
-            {selectedImages.size > 0 && (
+            {/* Bulk Actions Bar - Always show when there are images */}
+            {filteredImages.length > 0 && (
               <div className="flex items-center gap-2 mt-3 p-2 bg-muted/50 rounded-lg">
-                <Check className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">{selectedImages.size} selected</span>
-                <div className="flex-1" />
-                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleDownloadSelected}>
-                  <Download className="w-3 h-3 mr-1" />
-                  Download
-                </Button>
-                {onDelete && (
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="h-7 text-xs" 
-                    onClick={handleDeleteSelected}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Trash2 className="w-3 h-3 mr-1" />}
-                    Delete
-                  </Button>
+                <Checkbox
+                  checked={selectedImages.size === filteredImages.length && filteredImages.length > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      selectAll();
+                    } else {
+                      clearSelection();
+                    }
+                  }}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <span 
+                  className="text-sm font-medium cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => {
+                    if (selectedImages.size === filteredImages.length) {
+                      clearSelection();
+                    } else {
+                      selectAll();
+                    }
+                  }}
+                >
+                  {selectedImages.size > 0 
+                    ? `${selectedImages.size} selected` 
+                    : `Select all (${filteredImages.length})`
+                  }
+                </span>
+                
+                {selectedImages.size > 0 && (
+                  <>
+                    <div className="flex-1" />
+                    <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleDownloadSelected}>
+                      <Download className="w-3 h-3 mr-1" />
+                      Download
+                    </Button>
+                    {onDelete && (
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        className="h-7 text-xs" 
+                        onClick={handleDeleteSelected}
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Trash2 className="w-3 h-3 mr-1" />}
+                        Delete
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={clearSelection}>
+                      Clear
+                    </Button>
+                  </>
                 )}
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={clearSelection}>
-                  Clear
-                </Button>
               </div>
-            )}
-
-            {/* Quick Select */}
-            {filteredImages.length > 0 && selectedImages.size === 0 && (
-              <Button 
-                variant="link" 
-                size="sm" 
-                className="self-start text-xs h-auto p-0 mt-2"
-                onClick={selectAll}
-              >
-                Select all ({filteredImages.length})
-              </Button>
             )}
           </DialogHeader>
 
