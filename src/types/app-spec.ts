@@ -48,6 +48,10 @@ export type SectionType =
   | 'portfolio'
   | 'custom';
 
+// Hero and Features variants
+export type HeroVariant = 'simple-centered' | 'split-image-right' | 'minimal-impact';
+export type FeaturesVariant = 'grid-3' | 'bento-box' | 'zigzag-large';
+
 // Content types for each section
 export type HeroContent = {
   headline: string;
@@ -57,6 +61,7 @@ export type HeroContent = {
   secondaryCtaText?: string;
   secondaryCtaLink?: string;
   backgroundImage?: string;
+  variant?: HeroVariant;
 };
 
 export type FeatureItem = {
@@ -69,6 +74,7 @@ export type FeaturesContent = {
   title: string;
   subtitle?: string;
   items: FeatureItem[];
+  variant?: FeaturesVariant;
 };
 
 export type TestimonialItem = {
