@@ -38,120 +38,67 @@ export function useRailwayGeneration() {
     setStatus('pending');
 
     try {
-      // Step 1: Get current user
+      // 1. Get current user (required for RLS)
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast({
-          title: 'Sign in required',
-          description: 'Please sign in to generate websites.',
-          variant: 'destructive',
-        });
+        toast({ title: 'Sign in required', description: 'Please sign in to generate websites.', variant: 'destructive' });
         setIsGenerating(false);
         return null;
       }
 
-      // Step 2: Insert new row into generated_sites with status 'pending'
-      const { data: insertedRow, error: insertError } = await supabase
+      // 2. Save the order in Supabase
+      const { data: order, error } = await supabase
         .from('generated_sites')
-        .insert({
-          user_id: user.id,
-          prompt: prompt,
-          status: 'pending',
-        })
+        .insert([{ user_id: user.id, prompt, status: 'pending' }])
         .select()
         .single();
 
-      if (insertError || !insertedRow) {
-        console.error('[RailwayGen] Insert error:', insertError);
-        toast({
-          title: 'Error',
-          description: 'Failed to start generation. Please try again.',
-          variant: 'destructive',
-        });
+      if (error || !order) {
+        console.error('[RailwayGen] Insert error:', error);
+        toast({ title: 'Error', description: 'Failed to start generation.', variant: 'destructive' });
         setIsGenerating(false);
         return null;
       }
 
-      const rowId = insertedRow.id;
-      setCurrentRowId(rowId);
-      console.log('[RailwayGen] Created row:', rowId);
+      setCurrentRowId(order.id);
+      console.log('[RailwayGen] Order created:', order.id);
 
-      // Step 3: Set up Realtime subscription BEFORE sending to Railway
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-      }
-
-      const channel = supabase
-        .channel(`generated_sites_${rowId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'generated_sites',
-            filter: `id=eq.${rowId}`,
-          },
+      // 3. Set up Realtime listener for when Railway updates the order
+      if (channelRef.current) supabase.removeChannel(channelRef.current);
+      
+      channelRef.current = supabase
+        .channel(`generated_sites_${order.id}`)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'generated_sites', filter: `id=eq.${order.id}` },
           (payload) => {
-            console.log('[RailwayGen] Realtime update:', payload);
-            const newRecord = payload.new as GeneratedSite;
-            setStatus(newRecord.status);
-
-            if (newRecord.status === 'completed' && newRecord.code) {
-              console.log('[RailwayGen] Generation completed!');
-              setGeneratedCode(newRecord.code);
+            const record = payload.new as GeneratedSite;
+            setStatus(record.status);
+            if (record.status === 'completed' && record.code) {
+              setGeneratedCode(record.code);
               setIsGenerating(false);
-              toast({
-                title: 'Website generated!',
-                description: 'Your website code is ready.',
-              });
-            } else if (newRecord.status === 'failed') {
-              console.error('[RailwayGen] Generation failed');
+              toast({ title: 'Website generated!', description: 'Your website code is ready.' });
+            } else if (record.status === 'failed') {
               setIsGenerating(false);
-              toast({
-                title: 'Generation failed',
-                description: 'Something went wrong. Please try again.',
-                variant: 'destructive',
-              });
+              toast({ title: 'Generation failed', description: 'Something went wrong.', variant: 'destructive' });
             }
           }
         )
-        .subscribe((status) => {
-          console.log('[RailwayGen] Subscription status:', status);
-        });
+        .subscribe();
 
-      channelRef.current = channel;
-
-      // Step 4: Send POST request to Railway API (fire and forget)
+      // 4. Tell Railway to start cooking
       fetch(RAILWAY_API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: prompt,
-          row_id: rowId,
-        }),
-      }).then((response) => {
-        console.log('[RailwayGen] Railway API response status:', response.status);
-      }).catch((error) => {
-        console.error('[RailwayGen] Railway API error:', error);
-        // Don't set error state here - the realtime subscription will handle status updates
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, row_id: order.id }),
       });
 
-      toast({
-        title: 'Generating website...',
-        description: 'This may take a moment. We\'ll notify you when it\'s ready.',
-      });
+      console.log('Kitchen is cooking!');
+      toast({ title: 'Generating...', description: "We'll notify you when it's ready." });
 
-      return rowId;
+      return order.id;
     } catch (error) {
       console.error('[RailwayGen] Error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to start generation. Please try again.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to start generation.', variant: 'destructive' });
       setIsGenerating(false);
       return null;
     }
