@@ -18,9 +18,9 @@ const supabaseAdmin = createClient(
 );
 
 const PLAN_CREDITS: Record<string, number> = {
-  starter: 50,
-  pro: 100,
-  agency: 500,
+  starter: 200,
+  pro: 500,
+  agency: 3000,
 };
 
 const PRICE_TO_PLAN: Record<string, string> = {

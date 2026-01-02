@@ -27,12 +27,12 @@ const PRICE_IDS = {
 };
 
 const PLAN_CREDITS: Record<string, number> = {
-  starter: 50,
-  pro: 100,
-  agency: 500,
+  starter: 200,
+  pro: 500,
+  agency: 3000,
 };
 
-const SPRINT_PASS_CREDITS = 50;
+const SPRINT_PASS_CREDITS = 150;
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';

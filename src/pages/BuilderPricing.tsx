@@ -54,7 +54,7 @@ const aiBuilderPlans = [
     description: "Launch your first website",
     monthlyPrice: 15,
     yearlyPrice: 150,
-    credits: 50,
+    credits: 200,
     features: [
       "1 published site (custom domain)",
       "No watermark",
@@ -69,7 +69,7 @@ const aiBuilderPlans = [
     description: "For serious builders",
     monthlyPrice: 29,
     yearlyPrice: 290,
-    credits: 100,
+    credits: 500,
     badge: "Best Seller",
     features: [
       "Unlimited drafts + 1 published site",
@@ -85,7 +85,7 @@ const aiBuilderPlans = [
     description: "For teams managing clients",
     monthlyPrice: 129,
     yearlyPrice: 1290,
-    credits: 500,
+    credits: 3000,
     features: [
       "10 published sites",
       "White-label dashboard",
@@ -254,7 +254,7 @@ const BuilderPricing = () => {
                 <div>
                   <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 7 days</p>
                   <p className="text-sm text-muted-foreground">
-                    First-time only. Includes +50 credits. Full Pro access for 7 days. Auto-renews to Pro $29/mo unless you cancel.
+                    First-time only. Includes +150 credits. Full Pro access for 7 days. Auto-renews to Pro $29/mo unless you cancel.
                   </p>
                 </div>
               </div>
@@ -275,7 +275,7 @@ const BuilderPricing = () => {
                     <ul className="space-y-3 mt-4">
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">+50 credits (rollover forever)</span>
+                        <span className="text-foreground">+150 credits (rollover forever)</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />

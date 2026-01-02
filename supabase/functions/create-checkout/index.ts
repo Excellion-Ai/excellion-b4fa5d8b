@@ -9,9 +9,9 @@ const corsHeaders = {
 
 // Price IDs for subscription plans
 const PRICE_IDS = {
-  starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",  // $15/mo - 50 credits
-  pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",       // $29/mo - 100 credits
-  agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",   // $129/mo - 500 credits
+  starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",  // $15/mo - 200 credits
+  pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",       // $29/mo - 500 credits
+  agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",   // $129/mo - 3000 credits
   // Annual prices
   starter_annual: "price_1SgKPjPCTHzXvqDgQP63Wygw",  // $156/year
   pro_annual: "price_1SgKQHPCTHzXvqDgNxuBVF8D",       // $288/year
@@ -155,7 +155,7 @@ serve(async (req) => {
         // Don't throw - let checkout proceed, we'll handle this on webhook/success
       }
 
-      // Grant +50 credits for Sprint Pass
+      // Grant +150 credits for Sprint Pass
       const { data: currentCredits } = await supabaseClient
         .from("user_credits")
         .select("balance, total_earned")
@@ -166,21 +166,21 @@ serve(async (req) => {
         await supabaseClient
           .from("user_credits")
           .update({
-            balance: currentCredits.balance + 50,
-            total_earned: currentCredits.total_earned + 50,
+            balance: currentCredits.balance + 150,
+            total_earned: currentCredits.total_earned + 150,
           })
           .eq("user_id", user.id);
 
         // Log the transaction
         await supabaseClient.from("credit_transactions").insert({
           user_id: user.id,
-          amount: 50,
+          amount: 150,
           type: "bonus",
           action_type: "sprint_pass",
-          description: "Sprint Pass bonus - 50 credits",
+          description: "Sprint Pass bonus - 150 credits",
         });
 
-        logStep("Sprint Pass credits granted", { credits: 50 });
+        logStep("Sprint Pass credits granted", { credits: 150 });
       }
 
       return new Response(JSON.stringify({ url: session.url }), {
