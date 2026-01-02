@@ -1102,6 +1102,9 @@ export default function SecretBuilderHub() {
             <p className="text-base text-muted-foreground max-w-lg mx-auto">
               Describe what you want. Excellion generates a full site you can edit and publish.
             </p>
+            <p className="text-sm text-muted-foreground/80 mt-2">
+              Not sure what to type? Use Build Assist.
+            </p>
           </section>
 
           {/* Input Card */}
@@ -1114,7 +1117,7 @@ export default function SecretBuilderHub() {
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Describe your website idea..."
+                    placeholder={interviewOpen ? "Answer a few quick questions to get a stronger first draft…" : "Describe your website idea..."}
                     className="min-h-[100px] resize-none border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 p-0 pr-8 text-base"
                     disabled={isGenerating}
                   />
@@ -1150,12 +1153,13 @@ export default function SecretBuilderHub() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 text-muted-foreground hover:text-foreground"
+                      className={`h-8 ${interviewOpen ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'}`}
                       onClick={() => setInterviewOpen(true)}
                       disabled={isGenerating}
                     >
-                      <Zap className="w-4 h-4 mr-1" />
+                      <Zap className={`w-4 h-4 mr-1 ${interviewOpen ? 'text-primary' : ''}`} />
                       Build Assist
+                      <span className="text-xs text-muted-foreground ml-1.5">· answers a few quick questions</span>
                     </Button>
                     
                   </div>
