@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const RAILWAY_API_URL = 'https://ai-brain-production.up.railway.app/generate';
+const RAILWAY_API_URL = 'https://ai-brain-production-0e19.up.railway.app/generate';
 
 interface GeneratedSite {
   id: string;
