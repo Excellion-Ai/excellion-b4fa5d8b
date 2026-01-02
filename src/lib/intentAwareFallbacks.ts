@@ -2,10 +2,170 @@
 // Ensures complete first-draft rendering based on business intent
 
 import { PrimaryGoal } from './contentPipeline/types';
-import { PricingTier, CTAContent } from '@/types/app-spec';
+import { PricingTier, CTAContent, FeatureItem, HeroVariant, FeaturesVariant } from '@/types/app-spec';
 import { NicheCategory, ConversionGoal } from './nicheRouter';
 
 export type BusinessIntent = 'booking_business' | 'service_business' | 'product_store' | 'saas' | 'nonprofit' | 'portfolio';
+
+// ====================================
+// NICHE-SPECIFIC CONTENT SCHEMAS
+// ====================================
+
+export type NicheContentSchema = {
+  heroHeadline: string;
+  heroSubheadline: string;
+  heroVariant: HeroVariant;
+  featuresTitle: string;
+  featuresVariant: FeaturesVariant;
+  features: FeatureItem[];
+  primaryCta: string;
+  secondaryCta: string;
+};
+
+// Dentist niche
+export const DENTIST_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Gentle Care, Healthy Smiles',
+  heroSubheadline: 'Family and cosmetic dentistry with evening and weekend appointments',
+  heroVariant: 'simple-centered',
+  featuresTitle: 'Our Services',
+  featuresVariant: 'grid-3',
+  features: [
+    { icon: 'Smile', title: 'Teeth Whitening', description: 'Professional whitening that removes years of stains in one visit' },
+    { icon: 'Shield', title: 'Preventive Care', description: 'Cleanings, X-rays, and exams to catch problems early' },
+    { icon: 'Heart', title: 'Emergency Dental', description: 'Same-day appointments for urgent pain or injuries' },
+    { icon: 'Sparkles', title: 'Cosmetic Dentistry', description: 'Veneers, bonding, and smile makeovers' },
+    { icon: 'Users', title: 'Family Friendly', description: 'Pediatric care in a welcoming environment' },
+    { icon: 'Clock', title: 'Flexible Hours', description: 'Early morning, evening, and Saturday availability' },
+  ],
+  primaryCta: 'Book Appointment',
+  secondaryCta: 'Call Our Office',
+};
+
+// Restaurant niche
+export const RESTAURANT_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Fresh Flavors, Made Daily',
+  heroSubheadline: 'Farm-to-table ingredients prepared with passion. Dine in or order online.',
+  heroVariant: 'split-image-right',
+  featuresTitle: 'What We Offer',
+  featuresVariant: 'bento-box',
+  features: [
+    { icon: 'UtensilsCrossed', title: 'Signature Dishes', description: 'Chef-crafted recipes you won\'t find anywhere else' },
+    { icon: 'Calendar', title: 'Table Reservations', description: 'Book online for guaranteed seating' },
+    { icon: 'Truck', title: 'Delivery & Takeout', description: 'Hot food delivered to your door in 30 minutes' },
+    { icon: 'Users', title: 'Private Events', description: 'Host your next celebration with us' },
+    { icon: 'Wine', title: 'Full Bar', description: 'Craft cocktails and curated wine list' },
+    { icon: 'Gift', title: 'Gift Cards', description: 'The perfect gift for food lovers' },
+  ],
+  primaryCta: 'View Menu',
+  secondaryCta: 'Reserve Table',
+};
+
+// Real Estate niche
+export const REAL_ESTATE_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Find Your Dream Home',
+  heroSubheadline: 'Local expertise and personalized service to guide you home',
+  heroVariant: 'split-image-right',
+  featuresTitle: 'How I Help',
+  featuresVariant: 'zigzag-large',
+  features: [
+    { icon: 'Home', title: 'Buyer Representation', description: 'Full support from first showing to closing day' },
+    { icon: 'TrendingUp', title: 'Seller Services', description: 'Strategic pricing and marketing to sell fast' },
+    { icon: 'MapPin', title: 'Local Market Expert', description: '15+ years of neighborhood knowledge' },
+    { icon: 'Calculator', title: 'Free Home Valuation', description: 'Know what your property is worth today' },
+    { icon: 'FileText', title: 'Negotiation Support', description: 'Skilled representation to get the best deal' },
+    { icon: 'Phone', title: 'Always Available', description: 'Direct line for questions anytime' },
+  ],
+  primaryCta: 'View Listings',
+  secondaryCta: 'Get Free Valuation',
+};
+
+// SaaS niche
+export const SAAS_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Work Smarter, Not Harder',
+  heroSubheadline: 'The all-in-one platform that replaces 5 tools. Start free, scale when ready.',
+  heroVariant: 'simple-centered',
+  featuresTitle: 'Everything You Need',
+  featuresVariant: 'bento-box',
+  features: [
+    { icon: 'Zap', title: 'Lightning Fast', description: 'Built on modern infrastructure for instant response' },
+    { icon: 'Users', title: 'Team Collaboration', description: 'Real-time editing and comments' },
+    { icon: 'Lock', title: 'Enterprise Security', description: 'SOC 2 compliant with SSO support' },
+    { icon: 'RefreshCw', title: 'Auto-Sync', description: 'Changes sync across all devices instantly' },
+    { icon: 'PieChart', title: 'Built-in Analytics', description: 'Track performance without extra tools' },
+    { icon: 'Plug', title: 'Integrations', description: 'Connect to 100+ apps you already use' },
+  ],
+  primaryCta: 'Start Free Trial',
+  secondaryCta: 'Watch Demo',
+};
+
+// Contractor niche
+export const CONTRACTOR_SCHEMA: NicheContentSchema = {
+  heroHeadline: 'Quality Craftsmanship, Guaranteed',
+  heroSubheadline: 'Licensed and insured. Free estimates within 24 hours.',
+  heroVariant: 'split-image-right',
+  featuresTitle: 'Our Services',
+  featuresVariant: 'grid-3',
+  features: [
+    { icon: 'Home', title: 'Home Renovations', description: 'Kitchen, bath, and whole-home remodels' },
+    { icon: 'Hammer', title: 'New Construction', description: 'Custom builds from foundation to finish' },
+    { icon: 'PaintBucket', title: 'Interior Finishing', description: 'Drywall, painting, and trim work' },
+    { icon: 'Wrench', title: 'Repairs & Maintenance', description: 'Fast fixes for any issue' },
+    { icon: 'FileText', title: 'Free Estimates', description: 'Detailed quotes with no obligation' },
+    { icon: 'Shield', title: 'Licensed & Insured', description: 'Full coverage for your peace of mind' },
+  ],
+  primaryCta: 'Get Free Estimate',
+  secondaryCta: 'View Our Work',
+};
+
+// Map niche keywords to schemas
+export const NICHE_SCHEMAS: Record<string, NicheContentSchema> = {
+  // Dental
+  dentist: DENTIST_SCHEMA,
+  dental: DENTIST_SCHEMA,
+  orthodontist: DENTIST_SCHEMA,
+  
+  // Restaurant
+  restaurant: RESTAURANT_SCHEMA,
+  cafe: RESTAURANT_SCHEMA,
+  bistro: RESTAURANT_SCHEMA,
+  pizzeria: RESTAURANT_SCHEMA,
+  bakery: RESTAURANT_SCHEMA,
+  bar: RESTAURANT_SCHEMA,
+  
+  // Real Estate
+  'real estate': REAL_ESTATE_SCHEMA,
+  realtor: REAL_ESTATE_SCHEMA,
+  'real-estate': REAL_ESTATE_SCHEMA,
+  realty: REAL_ESTATE_SCHEMA,
+  broker: REAL_ESTATE_SCHEMA,
+  
+  // SaaS
+  saas: SAAS_SCHEMA,
+  software: SAAS_SCHEMA,
+  app: SAAS_SCHEMA,
+  platform: SAAS_SCHEMA,
+  
+  // Contractor
+  contractor: CONTRACTOR_SCHEMA,
+  construction: CONTRACTOR_SCHEMA,
+  builder: CONTRACTOR_SCHEMA,
+  remodeling: CONTRACTOR_SCHEMA,
+  renovation: CONTRACTOR_SCHEMA,
+  handyman: CONTRACTOR_SCHEMA,
+};
+
+// Get niche schema from input text
+export function getNicheSchema(input: string): NicheContentSchema | null {
+  const lowerInput = input.toLowerCase();
+  
+  for (const [keyword, schema] of Object.entries(NICHE_SCHEMAS)) {
+    if (lowerInput.includes(keyword)) {
+      return schema;
+    }
+  }
+  
+  return null;
+}
 
 // Map primary goal to business intent
 export function goalToIntent(goal: PrimaryGoal): BusinessIntent {

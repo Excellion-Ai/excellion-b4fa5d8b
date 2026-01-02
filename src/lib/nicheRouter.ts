@@ -1,5 +1,8 @@
 // Universal Niche Router - Deterministic category + goal + integrations detection
 
+import { getNicheSchema, NicheContentSchema } from './intentAwareFallbacks';
+import { HeroVariant, FeaturesVariant } from '@/types/app-spec';
+
 export type NicheCategory = 
   | 'ecommerce' 
   | 'reseller' 
@@ -13,7 +16,9 @@ export type NicheCategory =
   | 'nonprofit' 
   | 'portfolio' 
   | 'community'
-  | 'fitness';
+  | 'fitness'
+  | 'dental'
+  | 'contractor';
 
 export type ConversionGoal = 
   | 'buy_now' 
@@ -40,6 +45,10 @@ export type NicheRoute = {
   integrationsNeeded: IntegrationType[];
   confidence: number;
   clarifyingQuestions?: string[];
+  // NEW: Content schema for this niche
+  contentSchema?: NicheContentSchema;
+  preferredHeroVariant?: HeroVariant;
+  preferredFeaturesVariant?: FeaturesVariant;
 };
 
 // Goal word patterns - highest priority
@@ -55,6 +64,16 @@ const GOAL_PATTERNS: { pattern: RegExp; goal: ConversionGoal }[] = [
 
 // Category detection patterns
 const CATEGORY_PATTERNS: { patterns: RegExp[]; category: NicheCategory; baseIntegrations: IntegrationType[] }[] = [
+  {
+    category: 'dental',
+    patterns: [/\b(dentist|dental|orthodont|teeth|oral|smile)\b/i],
+    baseIntegrations: ['calendly', 'maps', 'email_capture'],
+  },
+  {
+    category: 'contractor',
+    patterns: [/\b(contractor|construction|builder|remodel|renovation|handyman|carpent)\b/i],
+    baseIntegrations: ['calendly', 'maps', 'email_capture'],
+  },
   {
     category: 'ecommerce',
     patterns: [/\b(store|shop|products?|merch|sell|ecommerce|retail)\b/i],
@@ -72,8 +91,13 @@ const CATEGORY_PATTERNS: { patterns: RegExp[]; category: NicheCategory; baseInte
   },
   {
     category: 'local_service',
-    patterns: [/\b(plumb|hvac|electric|clean|repair|lawn|landscap|roof|paint|handyman|detail|mobile|service|contractor)\b/i],
+    patterns: [/\b(plumb|hvac|electric|clean|repair|lawn|landscap|roof|paint|detail|mobile|service)\b/i],
     baseIntegrations: ['calendly', 'maps', 'email_capture'],
+  },
+  {
+    category: 'real_estate',
+    patterns: [/\b(real estate|property|listing|home|house|apartment|realtor|broker|mortgage|realty)\b/i],
+    baseIntegrations: ['email_capture', 'maps', 'calendly'],
   },
   {
     category: 'saas',
@@ -94,11 +118,6 @@ const CATEGORY_PATTERNS: { patterns: RegExp[]; category: NicheCategory; baseInte
     category: 'event',
     patterns: [/\b(event|conference|summit|festival|concert|show|gala|meetup)\b/i],
     baseIntegrations: ['stripe', 'email_capture'],
-  },
-  {
-    category: 'real_estate',
-    patterns: [/\b(real estate|property|listing|home|house|apartment|realtor|broker|mortgage)\b/i],
-    baseIntegrations: ['email_capture', 'maps', 'calendly'],
   },
   {
     category: 'nonprofit',
@@ -237,7 +256,18 @@ export function routeNiche(input: string): NicheRoute {
   const confidence = calculateConfidence(lowerInput, category, goal);
   const clarifyingQuestions = generateClarifyingQuestions(confidence, category, goal);
   
-  console.log('[NicheRouter] Detected:', { category, goal, integrationsNeeded, confidence });
+  // Get niche-specific content schema
+  const contentSchema = getNicheSchema(input);
+  
+  console.log('[NicheRouter] Detected:', { 
+    category, 
+    goal, 
+    integrationsNeeded, 
+    confidence,
+    hasContentSchema: !!contentSchema,
+    preferredHeroVariant: contentSchema?.heroVariant,
+    preferredFeaturesVariant: contentSchema?.featuresVariant,
+  });
   
   return {
     category,
@@ -245,5 +275,8 @@ export function routeNiche(input: string): NicheRoute {
     integrationsNeeded,
     confidence,
     clarifyingQuestions,
+    contentSchema,
+    preferredHeroVariant: contentSchema?.heroVariant,
+    preferredFeaturesVariant: contentSchema?.featuresVariant,
   };
 }
