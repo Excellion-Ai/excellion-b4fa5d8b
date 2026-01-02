@@ -70,11 +70,6 @@ const Footer = () => {
                   FAQ
                 </Link>
               </li>
-              <li>
-                <Link to="/maintenance-request" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  Maintenance
-                </Link>
-              </li>
             </ul>
           </div>
 
