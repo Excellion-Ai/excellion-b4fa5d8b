@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,62 +24,16 @@ const NICHE_PROMPT_STYLES: Record<string, string> = {
 };
 
 const IMAGE_TYPE_PROMPTS: Record<string, string> = {
-  hero: "A stunning hero banner image suitable for the top of a website. Wide 16:9 aspect ratio. ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS, NO TYPOGRAPHY OF ANY KIND.",
-  service: "A clean image representing a professional service offering. Square or slightly rectangular format. ABSOLUTELY NO TEXT, NO WORDS, NO LETTERS.",
-  team: "Professional team/staff photo placeholder. Show diverse, professional-looking people. NO TEXT OR NAMES.",
-  gallery: "High-quality portfolio/gallery image showcasing work or products. NO TEXT, NO LABELS, NO WATERMARKS.",
-  testimonial: "Background image suitable for testimonials section. Subtle, not distracting. NO TEXT.",
-  about: "Warm, inviting image representing the company story or values. NO TEXT, NO WORDS.",
-  contact: "Professional image suitable for a contact page. Office, location, or welcoming imagery. NO TEXT.",
-  product: "Clean product photography with good lighting and neutral background. NO TEXT, NO LABELS.",
-  feature: "Icon-style or representative image for a feature/benefit. Simple, clear concept. NO TEXT, NO WORDS.",
+  hero: "A stunning hero banner image suitable for the top of a website. Wide 16:9 aspect ratio. No text overlays.",
+  service: "A clean image representing a professional service offering. Square or slightly rectangular format.",
+  team: "Professional team/staff photo placeholder. Show diverse, professional-looking people.",
+  gallery: "High-quality portfolio/gallery image showcasing work or products.",
+  testimonial: "Background image suitable for testimonials section. Subtle, not distracting.",
+  about: "Warm, inviting image representing the company story or values.",
+  contact: "Professional image suitable for a contact page. Office, location, or welcoming imagery.",
+  product: "Clean product photography with good lighting and neutral background.",
+  feature: "Icon-style or representative image for a feature/benefit. Simple, clear concept.",
 };
-
-// Helper to upload base64 image to storage with user isolation
-async function uploadToStorage(imageData: string, supabaseUrl: string, serviceKey: string, userId: string): Promise<string | null> {
-  try {
-    if (!imageData.startsWith("data:image")) {
-      return imageData; // Already a URL
-    }
-    
-    const supabase = createClient(supabaseUrl, serviceKey);
-    
-    // Convert base64 to blob
-    const base64Data = imageData.split(",")[1];
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    
-    // Store in user-specific images folder (separate from logos)
-    const fileName = `images/${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
-    
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("builder-images")
-      .upload(fileName, byteArray, {
-        contentType: "image/png",
-        upsert: false,
-      });
-
-    if (!uploadError && uploadData) {
-      const { data: urlData } = supabase.storage
-        .from("builder-images")
-        .getPublicUrl(fileName);
-      
-      if (urlData?.publicUrl) {
-        console.log("Image uploaded to storage:", urlData.publicUrl);
-        return urlData.publicUrl;
-      }
-    } else {
-      console.error("Storage upload failed:", uploadError);
-    }
-  } catch (storageError) {
-    console.error("Storage upload error:", storageError);
-  }
-  return null;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -88,34 +41,14 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication to get user ID for storage isolation
-    const authHeader = req.headers.get("Authorization");
-    let userId: string | null = null;
-    
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    
-    if (authHeader && supabaseUrl && serviceKey) {
-      const token = authHeader.replace("Bearer ", "");
-      const authClient = createClient(supabaseUrl, serviceKey);
-      const { data: { user } } = await authClient.auth.getUser(token);
-      userId = user?.id || null;
-      console.log(`[NICHE-IMAGE] User authenticated: ${userId}`);
-    }
-
     const { 
       businessName, 
       businessDescription, 
       niche,
       imageType = 'hero',
       customPrompt,
-      count = 1,
-      saveToLibrary = true // Only save to library if explicitly requested (manual generation)
+      count = 1
     } = await req.json();
-    
-    console.log(`[NICHE-IMAGE] saveToLibrary: ${saveToLibrary}`);
-
-    console.log(`[NICHE-IMAGE] Request received: ${businessName}, niche: ${niche}, type: ${imageType}`);
 
     if (!businessName) {
       return new Response(
@@ -126,7 +59,6 @@ serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
-      console.error('[NICHE-IMAGE] LOVABLE_API_KEY not configured');
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
@@ -142,29 +74,23 @@ serve(async (req) => {
 Business: ${businessName}
 ${businessDescription ? `Description: ${businessDescription}` : ''}
 
-CRITICAL - VISUALS ONLY:
-- ABSOLUTELY NO TEXT IN THE IMAGE - no words, letters, numbers, typography, titles, captions, labels, or any readable characters
-- NO logos, watermarks, or branding
-- Text will be added separately as HTML overlays - the image must be pure visual content only
-
 Image requirements:
 - ${typePrompt}
 - ${nicheStyle}
 - Ultra high resolution, photorealistic
 - Professional lighting and composition
+- NO text, logos, or watermarks
 - Must look like a real photograph, not AI-generated
 - Unique and specific to this business type
 
 Specific request: ${basePrompt}`;
 
-    console.log(`[NICHE-IMAGE] Generating ${imageType} image for ${businessName} (${niche || 'generic'} niche)`);
+    console.log(`Generating ${imageType} image for ${businessName} (${niche || 'generic'} niche)`);
 
     const images: string[] = [];
     
     // Generate requested number of images
     for (let i = 0; i < Math.min(count, 4); i++) {
-      console.log(`[NICHE-IMAGE] Generating image ${i + 1}/${count}...`);
-      
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -185,7 +111,7 @@ Specific request: ${basePrompt}`;
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('[NICHE-IMAGE] AI Gateway error:', response.status, errorText);
+        console.error('AI Gateway error:', response.status, errorText);
         
         if (response.status === 429) {
           return new Response(
@@ -206,34 +132,14 @@ Specific request: ${basePrompt}`;
       const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       
       if (imageUrl) {
-        // Only upload to library if saveToLibrary is true (manual generation)
-        // Auto-generated site images are NOT saved to library to avoid clutter
-        if (saveToLibrary && supabaseUrl && serviceKey && userId) {
-          console.log(`[NICHE-IMAGE] Saving to library for user: ${userId}`);
-          const persistedUrl = await uploadToStorage(imageUrl, supabaseUrl, serviceKey, userId);
-          if (persistedUrl) {
-            images.push(persistedUrl);
-            console.log(`[NICHE-IMAGE] Generated image ${i + 1}/${count} saved to library: ${persistedUrl}`);
-          } else {
-            images.push(imageUrl);
-            console.log(`[NICHE-IMAGE] Storage upload failed, using base64 for image ${i + 1}/${count}`);
-          }
-        } else {
-          // Auto-generated images: just return the base64/URL without saving to library
-          images.push(imageUrl);
-          console.log(`[NICHE-IMAGE] Image ${i + 1}/${count} generated (not saved to library, saveToLibrary=${saveToLibrary})`);
-        }
-      } else {
-        console.error('[NICHE-IMAGE] No image in AI response');
+        images.push(imageUrl);
+        console.log(`Generated image ${i + 1}/${count} successfully`);
       }
     }
 
     if (images.length === 0) {
-      console.error('[NICHE-IMAGE] No images generated');
       throw new Error('No images generated');
     }
-
-    console.log(`[NICHE-IMAGE] Successfully generated ${images.length} images`);
 
     return new Response(
       JSON.stringify({ 
@@ -247,7 +153,7 @@ Specific request: ${basePrompt}`;
     );
 
   } catch (error) {
-    console.error('[NICHE-IMAGE] Generate niche image error:', error);
+    console.error('Generate niche image error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -9,7 +9,7 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="space-y-4 md:col-span-4">
             <div className="flex items-center gap-2">
-              <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" width="32" height="32" loading="lazy" />
+              <img src={excellionLogo} alt="Excellion AI" className="w-8 h-8 object-contain" />
               <span className="text-xl font-bold text-foreground">Excellion AI</span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -18,7 +18,7 @@ const Footer = () => {
           </div>
 
           {/* Product Column */}
-          <div className="space-y-4 md:col-span-2">
+          <nav className="space-y-4 md:col-span-2" aria-label="Product links">
             <p className="text-sm font-semibold text-foreground">Product</p>
             <ul className="space-y-2">
               <li>
@@ -32,10 +32,10 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Company Column */}
-          <div className="space-y-4 md:col-span-2">
+          <nav className="space-y-4 md:col-span-2" aria-label="Company links">
             <p className="text-sm font-semibold text-foreground">Company</p>
             <ul className="space-y-2">
               <li>
@@ -54,10 +54,10 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Support Column */}
-          <div className="space-y-4 md:col-span-2">
+          <nav className="space-y-4 md:col-span-2" aria-label="Support links">
             <p className="text-sm font-semibold text-foreground">Support</p>
             <ul className="space-y-2">
               <li>
@@ -70,11 +70,16 @@ const Footer = () => {
                   FAQ
                 </Link>
               </li>
+              <li>
+                <Link to="/maintenance-request" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                  Maintenance
+                </Link>
+              </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Studio Column */}
-          <div className="space-y-4 md:col-span-2">
+          <nav className="space-y-4 md:col-span-2" aria-label="Builder links">
             <p className="text-sm font-semibold text-foreground">Builder</p>
             <ul className="space-y-2">
               <li>
@@ -83,7 +88,7 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
         </div>
 
         {/* Bottom Bar */}

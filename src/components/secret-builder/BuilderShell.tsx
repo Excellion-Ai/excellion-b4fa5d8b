@@ -1,5 +1,5 @@
 // BuilderShell - Main component for secret builder
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -7,61 +7,36 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, AlertTriangle, ChevronDown, History as HistoryIcon, Pencil, Github, Scan, Eye, EyeOff, RefreshCw, MessageSquare } from 'lucide-react';
-import { DeviceFrame, DeviceSelector, type DeviceType } from './DeviceFrame';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useTouchTargetAnalysis } from './TouchTargetAnalyzer';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import type { SiteSpec, BusinessIntent, LayoutStructure } from '@/types/site-spec';
+import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
-import { GenerationProgress } from './GenerationProgress';
-import { SiteRendererErrorBoundary } from './SiteRendererErrorBoundary';
-
-// Lazy load heavy panel components for faster FCP/LCP
-const ThemeEditor = lazy(() => import('./ThemeEditor').then(m => ({ default: m.ThemeEditor })));
-const LogoUpload = lazy(() => import('./LogoUpload').then(m => ({ default: m.LogoUpload })));
-const HelpChat = lazy(() => import('./HelpChat').then(m => ({ default: m.HelpChat })));
-const CodeExport = lazy(() => import('./CodeExport').then(m => ({ default: m.CodeExport })));
-const SectionLibrary = lazy(() => import('./SectionLibrary').then(m => ({ default: m.SectionLibrary })));
-const AnalyticsPanel = lazy(() => import('./AnalyticsPanel').then(m => ({ default: m.AnalyticsPanel })));
-const CustomDomainsPanel = lazy(() => import('./CustomDomainsPanel').then(m => ({ default: m.CustomDomainsPanel })));
-const DiffViewer = lazy(() => import('./DiffViewer').then(m => ({ default: m.DiffViewer })));
-const BookmarksPanel = lazy(() => import('./BookmarksPanel').then(m => ({ default: m.BookmarksPanel })));
-const KnowledgePanel = lazy(() => import('./KnowledgePanel').then(m => ({ default: m.KnowledgePanel })));
-const PresenceAvatars = lazy(() => import('./PresenceAvatars').then(m => ({ default: m.PresenceAvatars })));
-const PresenceCursor = lazy(() => import('./PresenceCursor').then(m => ({ default: m.PresenceCursor })));
-const SchemaVizPanel = lazy(() => import('./SchemaVizPanel').then(m => ({ default: m.SchemaVizPanel })));
-const ThreeDPanel = lazy(() => import('./ThreeDPanel').then(m => ({ default: m.ThreeDPanel })));
-const SecurityScanPanel = lazy(() => import('./SecurityScanPanel').then(m => ({ default: m.SecurityScanPanel })));
-const RenameDialog = lazy(() => import('./RenameDialog').then(m => ({ default: m.RenameDialog })));
-const IssuesPanel = lazy(() => import('./IssuesPanel').then(m => ({ default: m.IssuesPanel })));
-const TouchTargetAnalyzer = lazy(() => import('./TouchTargetAnalyzer').then(m => ({ default: m.TouchTargetAnalyzer })));
-const VersionHistoryPanel = lazy(() => import('./VersionHistoryPanel').then(m => ({ default: m.VersionHistoryPanel })));
-const ShortcutsPanel = lazy(() => import('./ShortcutsPanel').then(m => ({ default: m.ShortcutsPanel })));
-const ChatMessage = lazy(() => import('./ChatMessage').then(m => ({ default: m.ChatMessage })));
-
-// Keep the hook import for keyboard shortcuts
-import { useKeyboardShortcuts } from './ShortcutsPanel';
-import type { VersionSnapshot } from './VersionHistoryPanel';
-// Keep generateHtmlFromSpec as direct import since it's a function
-import { generateHtmlFromSpec } from './CodeExport';
-
-// Lazy fallback component with fixed dimensions to prevent CLS
-const PanelLoader = () => (
-  <div className="flex items-center justify-center p-8 min-h-[100px] min-w-[100px]">
-    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-  </div>
-);
+import { ThemeEditor } from './ThemeEditor';
+import { LogoUpload } from './LogoUpload';
+import { HelpChat } from './HelpChat';
+import { CodeExport, generateHtmlFromSpec } from './CodeExport';
+import { SectionLibrary } from './SectionLibrary';
+import { PageManager } from './PageManager';
+import { AnalyticsPanel } from './AnalyticsPanel';
+import { CustomDomainsPanel } from './CustomDomainsPanel';
+import { DiffViewer } from './DiffViewer';
+import { BookmarksPanel } from './BookmarksPanel';
+import { KnowledgePanel } from './KnowledgePanel';
+import { PresenceAvatars } from './PresenceAvatars';
+import { PresenceCursor } from './PresenceCursor';
+import { SchemaVizPanel } from './SchemaVizPanel';
+import { ThreeDPanel } from './ThreeDPanel';
+import { SecurityScanPanel } from './SecurityScanPanel';
+import { RenameDialog } from './RenameDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
 import { useCredits, CreditActionType } from '@/hooks/useCredits';
-import { useGitHubSync } from '@/hooks/useGitHubSync';
 import { calculateCreditCost } from '@/lib/calculateCreditCost';
 import { detectNiche } from '@/lib/motion/motionEngine';
 import { MotionIntensity } from '@/lib/motion/types';
@@ -72,20 +47,6 @@ import { getPacksForIntegrations, mergeIntegrationPages, type IntegrationPack } 
 import { checkSiteSpec as contentGuardrail } from '@/lib/contentGuardrail';
 import { checkDiversity as diversityGuardrail, recordGeneration } from '@/lib/diversityGuardrail';
 import { computeSignature } from '@/lib/layoutSignature';
-import type { LayoutStructure as LayoutStructureType } from '@/types/site-spec';
-import { speculativeParse, shouldAttemptParse, mergeSpeculative } from '@/lib/speculativeParser';
-import { refinePrompt } from '@/lib/promptRefiner';
-import { validateFinalSpec } from '@/lib/contentPipeline/contentValidator';
-import { fillImages } from '@/lib/nicheIntel/imageFiller';
-import { cn } from '@/lib/utils';
-import { 
-  formatChatResponse,
-  convertViolationsToIssues,
-  parseStructuredMessage,
-  type VerbosityMode,
-  type ActionChip,
-  type BuilderIssue,
-} from '@/lib/chatResponseFormatter';
 import { 
   validateSpecAgainstScaffold, 
   INTEGRATION_TO_COMPONENT,
@@ -104,8 +65,7 @@ type GenerationStep = {
 type Message = {
   id: string;
   role: 'user' | 'assistant';
-  content: string; // Display text (what user sees)
-  executionPrompt?: string; // What was sent to API (shadow prompt)
+  content: string;
   htmlCode?: string;
   attachments?: { name: string; url: string; type: string }[];
 };
@@ -116,14 +76,6 @@ type LocationState = {
   initialIdea?: string;
   projectId?: string;
   templateSpec?: SiteSpec;
-  createProject?: boolean; // Signal from hub to create project in builder
-  attachments?: string[];
-  interviewData?: {
-    offers?: string[];
-    colorThemePreset?: string | null;
-    colorThemeCustom?: { primary: string; accent: string; backgroundMode: 'dark' | 'light' } | null;
-    colorTheme?: { preset: string; primary: string; accent: string; backgroundMode: 'dark' | 'light' } | null;
-  };
 };
 
 const INITIAL_STEPS: GenerationStep[] = [
@@ -263,7 +215,6 @@ async function generateImageForPrompt(
       niche,
       imageType: 'hero',
       customPrompt: prompt,
-      saveToLibrary: false, // Auto-generated site images don't go to library
     }),
   });
 
@@ -474,60 +425,14 @@ export function BuilderShell() {
     return 'premium';
   });
   const [showDiffViewer, setShowDiffViewer] = useState(false);
-  const [showCodeDialog, setShowCodeDialog] = useState(false);
   const [pendingSpec, setPendingSpec] = useState<SiteSpec | null>(null);
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const fallbackForcedOnceRef = useRef<boolean>(false);
   
-  // Chat response formatting state
-  const [showIssuesPanel, setShowIssuesPanel] = useState(false);
-  const [currentIssues, setCurrentIssues] = useState<BuilderIssue[]>([]);
-  const [lastScaffold, setLastScaffold] = useState<GenerationScaffold | null>(null);
-  
-  // Version history state
-  const [versions, setVersions] = useState<VersionSnapshot[]>([]);
-  const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [isRestoringVersion, setIsRestoringVersion] = useState(false);
-  
-  // Error boundary state for self-healing
-  const [lastRenderError, setLastRenderError] = useState<{ error: string; stack: string } | null>(null);
-  const errorBoundaryKeyRef = useRef(0);
-  
-  // Generation progress tracking
-  const [tokenCount, setTokenCount] = useState(0);
-  const [generationStartTime, setGenerationStartTime] = useState<number | null>(null);
-  const [speculativeSpec, setSpeculativeSpec] = useState<Partial<SiteSpec> | null>(null);
-  const lastParseTokenRef = useRef(0);
-  
-  // Device frame and responsive testing state
-  const [deviceType, setDeviceType] = useState<DeviceType>('none');
-  const [showSafeAreas, setShowSafeAreas] = useState(false);
-  const [showTouchZones, setShowTouchZones] = useState(false);
-  const { isAnalyzing: isTouchAnalyzing, startAnalysis: startTouchAnalysis, stopAnalysis: stopTouchAnalysis } = useTouchTargetAnalysis();
-  
-  // Keyboard shortcuts state
-  const [showShortcutsPanel, setShowShortcutsPanel] = useState(false);
-  
-  // Auto-improve (shadow prompt) toggle
-  const [autoImproveEnabled, setAutoImproveEnabled] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('excellion-auto-improve') !== 'false';
-    }
-    return true;
-  });
-  
-  // Mobile view state - toggle between chat and preview on small screens
-  const [mobileActiveTab, setMobileActiveTab] = useState<'chat' | 'preview'>('chat');
-  const isMobile = useIsMobile();
-  
-  // Chat scroll refs for auto-scroll to bottom
-  const chatScrollRef = useRef<HTMLDivElement>(null);
-  const mobileChatScrollRef = useRef<HTMLDivElement>(null);
-  
   // Multiplayer presence
   const { otherUsers, updateCursor } = usePresence(projectId);
-
+  
   // Credits system
   const { 
     balance: creditBalance, 
@@ -537,17 +442,6 @@ export function BuilderShell() {
     authenticated: isAuthenticated,
     fetchCredits 
   } = useCredits();
-  
-  // GitHub sync
-  const {
-    connection: githubConnection,
-    projectGithub,
-    isSyncing: isGitHubSyncing,
-    connectGitHub,
-    disconnectGitHub,
-    syncToGitHub,
-    checkConnection: checkGitHubConnection,
-  } = useGitHubSync(projectId);
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
@@ -564,75 +458,8 @@ export function BuilderShell() {
   // Use the site editor hook for inline editing
   const editor = useSiteEditor(siteSpec, setSiteSpec, currentPageIndex);
   
-  // Keyboard shortcuts
-  useKeyboardShortcuts({
-    onUndo: canUndo ? undo : undefined,
-    onRedo: canRedo ? redo : undefined,
-    onSave: () => {
-      if (projectId && siteSpec) {
-        toast.success('Project saved');
-      }
-    },
-    onPublish: () => {
-      if (siteSpec) {
-        handlePublish();
-      }
-    },
-    onToggleEditMode: () => {
-      setVisualEditsEnabled(prev => !prev);
-      toast.success(visualEditsEnabled ? 'Visual Mode OFF' : 'Visual Mode ON');
-    },
-    onShowShortcuts: () => setShowShortcutsPanel(true),
-    onShowHistory: () => setShowVersionHistory(true),
-    onSetPreviewMode: (mode) => {
-      setPreviewMode(mode);
-      setDeviceType(mode === 'mobile' ? 'iphone-15' : mode === 'tablet' ? 'ipad' : 'none');
-    },
-    enabled: true,
-  });
-  
   const hasAutoGeneratedRef = useRef(false);
   const hasLoadedProjectRef = useRef(false);
-  const isSubmittingRef = useRef(false); // Prevents rapid-fire submissions before state updates
-  const lastSubmitTimeRef = useRef<number>(0); // Track when lock was acquired
-  
-  // Safety cleanup: Reset stale locks on component mount and periodically
-  useEffect(() => {
-    // Reset lock on mount (handles page refresh during generation)
-    isSubmittingRef.current = false;
-    
-    // Check for stale locks every 5 seconds
-    const staleLockCheck = setInterval(() => {
-      if (isSubmittingRef.current && lastSubmitTimeRef.current > 0) {
-        const lockAge = Date.now() - lastSubmitTimeRef.current;
-        // If lock is older than 2 minutes and we're not actively generating, release it
-        if (lockAge > 120000 && !isGenerating) {
-          console.warn('[BuilderShell] Releasing stale submission lock (age:', lockAge, 'ms)');
-          isSubmittingRef.current = false;
-          lastSubmitTimeRef.current = 0;
-        }
-      }
-    }, 5000);
-    
-    return () => {
-      clearInterval(staleLockCheck);
-      // Reset on unmount
-      isSubmittingRef.current = false;
-    };
-  }, [isGenerating]);
-
-  // Auto-scroll chat to bottom when new messages arrive
-  useEffect(() => {
-    // Use setTimeout to ensure DOM has updated
-    setTimeout(() => {
-      if (chatScrollRef.current) {
-        chatScrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }
-      if (mobileChatScrollRef.current) {
-        mobileChatScrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }
-    }, 100);
-  }, [messages, isGenerating]);
 
   // Immediately load template spec if provided (for instant preview)
   useEffect(() => {
@@ -650,66 +477,30 @@ export function BuilderShell() {
     }
   }, [projectId]);
 
-  // Load generated images when session is available
+  // Load generated images on mount so library is always available
   useEffect(() => {
-    const checkSessionAndFetch = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        console.log('[IMAGE-LIBRARY] Session ready, fetching user images for:', session.user.id);
-        fetchGeneratedImages();
-      }
-    };
-    
-    checkSessionAndFetch();
+    fetchGeneratedImages();
     
     // Listen for refresh events from LogoUpload
     const handleRefresh = () => fetchGeneratedImages();
     window.addEventListener('refresh-image-library', handleRefresh);
-    
-    // Also re-fetch when auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user?.id) {
-        console.log('[IMAGE-LIBRARY] Auth state changed, re-fetching images');
-        fetchGeneratedImages();
-      }
-    });
-    
-    return () => {
-      window.removeEventListener('refresh-image-library', handleRefresh);
-      subscription.unsubscribe();
-    };
+    return () => window.removeEventListener('refresh-image-library', handleRefresh);
   }, []);
 
   const loadProjectAndMaybeGenerate = async (id: string) => {
-    console.log('[BuilderShell] Loading project:', id);
-    
     const { data, error } = await supabase
       .from('builder_projects')
       .select('*')
       .eq('id', id)
-      .maybeSingle();
+      .single();
 
-    if (error) {
+    if (error || !data) {
       console.error('Failed to load project:', error);
       toast.error('Failed to load project');
       return;
     }
-    
-    if (!data) {
-      console.warn('[BuilderShell] Project not found:', id);
-      toast.error('Project not found - it may have been deleted');
-      return;
-    }
 
-    // Persist last project ID to localStorage for recovery
-    localStorage.setItem('excellion_last_project_id', id);
-    
     setProjectName(data.name);
-    
-    // Load versions if available
-    if (data.versions && Array.isArray(data.versions)) {
-      setVersions(data.versions as unknown as VersionSnapshot[]);
-    }
     
     // Load published URL if site is published
     if (data.published_url) {
@@ -722,7 +513,6 @@ export function BuilderShell() {
     const hasContent = spec?.html || spec?.siteSpec || (spec?.messages && spec.messages.length > 0);
     
     if (hasContent) {
-      console.log('[BuilderShell] Loading existing content for project:', id);
       // Load existing content
       if (spec?.html) {
         setGeneratedHtml(spec.html);
@@ -750,101 +540,14 @@ export function BuilderShell() {
     }
   };
 
-  // Handle new project creation from hub (createProject flag)
-  const hasCreatedProjectRef = useRef(false);
-  // Track if project creation is in progress to prevent race conditions in saveProject
-  const projectCreationInProgressRef = useRef(false);
-  // Store initialIdea in ref to avoid stale closures
-  const initialIdeaRef = useRef(initialIdea);
-  initialIdeaRef.current = initialIdea;
-  // Track if generation has been initiated to prevent double-fire
-  const generationInitiatedRef = useRef(false);
-  
+  // Fallback for direct navigation without projectId
   useEffect(() => {
-    const createAndGenerate = async () => {
-      const ideaToGenerate = initialIdeaRef.current;
-      // Check ALL refs to prevent any duplicate triggers
-      if (state?.createProject && ideaToGenerate && !hasCreatedProjectRef.current && !generationInitiatedRef.current && !hasAutoGeneratedRef.current) {
-        hasCreatedProjectRef.current = true;
-        hasAutoGeneratedRef.current = true;
-        generationInitiatedRef.current = true;
-        
-        console.log('[BuilderShell] Starting auto-generation from hub with createProject flag');
-        
-        // Set the idea immediately for UI display
-        setIdea(ideaToGenerate);
-        
-        // Show immediate feedback that generation is starting
-        toast.info('Starting website generation...');
-        
-        // Create project in background (don't block generation)
-        let createdProjectId: string | null = null;
-        projectCreationInProgressRef.current = true;
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            const projectNameText = ideaToGenerate.slice(0, 50) + (ideaToGenerate.length > 50 ? '...' : '');
-            const { data, error } = await supabase
-              .from('builder_projects')
-              .insert([{
-                user_id: user.id,
-                name: projectNameText,
-                idea: ideaToGenerate,
-                spec: JSON.parse(JSON.stringify({ 
-                  themeId: 'modern', 
-                  attachments: state.attachments || [],
-                  interviewData: state.interviewData,
-                })),
-              }])
-              .select()
-              .single();
-            
-            if (!error && data) {
-              createdProjectId = data.id;
-              setProjectId(data.id);
-              setProjectName(projectNameText);
-              localStorage.setItem('excellion_last_project', data.id);
-              console.log('[BuilderShell] Project created:', data.id);
-            } else if (error) {
-              console.error('[BuilderShell] Project creation error:', error);
-            }
-          } else {
-            console.warn('[BuilderShell] No user found for project creation');
-            toast.error('Please sign in to generate websites');
-            generationInitiatedRef.current = false; // Reset on auth failure
-            projectCreationInProgressRef.current = false;
-            return;
-          }
-        } catch (projectErr) {
-          console.error('[BuilderShell] Project creation failed:', projectErr);
-        } finally {
-          projectCreationInProgressRef.current = false;
-        }
-        
-        // Trigger generation directly - handleGenerate manages its own locks
-        console.log('[BuilderShell] Triggering handleGenerate with:', ideaToGenerate.slice(0, 50));
-        handleGenerate(ideaToGenerate);
-      }
-    };
-    
-    createAndGenerate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state?.createProject]);
-
-  // Fallback for direct navigation without projectId (legacy flow)
-  useEffect(() => {
-    const ideaToGenerate = initialIdeaRef.current;
-    // Check generationInitiatedRef as well to prevent race conditions
-    if (ideaToGenerate && !projectId && !state?.createProject && !siteSpec && !generatedHtml && !isGenerating && messages.length === 0 && !hasAutoGeneratedRef.current && !generationInitiatedRef.current) {
+    if (initialIdea && !projectId && !siteSpec && !generatedHtml && !isGenerating && messages.length === 0 && !hasAutoGeneratedRef.current) {
       hasAutoGeneratedRef.current = true;
-      generationInitiatedRef.current = true;
-      console.log('[BuilderShell] Fallback: triggering auto-generation for legacy flow');
-      setIdea(ideaToGenerate);
-      // Trigger generation directly - handleGenerate manages its own locks
-      handleGenerate(ideaToGenerate);
+      setIdea(initialIdea);
+      handleGenerate(initialIdea);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, state?.createProject, siteSpec, generatedHtml, isGenerating, messages.length]);
+  }, []);
 
   const updateStep = (stepId: number, status: GenerationStep['status']) => {
     setSteps((prev) =>
@@ -852,19 +555,15 @@ export function BuilderShell() {
     );
   };
 
-  const saveProject = async (
-    html: string | null, 
-    allMessages: Message[], 
-    ideaText: string, 
-    currentSiteSpec: SiteSpec | null,
-    saveVersion: boolean = false // Only save version on AI generation
-  ) => {
+  const saveProject = async (html: string | null, allMessages: Message[], ideaText: string, currentSiteSpec: SiteSpec | null) => {
+    // Get current user for new projects
     const { data: { user } } = await supabase.auth.getUser();
     
+    // Use AI-generated site name if available, otherwise fall back to idea text
     const aiGeneratedName = currentSiteSpec?.name;
     const name = projectName !== 'New Project' ? projectName : (aiGeneratedName || ideaText.slice(0, 50));
     
-    const projectData: Record<string, unknown> = {
+    const projectData = {
       name,
       idea: ideaText,
       spec: { 
@@ -875,37 +574,12 @@ export function BuilderShell() {
           role: m.role,
           content: m.content,
           htmlCode: m.htmlCode,
-          attachments: m.attachments,
+          attachments: m.attachments, // Persist attached images
         }))
       } as unknown as Json,
     };
 
     if (projectId) {
-      // If saveVersion is true, add version snapshot
-      if (saveVersion && currentSiteSpec) {
-        const newVersion: VersionSnapshot = {
-          id: crypto.randomUUID(),
-          timestamp: new Date().toISOString(),
-          spec: currentSiteSpec,
-          name: currentSiteSpec.name || `Version ${versions.length + 1}`,
-        };
-        
-        // Fetch current versions and append
-        const { data: currentProject } = await supabase
-          .from('builder_projects')
-          .select('versions')
-          .eq('id', projectId)
-          .single();
-        
-        const existingVersions = (Array.isArray(currentProject?.versions) 
-          ? currentProject.versions 
-          : []) as unknown as VersionSnapshot[];
-        const updatedVersions = [...existingVersions, newVersion].slice(-20); // Keep last 20 versions
-        
-        projectData.versions = updatedVersions as unknown as Json;
-        setVersions(updatedVersions);
-      }
-      
       const { error } = await supabase
         .from('builder_projects')
         .update(projectData)
@@ -915,30 +589,9 @@ export function BuilderShell() {
         console.error('Failed to update project:', error);
       }
     } else {
-      // Don't create a new project if one is already being created (prevents duplicates)
-      if (projectCreationInProgressRef.current || hasCreatedProjectRef.current) {
-        console.log('[BuilderShell] Skipping saveProject insert - project creation already in progress or completed');
-        return;
-      }
-      
-      // New project - include initial version if saveVersion is true
-      if (saveVersion && currentSiteSpec) {
-        const newVersion: VersionSnapshot = {
-          id: crypto.randomUUID(),
-          timestamp: new Date().toISOString(),
-          spec: currentSiteSpec,
-          name: currentSiteSpec.name || 'Initial version',
-        };
-        projectData.versions = [newVersion] as unknown as Json;
-        setVersions([newVersion]);
-      }
-      
       const { data, error } = await supabase
         .from('builder_projects')
-        .insert({ 
-          ...projectData, 
-          user_id: user?.id 
-        } as any)
+        .insert({ ...projectData, user_id: user?.id })
         .select('id')
         .single();
 
@@ -952,86 +605,12 @@ export function BuilderShell() {
     }
   };
 
-  // Restore a version from history
-  const handleRestoreVersion = async (version: VersionSnapshot) => {
-    if (!projectId) return;
-    
-    setIsRestoringVersion(true);
-    try {
-      // First, save current state as a new version (auto-backup before restore)
-      if (siteSpec) {
-        const backupVersion: VersionSnapshot = {
-          id: crypto.randomUUID(),
-          timestamp: new Date().toISOString(),
-          spec: siteSpec,
-          name: `Backup before restore`,
-        };
-        
-        const { data: currentProject } = await supabase
-          .from('builder_projects')
-          .select('versions')
-          .eq('id', projectId)
-          .single();
-        
-        const existingVersions = (Array.isArray(currentProject?.versions) 
-          ? currentProject.versions 
-          : []) as unknown as VersionSnapshot[];
-        const updatedVersions = [...existingVersions, backupVersion].slice(-20);
-        
-        await supabase
-          .from('builder_projects')
-          .update({ versions: updatedVersions as unknown as Json })
-          .eq('id', projectId);
-        
-        setVersions(updatedVersions);
-      }
-      
-      // Restore the selected version
-      setSiteSpec(version.spec);
-      
-      // Save the restored spec
-      const firstUserMessage = messages.find(m => m.role === 'user');
-      await saveProject(null, messages, firstUserMessage?.content || '', version.spec, false);
-      
-      toast.success(`Restored to "${version.name}"`);
-    } catch (error) {
-      console.error('Failed to restore version:', error);
-      toast.error('Failed to restore version');
-    } finally {
-      setIsRestoringVersion(false);
-    }
-  };
-
-  // Auto-save when siteSpec changes (from inline editing) - debounced, no version save
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedSpecRef = useRef<string | null>(null);
-  
+  // Auto-save when siteSpec changes (from inline editing)
   useEffect(() => {
     if (siteSpec && projectId) {
-      // Create a hash of the current spec to avoid unnecessary saves
-      const specHash = JSON.stringify(siteSpec);
-      if (specHash === lastSavedSpecRef.current) {
-        return; // Skip if no actual changes
-      }
-      
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-      
-      // Save after 1.5 seconds of inactivity (reduced from 2s for faster saves)
-      saveTimeoutRef.current = setTimeout(async () => {
-        const firstUserMessage = messages.find(m => m.role === 'user');
-        await saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, false);
-        lastSavedSpecRef.current = specHash;
-        console.log('[BuilderShell] Auto-saved project:', projectId);
-      }, 1500);
+      const firstUserMessage = messages.find(m => m.role === 'user');
+      saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec);
     }
-    
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
   }, [siteSpec]);
 
   // Keyboard shortcuts for undo/redo
@@ -1050,33 +629,19 @@ export function BuilderShell() {
     return () => window.removeEventListener('keydown', handleKeyboard);
   }, [canUndo, canRedo, undo, redo]);
 
-  // Warn users if they try to leave during generation AND auto-save on page close
+  // Warn users if they try to leave during generation
   useEffect(() => {
+    if (!isGenerating) return;
+    
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Always try to save current state to localStorage for recovery
-      if (siteSpec && projectId) {
-        try {
-          localStorage.setItem('excellion_recovery_data', JSON.stringify({
-            projectId,
-            projectName,
-            timestamp: Date.now(),
-          }));
-        } catch (err) {
-          console.warn('[BuilderShell] Failed to save recovery data:', err);
-        }
-      }
-      
-      // Only show warning during generation
-      if (isGenerating) {
-        e.preventDefault();
-        e.returnValue = 'Website generation is in progress. Are you sure you want to leave?';
-        return e.returnValue;
-      }
+      e.preventDefault();
+      e.returnValue = 'Website generation is in progress. Are you sure you want to leave?';
+      return e.returnValue;
     };
     
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isGenerating, siteSpec, projectId, projectName]);
+  }, [isGenerating]);
 
   // Helper to deduct credits via edge function with dynamic cost
   const deductCredits = async (
@@ -1125,23 +690,6 @@ export function BuilderShell() {
   const handleGenerate = async (inputIdea?: string, retryCount: number = 0) => {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
-    
-    // Prevent duplicate submissions - check both state and ref for immediate feedback
-    if (isGenerating || isSubmittingRef.current) {
-      console.log('[handleGenerate] Already generating, ignoring duplicate call');
-      return;
-    }
-    
-    // Lock immediately to prevent rapid-fire before state updates
-    isSubmittingRef.current = true;
-    lastSubmitTimeRef.current = Date.now();
-    
-    // Helper to safely release lock on any early exit
-    const releaseLock = () => {
-      isSubmittingRef.current = false;
-      lastSubmitTimeRef.current = 0;
-      setIsGenerating(false);
-    };
 
     // ============ ROUTING & SCAFFOLDING ============
     // Step 1: Run niche router to detect category, goal, integrations
@@ -1191,32 +739,15 @@ export function BuilderShell() {
     });
     
     // Step 4: Build generation scaffold for the AI prompt
-    // Global forbidden phrases - NEVER generate content about the builder itself
-    const globalForbiddenPhrases = [
-      'excellion', 'website builder', 'code ownership', 'export your code',
-      'uptime sla', '99.9% uptime', 'support response', 'enterprise hosting',
-      'own 100% of your code', 'priority support', 'response times',
-      'hosting infrastructure', 'cloud hosting', 'code export'
-    ];
-    
-    // Get custom theme from interview data if available
-    const interviewColorData = state?.interviewData?.colorTheme || state?.interviewData?.colorThemeCustom;
-    
     const generationScaffold = {
       category: route.category,
       goal: route.goal,
       archetypeId: archetype.id,
       requiredPages: archetype.requiredPages,
       ctaRules: archetype.ctaRules,
-      forbiddenPhrases: [...archetype.forbiddenPhrases, ...globalForbiddenPhrases],
+      forbiddenPhrases: archetype.forbiddenPhrases,
       integrations: route.integrationsNeeded,
       layoutSignature: archetype.layoutSignature,
-      // Pass custom theme from Build Assist interview
-      customTheme: interviewColorData ? {
-        primaryColor: interviewColorData.primary,
-        accentColor: interviewColorData.accent,
-        backgroundMode: interviewColorData.backgroundMode || 'dark',
-      } : null,
     };
 
     // Determine credit action type
@@ -1245,7 +776,6 @@ export function BuilderShell() {
       creditCalc.totalCost
     );
     if (!canProceed) {
-      releaseLock();
       return;
     }
 
@@ -1257,25 +787,7 @@ export function BuilderShell() {
     
     // Build enhanced idea with attachment context
     let enhancedIdea = ideaToUse;
-    
-    // Include custom colors from Build Assist interview if provided
-    const interviewData = state?.interviewData;
-    if (interviewData?.colorTheme || interviewData?.colorThemeCustom) {
-      const colorData = interviewData.colorTheme || interviewData.colorThemeCustom;
-      if (colorData && colorData.primary) {
-        const colorContext = `[COLOR THEME - CRITICAL - USE THESE EXACT COLORS:
-- Primary Color: ${colorData.primary} (USE THIS for buttons, headlines, CTAs)
-- Accent Color: ${colorData.accent || colorData.primary} (USE THIS for secondary elements)
-- Background Mode: ${colorData.backgroundMode || 'dark'} (dark = dark backgrounds, light = light backgrounds)
-- Preset: ${(interviewData.colorTheme as any)?.preset || 'custom'}
-DO NOT use default industry colors. USE THE EXACT HEX CODES SPECIFIED ABOVE.]`;
-        enhancedIdea = `${colorContext}\n\n${enhancedIdea}`;
-        console.log('[handleGenerate] Including custom colors from interview:', colorData);
-      }
-    }
 
-    // Wrap ALL attachment processing in try-catch to ensure lock is released on errors
-    try {
     for (const att of currentAttachments) {
       // Handle file attachments
       if (att.type === 'file' && att.data instanceof File) {
@@ -1303,15 +815,30 @@ DO NOT use default industry colors. USE THE EXACT HEX CODES SPECIFIED ABOVE.]`;
             if (!uploadError && uploadData) {
               const { data: urlData } = supabase.storage
                 .from('builder-images')
-                .getPublicUrl(fileName);
+                .getPublicUrl(uploadData.path);
               
               if (urlData?.publicUrl) {
-                uploadedImageUrls.push({ name: att.name, url: urlData.publicUrl });
-                console.log('[handleGenerate] Uploaded image:', urlData.publicUrl);
+                uploadedImageUrls.push({ 
+                  name: att.name, 
+                  url: urlData.publicUrl,
+                  purpose: att.name.toLowerCase().includes('logo') ? 'logo' : 'image'
+                });
+                attachmentData.push({ name: att.name, url: urlData.publicUrl, type: file.type });
+              } else {
+                attachmentData.push({ name: att.name, url: base64, type: file.type });
               }
+            } else {
+              console.error('Upload error:', uploadError);
+              attachmentData.push({ name: att.name, url: base64, type: file.type });
             }
           } catch (uploadErr) {
-            console.warn('[handleGenerate] Failed to upload image, using base64:', uploadErr);
+            console.error('Failed to upload image:', uploadErr);
+            const base64Fallback = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.readAsDataURL(file);
+            });
+            attachmentData.push({ name: att.name, url: base64Fallback, type: file.type });
           }
           
           imageDataForApi.push({ type: 'image_url', image_url: { url: base64 } });
@@ -1364,31 +891,11 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       }).join('\n');
       enhancedIdea = `${enhancedIdea}\n\n${imageInstructions}`;
     }
-    } catch (attachmentError) {
-      console.error('[handleGenerate] Attachment processing failed:', attachmentError);
-      toast.error('Failed to process attachments. Continuing without them.');
-      // Don't return - continue with generation without attachments
-    }
-
-    // Shadow prompt: apply auto-improve in background
-    let executionPrompt = enhancedIdea;
-    if (autoImproveEnabled && messages.length === 0) {
-      try {
-        const result = await refinePrompt(ideaToUse, { source: 'builder' });
-        if (!result.fallback && result.refinedPrompt) {
-          executionPrompt = result.refinedPrompt;
-          console.log(`[ShadowPrompt] Refined in ${result.latencyMs}ms`);
-        }
-      } catch (refineError) {
-        console.warn('[ShadowPrompt] Refiner error, using original:', refineError);
-      }
-    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content: ideaToUse, // Display original text to user
-      executionPrompt, // Shadow: what actually goes to API
       attachments: attachmentData.length > 0 ? attachmentData : undefined,
     };
     setMessages((prev) => [...prev, userMessage]);
@@ -1398,27 +905,25 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
     setIsGenerating(true);
     // Don't clear the existing preview - keep it visible until new one is ready
     setGeneratedHtml(null);
-    // Clear previous issues before new generation
-    setCurrentIssues([]);
     // resetSiteSpec removed: Keep existing preview during generation
     setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: 'pending' })));
 
     const hasUrl = containsUrl(ideaToUse);
 
     try {
-      // Minimal delays - just enough to show visual feedback
       updateStep(1, 'active');
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 200));
       updateStep(1, 'complete');
 
       updateStep(2, 'active');
+      if (hasUrl) {
+        await new Promise((r) => setTimeout(r, 100));
+      }
       updateStep(2, 'complete');
 
       updateStep(3, 'active');
-      setTokenCount(0);
-      setGenerationStartTime(Date.now());
       
-      // Build chat messages, using executionPrompt for API (shadow execution)
+      // Build chat messages, including images for the latest user message
       const chatMessages = [...messages, userMessage].map((m, idx, arr) => {
         const isLatestUserMessage = idx === arr.length - 1 && m.role === 'user';
         
@@ -1427,16 +932,15 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           return {
             role: m.role,
             content: [
-              { type: 'text', text: m.executionPrompt || executionPrompt }, // Use shadow prompt
+              { type: 'text', text: enhancedIdea }, // Use enhanced idea with image URLs
               ...imageDataForApi,
             ],
           };
         }
         
-        // Use executionPrompt for user messages (shadow execution)
         return {
           role: m.role,
-          content: m.role === 'user' ? (m.executionPrompt || m.content) : m.content,
+          content: m.content,
         };
       });
 
@@ -1452,228 +956,68 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         throw new Error('Session expired. Please sign in again.');
       }
       
-      // Phase 3: Pre-classify the business using Claude for accurate context
-      let classification: { 
-        industry?: string; 
-        businessModel?: string;
-        primaryColor?: string;
-        secondaryColor?: string;
-        layoutHint?: string;
-        heroVariant?: string;
-      } | null = null;
-      
-      if (messages.length === 0) { // Only on first generation
-        try {
-          console.log('[handleGenerate] Running Claude-powered classification...');
-          const classifyResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/classify-business`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ prompt: executionPrompt }),
-          });
-          
-          if (classifyResponse.ok) {
-            classification = await classifyResponse.json();
-            console.log('[handleGenerate] Classification result:', classification);
-          }
-        } catch (classifyError) {
-          console.warn('[handleGenerate] Classification failed, continuing without:', classifyError);
-        }
-      }
-      
-      // Fetch with retry logic for connection issues
-      const maxRetries = 2;
-      let lastError: Error | null = null;
-      let response: Response | null = null;
-      
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          if (attempt > 0) {
-            console.log(`[handleGenerate] Retry attempt ${attempt}/${maxRetries}`);
-            toast.info(`Retrying connection... (attempt ${attempt + 1})`);
-            // Brief delay before retry
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-          }
-          
-          const fetchResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            },
-            body: JSON.stringify({ 
-              messages: chatMessages, 
-              modelMode, 
-              projectId,
-              scaffold: generationScaffold,
-              speedMode: messages.length <= 1 ? 'fast' : 'normal',
-              classification, // Pass Claude's pre-classification to bot-chat
-            }),
-          });
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ 
+          messages: chatMessages, 
+          modelMode, 
+          projectId,
+          scaffold: generationScaffold // Pass scaffold for AI to follow
+        }),
+      });
 
-          if (!fetchResponse.ok) {
-            const errorData = await fetchResponse.json();
-            const errorCode = errorData.code || 'UNKNOWN';
-            const errorMsg = errorData.error || 'Failed to generate website';
-            
-            // Show specific toasts based on error type
-            if (errorCode === 'RATE_LIMIT') {
-              toast.error('Rate limit exceeded', {
-                description: 'Please wait 30 seconds and try again.',
-                duration: 5000,
-              });
-            } else if (errorCode === 'USAGE_LIMIT') {
-              toast.error('Credits depleted', {
-                description: 'Add more credits to continue building.',
-                action: {
-                  label: 'Add Credits',
-                  onClick: () => window.open('/billing', '_blank'),
-                },
-              });
-            } else if (errorCode.startsWith('GPT5_')) {
-              toast.error('AI Configuration Error', {
-                description: errorMsg,
-                duration: 8000,
-              });
-              console.error(`[handleGenerate] GPT-5 error [${errorCode}]:`, errorMsg);
-            } else if (errorCode === 'CONTENT_POLICY') {
-              toast.error('Content Policy', {
-                description: 'Please modify your prompt and try again.',
-              });
-            } else if (errorCode === 'CONTEXT_LENGTH') {
-              toast.error('Prompt Too Long', {
-                description: 'Try a shorter description.',
-              });
-            }
-            
-            throw new Error(errorMsg);
-          }
-          
-          response = fetchResponse;
-          break; // Success, exit retry loop
-        } catch (fetchError) {
-          lastError = fetchError instanceof Error ? fetchError : new Error('Unknown error');
-          console.error(`[handleGenerate] Fetch attempt ${attempt} failed:`, lastError.message);
-          
-          // Only retry on network/connection errors, not HTTP errors
-          if (lastError.message.includes('Failed to fetch') || 
-              lastError.message.includes('network') ||
-              lastError.message.includes('connection')) {
-            if (attempt < maxRetries) continue;
-          }
-          throw lastError;
-        }
-      }
-      
-      if (!response) {
-        throw lastError || new Error('Failed to connect after retries');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate website');
       }
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let fullResponse = '';
       let textBuffer = '';
-      let currentTokenCount = 0;
-      let streamComplete = false;
-
-      // Reset speculative state for new generation
-      lastParseTokenRef.current = 0;
-      setSpeculativeSpec(null);
 
       if (reader) {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              streamComplete = true;
-              break;
-            }
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          textBuffer += decoder.decode(value, { stream: true });
+          
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
             
-            textBuffer += decoder.decode(value, { stream: true });
+            if (line.endsWith('\r')) line = line.slice(0, -1);
+            if (line.startsWith(':') || line.trim() === '') continue;
+            if (!line.startsWith('data: ')) continue;
             
-            let newlineIndex: number;
-            while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
-              let line = textBuffer.slice(0, newlineIndex);
-              textBuffer = textBuffer.slice(newlineIndex + 1);
-              
-              if (line.endsWith('\r')) line = line.slice(0, -1);
-              if (line.startsWith(':') || line.trim() === '') continue;
-              if (!line.startsWith('data: ')) continue;
-              
-              const jsonStr = line.slice(6).trim();
-              if (jsonStr === '[DONE]') {
-                streamComplete = true;
-                break;
-              }
-              
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const content = parsed.choices?.[0]?.delta?.content;
-                if (content) {
-                  fullResponse += content;
-                  // Estimate tokens: ~4 chars per token on average
-                  const newTokens = Math.ceil(content.length / 4);
-                  currentTokenCount += newTokens;
-                  setTokenCount(currentTokenCount);
-                  
-                  // Speculative parsing: attempt to parse partial JSON during stream
-                  if (shouldAttemptParse(currentTokenCount, lastParseTokenRef.current)) {
-                    const speculativeResult = speculativeParse(fullResponse, currentTokenCount);
-                    if (speculativeResult && speculativeResult.spec) {
-                      lastParseTokenRef.current = currentTokenCount;
-                      setSpeculativeSpec(prev => 
-                        prev ? mergeSpeculative(prev, speculativeResult.spec!) : speculativeResult.spec
-                      );
-                      console.log('[SPECULATIVE]', {
-                        confidence: speculativeResult.confidence,
-                        fields: speculativeResult.parsedFields,
-                        tokens: currentTokenCount,
-                      });
-                    }
-                  }
-                }
-              } catch {
-                // Partial JSON, continue
-              }
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === '[DONE]') break;
+            
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) fullResponse += content;
+            } catch {
+              // Partial JSON, continue
             }
           }
-        } catch (streamError) {
-          console.error('[handleGenerate] Stream reading error:', streamError);
-          // If we have partial response, try to use it
-          if (fullResponse.length > 100) {
-            console.log('[handleGenerate] Using partial response:', fullResponse.length, 'chars');
-            streamComplete = true; // Mark as complete to try parsing what we have
-          } else {
-            throw streamError;
-          }
-        }
-        
-        // Check if stream was interrupted without completion
-        if (!streamComplete && fullResponse.length < 100) {
-          throw new Error('Generation interrupted. Please try again.');
         }
       }
 
-      // Clear speculative spec once we have final result
-      setSpeculativeSpec(null);
-
       updateStep(3, 'complete');
-      setGenerationStartTime(null); // Stop the timer
       // Credits already deducted before AI call
 
       updateStep(4, 'active');
       
-      // Log full response for debugging
-      console.log('[handleGenerate] Full response length:', fullResponse.length);
-      console.log('[handleGenerate] Response preview:', fullResponse.slice(0, 200));
-      
       // Use forceFallback query param to test fallback path
       const { message: assistantText, siteSpec: parsedSpec } = extractJsonFromResponse(fullResponse, forceFallback, fallbackForcedOnceRef);
-      
-      console.log('[handleGenerate] Parsed spec:', parsedSpec ? 'SUCCESS' : 'FAILED', parsedSpec?.name || 'no name');
       
       let newSiteSpec: SiteSpec | null = null;
       if (parsedSpec) {
@@ -1757,109 +1101,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           return handleGenerate(`${ideaToUse}\n\n[QUALITY CONSTRAINTS: ${constraintHint}]`, retryCount + 1);
         }
         
-        // ============ FINAL-SPEC VALIDATION ============
-        // Deep scan for banned phrases and placeholders BEFORE rendering
-        const finalValidation = validateFinalSpec(parsedSpec, route.category);
-        console.log('[FINAL_VALIDATION]', {
-          valid: finalValidation.valid,
-          violations: finalValidation.violations.length,
-          hasPlaceholders: finalValidation.hasPlaceholders,
-        });
-        
-        // If banned content found and this is first attempt, retry with strict constraints
-        if (!finalValidation.valid && retryCount < 2) {
-          const bannedPhrases = finalValidation.violations.map(v => v.phrase).join(', ');
-          console.log('[FINAL_VALIDATION] Retrying - found banned content:', bannedPhrases);
-          toast.info('Removing generic content...');
-          return handleGenerate(`${ideaToUse}\n\n[STRICT CONTENT RULES: Remove these banned phrases: ${bannedPhrases}. Generate specific content for this business only.]`, retryCount + 1);
-        }
-        
-        // ============ CLAUDE AUDIT (Post-Generation Quality Check) ============
-        let auditIssues: BuilderIssue[] = [];
-        try {
-          console.log('[AUDIT] Running Claude-powered quality audit...');
-          const auditResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/audit-sitespec`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ 
-              siteSpec: parsedSpec, 
-              industry: classification?.industry || route.category 
-            }),
-          });
-          
-          if (auditResponse.ok) {
-            const auditResult = await auditResponse.json();
-            console.log('[AUDIT] Result:', auditResult);
-            
-            // Convert audit issues to BuilderIssues format
-            auditIssues = (auditResult.issues || []).map((issue: any, idx: number) => ({
-              id: `audit-${idx}`,
-              title: issue.message,
-              description: issue.suggestion || 'Review this content for quality',
-              severity: issue.type === 'error' ? 'error' : issue.type === 'warning' ? 'warning' : 'info',
-              path: issue.path || '',
-            }));
-            
-            // Auto-fix: Apply suggested CTA fixes directly to spec
-            if (auditResult.issues?.some((i: any) => i.message?.includes('Generic CTA'))) {
-              const industryCtaMap: Record<string, string> = {
-                restaurant: 'View Menu',
-                gym: 'Start Free Trial',
-                fitness: 'Start Free Trial',
-                salon: 'Book Appointment',
-                plumber: 'Get Free Quote',
-                lawyer: 'Free Consultation',
-                dental: 'Book Appointment',
-                contractor: 'Get Estimate',
-                landscaping: 'Get Quote',
-                real_estate: 'View Listings',
-                realestate: 'View Listings',
-                auto: 'Book Service',
-                ecommerce: 'Shop Now',
-              };
-              
-              const industryCta = industryCtaMap[classification?.industry?.toLowerCase() || route.category] || 'Contact Us';
-              
-              // Fix hero CTAs in the spec
-              for (const page of parsedSpec.pages || []) {
-                for (const section of page.sections || []) {
-                  if (section.type === 'hero') {
-                    const content = section.content as any;
-                    const currentCta = content?.ctaText?.toLowerCase() || '';
-                    if (['get started', 'learn more', 'contact us', 'sign up', 'explore'].some(g => currentCta.includes(g))) {
-                      console.log(`[AUDIT] Auto-fixing CTA: "${content?.ctaText}" -> "${industryCta}"`);
-                      content.ctaText = industryCta;
-                    }
-                  }
-                }
-              }
-            }
-            
-            // Show audit results if there are issues
-            if (auditResult.score < 70) {
-              toast.warning(`Quality score: ${auditResult.score}/100`, {
-                description: `${auditResult.summary?.errors || 0} errors, ${auditResult.summary?.warnings || 0} warnings detected`,
-                action: auditIssues.length > 0 ? {
-                  label: 'View Issues',
-                  onClick: () => setShowIssuesPanel(true),
-                } : undefined,
-              });
-            } else if (auditResult.score >= 90) {
-              console.log('[AUDIT] High quality generation - score:', auditResult.score);
-            }
-          }
-        } catch (auditError) {
-          console.warn('[AUDIT] Audit failed, continuing without:', auditError);
-        }
-        
-        // Update issues state with audit results
-        if (auditIssues.length > 0) {
-          setCurrentIssues(prev => [...prev, ...auditIssues]);
-        }
-        
         // Record the generation for diversity tracking
         recordGeneration(parsedSpec);
         
@@ -1874,33 +1115,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           // Continue with original spec - images will use fallbacks
         }
         
-        // Fill any missing images with stock photos as safety net
-        try {
-          const route = routeNiche(ideaToUse);
-          const brief = {
-            businessName: processedSpec.name || 'Business',
-            industry: route.category as string,
-            intent: (processedSpec.businessIntent || 'service_business') as any,
-            nicheCategory: 'general' as const,
-            primaryGoal: 'leads' as const,
-            offerings: [],
-            location: null,
-            differentiators: [],
-            tone: [],
-            primaryCTA: 'Get Started',
-            secondaryCTA: null,
-            needsEcommerce: false,
-            needsBooking: false,
-            needsPoliciesPage: false,
-            seo: { primaryKeywords: [], serviceAreaKeywords: [] },
-          };
-          const { filledSpec } = fillImages(processedSpec, brief, {} as any, { mode: 'static' });
-          processedSpec = filledSpec;
-          console.log('[ImageFill] Filled missing images with stock photos');
-        } catch (fillErr) {
-          console.warn('[ImageFill] Failed to fill images:', fillErr);
-        }
-        
         newSiteSpec = processedSpec;
         setSiteSpec(processedSpec);
         setGeneratedHtml(null); // Use SiteSpec rendering instead of raw HTML
@@ -1913,20 +1127,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         // Fallback to rule-based generation if AI didn't return valid JSON
         console.warn('[specFromChat] AI did not return valid JSON, using fallback generator');
         newSiteSpec = specFromChat(ideaToUse);
-        
-        // Apply custom colors from scaffold if available (preserves user's color choice)
-        if (generationScaffold?.customTheme) {
-          const customTheme = generationScaffold.customTheme;
-          newSiteSpec.theme = {
-            ...newSiteSpec.theme,
-            primaryColor: customTheme.primaryColor || newSiteSpec.theme.primaryColor,
-            accentColor: customTheme.accentColor || newSiteSpec.theme.accentColor,
-            darkMode: customTheme.backgroundMode === 'dark',
-            backgroundColor: customTheme.backgroundMode === 'dark' ? '#0a0a0a' : '#ffffff',
-            textColor: customTheme.backgroundMode === 'dark' ? '#ffffff' : '#1f2937',
-          };
-          console.log('[specFromChat] Applied custom theme from scaffold:', customTheme);
-        }
         
         // Log fallback details
         const fallbackPageMap: PageMap = {};
@@ -1956,30 +1156,17 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       
       updateStep(4, 'complete');
 
-      // Format the response using the new contract
-      const formattedResponse = formatChatResponse(newSiteSpec, lastScaffold, assistantText || '', 'concise');
-      
-      // Update issues state
-      const validationResult = validateSpecAgainstScaffold(newSiteSpec, lastScaffold);
-      const issues = convertViolationsToIssues(validationResult.violations);
-      setCurrentIssues(issues);
-
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: formattedResponse.fullMessage || assistantText || 'Website generated! Check the preview on the right.',
+        content: assistantText || 'Website generated! Check the preview on the right.',
         htmlCode: undefined,
       };
-      // Use functional update to append assistant message (userMessage was already added at start)
-      setMessages((prev) => {
-        const allMessages = [...prev, assistantMessage];
-        // Save in the next tick with the new messages
-        setTimeout(async () => {
-          const firstUserMessage = allMessages.find(m => m.role === 'user');
-          await saveProject(null, allMessages, firstUserMessage?.content || ideaToUse, newSiteSpec, true);
-        }, 0);
-        return allMessages;
-      });
+      const allMessages = [...messages, userMessage, assistantMessage];
+      setMessages(allMessages);
+
+      const firstUserMessage = allMessages.find(m => m.role === 'user');
+      await saveProject(null, allMessages, firstUserMessage?.content || ideaToUse, newSiteSpec);
     } catch (error) {
       console.error('Generation error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate. Please try again.');
@@ -1988,79 +1175,21 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       );
     } finally {
       setIsGenerating(false);
-      isSubmittingRef.current = false; // Release the lock
-      lastSubmitTimeRef.current = 0; // Reset timestamp
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      // Prevent submission if already generating
-      if (isGenerating || isSubmittingRef.current) return;
       handleGenerate();
     }
   };
-
-  // Self-healing function: sends error context back to AI for auto-fix
-  const healCode = useCallback(async (errorMessage: string, componentStack: string) => {
-    if (!siteSpec) {
-      toast.error('No site to heal. Please generate a site first.');
-      return;
-    }
-
-    const healPrompt = `[RENDER ERROR - AUTO-FIX REQUIRED]
-The generated site crashed with this error:
-Error: ${errorMessage}
-
-Component Stack: ${componentStack.slice(0, 500)}
-
-Current site spec name: "${siteSpec.name}"
-Pages: ${siteSpec.pages?.map(p => p.path).join(', ')}
-
-Please analyze and fix the issue. Common causes:
-- Invalid section content structure
-- Missing required fields in sections
-- Malformed data in pricing/features/testimonials
-
-Regenerate the problematic sections with valid content.`;
-
-    toast.info('AI is analyzing the error...');
-    
-    // Increment error boundary key to force remount after heal
-    errorBoundaryKeyRef.current += 1;
-    
-    // Trigger regeneration with the heal prompt
-    await handleGenerate(healPrompt);
-  }, [siteSpec, handleGenerate]);
-
-  // Retry handler for error boundary (just resets error state)
-  const handleRetryRender = useCallback(() => {
-    errorBoundaryKeyRef.current += 1;
-    setLastRenderError(null);
-  }, []);
 
   const handleGenerateImage = async () => {
     if (!imagePrompt.trim()) {
       toast.error('Please enter an image description');
       return;
     }
-
-    console.log('[IMAGE-GEN] Starting image generation:', { imagePrompt, hasSiteSpec: !!siteSpec });
-
-    // Check session FIRST before doing anything else
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      console.log('[IMAGE-GEN] No session found, redirecting to auth');
-      toast.error('Please log in to generate images', {
-        action: {
-          label: 'Sign In',
-          onClick: () => navigate('/auth'),
-        },
-      });
-      return;
-    }
-    console.log('[IMAGE-GEN] Session valid, user:', session.user?.email);
 
     // Check credits for image generation (2 credits)
     if (isAuthenticated && !checkCredits('image')) {
@@ -2072,8 +1201,15 @@ Regenerate the problematic sections with valid content.`;
     try {
       // Deduct credits before image generation
       const canProceed = await deductCredits('image', 'AI image generation');
-      console.log('[IMAGE-GEN] Deduct credits result:', canProceed);
       if (!canProceed) {
+        setIsGeneratingImage(false);
+        return;
+      }
+
+      // Get user session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error('Please log in to generate images');
         setIsGeneratingImage(false);
         return;
       }
@@ -2098,16 +1234,11 @@ Regenerate the problematic sections with valid content.`;
             niche: detectedNiche,
             imageType: 'hero',
             customPrompt: imagePrompt,
-            saveToLibrary: true, // Manual generation saves to library
           }
         : { 
             prompt: imagePrompt,
-            referenceImage: imageAttachment || undefined,
-            saveToLibrary: true, // Manual generation saves to library
+            referenceImage: imageAttachment || undefined
           };
-
-      console.log('[IMAGE-GEN] Calling endpoint:', endpoint);
-      console.log('[IMAGE-GEN] Request body:', requestBody);
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -2118,16 +1249,12 @@ Regenerate the problematic sections with valid content.`;
         body: JSON.stringify(requestBody),
       });
 
-      console.log('[IMAGE-GEN] Response status:', response.status);
-
       if (!response.ok) {
         const error = await response.json();
-        console.error('[IMAGE-GEN] Error response:', error);
         throw new Error(error.error || 'Failed to generate image');
       }
 
       const data = await response.json();
-      console.log('[IMAGE-GEN] Success response:', { imageUrl: data.imageUrl, imagesCount: data.images?.length });
       const generatedImageUrl = data.imageUrl || data.images?.[0];
       
       if (generatedImageUrl) {
@@ -2155,12 +1282,9 @@ Regenerate the problematic sections with valid content.`;
         fetchGeneratedImages();
         setImagePrompt('');
         setImageAttachment(null);
-      } else {
-        console.error('[IMAGE-GEN] No image URL in response:', data);
-        toast.error('Image generation completed but no image was returned');
       }
     } catch (error) {
-      console.error('[IMAGE-GEN] Error:', error);
+      console.error('Image generation error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate image');
     } finally {
       setIsGeneratingImage(false);
@@ -2194,55 +1318,20 @@ Regenerate the problematic sections with valid content.`;
   const fetchGeneratedImages = async () => {
     setIsLoadingImages(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
+      const { data, error } = await supabase.storage
+        .from('builder-images')
+        .list('generated', { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
       
-      if (!userId) {
-        console.log('No user session, skipping image fetch');
-        setGeneratedImages([]);
-        setIsLoadingImages(false);
-        return;
-      }
-
-      const allImages: { name: string; url: string }[] = [];
-
-      // Helper to fetch from a folder
-      const fetchFromFolder = async (folder: string) => {
-        const { data, error } = await supabase.storage
-          .from('builder-images')
-          .list(folder, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
-        
-        if (error) {
-          console.log(`[IMAGE-LIBRARY] No files in ${folder}:`, error.message);
-          return;
-        }
-        
-        if (data) {
-          for (const file of data) {
-            if (file.name && !file.name.startsWith('.') && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-              const { data: urlData } = supabase.storage
-                .from('builder-images')
-                .getPublicUrl(`${folder}/${file.name}`);
-              
-              allImages.push({
-                name: file.name,
-                url: urlData.publicUrl,
-              });
-            }
-          }
-        }
-      };
-
-      // Fetch from all storage locations in parallel
-      console.log('[IMAGE-LIBRARY] Fetching from images/, logos/, and generated/ folders for user:', userId);
-      await Promise.all([
-        fetchFromFolder(`images/${userId}`),
-        fetchFromFolder(`logos/${userId}`),
-        fetchFromFolder(`generated/${userId}`), // Legacy folder
-      ]);
-
-      console.log('[IMAGE-LIBRARY] Found', allImages.length, 'total images across all folders');
-      setGeneratedImages(allImages);
+      if (error) throw error;
+      
+      const images = (data || [])
+        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+        .map(file => ({
+          name: file.name,
+          url: supabase.storage.from('builder-images').getPublicUrl(`generated/${file.name}`).data.publicUrl,
+        }));
+      
+      setGeneratedImages(images);
     } catch (error) {
       console.error('Failed to fetch images:', error);
     } finally {
@@ -2343,249 +1432,6 @@ Regenerate the problematic sections with valid content.`;
     }
   };
 
-  // When site generates, switch to preview on mobile
-  useEffect(() => {
-    if (isMobile && siteSpec && !isGenerating) {
-      setMobileActiveTab('preview');
-    }
-  }, [siteSpec, isGenerating, isMobile]);
-
-  // Mobile Layout
-  if (isMobile) {
-    return (
-      <div className="h-screen overflow-hidden bg-background flex flex-col">
-        {/* Mobile Header */}
-        <div className="border-b border-border px-3 py-2 bg-card/50 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (isGenerating) {
-                  toast.warning('Please wait for generation to complete.');
-                  return;
-                }
-                navigate('/secret-builder-hub');
-              }}
-              className="h-8 px-2"
-              disabled={isGenerating}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <button
-              onClick={() => setShowRenameDialog(true)}
-              className="text-sm font-medium text-foreground truncate max-w-[120px]"
-            >
-              {projectName || 'Untitled'}
-            </button>
-          </div>
-          <div className="flex items-center gap-2">
-            <CreditBalance className="shrink-0" />
-            <Button
-              size="sm"
-              disabled={!siteSpec || isPublishing}
-              onClick={handlePublish}
-              className="h-8 px-3 bg-primary"
-            >
-              {isPublishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Tab Switcher */}
-        <div className="border-b border-border bg-card/30 px-2 shrink-0">
-          <div className="flex">
-            <button
-              onClick={() => setMobileActiveTab('chat')}
-              className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
-                mobileActiveTab === 'chat'
-                  ? 'text-primary border-primary'
-                  : 'text-muted-foreground border-transparent hover:text-foreground'
-              }`}
-            >
-              <MessageSquare className="h-4 w-4" />
-              Chat
-              {isGenerating && <Loader2 className="h-3 w-3 animate-spin" />}
-            </button>
-            <button
-              onClick={() => setMobileActiveTab('preview')}
-              className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
-                mobileActiveTab === 'preview'
-                  ? 'text-primary border-primary'
-                  : 'text-muted-foreground border-transparent hover:text-foreground'
-              }`}
-            >
-              <Monitor className="h-4 w-4" />
-              Preview
-              {siteSpec && <span className="w-2 h-2 rounded-full bg-green-500" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Content */}
-        <div className="flex-1 overflow-hidden">
-          {mobileActiveTab === 'chat' ? (
-            <div className="h-full flex flex-col">
-              <ScrollArea className="flex-1 p-3">
-                <div className="space-y-3">
-                  {messages.length === 0 && !isGenerating && (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground text-sm">
-                        Describe your website idea to get started
-                      </p>
-                    </div>
-                  )}
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[90%] rounded-xl px-3 py-2 text-sm ${
-                          msg.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-foreground'
-                        }`}
-                      >
-                        {msg.content.length > 200 
-                          ? `${msg.content.slice(0, 200)}...` 
-                          : msg.content}
-                      </div>
-                    </div>
-                  ))}
-                  {/* Scroll anchor */}
-                  <div ref={mobileChatScrollRef} />
-                </div>
-              </ScrollArea>
-
-              {/* Mobile Input */}
-              <div className="border-t border-border p-3 bg-card/30">
-                <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 py-2">
-                  <Input
-                    value={idea}
-                    onChange={(e) => setIdea(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey && !isGenerating) {
-                        e.preventDefault();
-                        handleGenerate();
-                      }
-                    }}
-                    placeholder="Describe your website..."
-                    className="flex-1 border-0 bg-transparent focus-visible:ring-0 text-sm"
-                    disabled={isGenerating}
-                  />
-                  <Button
-                    size="icon"
-                    onClick={() => handleGenerate()}
-                    disabled={!idea.trim() || isGenerating}
-                    className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90 shrink-0"
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Mobile Preview */
-            <div className="h-full bg-muted/30 p-2">
-              <div className="h-full bg-background rounded-lg border border-border overflow-hidden">
-                {siteSpec ? (
-                  <SiteRendererErrorBoundary
-                    key={errorBoundaryKeyRef.current}
-                    siteName={siteSpec.name}
-                    onRetry={handleRetryRender}
-                    onHeal={healCode}
-                  >
-                    <SiteRenderer 
-                      siteSpec={siteSpec}
-                      pageIndex={currentPageIndex}
-                      isLoading={isGenerating}
-                      motionIntensity={motionIntensity}
-                      visualModeActive={false}
-                      onPageChange={setCurrentPageIndex}
-                    />
-                  </SiteRendererErrorBoundary>
-                ) : isGenerating && speculativeSpec?.name ? (
-                  <div className="h-full relative">
-                    <div className="absolute top-2 right-2 z-10 flex items-center gap-2 bg-background/90 px-3 py-1.5 rounded-full border">
-                      <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                      <span className="text-xs text-muted-foreground">Generating...</span>
-                    </div>
-                    <SiteRenderer 
-                      siteSpec={speculativeSpec as SiteSpec}
-                      pageIndex={0}
-                      isLoading={true}
-                      motionIntensity="off"
-                      visualModeActive={false}
-                      onPageChange={() => {}}
-                    />
-                  </div>
-                ) : isGenerating ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <Loader2 className="h-10 w-10 mx-auto mb-3 text-primary animate-spin" />
-                      <p className="text-sm text-muted-foreground">Generating...</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <Monitor className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
-                      <p className="text-sm text-muted-foreground">No preview yet</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Dialogs - Reuse from desktop */}
-        <RenameDialog
-          open={showRenameDialog}
-          onOpenChange={setShowRenameDialog}
-          currentName={projectName}
-          onRename={handleRenameProject}
-        />
-        <Dialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-500" />
-                Site Published!
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <input
-                  type="text"
-                  readOnly
-                  value={publishedUrl || ''}
-                  className="flex-1 bg-transparent text-sm outline-none"
-                />
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyUrl}>
-                  {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-              <Button className="w-full" onClick={() => publishedUrl && window.open(publishedUrl, '_blank')}>
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View Site
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <Suspense fallback={null}>
-          <ShortcutsPanel isOpen={showShortcutsPanel} onClose={() => setShowShortcutsPanel(false)} />
-        </Suspense>
-      </div>
-    );
-  }
-
-  // Desktop Layout
   return (
     <div className="h-screen overflow-hidden bg-background">
       <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -2624,35 +1470,30 @@ Regenerate the problematic sections with valid content.`;
                   </svg>
                 </button>
                 <div className="h-4 w-px bg-border ml-auto shrink-0" />
-                
                 <CreditBalance className="shrink-0" />
               </div>
             </div>
             
-            <ScrollArea className="flex-1 px-4 py-6">
-              <div className="space-y-4 max-w-2xl mx-auto">
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
                 {messages.length === 0 && (
-                  <div className="text-center py-16">
-                    <p className="text-muted-foreground/60 text-sm">
-                      Describe your website idea to get started
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground text-sm">
+                      Describe your business idea to get started
                     </p>
                   </div>
                 )}
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={cn(
-                      "flex w-full",
-                      msg.role === 'user' ? 'justify-end' : 'justify-start'
-                    )}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-3",
+                      className={`max-w-[85%] rounded-xl px-4 py-2 text-sm ${
                         msg.role === 'user'
                           ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted/50'
-                      )}
+                          : 'bg-muted text-foreground'
+                      }`}
                     >
                       {/* Show attachments if present */}
                       {msg.attachments && msg.attachments.length > 0 && (
@@ -2675,145 +1516,85 @@ Regenerate the problematic sections with valid content.`;
                           ))}
                         </div>
                       )}
-                      
-                      {/* User: raw text only | Assistant: markdown */}
-                      {msg.role === 'user' ? (
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {msg.content}
-                        </p>
-                      ) : (
-                        <Suspense fallback={<span className="text-sm">{msg.content}</span>}>
-                          <ChatMessage content={msg.content} role="assistant" />
-                        </Suspense>
-                      )}
+                      {msg.content}
                     </div>
                   </div>
                 ))}
-                {/* Scroll anchor */}
-                <div ref={chatScrollRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Dynamic Suggestions - show when site exists */}
-            {siteSpec && (
-              <div className="border-t border-border px-3 py-2 flex flex-wrap gap-1.5">
-                <span className="text-xs text-muted-foreground mr-1 self-center">Try:</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 text-xs px-2"
-                  onClick={() => setIdea('Add a testimonials section with 3 customer reviews')}
-                >
-                  Add reviews
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 text-xs px-2"
-                  onClick={() => setIdea('Improve the hero headline to be more compelling and conversion-focused')}
-                >
-                  Better headline
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 text-xs px-2"
-                  onClick={() => setIdea('Add a FAQ section with 5 common questions about this business')}
-                >
-                  Add FAQ
-                </Button>
-                {!siteSpec.pages?.some(p => p.sections?.some(s => s.type === 'stats')) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-xs px-2"
-                    onClick={() => setIdea('Add a stats section showing key metrics and achievements')}
-                  >
-                    Add stats
-                  </Button>
+                {isGenerating && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-xl px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating...
+                    </div>
+                  </div>
                 )}
               </div>
-            )}
+            </ScrollArea>
 
             {/* Theme Editor - show when site exists */}
             {siteSpec && (
               <div className="border-t border-border p-3 flex flex-wrap gap-2">
-                <Suspense fallback={<PanelLoader />}>
-                  <ThemeEditor 
-                    theme={siteSpec.theme} 
-                    onUpdateTheme={editor.updateTheme}
-                  />
-                  <LogoUpload 
-                    logo={siteSpec.logo}
-                    onUpdateLogo={editor.updateLogo}
-                    generatedImages={generatedImages}
-                    isLoadingImages={isLoadingImages}
-                  />
-                  <HelpChat />
-                </Suspense>
+                <ThemeEditor 
+                  theme={siteSpec.theme} 
+                  onUpdateTheme={editor.updateTheme}
+                />
+                <LogoUpload 
+                  logo={siteSpec.logo}
+                  onUpdateLogo={editor.updateLogo}
+                  generatedImages={generatedImages}
+                  isLoadingImages={isLoadingImages}
+                />
+                <HelpChat />
               </div>
             )}
 
 
-            {/* Minimalist Input Area */}
-            <div className="border-t border-border p-4 bg-background/50">
+            <div className="border-t border-border p-4">
               {/* Attachments preview */}
-              {attachments.length > 0 && (
-                <div className="mb-3">
-                  <AttachmentChips 
-                    attachments={attachments} 
-                    onRemove={removeAttachment} 
-                  />
-                </div>
-              )}
+              <AttachmentChips 
+                attachments={attachments} 
+                onRemove={removeAttachment} 
+              />
               
-              {/* Clean input with thin loading bar */}
-              <div className="relative">
-                {isGenerating && (
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-muted overflow-hidden rounded-t-lg z-10">
-                    <div className="h-full w-1/3 bg-primary animate-chat-loading" />
-                  </div>
-                )}
-                
-                <div className="flex items-end gap-2 border border-border rounded-lg bg-background px-3 py-3">
-                  <AttachmentMenu
-                    onAddAttachment={handleAddAttachment}
-                    disabled={isGenerating}
-                    attachmentCount={attachments.length}
-                    previewRef={previewContainerRef as React.RefObject<HTMLElement>}
-                  />
-                  
-                  <textarea
-                    value={idea}
-                    onChange={(e) => {
-                      setIdea(e.target.value);
-                      // Auto-resize
-                      e.target.style.height = 'auto';
-                      e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        if (idea.trim() && !isGenerating) {
-                          handleGenerate();
-                        }
-                      }
-                    }}
-                    placeholder="Describe your website idea..."
-                    disabled={isGenerating}
-                    rows={1}
-                    className="flex-1 min-h-[24px] max-h-[200px] resize-none border-0 bg-transparent text-sm focus:outline-none focus:ring-0 placeholder:text-muted-foreground/60"
-                  />
-                  
-                  <Button
-                    size="icon"
-                    onClick={() => handleGenerate()}
-                    disabled={!idea.trim() || isGenerating}
-                    className="h-8 w-8 shrink-0 rounded-full"
-                  >
+              <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 py-2">
+                <AttachmentMenu
+                  onAddAttachment={handleAddAttachment}
+                  disabled={isGenerating}
+                  attachmentCount={attachments.length}
+                  previewRef={previewContainerRef as React.RefObject<HTMLElement>}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={() => {
+                    setVisualEditsEnabled(!visualEditsEnabled);
+                    toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
+                  }}
+                  title={visualEditsEnabled ? 'Disable visual edits' : 'Enable visual edits'}
+                >
+                  <MousePointer2 className={`h-4 w-4 ${visualEditsEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                </Button>
+                <Input
+                  value={idea}
+                  onChange={(e) => setIdea(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Describe your website idea..."
+                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+                  disabled={isGenerating}
+                />
+                <Button
+                  size="icon"
+                  onClick={() => handleGenerate()}
+                  disabled={!idea.trim() || isGenerating}
+                  className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
                     <Send className="h-4 w-4" />
-                  </Button>
-                </div>
+                  )}
+                </Button>
               </div>
             </div>
           </div>
@@ -2827,10 +1608,24 @@ Regenerate the problematic sections with valid content.`;
           <div className="h-full flex flex-col">
         <div className="h-12 border-b border-border flex items-center justify-between px-2 sm:px-4 bg-card/30 gap-1 sm:gap-2 overflow-x-auto">
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-            {/* Presence Avatars - System toolbar only, NO generated site navigation here */}
-            <Suspense fallback={null}>
-              <PresenceAvatars users={otherUsers} />
-            </Suspense>
+            {/* Presence Avatars */}
+            <PresenceAvatars users={otherUsers} />
+            
+            {siteSpec && siteSpec.pages.length > 0 && (
+              <PageManager
+                pages={siteSpec.pages}
+                currentPageIndex={currentPageIndex}
+                onSelectPage={setCurrentPageIndex}
+                onAddPage={editor.addPage}
+                onRemovePage={(index) => {
+                  editor.removePage(index);
+                  if (currentPageIndex >= index && currentPageIndex > 0) {
+                    setCurrentPageIndex(currentPageIndex - 1);
+                  }
+                }}
+                onRenamePage={editor.renamePage}
+              />
+            )}
           </div>
 
           <div className="flex items-center gap-0.5 sm:gap-1 bg-muted/50 rounded-lg p-0.5 sm:p-1 shrink-0">
@@ -2838,7 +1633,7 @@ Regenerate the problematic sections with valid content.`;
               variant="ghost"
               size="icon"
               className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'desktop' ? 'bg-background shadow-sm' : ''}`}
-              onClick={() => { setPreviewMode('desktop'); setDeviceType('none'); }}
+              onClick={() => setPreviewMode('desktop')}
             >
               <Monitor className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
@@ -2846,7 +1641,7 @@ Regenerate the problematic sections with valid content.`;
               variant="ghost"
               size="icon"
               className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'tablet' ? 'bg-background shadow-sm' : ''}`}
-              onClick={() => { setPreviewMode('tablet'); setDeviceType('ipad'); }}
+              onClick={() => setPreviewMode('tablet')}
             >
               <Tablet className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
@@ -2854,55 +1649,14 @@ Regenerate the problematic sections with valid content.`;
               variant="ghost"
               size="icon"
               className={`h-6 w-6 sm:h-7 sm:w-7 ${previewMode === 'mobile' ? 'bg-background shadow-sm' : ''}`}
-              onClick={() => { setPreviewMode('mobile'); setDeviceType('iphone-15'); }}
+              onClick={() => setPreviewMode('mobile')}
             >
               <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </div>
-          
-          {/* Device Frame Selector - only show for mobile/tablet */}
-          {previewMode !== 'desktop' && (
-            <DeviceSelector
-              value={deviceType}
-              onChange={setDeviceType}
-              previewMode={previewMode}
-            />
-          )}
-          
-          {/* Responsive Testing Controls - only show for mobile/tablet */}
-          {previewMode !== 'desktop' && (
-            <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn("h-6 w-6 sm:h-7 sm:w-7", showSafeAreas && "bg-blue-500/20 text-blue-500")}
-                onClick={() => setShowSafeAreas(!showSafeAreas)}
-                title="Toggle Safe Areas"
-              >
-                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn("h-6 w-6 sm:h-7 sm:w-7", showTouchZones && "bg-green-500/20 text-green-500")}
-                onClick={() => setShowTouchZones(!showTouchZones)}
-                title="Toggle Touch Zones"
-              >
-                <MousePointer2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn("h-6 w-6 sm:h-7 sm:w-7", isTouchAnalyzing && "bg-amber-500/20 text-amber-500")}
-                onClick={() => isTouchAnalyzing ? stopTouchAnalysis() : startTouchAnalysis()}
-                title="Analyze Touch Targets"
-              >
-                <Scan className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Button>
-            </div>
-          )}
+          {/* Model is auto-selected by the bot based on prompt complexity */}
 
-          {/* Undo/Redo/Refresh buttons */}
+          {/* Undo/Redo buttons */}
           <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
             <Button
               variant="ghost"
@@ -2918,56 +1672,12 @@ Regenerate the problematic sections with valid content.`;
               variant="ghost"
               size="icon"
               className="h-7 w-7 sm:h-8 sm:w-8"
-              onClick={() => {
-                // Force re-render of preview without losing data
-                if (siteSpec) {
-                  setSiteSpecWithHistory({ ...siteSpec });
-                }
-              }}
-              disabled={!siteSpec}
-              title="Refresh Preview"
-            >
-              <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 sm:h-8 sm:w-8"
               onClick={redo}
               disabled={!canRedo}
               title="Redo (Ctrl+Y)"
             >
               <Redo2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 sm:h-8 sm:w-8"
-              onClick={() => setShowVersionHistory(true)}
-              title="Version History"
-            >
-              <HistoryIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </Button>
-            
-            {/* Visual Mode Toggle */}
-            <div className="ml-1 sm:ml-2">
-              <Button
-                variant={visualEditsEnabled ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setVisualEditsEnabled(!visualEditsEnabled);
-                  toast.success(visualEditsEnabled ? 'Visual Mode OFF' : 'Visual Mode ON — Click any text to edit for free');
-                }}
-                className={cn(
-                  "gap-1 sm:gap-1.5 text-xs px-2 sm:px-3 transition-all",
-                  visualEditsEnabled && "bg-primary text-primary-foreground"
-                )}
-                title="Toggle Visual Mode for free inline editing"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Visual</span>
-              </Button>
-            </div>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -3000,9 +1710,9 @@ Regenerate the problematic sections with valid content.`;
               variant="outline"
               size="sm"
               onClick={() => {
-                const layouts: LayoutStructureType[] = ['standard', 'bento', 'layered', 'horizontal', 'split', 'minimal'];
+                const layouts: Array<'standard' | 'bento' | 'layered' | 'horizontal'> = ['standard', 'bento', 'layered', 'horizontal'];
                 const currentLayout = siteSpec.layoutStructure || 'standard';
-                const currentIndex = layouts.indexOf(currentLayout as LayoutStructureType);
+                const currentIndex = layouts.indexOf(currentLayout);
                 const nextIndex = (currentIndex + 1) % layouts.length;
                 const nextLayout = layouts[nextIndex];
                 setSiteSpec({ ...siteSpec, layoutStructure: nextLayout });
@@ -3014,23 +1724,52 @@ Regenerate the problematic sections with valid content.`;
               <span className="hidden md:inline">Layout</span>
             </Button>
             
+            {/* Motion Intensity Toggle */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline capitalize">{motionIntensity}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                {(['off', 'subtle', 'premium', 'wild'] as MotionIntensity[]).map((level) => (
+                  <DropdownMenuItem
+                    key={level}
+                    onClick={() => {
+                      setMotionIntensity(level);
+                      localStorage.setItem('excellion-motion-intensity', level);
+                      toast.success(`Motion: ${level.charAt(0).toUpperCase() + level.slice(1)}`);
+                    }}
+                    className={`gap-2 capitalize ${motionIntensity === level ? 'bg-accent' : ''}`}
+                  >
+                    {level === 'off' && '⏸️'}
+                    {level === 'subtle' && '✨'}
+                    {level === 'premium' && '💫'}
+                    {level === 'wild' && '🔥'}
+                    {level}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             {/* Bookmarks */}
-            <Suspense fallback={<PanelLoader />}>
-              <BookmarksPanel
-                projectId={projectId}
-                currentSpec={siteSpec}
-                onRestoreBookmark={(spec) => {
-                  setPreviousSpecForDiff(siteSpec);
-                  setPendingSpec(spec);
-                  setShowDiffViewer(true);
-                }}
-              />
-            </Suspense>
+            <BookmarksPanel
+              projectId={projectId}
+              currentSpec={siteSpec}
+              onRestoreBookmark={(spec) => {
+                setPreviousSpecForDiff(siteSpec);
+                setPendingSpec(spec);
+                setShowDiffViewer(true);
+              }}
+            />
             
             {/* Knowledge Base */}
-            <Suspense fallback={<PanelLoader />}>
-              <KnowledgePanel projectId={projectId} />
-            </Suspense>
+            <KnowledgePanel projectId={projectId} />
             
             {/* Domains button - hidden, moved to publish dropdown */}
             {/* <Button
@@ -3087,90 +1826,6 @@ Regenerate the problematic sections with valid content.`;
               <span className="hidden md:inline">Analytics</span>
             </Button>
             
-            {/* GitHub Sync Button */}
-            {githubConnection.isConnected ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
-                    disabled={!projectId || !siteSpec}
-                  >
-                    {isGitHubSyncing ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : projectGithub?.github_last_synced_at ? (
-                      <Check className="h-3.5 w-3.5 text-green-500" />
-                    ) : (
-                      <Github className="h-3.5 w-3.5" />
-                    )}
-                    <span className="hidden md:inline">
-                      {projectGithub?.github_last_synced_at ? 'Synced' : 'GitHub'}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem 
-                    onClick={async () => {
-                      if (!siteSpec || !projectName) return;
-                      const result = await syncToGitHub(projectName, siteSpec);
-                      if (result.success) {
-                        toast.success('Synced to GitHub!', {
-                          description: 'Your code is now on GitHub',
-                          action: result.repoUrl ? {
-                            label: 'View Repo',
-                            onClick: () => window.open(result.repoUrl, '_blank'),
-                          } : undefined,
-                        });
-                      } else {
-                        toast.error('Sync failed', { description: result.error });
-                      }
-                    }}
-                    disabled={isGitHubSyncing || !siteSpec}
-                    className="gap-2"
-                  >
-                    <Upload className="h-4 w-4" />
-                    <span>Sync to GitHub</span>
-                  </DropdownMenuItem>
-                  {projectGithub?.github_repo_url && (
-                    <DropdownMenuItem 
-                      onClick={() => window.open(projectGithub.github_repo_url!, '_blank')}
-                      className="gap-2"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      <span>View Repository</span>
-                    </DropdownMenuItem>
-                  )}
-                  {projectGithub?.github_last_synced_at && (
-                    <DropdownMenuItem disabled className="gap-2 text-xs text-muted-foreground">
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span>Last sync: {new Date(projectGithub.github_last_synced_at).toLocaleString()}</span>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem 
-                    onClick={() => {
-                      disconnectGitHub();
-                      toast.success('GitHub disconnected');
-                    }}
-                    className="gap-2 text-destructive focus:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                    <span>Disconnect GitHub</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={connectGitHub}
-                className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
-              >
-                <Github className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">GitHub</span>
-              </Button>
-            )}
-            
             {/* Publish dropdown with Domains and Security */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -3220,7 +1875,7 @@ Regenerate the problematic sections with valid content.`;
         </div>
 
         <div 
-          className="flex-1 bg-muted/30 p-4 overflow-hidden relative flex items-center justify-center"
+          className="flex-1 bg-muted/30 p-4 overflow-hidden relative"
           ref={previewContainerRef}
           onMouseMove={(e) => {
             if (projectId && previewContainerRef.current) {
@@ -3234,123 +1889,46 @@ Regenerate the problematic sections with valid content.`;
           onMouseLeave={() => updateCursor(null)}
         >
           {/* Other users' cursors */}
-          <Suspense fallback={null}>
-            <PresenceCursor 
-              cursors={otherUsers.filter(u => u.cursor !== null)} 
-              containerRef={previewContainerRef as React.RefObject<HTMLElement>}
-            />
-          </Suspense>
+          <PresenceCursor 
+            cursors={otherUsers.filter(u => u.cursor !== null)} 
+            containerRef={previewContainerRef as React.RefObject<HTMLElement>}
+          />
           
-          {/* Touch Target Analyzer */}
-          {isTouchAnalyzing && previewMode !== 'desktop' && (
-            <Suspense fallback={<PanelLoader />}>
-              <TouchTargetAnalyzer
-                containerRef={previewContainerRef as React.RefObject<HTMLElement>}
-                isActive={isTouchAnalyzing}
-                onClose={stopTouchAnalysis}
-              />
-            </Suspense>
-          )}
-          
-          <DeviceFrame
-            deviceType={deviceType}
-            previewMode={previewMode}
-            showSafeAreas={showSafeAreas}
-            showTouchZones={showTouchZones}
-            className={previewMode === 'desktop' ? 'h-full w-full' : ''}
-          >
-            <div className={`${previewMode === 'desktop' ? 'h-full' : 'h-full'} mx-auto ${getPreviewWidth()} transition-all duration-300`}>
-              <div className="h-full bg-background rounded-xl shadow-lg overflow-hidden border border-border">
-                {generatedHtml ? (
-                  <iframe
-                    srcDoc={generatedHtml}
-                    className="w-full h-full border-0"
-                    title="Generated Website Preview"
-                    sandbox="allow-scripts"
-                  />
-                ) : siteSpec ? (
-                  <SiteRendererErrorBoundary
-                    key={errorBoundaryKeyRef.current}
-                    siteName={siteSpec.name}
-                    onRetry={handleRetryRender}
-                    onHeal={healCode}
-                  >
-                    <SiteRenderer 
-                      siteSpec={siteSpec}
-                      pageIndex={currentPageIndex}
-                      isLoading={isGenerating}
-                      businessIntent={siteSpec?.businessIntent}
-                      onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
-                      onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
-                      onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
-                      onUpdateTestimonialsContent={visualEditsEnabled ? editor.updateTestimonialsContent : undefined}
-                      onUpdateTestimonialItem={visualEditsEnabled ? editor.updateTestimonialItem : undefined}
-                      onUpdatePricingContent={visualEditsEnabled ? editor.updatePricingContent : undefined}
-                      onUpdatePricingItem={visualEditsEnabled ? editor.updatePricingItem : undefined}
-                      onUpdateFAQContent={visualEditsEnabled ? editor.updateFAQContent : undefined}
-                      onUpdateFAQItem={visualEditsEnabled ? editor.updateFAQItem : undefined}
-                      onUpdateContactContent={visualEditsEnabled ? editor.updateContactContent : undefined}
-                      onUpdateCTAContent={visualEditsEnabled ? editor.updateCTAContent : undefined}
-                      onUpdateStatsContent={visualEditsEnabled ? editor.updateStatsContent : undefined}
-                      onUpdateStatsItem={visualEditsEnabled ? editor.updateStatsItem : undefined}
-                      onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
-                      onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
-                      onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
-                      onPageChange={setCurrentPageIndex}
-                      motionIntensity={motionIntensity}
-                      visualModeActive={visualEditsEnabled}
-                    />
-                  </SiteRendererErrorBoundary>
-                ) : isGenerating && speculativeSpec && speculativeSpec.name ? (
-                  // Speculative preview - show partial site as it generates
-                  <div className="h-full relative">
-                    <div className="absolute top-2 right-2 z-10 flex items-center gap-2 bg-background/90 px-3 py-1.5 rounded-full border border-primary/30 shadow-lg">
-                      <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                      <span className="text-xs text-muted-foreground">Generating...</span>
-                    </div>
-                    <div className="h-full opacity-80">
-                      <SiteRendererErrorBoundary
-                        key={`speculative-${tokenCount}`}
-                        siteName={speculativeSpec.name || 'Generating...'}
-                        onRetry={() => {}}
-                        onHeal={() => {}}
-                      >
-                        <SiteRenderer 
-                          siteSpec={speculativeSpec as SiteSpec}
-                          pageIndex={0}
-                          isLoading={true}
-                          motionIntensity="off"
-                          visualModeActive={false}
-                          onPageChange={() => {}}
-                        />
-                      </SiteRendererErrorBoundary>
-                    </div>
+          <div className={`h-full mx-auto ${getPreviewWidth()} transition-all duration-300`}>
+            <div className="h-full bg-background rounded-xl shadow-lg overflow-hidden border border-border">
+              {generatedHtml ? (
+                <iframe
+                  srcDoc={generatedHtml}
+                  className="w-full h-full border-0"
+                  title="Generated Website Preview"
+                  sandbox="allow-scripts"
+                />
+              ) : siteSpec ? (
+                <SiteRenderer 
+                  siteSpec={siteSpec}
+                  pageIndex={currentPageIndex}
+                  isLoading={isGenerating}
+                  onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
+                  onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
+                  onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
+                  onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
+                  onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
+                  onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
+                  onPageChange={setCurrentPageIndex}
+                  motionIntensity={motionIntensity}
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center p-8">
+                    <Monitor className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">
+                      No site generated yet. Enter an idea to see a live preview.
+                    </p>
                   </div>
-                ) : isGenerating ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
-                      <p className="text-muted-foreground">
-                        Generating your website...
-                      </p>
-                      <p className="text-xs text-muted-foreground/60 mt-2">
-                        This usually takes 10-20 seconds
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Monitor className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                      <p className="text-muted-foreground">
-                        No site generated yet. Enter an idea to see a live preview.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
-          </DeviceFrame>
+          </div>
         </div>
         </div>
         </ResizablePanel>
@@ -3585,9 +2163,7 @@ Regenerate the problematic sections with valid content.`;
               Track visitors, page views, and traffic sources for your published site.
             </DialogDescription>
           </DialogHeader>
-          <Suspense fallback={<PanelLoader />}>
-            <AnalyticsPanel projectId={projectId} />
-          </Suspense>
+          <AnalyticsPanel projectId={projectId} />
         </DialogContent>
       </Dialog>
 
@@ -3603,7 +2179,7 @@ Regenerate the problematic sections with valid content.`;
               Connect your own domain to your published site with automatic SSL.
             </DialogDescription>
           </DialogHeader>
-          {projectId && <Suspense fallback={<PanelLoader />}><CustomDomainsPanel projectId={projectId} /></Suspense>}
+          {projectId && <CustomDomainsPanel projectId={projectId} />}
         </DialogContent>
       </Dialog>
 
@@ -3620,9 +2196,7 @@ Regenerate the problematic sections with valid content.`;
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
-            <Suspense fallback={<PanelLoader />}>
-              <SchemaVizPanel />
-            </Suspense>
+            <SchemaVizPanel />
           </div>
         </DialogContent>
       </Dialog>
@@ -3640,9 +2214,7 @@ Regenerate the problematic sections with valid content.`;
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-[450px] -mx-6 -mb-6">
-            <Suspense fallback={<PanelLoader />}>
-              <ThreeDPanel />
-            </Suspense>
+            <ThreeDPanel />
           </div>
         </DialogContent>
       </Dialog>
@@ -3660,68 +2232,42 @@ Regenerate the problematic sections with valid content.`;
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
-            <Suspense fallback={<PanelLoader />}>
-              <SecurityScanPanel siteSpec={siteSpec} />
-            </Suspense>
+            <SecurityScanPanel siteSpec={siteSpec} />
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Code Export Dialog */}
-      <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
-        <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Code className="h-5 w-5 text-primary" />
-              Generated Code
-            </DialogTitle>
-            <DialogDescription>
-              View, copy, or download the generated HTML for your website.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 min-h-[400px] -mx-6 -mb-6">
-            <Suspense fallback={<PanelLoader />}>
-              <CodeExport siteSpec={siteSpec} projectName={projectName} />
-            </Suspense>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Suspense fallback={null}>
-        <DiffViewer
-          isOpen={showDiffViewer}
-          onClose={() => {
-            setShowDiffViewer(false);
-            setPendingSpec(null);
-            setPreviousSpecForDiff(null);
-          }}
-          previousSpec={previousSpecForDiff}
-          currentSpec={pendingSpec}
-          onAccept={() => {
-            if (pendingSpec) {
-              setSiteSpec(pendingSpec);
-            }
-            setShowDiffViewer(false);
-            setPendingSpec(null);
-            setPreviousSpecForDiff(null);
-          }}
-          onReject={() => {
-            setShowDiffViewer(false);
-            setPendingSpec(null);
-            setPreviousSpecForDiff(null);
-          }}
-        />
-      </Suspense>
+      <DiffViewer
+        isOpen={showDiffViewer}
+        onClose={() => {
+          setShowDiffViewer(false);
+          setPendingSpec(null);
+          setPreviousSpecForDiff(null);
+        }}
+        previousSpec={previousSpecForDiff}
+        currentSpec={pendingSpec}
+        onAccept={() => {
+          if (pendingSpec) {
+            setSiteSpec(pendingSpec);
+          }
+          setShowDiffViewer(false);
+          setPendingSpec(null);
+          setPreviousSpecForDiff(null);
+        }}
+        onReject={() => {
+          setShowDiffViewer(false);
+          setPendingSpec(null);
+          setPreviousSpecForDiff(null);
+        }}
+      />
 
       {/* Rename Dialog */}
-      <Suspense fallback={null}>
-        <RenameDialog
-          open={showRenameDialog}
-          onOpenChange={setShowRenameDialog}
-          currentName={projectName}
-          onRename={handleRenameProject}
-        />
-      </Suspense>
+      <RenameDialog
+        open={showRenameDialog}
+        onOpenChange={setShowRenameDialog}
+        currentName={projectName}
+        onRename={handleRenameProject}
+      />
 
       {/* Debug Panel - only visible with ?debug=1 */}
       {debugMode && (
@@ -3777,55 +2323,6 @@ Regenerate the problematic sections with valid content.`;
           </div>
         </div>
       )}
-      
-      {/* Issues Panel */}
-      {showIssuesPanel && (
-        <Suspense fallback={<PanelLoader />}>
-          <IssuesPanel
-            issues={currentIssues}
-            onClose={() => setShowIssuesPanel(false)}
-            onFixIssue={(issue) => {
-              if (issue.fixAction?.type === 'add_section' && issue.fixAction.payload?.sectionType) {
-                const sectionType = issue.fixAction.payload.sectionType as string;
-                editor.addSection({
-                  id: `${sectionType}-${Date.now()}`,
-                  type: sectionType as any,
-                  label: sectionType.charAt(0).toUpperCase() + sectionType.slice(1),
-                  content: { title: `${sectionType.charAt(0).toUpperCase() + sectionType.slice(1)} Section`, items: [] } as any,
-                });
-                setCurrentIssues(prev => prev.filter(i => i.id !== issue.id));
-                toast.success(`Added ${sectionType} section`);
-              } else if (issue.fixAction?.type === 'edit_content') {
-                setVisualEditsEnabled(true);
-                setShowIssuesPanel(false);
-                toast.info('Visual edits enabled - click content to edit');
-              } else {
-                toast.info('Fix this issue manually in the editor');
-              }
-            }}
-          />
-        </Suspense>
-      )}
-      
-      {/* Version History Panel */}
-      <Suspense fallback={null}>
-        <VersionHistoryPanel
-          open={showVersionHistory}
-          onOpenChange={setShowVersionHistory}
-          versions={versions}
-          currentSpec={siteSpec}
-          onRestore={handleRestoreVersion}
-          isRestoring={isRestoringVersion}
-        />
-      </Suspense>
-      
-      {/* Keyboard Shortcuts Panel */}
-      <Suspense fallback={null}>
-        <ShortcutsPanel
-          isOpen={showShortcutsPanel}
-          onClose={() => setShowShortcutsPanel(false)}
-        />
-      </Suspense>
     </div>
   );
 }

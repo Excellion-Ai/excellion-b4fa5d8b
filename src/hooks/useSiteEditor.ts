@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { SiteSpec, SiteSection, SiteTheme, SitePage, HeroContent, FeaturesContent, FeatureItem, TestimonialsContent, TestimonialItem, PricingContent, PricingTier, FAQContent, FAQItem, ContactContent, CTAContent, StatsContent, StatsItem, ServicesContent, ServiceItem, TeamContent, TeamMember, GalleryContent, GalleryItem, PortfolioContent, PortfolioItem, AnimationConfig } from '@/types/site-spec';
+import { SiteSpec, SiteSection, SiteTheme, SitePage, HeroContent, FeaturesContent, FeatureItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent, AnimationConfig } from '@/types/site-spec';
 import { arrayMove } from '@dnd-kit/sortable';
 
 type UpdateSiteSpec = React.Dispatch<React.SetStateAction<SiteSpec | null>>;
@@ -126,112 +126,6 @@ export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSite
     }));
   }, [updateSection]);
 
-  const updateStatsContent = useCallback((sectionId: string, field: string, value: string) => {
-    updateSection(sectionId, (section) => ({
-      ...section,
-      content: {
-        ...(section.content as StatsContent),
-        [field]: value,
-      },
-    }));
-  }, [updateSection]);
-
-  const updateStatsItem = useCallback((sectionId: string, itemIndex: number, field: keyof StatsItem, value: string) => {
-    updateSection(sectionId, (section) => {
-      const content = section.content as StatsContent;
-      const newItems = [...content.items];
-      newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
-      return {
-        ...section,
-        content: { ...content, items: newItems },
-      };
-    });
-  }, [updateSection]);
-
-  const updateTestimonialItem = useCallback((sectionId: string, itemIndex: number, field: keyof TestimonialItem, value: string) => {
-    updateSection(sectionId, (section) => {
-      const content = section.content as TestimonialsContent;
-      const newItems = [...content.items];
-      newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
-      return {
-        ...section,
-        content: { ...content, items: newItems },
-      };
-    });
-  }, [updateSection]);
-
-  const updatePricingItem = useCallback((sectionId: string, itemIndex: number, field: keyof PricingTier, value: string | string[]) => {
-    updateSection(sectionId, (section) => {
-      const content = section.content as PricingContent;
-      const newItems = [...content.items];
-      newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
-      return {
-        ...section,
-        content: { ...content, items: newItems },
-      };
-    });
-  }, [updateSection]);
-
-  const updateFAQItem = useCallback((sectionId: string, itemIndex: number, field: keyof FAQItem, value: string) => {
-    updateSection(sectionId, (section) => {
-      const content = section.content as FAQContent;
-      const newItems = [...content.items];
-      newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
-      return {
-        ...section,
-        content: { ...content, items: newItems },
-      };
-    });
-  }, [updateSection]);
-
-  const updateServiceItem = useCallback((sectionId: string, itemIndex: number, field: keyof ServiceItem, value: string) => {
-    updateSection(sectionId, (section) => {
-      const content = section.content as ServicesContent;
-      const newItems = [...content.items];
-      newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
-      return {
-        ...section,
-        content: { ...content, items: newItems },
-      };
-    });
-  }, [updateSection]);
-
-  const updateTeamMember = useCallback((sectionId: string, itemIndex: number, field: keyof TeamMember, value: string) => {
-    updateSection(sectionId, (section) => {
-      const content = section.content as TeamContent;
-      const newItems = [...content.items];
-      newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
-      return {
-        ...section,
-        content: { ...content, items: newItems },
-      };
-    });
-  }, [updateSection]);
-
-  const updateGalleryItem = useCallback((sectionId: string, itemIndex: number, field: keyof GalleryItem, value: string) => {
-    updateSection(sectionId, (section) => {
-      const content = section.content as GalleryContent;
-      const newItems = [...content.items];
-      newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
-      return {
-        ...section,
-        content: { ...content, items: newItems },
-      };
-    });
-  }, [updateSection]);
-
-  const updatePortfolioItem = useCallback((sectionId: string, itemIndex: number, field: keyof PortfolioItem, value: string) => {
-    updateSection(sectionId, (section) => {
-      const content = section.content as PortfolioContent;
-      const newItems = [...content.items];
-      newItems[itemIndex] = { ...newItems[itemIndex], [field]: value };
-      return {
-        ...section,
-        content: { ...content, items: newItems },
-      };
-    });
-  }, [updateSection]);
-
   const updateSectionAnimation = useCallback((sectionId: string, animation: AnimationConfig) => {
     updateSection(sectionId, (section) => ({
       ...section,
@@ -343,19 +237,10 @@ export function useSiteEditor(siteSpec: SiteSpec | null, setSiteSpec: UpdateSite
     updateFeaturesContent,
     updateFeatureItem,
     updateTestimonialsContent,
-    updateTestimonialItem,
     updatePricingContent,
-    updatePricingItem,
     updateFAQContent,
-    updateFAQItem,
     updateContactContent,
     updateCTAContent,
-    updateStatsContent,
-    updateStatsItem,
-    updateServiceItem,
-    updateTeamMember,
-    updateGalleryItem,
-    updatePortfolioItem,
     updateSectionAnimation,
     updateSiteName,
     updateLogo,

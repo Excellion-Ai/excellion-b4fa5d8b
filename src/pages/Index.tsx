@@ -2,7 +2,6 @@ import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import LazyFooter from "@/components/LazyFooter";
-import { SprintPassBar } from "@/components/SprintPassBar";
 
 const Index = () => {
   return (
@@ -16,7 +15,6 @@ const Index = () => {
         <meta property="og:url" content="https://excellionwebsites.com/" />
       </Helmet>
       <div className="min-h-screen bg-background">
-        <SprintPassBar />
         <Navigation />
         <main>
           <Hero />

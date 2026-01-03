@@ -5,8 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -35,6 +33,7 @@ import {
   X,
   Copy,
   Pencil,
+  Check,
   Globe,
   Folder,
   ChevronUp,
@@ -47,17 +46,9 @@ import {
   MessageSquare,
   LogOut,
   User,
-  Zap,
-  Image,
-  Download,
-  Link,
-  Eye,
-  Headset
+  Zap
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
-import { ImprovedPromptModal } from '@/components/secret-builder/ImprovedPromptModal';
-import { ImageLibraryDialog } from '@/components/secret-builder/ImageLibraryDialog';
-import { refinePrompt, getAutoImproveEnabled, setAutoImproveEnabled, type RefinerMeta } from '@/lib/promptRefiner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,7 +92,6 @@ import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
 import { TEMPLATES } from '@/components/secret-builder/templateSpecs';
 import { InterviewStepper } from '@/components/InterviewStepper';
 import { useInterviewIntake } from '@/hooks/useInterviewIntake';
-import { useSiteGeneration } from '@/hooks/useSiteGeneration';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
@@ -118,6 +108,44 @@ interface BuilderProject {
 
 // Using AttachmentItem from the attachments module instead of local Attachment interface
 
+const THEME_OPTIONS = [
+  { 
+    id: 'modern', 
+    label: 'Modern', 
+    color: 'hsl(220, 70%, 50%)',
+    description: 'Clean layouts, balanced spacing, professional'
+  },
+  { 
+    id: 'minimal', 
+    label: 'Minimal', 
+    color: 'hsl(0, 0%, 40%)',
+    description: 'Typography-focused, lots of whitespace'
+  },
+  { 
+    id: 'bold', 
+    label: 'Bold', 
+    color: 'hsl(350, 80%, 50%)',
+    description: 'High contrast, large fonts, attention-grabbing'
+  },
+  { 
+    id: 'luxury', 
+    label: 'Luxury', 
+    color: 'hsl(38, 45%, 55%)',
+    description: 'Elegant, sophisticated, premium feel'
+  },
+  { 
+    id: 'playful', 
+    label: 'Playful', 
+    color: 'hsl(280, 70%, 60%)',
+    description: 'Rounded shapes, bright, fun & energetic'
+  },
+  { 
+    id: 'dark', 
+    label: 'Dark', 
+    color: 'hsl(0, 0%, 15%)',
+    description: 'Dark backgrounds, tech/developer aesthetic'
+  },
+];
 
 const QUICK_PROMPTS = [
   { 
@@ -150,38 +178,23 @@ const QUICK_PROMPTS = [
 // Templates now imported from templateSpecs.ts
 
 const NAV_ITEMS = [
-  { icon: BookOpen, label: 'Resources & Tutorials', action: 'resources' },
+  { icon: BookOpen, label: 'Resources', action: 'resources' },
 ] as const;
 
 // localStorage keys
 const LS_LAST_PROJECT_ID = 'excellion_last_project_id';
 const LS_PENDING_PROMPT = 'excellion_pending_prompt';
+const LS_PENDING_THEME = 'excellion_pending_theme';
 
 export default function SecretBuilderHub() {
   const location = useLocation();
-  const locationState = location.state as { 
-    initialIdea?: string; 
-    autoGenerate?: boolean;
-    interviewData?: {
-      websiteType: string | null;
-      businessName: string;
-      serviceMode: string | null;
-      serviceArea: string | null;
-      primaryGoal: string | null;
-      offers: string[];
-      colorThemePreset: string | null;
-      colorThemeCustom: { primary: string; accent: string; backgroundMode: 'dark' | 'light' } | null;
-      colorTheme: { preset: string; primary: string; accent: string; backgroundMode: 'dark' | 'light' } | null;
-    };
-  } | null;
+  const locationState = location.state as { initialIdea?: string; autoGenerate?: boolean } | null;
   
-  // Store interviewData from location state (from WebBuilderHome)
-  const [interviewDataFromLocation] = useState(locationState?.interviewData || null);
-  
-  const [idea, setIdea] = useState('');
+  const [idea, setIdea] = useState(locationState?.initialIdea || '');
   const [projects, setProjects] = useState<BuilderProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('modern');
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
@@ -194,23 +207,10 @@ export default function SecretBuilderHub() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [interviewOpen, setInterviewOpen] = useState(false);
   
-  // AI Image Library state
-  const [imageLibraryOpen, setImageLibraryOpen] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<{ name: string; url: string; type: 'image' | 'logo'; createdAt: Date }[]>([]);
-  const [isLoadingImages, setIsLoadingImages] = useState(false);
-  
-  // Shadow Prompt / Refiner state
-  const [isRefining, setIsRefining] = useState(false);
-  const [autoImproveEnabled, setAutoImproveState] = useState(getAutoImproveEnabled);
-  const [lastRefinedPrompt, setLastRefinedPrompt] = useState<string>('');
-  const [lastRefinerMeta, setLastRefinerMeta] = useState<RefinerMeta | undefined>();
-  const [showImprovedPromptModal, setShowImprovedPromptModal] = useState(false);
-  
   // Interview intake hook
   const interview = useInterviewIntake(idea);
   
-  // Site generation hook (replaces Railway)
-  const siteGen = useSiteGeneration();
+  // Theme state for quick toggle
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -242,44 +242,17 @@ export default function SecretBuilderHub() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Check for recovery data from abrupt page close
+  // Restore pending prompt from localStorage
   useEffect(() => {
-    // Clear any pending prompt - don't auto-fill the input
-    localStorage.removeItem(LS_PENDING_PROMPT);
-    
-    // Check for recovery data from abrupt page close
-    const recoveryData = localStorage.getItem('excellion_recovery_data');
-    if (recoveryData) {
-      try {
-        const { projectId, projectName, timestamp } = JSON.parse(recoveryData);
-        const ageMinutes = (Date.now() - timestamp) / (1000 * 60);
-        
-        // If recovery data is fresh (less than 30 minutes old), prompt user
-        if (ageMinutes < 30 && projectId) {
-          toast({
-            title: 'Resume your work?',
-            description: `Continue working on "${projectName}"?`,
-            action: (
-              <Button
-                size="sm"
-                onClick={() => {
-                  navigate('/secret-builder', { state: { projectId } });
-                }}
-              >
-                Open
-              </Button>
-            ),
-            duration: 10000,
-          });
-        }
-        // Clear recovery data after showing prompt
-        localStorage.removeItem('excellion_recovery_data');
-      } catch (err) {
-        console.warn('[Hub] Failed to parse recovery data:', err);
-        localStorage.removeItem('excellion_recovery_data');
-      }
+    const pendingPrompt = localStorage.getItem(LS_PENDING_PROMPT);
+    const pendingTheme = localStorage.getItem(LS_PENDING_THEME);
+    if (pendingPrompt) {
+      setIdea(pendingPrompt);
     }
-  }, [navigate, toast]);
+    if (pendingTheme) {
+      setSelectedTheme(pendingTheme);
+    }
+  }, []);
 
   // Fetch projects
   useEffect(() => {
@@ -376,102 +349,6 @@ export default function SecretBuilderHub() {
     }
   };
 
-  // Fetch AI-generated images from storage
-  const fetchGeneratedImages = useCallback(async () => {
-    setIsLoadingImages(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setGeneratedImages([]);
-        setIsLoadingImages(false);
-        return;
-      }
-
-      const allImages: { name: string; url: string; type: 'image' | 'logo'; createdAt: Date }[] = [];
-
-      // Helper to fetch from a folder
-      const fetchFromFolder = async (folder: string, type: 'image' | 'logo') => {
-        const { data, error } = await supabase.storage
-          .from('builder-images')
-          .list(folder, { sortBy: { column: 'created_at', order: 'desc' } });
-        
-        if (error) {
-          console.log(`[IMAGE-LIBRARY] No files in ${folder}:`, error.message);
-          return;
-        }
-        
-        if (data) {
-          for (const file of data) {
-            if (file.name && !file.name.startsWith('.') && file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-              const { data: urlData } = supabase.storage
-                .from('builder-images')
-                .getPublicUrl(`${folder}/${file.name}`);
-              
-              allImages.push({
-                name: file.name,
-                url: urlData.publicUrl,
-                type,
-                createdAt: new Date(file.created_at || Date.now())
-              });
-            }
-          }
-        }
-      };
-
-      // Fetch from all storage locations in parallel
-      await Promise.all([
-        fetchFromFolder(`images/${user.id}`, 'image'),
-        fetchFromFolder(`logos/${user.id}`, 'logo'),
-        fetchFromFolder(`generated/${user.id}`, 'image'), // Legacy folder
-      ]);
-
-      console.log(`[IMAGE-LIBRARY] Found ${allImages.length} total images across all folders`);
-
-      // Sort by creation date descending
-      allImages.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-      setGeneratedImages(allImages);
-    } catch (error) {
-      console.error('Error fetching images:', error);
-    } finally {
-      setIsLoadingImages(false);
-    }
-  }, []);
-
-  // Fetch images when library opens
-  useEffect(() => {
-    if (imageLibraryOpen) {
-      fetchGeneratedImages();
-    }
-  }, [imageLibraryOpen, fetchGeneratedImages]);
-
-  const handleCopyImageUrl = (url: string) => {
-    navigator.clipboard.writeText(url);
-    toast({ title: 'URL copied to clipboard' });
-  };
-
-  const handleDeleteImage = async (imagePath: string, imageType: 'image' | 'logo') => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const folder = imageType === 'logo' ? 'logos' : 'images';
-      const fullPath = `${folder}/${user.id}/${imagePath}`;
-      
-      const { error } = await supabase.storage
-        .from('builder-images')
-        .remove([fullPath]);
-
-      if (error) {
-        toast({ title: 'Error', description: 'Failed to delete image', variant: 'destructive' });
-      } else {
-        setGeneratedImages(prev => prev.filter(img => img.name !== imagePath));
-        toast({ title: 'Image deleted' });
-      }
-    } catch (error) {
-      console.error('Error deleting image:', error);
-    }
-  };
-
   const handleGenerate = useCallback(async (promptOverride?: string) => {
     const ideaToUse = promptOverride || idea;
     if (!ideaToUse.trim() || isGenerating || isSubmittingRef.current) return;
@@ -481,9 +358,10 @@ export default function SecretBuilderHub() {
     
     // Save to localStorage in case of refresh
     localStorage.setItem(LS_PENDING_PROMPT, ideaToUse);
+    localStorage.setItem(LS_PENDING_THEME, selectedTheme);
 
     try {
-      // Quick auth check - just verify user exists
+      // Get current user - require login
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -498,83 +376,52 @@ export default function SecretBuilderHub() {
         return;
       }
       
-      // ============ SHADOW PROMPT REFINEMENT ============
-      let promptToSend = ideaToUse;
-      let refinerMeta: RefinerMeta | undefined;
-      
-      if (autoImproveEnabled) {
-        setIsRefining(true);
-        try {
-          const result = await refinePrompt(ideaToUse, { source: 'hero' });
-          
-          if (!result.fallback && result.refinedPrompt) {
-            promptToSend = result.refinedPrompt;
-            refinerMeta = result.meta;
-            console.log(`[ShadowPrompt] Refined in ${result.latencyMs}ms, confidence: ${result.meta?.confidence}`);
-          } else {
-            console.log('[ShadowPrompt] Using original prompt (fallback)');
-          }
-          
-          // Store for "View improved prompt" modal
-          setLastRefinedPrompt(result.refinedPrompt || ideaToUse);
-          setLastRefinerMeta(result.meta);
-        } catch (refineError) {
-          // If blocked content error, show toast and abort
-          if (refineError instanceof Error && refineError.message.includes('Content not allowed')) {
-            toast({
-              title: 'Content not allowed',
-              description: refineError.message,
-              variant: 'destructive',
-            });
-            setIsGenerating(false);
-            setIsRefining(false);
-            isSubmittingRef.current = false;
-            return;
-          }
-          // Otherwise continue with original prompt
-          console.warn('[ShadowPrompt] Refiner error, using original:', refineError);
-          setLastRefinedPrompt(ideaToUse);
-        } finally {
-          setIsRefining(false);
-        }
-      } else {
-        // Auto-improve disabled
-        setLastRefinedPrompt(ideaToUse);
-      }
-      
-      // Interview data can come from location state (from WebBuilderHome) or local interview hook
-      const currentInterviewData = interviewDataFromLocation || interview.structuredData;
-      
-      // Navigate IMMEDIATELY to builder - let builder handle project creation
-      // This makes the experience feel instant
-      // Pass the refined prompt internally, but store original for display
-      navigate('/secret-builder', { 
-        state: { 
-          initialIdea: promptToSend, // Use refined prompt for generation
-          originalIdea: ideaToUse,   // Store original for display
-          refinerMeta,               // Store meta for debugging
-          themeId: 'modern',
-          interviewData: currentInterviewData,
-          attachments: attachments.map(a => a.name),
-          createProject: true, // Signal that builder should create the project
-        } 
-      });
+      // Create project in database
+      const projectName = ideaToUse.slice(0, 50) + (ideaToUse.length > 50 ? '...' : '');
+      const { data, error } = await supabase
+        .from('builder_projects')
+        .insert({
+          user_id: user.id,
+          name: projectName,
+          idea: ideaToUse,
+          spec: { 
+            themeId: selectedTheme, 
+            attachments: attachments.map(a => a.name) 
+          },
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Store as last project
+      localStorage.setItem(LS_LAST_PROJECT_ID, data.id);
       
       // Clear pending state
       localStorage.removeItem(LS_PENDING_PROMPT);
+      localStorage.removeItem(LS_PENDING_THEME);
+
+      toast({ title: 'Project created', description: 'Opening builder...' });
       
+      // Navigate to builder with theme style ID
+      navigate('/secret-builder', { 
+        state: { 
+          projectId: data.id, 
+          initialIdea: ideaToUse,
+          themeId: selectedTheme
+        } 
+      });
     } catch (error) {
-      console.error('Error starting generation:', error);
+      console.error('Error creating project:', error);
       toast({ 
         title: 'Error', 
-        description: 'Failed to start. Please try again.', 
+        description: 'Failed to create project. Please try again.', 
         variant: 'destructive' 
       });
       setIsGenerating(false);
-      setIsRefining(false);
       isSubmittingRef.current = false;
     }
-  }, [idea, isGenerating, attachments, navigate, toast, interviewDataFromLocation, interview.structuredData, autoImproveEnabled]);
+  }, [idea, isGenerating, selectedTheme, attachments, navigate, toast]);
 
   // Generate from template with pre-built spec
   const handleGenerateFromTemplate = useCallback(async (template: typeof TEMPLATES[0]) => {
@@ -606,7 +453,7 @@ export default function SecretBuilderHub() {
           idea: template.prompt,
           spec: JSON.parse(JSON.stringify({ 
             siteSpec: template.spec,
-            themeId: 'modern', 
+            themeId: selectedTheme, 
           })),
         }])
         .select()
@@ -622,8 +469,8 @@ export default function SecretBuilderHub() {
         state: { 
           projectId: data.id, 
           initialIdea: template.prompt,
-          themeId: 'modern',
-          templateSpec: template.spec,
+          themeId: selectedTheme,
+          templateSpec: template.spec, // Pass spec directly to builder
         } 
       });
     } catch (error) {
@@ -637,7 +484,7 @@ export default function SecretBuilderHub() {
       setIsGenerating(false);
       isSubmittingRef.current = false;
     }
-  }, [isGenerating, navigate, toast]);
+  }, [isGenerating, selectedTheme, navigate, toast]);
 
   // Auto-generate when coming from home page with a prompt
   useEffect(() => {
@@ -665,16 +512,6 @@ export default function SecretBuilderHub() {
   const handleChipClick = (fullPrompt: string) => {
     setIdea(fullPrompt);
     textareaRef.current?.focus();
-  };
-
-  const handleInterviewSubmit = () => {
-    setInterviewOpen(false);
-    // Use the composed prompt from interview data if main idea is empty
-    const promptToUse = idea.trim() || interview.composedPrompt;
-    if (promptToUse) {
-      setIdea(promptToUse); // Also update the idea state for consistency
-      handleGenerate(promptToUse);
-    }
   };
 
   const handleClearPrompt = () => {
@@ -714,6 +551,7 @@ export default function SecretBuilderHub() {
   };
 
   const lastProject = projects[0];
+  const selectedThemeOption = THEME_OPTIONS.find((t) => t.id === selectedTheme);
 
   // Settings handlers
   const handleSignOut = async () => {
@@ -789,22 +627,13 @@ export default function SecretBuilderHub() {
 
                 {/* Navigation */}
                 <nav className="px-3 py-2 space-y-1 flex-1 overflow-y-auto">
-          <Button
+                  <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                     onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
                   >
                     <ExternalLink className="w-4 h-4" />
                     <span className="text-sm">Excellion Homepage</span>
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                    onClick={() => { navigate('/contact'); setMobileMenuOpen(false); }}
-                  >
-                    <Headset className="w-4 h-4" />
-                    <span className="text-sm">Expert Builders Help</span>
                   </Button>
                   
                   {NAV_ITEMS.map((item) => (
@@ -820,16 +649,8 @@ export default function SecretBuilderHub() {
                         <span className="text-sm">{item.label}</span>
                       </Button>
                     ))}
-                  
-                  {/* AI Image Library Button */}
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                    onClick={() => { setImageLibraryOpen(true); setMobileMenuOpen(false); }}
-                  >
-                    <Image className="w-4 h-4" />
-                    <span className="text-sm">Image Library</span>
-                  </Button>
+
+                  {/* Projects List */}
                   <Collapsible open={projectsFolderOpen} onOpenChange={setProjectsFolderOpen}>
                     <CollapsibleTrigger asChild>
                       <Button
@@ -955,10 +776,6 @@ export default function SecretBuilderHub() {
                 <Users className="w-4 h-4" />
                 <span>Team Members</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/knowledge')}>
-                <BookOpen className="w-4 h-4" />
-                <span>Knowledge Base</span>
-              </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/domains')}>
                 <Globe className="w-4 h-4" />
                 <span>Custom Domains</span>
@@ -966,22 +783,6 @@ export default function SecretBuilderHub() {
               
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-xs text-muted-foreground">Preferences</DropdownMenuLabel>
-              
-              {/* Auto-improve prompts toggle */}
-              <div className="flex items-center justify-between px-2 py-1.5">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">Auto-improve prompts</span>
-                </div>
-                <Switch
-                  checked={autoImproveEnabled}
-                  onCheckedChange={(checked) => {
-                    setAutoImproveState(checked);
-                    setAutoImproveEnabled(checked);
-                  }}
-                />
-              </div>
-              
               <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/appearance')}>
                 <Palette className="w-4 h-4" />
                 <span>Theme & Appearance</span>
@@ -1038,41 +839,117 @@ export default function SecretBuilderHub() {
             <span className="text-sm">Excellion Homepage</span>
           </Button>
           
-          {/* Expert Builders Help */}
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            onClick={() => navigate('/contact')}
-          >
-            <Headset className="w-4 h-4" />
-            <span className="text-sm">Expert Builders Help</span>
-          </Button>
-          
           {NAV_ITEMS.map((item) => (
               <Button
                 key={item.label}
                 variant="ghost"
                 className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 onClick={() => {
-                  if (item.action === 'resources') {
-                    navigate('/builder-resources');
-                  }
+                  // Resources action - no external link
                 }}
               >
                 <item.icon className="w-4 h-4" />
                 <span className="text-sm">{item.label}</span>
               </Button>
             ))}
-          
-          {/* AI Image Library Button */}
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            onClick={() => setImageLibraryOpen(true)}
-          >
-            <Image className="w-4 h-4" />
-            <span className="text-sm">Image Library</span>
-          </Button>
+
+          {/* Projects Folder Collapsible */}
+          <Collapsible open={projectsFolderOpen} onOpenChange={setProjectsFolderOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              >
+                <Folder className="w-4 h-4" />
+                <span className="text-sm flex-1 text-left">Projects Folder</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${projectsFolderOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-2 mt-1">
+              <ScrollArea className="h-64 pr-2">
+                <div className="space-y-0.5 pl-2">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : projects.length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-2 px-2">
+                      No projects yet
+                    </p>
+                  ) : (
+                    projects.slice(0, 8).map((project) => (
+                      <div
+                        key={project.id}
+                        onClick={() => handleOpenProject(project.id)}
+                        className="group flex items-start gap-2 p-2 rounded-md hover:bg-secondary/50 cursor-pointer transition-colors"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-1.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground line-clamp-2 leading-tight">
+                            {project.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {project.published_url ? (
+                              <Badge className="text-[10px] px-1 py-0 h-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                Published
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                                Draft
+                              </Badge>
+                            )}
+                            <span className="text-[10px] text-muted-foreground">
+                              {formatTimeAgo(project.updated_at)}
+                            </span>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
+                              <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
+                            </DropdownMenuItem>
+                            {project.published_url && (
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(project.published_url!, '_blank');
+                                }}
+                              >
+                                <Globe className="w-3.5 h-3.5 mr-2" /> View Live Site
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={(e) => openRenameDialog(project, e as unknown as React.MouseEvent)}>
+                              <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => handleDuplicateProject(project, e as unknown as React.MouseEvent)}>
+                              <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-destructive"
+                              onClick={(e) => handleDeleteClick(project, e as unknown as React.MouseEvent)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </CollapsibleContent>
+          </Collapsible>
         </nav>
 
         {/* Bottom CTA */}
@@ -1104,9 +981,6 @@ export default function SecretBuilderHub() {
             <p className="text-base text-muted-foreground max-w-lg mx-auto">
               Describe what you want. Excellion generates a full site you can edit and publish.
             </p>
-            <p className="text-sm text-muted-foreground/80 mt-2">
-              Not sure what to type? Use Build Assist.
-            </p>
           </section>
 
           {/* Input Card */}
@@ -1119,7 +993,7 @@ export default function SecretBuilderHub() {
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={interviewOpen ? "Answer a few quick questions to get a stronger first draft…" : "Describe your website idea..."}
+                    placeholder="Describe your website idea..."
                     className="min-h-[100px] resize-none border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 p-0 pr-8 text-base"
                     disabled={isGenerating}
                   />
@@ -1148,54 +1022,79 @@ export default function SecretBuilderHub() {
                       onAddAttachment={handleAddAttachment}
                       disabled={isGenerating}
                       attachmentCount={attachments.length}
-                      showScreenshot={false}
                     />
                     
-                    {/* Build Assist Button */}
+                    {/* Guided Interview Button */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={`h-8 ${interviewOpen ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'}`}
+                      className="h-8 text-muted-foreground hover:text-foreground"
                       onClick={() => setInterviewOpen(true)}
                       disabled={isGenerating}
                     >
-                      <Zap className={`w-4 h-4 mr-1 ${interviewOpen ? 'text-primary' : ''}`} />
-                      Build Assist
-                      <span className="text-xs text-muted-foreground ml-1.5">· answers a few quick questions</span>
+                      <Zap className="w-4 h-4 mr-1" />
+                      Guided
                     </Button>
                     
+                    {/* Theme Dropdown */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 text-muted-foreground hover:text-foreground"
+                          disabled={isGenerating}
+                        >
+                          <div 
+                            className="w-3 h-3 rounded-full mr-1.5 border border-border"
+                            style={{ backgroundColor: selectedThemeOption?.color }}
+                          />
+                          <Palette className="w-4 h-4 mr-1" />
+                          {selectedThemeOption?.label}
+                          <ChevronDown className="w-3 h-3 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56">
+                        {THEME_OPTIONS.map((theme) => (
+                          <DropdownMenuItem
+                            key={theme.id}
+                            onClick={() => setSelectedTheme(theme.id)}
+                            className="flex items-start gap-2 py-2"
+                          >
+                            <div 
+                              className="w-4 h-4 rounded-full border border-border mt-0.5 shrink-0"
+                              style={{ backgroundColor: theme.color }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <span className="font-medium">{theme.label}</span>
+                              <p className="text-xs text-muted-foreground">{theme.description}</p>
+                            </div>
+                            {selectedTheme === theme.id && (
+                              <Check className="w-4 h-4 mt-0.5 shrink-0" />
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   
-                    <div className="flex items-center gap-2">
-                      {/* Build Website button - triggers main flow + background HTML generation */}
-                      <Button 
-                        onClick={() => {
-                          // Also fire edge function in background (fire and forget for HTML generation)
-                          siteGen.generateSite(idea);
-                          // Use original generation flow for navigation + progress
-                          handleGenerate();
-                        }}
-                        disabled={!idea.trim() || isGenerating}
-                        className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
-                      >
-                      {isRefining ? (
-                        <>
-                          <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
-                          Polishing…
-                        </>
-                      ) : isGenerating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating…
-                        </>
-                      ) : (
-                        <>
-                          Build Website
-                          <Send className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                  <Button 
+                    onClick={() => handleGenerate()}
+                    disabled={!idea.trim() || isGenerating}
+                    className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating…
+                      </>
+                    ) : (
+                      <>
+                        Generate
+                        <Send className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -1264,6 +1163,9 @@ export default function SecretBuilderHub() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(showAllProjects ? projects : projects.slice(0, 6)).map((project) => {
+                  const themeId = project.spec?.themeId || 'modern';
+                  const themeOption = THEME_OPTIONS.find(t => t.id === themeId);
+                  
                   return (
                     <Card 
                       key={project.id}
@@ -1274,6 +1176,7 @@ export default function SecretBuilderHub() {
                       <div className="h-36 bg-gradient-to-br from-muted/50 to-muted/20 p-3 relative overflow-hidden">
                         <ProjectPreview 
                           spec={project.spec?.siteSpec || project.spec} 
+                          themeColor={themeOption?.color}
                         />
                         
                         {/* Hover overlay */}
@@ -1472,48 +1375,6 @@ export default function SecretBuilderHub() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Build Assist Interview Dialog */}
-      <Dialog open={interviewOpen} onOpenChange={setInterviewOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Build Assist</DialogTitle>
-          </DialogHeader>
-          <InterviewStepper
-            step={interview.step}
-            totalSteps={interview.totalSteps}
-            answers={interview.answers}
-            canProceed={interview.canProceed}
-            canSubmit={interview.canSubmit}
-            onUpdateAnswer={interview.updateAnswer}
-            onUpdateOffer={interview.updateOffer}
-            onNext={interview.nextStep}
-            onBack={interview.prevStep}
-            onSkip={interview.skipStep}
-            onSubmit={handleInterviewSubmit}
-            onSwitchToQuickPrompt={() => setInterviewOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* AI Image Library Dialog */}
-      <ImageLibraryDialog
-        open={imageLibraryOpen}
-        onOpenChange={setImageLibraryOpen}
-        images={generatedImages}
-        isLoading={isLoadingImages}
-        onRefresh={fetchGeneratedImages}
-        onDelete={handleDeleteImage}
-      />
-
-      {/* Improved Prompt Modal */}
-      <ImprovedPromptModal
-        open={showImprovedPromptModal}
-        onOpenChange={setShowImprovedPromptModal}
-        originalPrompt={idea}
-        refinedPrompt={lastRefinedPrompt}
-        meta={lastRefinerMeta}
-      />
     </div>
   );
 }

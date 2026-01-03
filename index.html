@@ -9,30 +9,25 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://excellionwebsites.com/" />
 
-    <!-- Preconnect to font CDN (no crossorigin on googleapis, with crossorigin on gstatic) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Preconnect to external domains for faster resource loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     
-    <!-- HTTP/2 Server Push hints for critical resources -->
-    <!-- These link headers hint the browser to preload critical assets early -->
-    <link rel="preload" as="script" href="/src/main.tsx" crossorigin>
-    <link rel="preload" as="style" href="/src/index.css">
-    
-    <!-- Direct font file preload - avoids CSS redirect chain -->
-    <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" crossorigin>
-    
-    <!-- Load font CSS asynchronously to avoid render blocking -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <!-- Google Fonts - Load only essential weights -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
     <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap">
     </noscript>
     
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://excellionwebsites.com/" />
     <meta property="og:title" content="Excellion Websites | Professional Web Builds in Days, Not Months">
-    <meta property="og:description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses. Book a free 15-minute consultation today.">
-    <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/ViJNibNqf3RrjmrhXO3W5aL39vS2/social-images/social-1767004992265-Cropped bot UI.png">
+    <meta property="og:description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses.">
+    <meta property="og:image" content="https://excellionwebsites.com/og-image.png">
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="Excellion Websites" />
@@ -41,68 +36,39 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@excellionai" />
     <meta name="twitter:title" content="Excellion Websites | Professional Web Builds in Days, Not Months">
-    <meta name="twitter:description" content="Get a custom website mockup and clear pricing before you pay. Excellion builds fast, professional websites for small businesses. Book a free 15-minute consultation today.">
-    <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/ViJNibNqf3RrjmrhXO3W5aL39vS2/social-images/social-1767004992265-Cropped bot UI.png">
+    <meta name="twitter:description" content="Get a custom website mockup and clear pricing before you pay. Book a free 15-minute consultation.">
+    <meta name="twitter:image" content="https://excellionwebsites.com/og-image.png">
     
-    <!-- Favicon with modern formats -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/favicon.png">
     
     <!-- Theme color for mobile browsers -->
     <meta name="theme-color" content="#0a0a0a">
   
-    <!-- Critical CSS for above-the-fold content -->
-    <style>
-      /* Prevent FOUT - use system font as fallback with matching metrics */
-      @font-face {
-        font-family: 'Inter';
-        font-style: normal;
-        font-weight: 400 700;
-        font-display: swap;
-        src: local('Inter'), local('system-ui');
-      }
-      html { visibility: visible; opacity: 1; }
-      body { margin: 0; background: #0a0a0a; color: #fafafa; font-family: Inter, system-ui, -apple-system, sans-serif; }
-      /* Header nav styling is now handled by React component classes, not global CSS */
-      /* Reserve space for hero content to prevent layout shifts */
-      .hero-title { min-height: 2.5em; }
-      .hero-subtitle { min-height: 3em; }
-    </style>
-
-    <!-- Google Analytics - Load only after user interaction or 5s delay -->
+    <!-- Google tag (gtag.js) - Deferred for performance -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-17764146565');
       
-      // Load GA only after idle or user interaction
+      // Defer Google Analytics loading
       if (typeof window !== 'undefined') {
-        var gaLoaded = false;
-        function loadGA() {
-          if (gaLoaded) return;
-          gaLoaded = true;
-          gtag('js', new Date());
-          gtag('config', 'AW-17764146565');
+        window.addEventListener('load', function() {
           var script = document.createElement('script');
           script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-17764146565';
           script.async = true;
           document.head.appendChild(script);
-        }
-        // Use requestIdleCallback for better performance, fallback to 5s timeout
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(loadGA, { timeout: 5000 });
-        } else {
-          setTimeout(loadGA, 5000);
-        }
-        // Also load on first user interaction
-        ['click', 'scroll', 'keydown', 'touchstart'].forEach(function(e) {
-          document.addEventListener(e, loadGA, { once: true, passive: true });
         });
       }
     </script>
-</head>
+  </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Prefetch likely next pages for instant navigation -->
+    <link rel="prefetch" href="/secret-builder-hub" />
   </body>
 </html>

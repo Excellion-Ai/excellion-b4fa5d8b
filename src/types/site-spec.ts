@@ -1,35 +1,14 @@
 // ============= SiteSpec Types =============
 // The source of truth for rendering any generated website in the preview frame
-// SPEC-FIRST ARCHITECTURE: AI outputs complete, valid specs - no fallbacks
 
 export type BusinessModel = 'SERVICE_BASED' | 'RETAIL_COMMERCE' | 'HOSPITALITY' | 'PORTFOLIO_IDENTITY';
-
-// Business intent - what type of business is this?
-export type BusinessIntent = 
-  | 'product_store' 
-  | 'service_business' 
-  | 'booking_business' 
-  | 'saas' 
-  | 'portfolio' 
-  | 'nonprofit'
-  | 'restaurant'
-  | 'gym'
-  | 'salon'
-  | 'lawyer'
-  | 'contractor'
-  | 'landscaping'
-  | 'dental'
-  | 'medical'
-  | 'real_estate';
 
 // Layout structure paradigms - controls overall page composition
 export type LayoutStructure = 
   | 'standard'      // Traditional vertical stack (backwards compatible)
   | 'bento'         // CSS Grid asymmetric tiles (SaaS/Tech)
-  | 'split'         // Split-screen immersive (Portfolios/Luxury)
   | 'layered'       // Z-index overlapping elements (Creative/Agency)
-  | 'horizontal'    // Horizontal scroll sections (Showcases)
-  | 'minimal';      // Clean, minimal layout
+  | 'horizontal';   // Horizontal scroll sections (Showcases)
 
 // Grid configuration for bento/tile-based layouts
 export type GridConfig = {
@@ -51,9 +30,6 @@ export type SectionType =
   | 'gallery'
   | 'services'
   | 'portfolio'
-  | 'before-after'
-  | 'process-steps'
-  | 'logo-grid'
   | 'custom';
 
 // Theme configuration
@@ -81,12 +57,6 @@ export type CTAButton = {
   variant: 'primary' | 'secondary' | 'outline';
 };
 
-// Hero variant layouts
-export type HeroVariant = 'simple-centered' | 'split-image-right' | 'minimal-impact';
-
-// Features variant layouts
-export type FeaturesVariant = 'grid-3' | 'bento-box' | 'zigzag-large';
-
 // Section content types
 export type HeroContent = {
   headline: string;
@@ -97,7 +67,6 @@ export type HeroContent = {
   secondaryCtaText?: string;
   secondaryCtaLink?: string;
   backgroundImage?: string;
-  variant?: HeroVariant;
 };
 
 export type FeatureItem = {
@@ -110,7 +79,6 @@ export type FeaturesContent = {
   title: string;
   subtitle?: string;
   items: FeatureItem[];
-  variant?: FeaturesVariant;
 };
 
 export type TestimonialItem = {
@@ -316,9 +284,8 @@ export type SitePage = {
 export type SiteSpec = {
   name: string;
   description?: string;
-  logo?: string;
+  logo?: string;  // Logo URL for the site
   businessModel: BusinessModel;
-  businessIntent?: BusinessIntent;  // AI-detected business type
   layoutStructure?: LayoutStructure;  // Layout paradigm for the site
   theme: SiteTheme;
   navigation: NavItem[];

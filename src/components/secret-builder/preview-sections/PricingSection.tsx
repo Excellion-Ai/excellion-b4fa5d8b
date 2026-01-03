@@ -1,105 +1,76 @@
 import { SiteSection, SiteTheme, PricingContent, PricingTier } from '@/types/app-spec';
 import { Check } from 'lucide-react';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
-import { EditableText } from '../EditableText';
-import { RenderMode } from '../SiteRenderer';
 
 interface PricingSectionProps {
   section: SiteSection;
   theme: SiteTheme;
-  renderMode?: RenderMode;
-  onUpdateContent?: (field: keyof PricingContent, value: string) => void;
-  onUpdateItem?: (index: number, field: keyof PricingTier, value: string | string[]) => void;
 }
 
-export function PricingSection({ 
-  section, 
-  theme, 
-  renderMode = 'preview',
-  onUpdateContent, 
-  onUpdateItem 
-}: PricingSectionProps) {
+const defaultPlans: PricingTier[] = [
+  { 
+    name: 'Starter', 
+    price: '$9', 
+    period: '/month',
+    features: ['Basic features', 'Email support', '1 user'],
+    highlighted: false
+  },
+  { 
+    name: 'Pro', 
+    price: '$29', 
+    period: '/month',
+    features: ['All Starter features', 'Priority support', '5 users', 'Advanced analytics'],
+    highlighted: true
+  },
+  { 
+    name: 'Enterprise', 
+    price: '$99', 
+    period: '/month',
+    features: ['All Pro features', 'Dedicated support', 'Unlimited users', 'Custom integrations'],
+    highlighted: false
+  },
+];
+
+export function PricingSection({ section, theme }: PricingSectionProps) {
   const content = section.content as PricingContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
-  // SPEC-FIRST: Use exactly what AI provided
   const title = content?.title || section.label || 'Pricing';
-  const subtitle = content?.subtitle || section.description || '';
-  const items = content?.items || [];
-  
-  // If no pricing items, show empty state
-  if (items.length === 0) {
-    return (
-      <section 
-        id={section.id}
-        className="py-10 md:py-14 px-6 w-full min-h-[200px] contain-layout flex items-center justify-center"
-        style={{ backgroundColor: isDark ? '#111111' : '#ffffff' }}
-      >
-        <div className="text-center" style={{ color: isDark ? '#6b7280' : '#9ca3af' }}>
-          <p className="text-sm">Pricing section - add your packages</p>
-        </div>
-      </section>
-    );
-  }
+  const subtitle = content?.subtitle || section.description || 'Choose the plan that works for you';
+  const items = content?.items || defaultPlans;
 
   return (
     <section 
       id={section.id}
-      className="py-10 md:py-14 px-6 w-full min-h-[350px] contain-layout"
-      style={{ backgroundColor: isDark ? '#111111' : '#ffffff' }}
+      className="py-10 md:py-14 px-6 w-full"
+      style={{ 
+        backgroundColor: isDark ? '#111111' : '#ffffff'
+      }}
     >
       <div className="w-full">
         <div className="text-center mb-8">
           <ScrollAnimation animation="fade-up">
-            {onUpdateContent ? (
-              <EditableText
-                value={title}
-                onSave={(val) => onUpdateContent('title', val)}
-                as="h2"
-                className="text-3xl md:text-4xl font-bold mb-4"
-                style={{ 
-                  fontFamily: theme.fontHeading || 'system-ui',
-                  color: isDark ? '#ffffff' : '#111827'
-                }}
-              />
-            ) : (
-              <h2 
-                className="text-3xl md:text-4xl font-bold mb-4"
-                style={{ 
-                  fontFamily: theme.fontHeading || 'system-ui',
-                  color: isDark ? '#ffffff' : '#111827'
-                }}
-              >
-                {title}
-              </h2>
-            )}
+            <h2 
+              className="text-3xl md:text-4xl font-bold mb-4"
+              style={{ 
+                fontFamily: theme.fontHeading || 'system-ui',
+                color: isDark ? '#ffffff' : '#111827'
+              }}
+            >
+              {title}
+            </h2>
           </ScrollAnimation>
-          {subtitle && (
-            <ScrollAnimation animation="fade-up" delay={100}>
-              {onUpdateContent ? (
-                <EditableText
-                  value={subtitle}
-                  onSave={(val) => onUpdateContent('subtitle', val)}
-                  as="p"
-                  className="text-lg max-w-2xl mx-auto"
-                  style={{ 
-                    fontFamily: theme.fontBody || 'system-ui',
-                    color: isDark ? '#9ca3af' : '#6b7280'
-                  }}
-                />
-              ) : (
-                <p 
-                  className="text-lg max-w-2xl mx-auto"
-                  style={{ 
-                    fontFamily: theme.fontBody || 'system-ui',
-                    color: isDark ? '#9ca3af' : '#6b7280'
-                  }}
-                >
-                  {subtitle}
-                </p>
-              )}
-            </ScrollAnimation>
-          )}
+          <ScrollAnimation animation="fade-up" delay={100}>
+            <p 
+              className="text-lg max-w-2xl mx-auto"
+              style={{ 
+                fontFamily: theme.fontBody || 'system-ui',
+                color: isDark ? '#9ca3af' : '#6b7280'
+              }}
+            >
+              {subtitle}
+            </p>
+          </ScrollAnimation>
         </div>
         
         <div 
@@ -126,59 +97,32 @@ export function PricingSection({
                   minWidth: '260px'
                 }}
               >
-                {onUpdateItem ? (
-                  <EditableText
-                    value={plan.name}
-                    onSave={(val) => onUpdateItem(index, 'name', val)}
-                    as="h3"
-                    className="text-lg md:text-xl font-semibold mb-2"
+                <h3 
+                  className="text-lg md:text-xl font-semibold mb-2"
+                  style={{ 
+                    fontFamily: theme.fontHeading || 'system-ui',
+                    color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
+                  }}
+                >
+                  {plan.name}
+                </h3>
+                <div className="mb-4 md:mb-6">
+                  <span 
+                    className="text-3xl md:text-4xl font-bold"
                     style={{ 
-                      fontFamily: theme.fontHeading || 'system-ui',
-                      color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
-                    }}
-                  />
-                ) : (
-                  <h3 
-                    className="text-lg md:text-xl font-semibold mb-2"
-                    style={{ 
-                      fontFamily: theme.fontHeading || 'system-ui',
                       color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
                     }}
                   >
-                    {plan.name}
-                  </h3>
-                )}
-                <div className="mb-4 md:mb-6">
-                  {onUpdateItem ? (
-                    <EditableText
-                      value={plan.price}
-                      onSave={(val) => onUpdateItem(index, 'price', val)}
-                      as="span"
-                      className="text-3xl md:text-4xl font-bold"
-                      style={{ 
-                        color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
-                      }}
-                    />
-                  ) : (
-                    <span 
-                      className="text-3xl md:text-4xl font-bold"
-                      style={{ 
-                        color: plan.highlighted ? '#ffffff' : (isDark ? '#ffffff' : '#111827')
-                      }}
-                    >
-                      {plan.price}
-                    </span>
-                  )}
-                  {plan.period && (
-                    <span 
-                      className="text-sm md:text-base"
-                      style={{ 
-                        color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (isDark ? '#9ca3af' : '#6b7280')
-                      }}
-                    >
-                      {plan.period}
-                    </span>
-                  )}
+                    {plan.price}
+                  </span>
+                  <span 
+                    className="text-sm md:text-base"
+                    style={{ 
+                      color: plan.highlighted ? 'rgba(255,255,255,0.8)' : (isDark ? '#9ca3af' : '#6b7280')
+                    }}
+                  >
+                    {plan.period}
+                  </span>
                 </div>
                 <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 flex-grow">
                   {plan.features.map((feature, featureIndex) => (

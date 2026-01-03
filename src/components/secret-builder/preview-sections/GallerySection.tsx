@@ -98,7 +98,7 @@ export function GallerySection({ section, theme, asTile = false, businessModel }
     return (
       <section 
         id={section.id}
-        className="h-full min-h-[150px] p-4 contain-layout"
+        className="h-full p-4"
         style={{ backgroundColor: isDark ? '#111111' : '#ffffff' }}
       >
         <h3 
@@ -128,7 +128,7 @@ export function GallerySection({ section, theme, asTile = false, businessModel }
   return (
     <section 
       id={section.id}
-      className="py-12 md:py-16 px-6 min-h-[300px] contain-layout"
+      className="py-12 md:py-16 px-6"
       style={{ backgroundColor: isDark ? '#0a0a0a' : '#f9fafb' }}
     >
       <div className="max-w-7xl mx-auto">

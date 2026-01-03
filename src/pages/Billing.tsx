@@ -76,17 +76,6 @@ const Billing = () => {
   }, [authenticated]);
 
   const handleManageSubscription = async () => {
-    // Free plan users don't have a Stripe subscription to manage
-    if (plan === 'free') {
-      toast.info("You're on the free plan. Upgrade to manage your subscription.", {
-        action: {
-          label: "Upgrade",
-          onClick: () => navigate("/builder-pricing"),
-        },
-      });
-      return;
-    }
-
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();

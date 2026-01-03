@@ -4,12 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { 
   Sparkles, 
   ArrowRight, 
@@ -22,13 +16,11 @@ import {
   Phone,
   Mail,
   Loader2,
-  Zap,
-  X
+  Zap
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
-import { SprintPassBar } from "@/components/SprintPassBar";
 import { AnimatedPlaceholder } from "@/components/AnimatedPlaceholder";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -65,15 +57,14 @@ const notMagicItems = [
   "Doesn't run your ads or marketing for you – it focuses on the site."
 ];
 
+type InputMode = 'quick' | 'interview';
+
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
-  const [niche, setNiche] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [emailCaptureSuccess, setEmailCaptureSuccess] = useState(false);
-  const [formErrors, setFormErrors] = useState<{ niche?: string; email?: string }>({});
   const [user, setUser] = useState<User | null>(null);
-  const [buildAssistOpen, setBuildAssistOpen] = useState(false);
+  const [inputMode, setInputMode] = useState<InputMode>('quick');
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   
@@ -125,30 +116,19 @@ const WebBuilderHome = () => {
     };
   }, []);
 
-  const handleStart = (useInterview = false) => {
-    const promptToUse = useInterview ? interview.composedPrompt : prompt;
-    const structuredData = useInterview ? interview.structuredData : null;
+  const handleStart = () => {
+    const promptToUse = inputMode === 'interview' ? interview.composedPrompt : prompt;
+    const structuredData = inputMode === 'interview' ? interview.structuredData : null;
     
     if (promptToUse.trim()) {
-      const builderData = {
-        initialIdea: promptToUse,
-        autoGenerate: true,
-        interviewData: structuredData
-      };
-      
-      // If user is not signed in, store the data and redirect to auth
-      if (!user) {
-        sessionStorage.setItem('pendingBuilderData', JSON.stringify(builderData));
-        navigate("/auth?redirect=/secret-builder-hub");
-        return;
-      }
-      
-      navigate("/secret-builder-hub", { state: builderData });
+      navigate("/secret-builder-hub", { 
+        state: { 
+          initialIdea: promptToUse, 
+          autoGenerate: true,
+          interviewData: structuredData
+        } 
+      });
     } else {
-      if (!user) {
-        navigate("/auth?redirect=/secret-builder-hub");
-        return;
-      }
       navigate("/secret-builder-hub");
     }
   };
@@ -166,22 +146,7 @@ const WebBuilderHome = () => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormErrors({});
-    
-    const errors: { niche?: string; email?: string } = {};
-    if (!niche.trim()) {
-      errors.niche = "Please enter your business or niche";
-    }
-    if (!email.trim()) {
-      errors.email = "Please enter your email";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      errors.email = "Please enter a valid email address";
-    }
-    
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
+    if (!email.trim() || isSubmitting) return;
     
     setIsSubmitting(true);
     try {
@@ -190,14 +155,13 @@ const WebBuilderHome = () => {
         email: email.trim(),
         project_type: "email_capture",
         source: "web_builder_home",
-        description: `Business/Niche: ${niche.trim()} - User requested 3 website examples`,
+        description: "User signed up for examples and guide",
       });
       
       if (error) throw error;
       
-      setEmailCaptureSuccess(true);
+      toast.success("Thanks! We'll send you examples and tips soon.");
       setEmail("");
-      setNiche("");
     } catch (error) {
       console.error("Email capture error:", error);
       toast.error("Failed to sign up. Please try again.");
@@ -206,27 +170,31 @@ const WebBuilderHome = () => {
     }
   };
 
-  const handleInterviewSubmit = () => {
-    setBuildAssistOpen(false);
-    handleStart(true);
+  const handleSwitchMode = (mode: InputMode) => {
+    // Preserve state when switching
+    if (mode === 'interview' && prompt.trim()) {
+      interview.setQuickPrompt(prompt);
+    } else if (mode === 'quick' && interview.quickPrompt) {
+      setPrompt(interview.quickPrompt);
+    }
+    setInputMode(mode);
   };
-  
-  const handleQuickStart = () => {
-    handleStart(false);
+
+  const handleInterviewSubmit = () => {
+    handleStart();
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
         <title>Website Builder AI | Build Your Site with AI</title>
       </Helmet>
 
-      <SprintPassBar />
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16" style={{ contain: 'layout' }}>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         {/* Video Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <video
@@ -254,123 +222,136 @@ const WebBuilderHome = () => {
           </video>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-4" style={{ contain: 'layout' }}>
-          <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-6 md:py-10 rounded-lg border border-border/50" style={{ minHeight: '400px' }}>
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
+          <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-6 md:py-10 rounded-lg border border-border/50">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-6">
               <Sparkles className="w-4 h-4" />
               <span>AI-Powered Website Builder</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 min-h-[2.5em] sm:min-h-[2em]">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
               Your dream website, generated in{" "}
               <span className="text-accent">seconds.</span>
             </h1>
-            <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold min-h-[3em] sm:min-h-[2em]">
+            <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold">
               An AI website builder that generates a complete site in seconds. Make changes by chat, customize pages, and publish with your own domain.
             </p>
 
-            {/* Mode Toggle - Quick Prompt + Build Assist Button */}
+            {/* Mode Toggle */}
             <div className="max-w-2xl mx-auto mb-4">
               <div className="inline-flex p-1 rounded-lg bg-background/30 border border-border/30 backdrop-blur-sm">
-                <span className="px-4 py-1.5 rounded-md text-sm font-medium bg-primary text-primary-foreground">
-                  Quick Prompt
-                </span>
                 <button
-                  onClick={() => setBuildAssistOpen(true)}
-                  className="px-4 py-1.5 rounded-md text-sm font-medium transition-all text-foreground/70 hover:text-foreground"
+                  onClick={() => handleSwitchMode('quick')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    inputMode === 'quick'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground/70 hover:text-foreground'
+                  }`}
+                >
+                  Quick Prompt
+                </button>
+                <button
+                  onClick={() => handleSwitchMode('interview')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    inputMode === 'interview'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground/70 hover:text-foreground'
+                  }`}
                 >
                   <Zap className="w-3.5 h-3.5 inline mr-1" />
-                  Build Assist
+                  Guided Interview
                 </button>
               </div>
             </div>
 
-            {/* Input Area - Quick Prompt Only */}
+            {/* Input Area */}
             <div className="max-w-2xl mx-auto">
               <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-4">
-                {/* Quick Prompt Mode */}
-                <div className="relative">
-                  <Textarea
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
-                    rows={1}
-                    style={{ height: 'auto' }}
-                    onInput={(e) => {
-                      const target = e.target as HTMLTextAreaElement;
-                      target.style.height = 'auto';
-                      target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-                    }}
-                  />
-                  {!prompt && (
-                    <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
-                      <AnimatedPlaceholder 
-                        suggestions={placeholderSuggestions}
-                        typingSpeed={25}
-                        deletingSpeed={15}
-                        pauseDuration={2000}
+                {inputMode === 'quick' ? (
+                  <>
+                    {/* Quick Prompt Mode */}
+                    <div className="relative">
+                      <Textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
+                        rows={1}
+                        style={{ height: 'auto' }}
+                        onInput={(e) => {
+                          const target = e.target as HTMLTextAreaElement;
+                          target.style.height = 'auto';
+                          target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                        }}
                       />
+                      {!prompt && (
+                        <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
+                          <AnimatedPlaceholder 
+                            suggestions={placeholderSuggestions}
+                            typingSpeed={25}
+                            deletingSpeed={15}
+                            pauseDuration={2000}
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-end mt-3">
-                  <Button onClick={handleQuickStart} size="icon" className="h-10 w-10">
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </div>
+                    <div className="flex items-center justify-end mt-3">
+                      <Button onClick={handleStart} size="icon" className="h-10 w-10">
+                        <ArrowRight className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  /* Guided Interview Mode */
+                  <InterviewStepper
+                    step={interview.step}
+                    totalSteps={interview.totalSteps}
+                    answers={interview.answers}
+                    canProceed={interview.canProceed}
+                    canSubmit={interview.canSubmit}
+                    onUpdateAnswer={interview.updateAnswer}
+                    onUpdateOffer={interview.updateOffer}
+                    onNext={interview.nextStep}
+                    onBack={interview.prevStep}
+                    onSkip={interview.skipStep}
+                    onSubmit={handleInterviewSubmit}
+                    onSwitchToQuickPrompt={() => handleSwitchMode('quick')}
+                  />
+                )}
               </div>
 
-              {/* Suggestion Chips */}
-              <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {suggestionChips.map((chip, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleChipClick(chip)}
-                    className="px-3 py-1.5 rounded-full text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
+              {/* Quick Prompt extras */}
+              {inputMode === 'quick' && (
+                <>
+                  {/* Suggestion Chips */}
+                  <div className="flex flex-wrap justify-center gap-2 mt-4">
+                    {suggestionChips.map((chip, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleChipClick(chip)}
+                        className="px-3 py-1.5 rounded-full text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
 
-              {/* Build Assist link */}
-              <p className="text-xs text-foreground/60 mt-4 font-light">
-                No credit card required.{' '}
-                <button
-                  onClick={() => setBuildAssistOpen(true)}
-                  className="text-primary hover:underline"
-                >
-                  Want a better first draft? Try Build Assist (60 sec)
-                </button>
-              </p>
+                  {/* Interview prompt link */}
+                  <p className="text-xs text-foreground/60 mt-4 font-light">
+                    No credit card required.{' '}
+                    <button
+                      onClick={() => handleSwitchMode('interview')}
+                      className="text-primary hover:underline"
+                    >
+                      Want a better first draft? Try Guided Interview (60 sec)
+                    </button>
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
       </section>
-
-      {/* Build Assist Dialog */}
-      <Dialog open={buildAssistOpen} onOpenChange={setBuildAssistOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card border-border">
-          <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-lg font-semibold text-foreground">Build Assist</DialogTitle>
-          </DialogHeader>
-          <InterviewStepper
-            step={interview.step}
-            totalSteps={interview.totalSteps}
-            answers={interview.answers}
-            canProceed={interview.canProceed}
-            canSubmit={interview.canSubmit}
-            onUpdateAnswer={interview.updateAnswer}
-            onUpdateOffer={interview.updateOffer}
-            onNext={interview.nextStep}
-            onBack={interview.prevStep}
-            onSkip={interview.skipStep}
-            onSubmit={handleInterviewSubmit}
-            onSwitchToQuickPrompt={() => setBuildAssistOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
 
       {/* How It Works Section */}
       <section id="how-it-works" className="py-20 px-4 border-t border-border/50 scroll-mt-20">
@@ -510,85 +491,35 @@ const WebBuilderHome = () => {
 
       {/* Email Capture Section */}
       <section className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-2xl mx-auto text-center">
+        <div className="max-w-xl mx-auto text-center">
           <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
-          
-          {emailCaptureSuccess ? (
-            <>
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                Check your inbox
-              </h2>
-              <p className="text-muted-foreground/90">
-                We just sent your 3 examples. If you don't see it, check spam/promotions.
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                Get 3 real website examples for your business
-              </h2>
-              <p className="text-muted-foreground/90 mb-6">
-                Enter your business/niche and email. We'll send a mini pack: layouts, copy structure, and the exact sections that convert.
-              </p>
-              <form onSubmit={handleEmailSubmit} className="max-w-xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="text-left">
-                    <label htmlFor="niche-input" className="block text-sm font-medium text-foreground/80 mb-1.5">
-                      Business / Niche
-                    </label>
-                    <Input
-                      id="niche-input"
-                      type="text"
-                      value={niche}
-                      onChange={(e) => {
-                        setNiche(e.target.value);
-                        if (formErrors.niche) setFormErrors(prev => ({ ...prev, niche: undefined }));
-                      }}
-                      placeholder="e.g., Roofing company, Italian restaurant, personal trainer"
-                      className={`w-full focus:ring-primary focus:border-primary ${formErrors.niche ? 'border-destructive' : ''}`}
-                      disabled={isSubmitting}
-                    />
-                    {formErrors.niche && (
-                      <p className="text-xs text-destructive mt-1">{formErrors.niche}</p>
-                    )}
-                  </div>
-                  <div className="text-left">
-                    <label htmlFor="email-input" className="block text-sm font-medium text-foreground/80 mb-1.5">
-                      Email
-                    </label>
-                    <Input
-                      id="email-input"
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (formErrors.email) setFormErrors(prev => ({ ...prev, email: undefined }));
-                      }}
-                      placeholder="you@domain.com"
-                      className={`w-full focus:ring-primary focus:border-primary ${formErrors.email ? 'border-destructive' : ''}`}
-                      disabled={isSubmitting}
-                    />
-                    {formErrors.email && (
-                      <p className="text-xs text-destructive mt-1">{formErrors.email}</p>
-                    )}
-                  </div>
-                </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto px-8">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    "Send my examples"
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground/70 mt-3">
-                  No spam. Unsubscribe anytime.
-                </p>
-              </form>
-            </>
-          )}
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            Not ready to build today?
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Drop your email and we'll send you example sites and a short guide on what your website needs to convert in 2025.
+          </p>
+          <form onSubmit={handleEmailSubmit} className="flex gap-3 max-w-md mx-auto">
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="flex-1"
+              required
+              disabled={isSubmitting}
+            />
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send me examples"
+              )}
+            </Button>
+          </form>
         </div>
       </section>
 

@@ -97,8 +97,6 @@ const Navigation = () => {
             width="40" 
             height="40"
             loading="eager"
-            decoding="async"
-            fetchPriority="high"
           />
           <span className="text-lg sm:text-xl font-bold text-foreground">Excellion</span>
         </Link>

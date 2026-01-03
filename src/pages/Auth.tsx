@@ -4,13 +4,11 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Github, ArrowLeft } from "lucide-react";
+import { Github } from "lucide-react";
 import diyBackgroundVideo from "@/assets/diy-background.mp4";
 import { z } from "zod";
 
@@ -100,18 +98,6 @@ const authSchema = z.object({
   path: ["confirmPassword"]
 });
 
-// Password strength checker
-const getPasswordStrength = (pwd: string) => {
-  const checks = {
-    length: pwd.length >= 8,
-    uppercase: /[A-Z]/.test(pwd),
-    lowercase: /[a-z]/.test(pwd),
-    number: /[0-9]/.test(pwd),
-  };
-  const passed = Object.values(checks).filter(Boolean).length;
-  return { checks, passed, total: 4 };
-};
-
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -119,18 +105,11 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [lockoutTime, setLockoutTime] = useState(0);
-  const [passwordError, setPasswordError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmailSent, setResetEmailSent] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
   // Get redirect URL from query params (e.g., /auth?redirect=/checkout?plan=pro)
   const redirectTo = searchParams.get("redirect") || "/";
-  
-  const passwordStrength = getPasswordStrength(password);
 
   useEffect(() => {
     if (lockoutTime > 0) {
@@ -142,28 +121,18 @@ const Auth = () => {
   }, [lockoutTime]);
 
   useEffect(() => {
-    const handleAuthRedirect = (session: any) => {
-      if (session) {
-        // Check for pending builder data from WebBuilderHome
-        const pendingData = sessionStorage.getItem('pendingBuilderData');
-        if (pendingData && redirectTo === '/secret-builder-hub') {
-          sessionStorage.removeItem('pendingBuilderData');
-          const builderData = JSON.parse(pendingData);
-          navigate('/secret-builder-hub', { state: builderData });
-        } else {
-          navigate(redirectTo);
-        }
-      }
-    };
-
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
-      handleAuthRedirect(session);
+      if (session) {
+        navigate(redirectTo);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      handleAuthRedirect(session);
+      if (session) {
+        navigate(redirectTo);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -171,33 +140,6 @@ const Auth = () => {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Clear previous errors
-    setEmailError("");
-    setPasswordError("");
-
-    // Client-side validation for login
-    if (isLogin) {
-      let hasError = false;
-      
-      // Validate email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email || !emailRegex.test(email)) {
-        setEmailError("Please enter a valid email address");
-        hasError = true;
-      }
-      
-      // Validate password (just check if empty for login)
-      if (!password) {
-        setPasswordError("Please enter your password");
-        hasError = true;
-      }
-      
-      if (hasError) {
-        toast.error("Please fix the errors above");
-        return;
-      }
-    }
 
     // Check rate limiting
     const lockoutInfo = getLockoutInfo(email);
@@ -211,7 +153,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Validate form data (full validation for signup)
+      // Validate form data
       const validationData = isLogin 
         ? { email, password }
         : { email, password, confirmPassword };
@@ -219,16 +161,8 @@ const Auth = () => {
       const result = authSchema.safeParse(validationData);
       
       if (!result.success) {
-        const errors = result.error.errors;
-        errors.forEach(err => {
-          if (err.path.includes('email')) {
-            setEmailError(err.message);
-          }
-          if (err.path.includes('password')) {
-            setPasswordError(err.message);
-          }
-        });
-        toast.error(errors[0].message);
+        const firstError = result.error.errors[0];
+        toast.error(firstError.message);
         setLoading(false);
         return;
       }
@@ -248,17 +182,12 @@ const Auth = () => {
           }
           const remainingAttempts = MAX_ATTEMPTS - (updatedLockout.attemptCount % MAX_ATTEMPTS);
           
-          // Handle specific error messages with clearer feedback
+          // Handle specific error messages
           let errorMessage = error.message;
-          // Always show "Incorrect password" for any login credential error
-          if (error.message.includes("Invalid login credentials") || error.message.includes("invalid")) {
-            errorMessage = "Incorrect password. Please check your password and try again.";
-            setPasswordError("Incorrect password");
+          if (error.message.includes("Invalid login credentials")) {
+            errorMessage = "Invalid email or password";
           } else if (error.message.includes("Email not confirmed")) {
             errorMessage = "Please check your email to confirm your account";
-          } else {
-            // For any other login error, assume password is incorrect
-            setPasswordError("Incorrect password");
           }
           
           throw new Error(
@@ -269,17 +198,7 @@ const Auth = () => {
           );
         }
         
-        setPasswordError("");
-        
         clearLoginAttempts(email);
-        
-        // If "Remember me" is unchecked, store flag to clear session on browser close
-        if (!rememberMe) {
-          sessionStorage.setItem('clearSessionOnClose', 'true');
-        } else {
-          sessionStorage.removeItem('clearSessionOnClose');
-        }
-        
         toast.success("Logged in successfully!");
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -330,38 +249,6 @@ const Auth = () => {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email) {
-      toast.error("Please enter your email address");
-      return;
-    }
-
-    const emailSchema = z.string().email("Invalid email address");
-    const result = emailSchema.safeParse(email);
-    if (!result.success) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-
-      setResetEmailSent(true);
-      toast.success("Password reset email sent! Check your inbox.");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background relative">
       {/* Video Background */}
@@ -386,84 +273,18 @@ const Auth = () => {
           <Card className="w-full max-w-md bg-background border-border">
             <CardHeader className="space-y-1">
               <CardTitle className="text-3xl text-center text-foreground">
-                {showForgotPassword 
-                  ? "Reset Password" 
-                  : isLogin 
-                    ? "Welcome Back" 
-                    : "Create Account"}
+                {isLogin ? "Welcome Back" : "Create Account"}
               </CardTitle>
               <CardDescription className="text-center text-foreground/80">
-                {showForgotPassword
-                  ? "Enter your email to receive a reset link"
-                  : isLogin
-                    ? "Sign in to your account to continue"
-                    : "Sign up to get started with Excellion"}
+                {isLogin
+                  ? "Sign in to your account to continue"
+                  : "Sign up to get started with Excellion"}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* Forgot Password Form */}
-              {showForgotPassword ? (
-                resetEmailSent ? (
-                  <div className="text-center space-y-4">
-                    <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <p className="text-foreground">
-                      We've sent a password reset link to <strong>{email}</strong>
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Check your inbox and click the link to reset your password.
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowForgotPassword(false);
-                        setResetEmailSent(false);
-                      }}
-                      className="mt-4"
-                    >
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      Back to Sign In
-                    </Button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleForgotPassword} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="resetEmail" className="text-foreground">Email</Label>
-                      <Input
-                        id="resetEmail"
-                        type="email"
-                        placeholder="name@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="bg-background/20 border-white/20 text-foreground"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                      disabled={loading}
-                    >
-                      {loading ? "Sending..." : "Send Reset Link"}
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={() => setShowForgotPassword(false)}
-                      className="w-full text-sm text-foreground/80 hover:text-accent transition-colors flex items-center justify-center gap-2"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back to Sign In
-                    </button>
-                  </form>
-                )
-              ) : (
-                <>
-                  {/* OAuth Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
+              {/* OAuth Buttons */}
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="outline"
                   onClick={() => handleOAuthLogin("google")}
@@ -520,113 +341,44 @@ const Auth = () => {
                     type="email"
                     placeholder="name@example.com"
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setEmailError("");
-                    }}
-                    className={`bg-background/20 border-white/20 text-foreground ${
-                      emailError ? "border-destructive" : ""
-                    }`}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-background/20 border-white/20 text-foreground"
                   />
-                  {emailError && (
-                    <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive" />
-                      {emailError}
-                    </p>
-                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-foreground">Password</Label>
-                  <PasswordInput
+                  <Input
                     id="password"
+                    type="password"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setPasswordError("");
-                    }}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={isLogin ? undefined : 8}
-                    className={`bg-background/20 border-white/20 text-foreground ${
-                      isLogin && passwordError ? "border-destructive" : ""
-                    }`}
+                    minLength={8}
+                    className="bg-background/20 border-white/20 text-foreground"
                   />
-                  {isLogin && passwordError && (
-                    <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive" />
-                      {passwordError}
+                  {!isLogin && (
+                    <p className="text-xs text-foreground/60 mt-1">
+                      Must be at least 8 characters with uppercase, lowercase, and number
                     </p>
-                  )}
-                  {!isLogin && password && (
-                    <div className="space-y-2 mt-2">
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4].map((i) => (
-                          <div
-                            key={i}
-                            className={`h-1 flex-1 rounded-full transition-colors ${
-                              i <= passwordStrength.passed
-                                ? passwordStrength.passed <= 2
-                                  ? "bg-destructive"
-                                  : passwordStrength.passed === 3
-                                  ? "bg-yellow-500"
-                                  : "bg-green-500"
-                                : "bg-muted"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <div className="space-y-1">
-                        <p className={`text-xs flex items-center gap-1.5 ${passwordStrength.checks.length ? "text-green-500" : "text-muted-foreground"}`}>
-                          {passwordStrength.checks.length ? "✓" : "○"} At least 8 characters
-                        </p>
-                        <p className={`text-xs flex items-center gap-1.5 ${passwordStrength.checks.uppercase ? "text-green-500" : "text-muted-foreground"}`}>
-                          {passwordStrength.checks.uppercase ? "✓" : "○"} One uppercase letter
-                        </p>
-                        <p className={`text-xs flex items-center gap-1.5 ${passwordStrength.checks.lowercase ? "text-green-500" : "text-muted-foreground"}`}>
-                          {passwordStrength.checks.lowercase ? "✓" : "○"} One lowercase letter
-                        </p>
-                        <p className={`text-xs flex items-center gap-1.5 ${passwordStrength.checks.number ? "text-green-500" : "text-muted-foreground"}`}>
-                          {passwordStrength.checks.number ? "✓" : "○"} One number
-                        </p>
-                      </div>
-                    </div>
                   )}
                 </div>
 
                 {!isLogin && (
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
-                    <PasswordInput
+                    <Input
                       id="confirmPassword"
+                      type="password"
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       minLength={8}
-                      className={`bg-background/20 border-white/20 text-foreground ${
-                        confirmPassword && password !== confirmPassword ? "border-destructive" : ""
-                      }`}
+                      className="bg-background/20 border-white/20 text-foreground"
                     />
-                    {confirmPassword && password !== confirmPassword && (
-                      <p className="text-xs text-destructive mt-1">Passwords do not match</p>
-                    )}
-                  </div>
-                )}
-
-                {isLogin && (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="rememberMe"
-                      checked={rememberMe}
-                      onCheckedChange={(checked) => setRememberMe(checked === true)}
-                    />
-                    <label
-                      htmlFor="rememberMe"
-                      className="text-sm text-foreground/80 cursor-pointer select-none"
-                    >
-                      Remember me
-                    </label>
                   </div>
                 )}
 
@@ -644,32 +396,18 @@ const Auth = () => {
                   {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
                 </Button>
               </form>
-
-              {isLogin && (
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="w-full text-sm text-foreground/80 hover:text-accent transition-colors"
-                >
-                  Forgot password?
-                </button>
-              )}
-                </>
-              )}
             </CardContent>
 
-            {!showForgotPassword && (
-              <CardFooter className="flex flex-col space-y-2">
-                <button
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-sm text-foreground/80 hover:text-accent transition-colors"
-                >
-                  {isLogin
-                    ? "Don't have an account? Sign up"
-                    : "Already have an account? Sign in"}
-                </button>
-              </CardFooter>
-            )}
+            <CardFooter className="flex flex-col space-y-2">
+              <button
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-foreground/80 hover:text-accent transition-colors"
+              >
+                {isLogin
+                  ? "Don't have an account? Sign up"
+                  : "Already have an account? Sign in"}
+              </button>
+            </CardFooter>
           </Card>
         </main>
 

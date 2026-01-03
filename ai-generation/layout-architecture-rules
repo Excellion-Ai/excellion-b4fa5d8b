@@ -1,12 +1,5 @@
 ## PRIORITY: HIGHEST - Apply before all other generation rules
 
-### Image Requirements (CRITICAL)
-Every generated site MUST include professional stock photography:
-- Hero sections: backgroundImage with Unsplash URL (MANDATORY)
-- Gallery/Portfolio: image field for every item
-- Team sections: avatar URLs for team members
-- Services: image fields for visual cards
-
 ### Banned Pattern (Never Generate)
 Centered Navbar → Centered Hero Text → Row of 3 Cards → Standard Footer
 
@@ -18,12 +11,11 @@ Centered Navbar → Centered Hero Text → Row of 3 Cards → Standard Footer
 - Hero: Large tile (span-2) next to two smaller interactive tiles
 - Navigation: Floating pill navbar (fixed bottom or top-center)
 
-**Structure B: Split-Screen Immersive** (Portfolios/Luxury/Visual Services)
+**Structure B: Split-Screen Immersive** (Portfolios/Luxury)
 - Vertical 50/50 or 40/60 split layout
 - One side fixed/sticky, other side scrollable
 - Navigation: Vertical sidebar on left edge
 - Typography: Massive, overlapping text breaking boundaries
-- **REQUIRES**: backgroundImage in hero section
 
 **Structure C: Layered Z-Index** (Creative/Agencies)
 - Elements physically overlap for depth
@@ -40,7 +32,6 @@ Centered Navbar → Centered Hero Text → Row of 3 Cards → Standard Footer
 1. Break containers: Mix full-width with narrow columns, never single max-w-7xl
 2. Asymmetry required: Use 60/40 splits, floating glass cards over backgrounds
 3. Variable padding: Alternate massive spacing (py-32) with tight dense sections
-4. **IMAGES REQUIRED**: Every visual section must have real Unsplash URLs
 
 ### Tailwind Implementation
 - grid-cols-12 for complex alignments
@@ -60,22 +51,18 @@ Before writing code, analyze the "Client Industry" and assign one of these 4 lay
 * **LAYOUT 1: THE "EDITORIAL SPLIT" (40% Weight for Service/Luxury)**
     * *Best for:* Architects, Law Firms, High-End Real Estate, Consultants.
     * *Architecture:* Vertical 50/50 split. Left side is sticky with the core value prop; right side is a long-scroll of immersive imagery and case studies. No grids.
-    * *Image Requirement:* Hero backgroundImage MANDATORY
 
 * **LAYOUT 2: THE "F-PATTERN FLOW" (30% Weight for Local Business)**
     * *Best for:* Dog Groomers, Restaurants, Auto Repair, Plumbers.
     * *Architecture:* Classic high-conversion flow. Large "Hero" with a clear CTA, followed by alternating text/image sections (Z-pattern) to build trust. Clean, readable, and fast.
-    * *Image Requirement:* Hero backgroundImage + service images
 
 * **LAYOUT 3: THE "BENTO BOX" (20% Weight for Tech/SaaS)**
     * *Best for:* Software, AI tools, Dashboards, Data companies.
     * *Architecture:* Modular grid tiles. Only use this if the product has multiple distinct features that need equal weight.
-    * *Image Requirement:* Feature tile images or icons
 
 * **LAYOUT 4: THE "ASYMMETRICAL BRUTALIST" (10% Weight for Creative)**
     * *Best for:* Artists, Musicians, Gen-Z brands, Marketing Agencies.
     * *Architecture:* Overlapping elements, negative margins, and floating text. This should look "expensive and chaotic."
-    * *Image Requirement:* Large hero images, portfolio gallery
 
 ### 2. THE "CONTEXTUAL MATCH" RULE
 
@@ -90,29 +77,3 @@ If the user asks for a "Local Business" (e.g., a plumber), and you give them a "
 To ensure variety, if your internal "confidence" in a layout is equal, flip a virtual coin. Never use the Bento layout for a business that does not sell digital products or high-tech services.
 
 **EXECUTION:** State your "Selected Architecture" at the beginning of the generation and justify why it fits the industry.
-
----
-
-## 12. IMAGE GENERATION PIPELINE
-
-### Three-Layer Protection System
-1. **AI Prompt Layer** (bot-chat): Explicit instructions to include Unsplash URLs
-2. **Post-Processor Layer** (BuilderShell): imageFiller fills missing images after parsing
-3. **Renderer Fallback** (SiteRenderer): Final check before display
-
-### Industry-Specific Image Keywords
-| Industry | Primary Keywords | Secondary Keywords |
-|----------|-----------------|-------------------|
-| Restaurant | food plating, restaurant interior | chef, dining, cuisine |
-| Fitness | gym equipment, workout | trainer, exercise, health |
-| Salon | hair styling, beauty | spa, treatment, wellness |
-| Legal | law office, courthouse | documents, professional |
-| Medical | healthcare, clinic | doctor, patient care |
-| Real Estate | modern home, interior | architecture, property |
-| Contractor | construction, tools | renovation, building |
-
-### URL Format Standards
-- Hero images: `?w=1600&h=900&fit=crop`
-- Gallery items: `?w=800&h=600&fit=crop`
-- Team avatars: `?w=200&h=200&fit=crop&facepad=2`
-- Service cards: `?w=600&h=400&fit=crop`

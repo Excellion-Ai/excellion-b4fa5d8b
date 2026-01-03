@@ -61,30 +61,11 @@ async function logApiUsage(
   }
 }
 
-const SYSTEM_PROMPT = `# EXCELLION MASTER BLUEPRINT
+const SYSTEM_PROMPT = `You are Excellion's Builder-of-Builders, an expert system that converts vague app ideas into production-ready blueprints with INDUSTRY-SPECIFIC content for ANY business type.
 
-## PERSONA
-You are a Senior UI/UX Architect and Lead Frontend Engineer at Excellion. Your designs are modern, pixel-perfect, and mobile-first. You create high-end, AI-powered websites for business customers.
-
-## DESIGN SYSTEM
-- **Framework**: Tailwind CSS (Utility-first)
-- **Theme**: Default to "High-Tech Dark Mode" (Slate-900 backgrounds, slate-50 text, gold accents)
-- **Typography**: Use 'Inter' from Google Fonts with professional hierarchy (generous py-20 padding)
-- **Interactivity**: Subtle hover animations, soft shadows, professional transitions
-
-## ARCHITECTURE
-- **Database**: Supabase for all data storage (core table: generated_sites)
-- **Logic**: All AI generation via Edge Functions - never run heavy logic in frontend
-- **Model**: Gemini 2.5 Flash for generation, Gemini 2.5 Flash Image for visuals
-- **Workflow**: Two-step process: 1. Architect Plan (UX Flow) -> 2. Developer Implementation
-
-## SECURITY
-- Always implement Row Level Security (RLS) so users only access their own sites
-- Store all API keys in Edge Function Secrets - NEVER hardcode in UI
-
----
-
-You are Excellion's Builder-of-Builders, an expert system that converts vague app ideas into production-ready blueprints with INDUSTRY-SPECIFIC content for ANY business type.
+====================================
+## UNIVERSAL INDUSTRY DETECTION
+====================================
 
 You MUST detect and tailor content for ANY business - from 3D printing to zoos, AI consulting to yoga studios. Categories:
 
@@ -527,9 +508,9 @@ OUTPUT FORMAT (JSON):
             "type": "cta",
             "label": "CTA",
             "content": {
-              "headline": "Let's Work Together",
-              "subheadline": "We're here to help. Reach out today.",
-              "ctaText": "Contact Us",
+              "headline": "Ready to get started?",
+              "subheadline": "Contact us today",
+              "ctaText": "Get in Touch",
               "ctaLink": "/contact"
             }
           }
@@ -638,7 +619,7 @@ OUTPUT FORMAT (JSON):
               "subtitle": "We'd love to hear from you",
               "email": "hello@business.com",
               "phone": "(555) 123-4567",
-              "address": "123 Main Street, Your City, State 12345"
+              "address": "123 Main Street, City, State 12345"
             }
           },
           {
@@ -782,7 +763,7 @@ serve(async (req) => {
 
     console.log("Authenticated user:", user.id);
 
-    const { idea, target, complexity, projectId } = await req.json();
+    const { idea, target, complexity } = await req.json();
 
     if (!idea) {
       return new Response(
@@ -794,90 +775,6 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
-    }
-
-    // Fetch knowledge base entries for this project AND global instructions
-    let knowledgeContext = "";
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const kbSupabaseUrl = Deno.env.get("SUPABASE_URL")!;
-
-    // First, fetch global instructions (applies to all projects)
-    try {
-      console.log('Fetching global instructions...');
-      const globalResponse = await fetch(
-        `${kbSupabaseUrl}/rest/v1/knowledge_base?name=eq.__global_instructions__&select=content&limit=1`,
-        {
-          headers: {
-            "apikey": serviceKey,
-            "Authorization": `Bearer ${serviceKey}`,
-          },
-        }
-      );
-      
-      if (globalResponse.ok) {
-        const globalEntries = await globalResponse.json();
-        if (globalEntries && globalEntries.length > 0 && globalEntries[0].content) {
-          knowledgeContext += `
-====================================
-## GLOBAL INSTRUCTIONS (Applies to ALL Projects)
-====================================
-
-${globalEntries[0].content}
-
-`;
-          console.log('Found global instructions');
-        }
-      }
-    } catch (globalError) {
-      console.error("Error fetching global instructions:", globalError);
-    }
-
-    // Then fetch project-specific knowledge
-    if (projectId) {
-      try {
-        console.log(`Fetching knowledge base for project: ${projectId}`);
-        
-        const kbResponse = await fetch(
-          `${kbSupabaseUrl}/rest/v1/knowledge_base?project_id=eq.${projectId}&select=name,content`,
-          {
-            headers: {
-              "apikey": serviceKey,
-              "Authorization": `Bearer ${serviceKey}`,
-            },
-          }
-        );
-        
-        if (kbResponse.ok) {
-          const kbEntries = await kbResponse.json();
-          // Filter out global instructions from project entries
-          const projectEntries = kbEntries.filter((e: { name: string }) => e.name !== '__global_instructions__');
-          if (projectEntries && projectEntries.length > 0) {
-            knowledgeContext += `
-====================================
-## PROJECT KNOWLEDGE BASE
-====================================
-
-The user has provided the following brand guidelines, documentation, and reference materials.
-IMPORTANT: Use this knowledge to inform your design decisions, copy, and overall approach.
-
-${projectEntries.map((entry: { name: string; content: string }) => `
-### ${entry.name}
-${entry.content}
-`).join('\n')}
-`;
-            console.log(`Found ${projectEntries.length} knowledge base entries`);
-          }
-        }
-      } catch (kbError) {
-        console.error("Error fetching knowledge base:", kbError);
-      }
-    }
-
-    // Build enhanced system prompt with knowledge context
-    let enhancedSystemPrompt = SYSTEM_PROMPT;
-    if (knowledgeContext) {
-      enhancedSystemPrompt += `\n${knowledgeContext}`;
-      console.log("Added knowledge base context to prompt");
     }
 
     const userPrompt = `
@@ -901,7 +798,7 @@ Generate the complete blueprint and build prompt. Return ONLY valid JSON matchin
       body: JSON.stringify({
         model: 'openai/gpt-5',
         messages: [
-          { role: 'system', content: enhancedSystemPrompt },
+          { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt }
         ],
         max_completion_tokens: 8000,

@@ -4,10 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
-import { registerServiceWorker } from "./lib/serviceWorker";
 
-registerServiceWorker();
-
+// Use concurrent rendering for better performance
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <HelmetProvider>

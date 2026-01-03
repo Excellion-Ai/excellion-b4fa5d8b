@@ -1,12 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Monitor, Smartphone, Tablet, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure, TestimonialItem, PricingTier, FAQItem, StatsItem, ServiceItem, TeamMember, GalleryItem, PortfolioItem, TestimonialsContent, PricingContent, FAQContent, ContactContent, CTAContent, StatsContent, BusinessIntent } from '@/types/site-spec';
+import { SiteSpec, SiteSection, SiteTheme, AnimationConfig, LayoutStructure } from '@/types/site-spec';
 import { SiteTheme as AppSiteTheme, HeroContent, FeaturesContent, FeatureItem } from '@/types/app-spec';
 import { MotionIntensity } from '@/lib/motion/types';
 import { MotionProvider, MotionWrapper, SignatureFlourish, BackgroundAccent } from '@/components/motion';
-import { VisualModeProvider } from './VisualModeContext';
-import { VisualEditPanel } from './VisualEditPanel';
 import {
   DndContext,
   closestCenter,
@@ -35,47 +33,30 @@ import {
   ServicesSection,
   TeamSection,
   PortfolioSection,
-  BeforeAfterSection,
-  ProcessStepsSection,
-  LogoGridSection,
 } from './preview-sections';
 import { EditableText } from './EditableText';
 import { DraggableSection } from './DraggableSection';
 import { AnimatedSection } from './AnimatedSection';
 import { BentoLayout, BentoPillNav } from './layouts/BentoLayout';
+
 import { LayeredLayout, LayeredNav, LayeredHero, LayeredContentSection } from './layouts/LayeredLayout';
 import { HorizontalLayout, HorizontalNav, HorizontalHero, HorizontalScrollSection, HorizontalCard } from './layouts/HorizontalLayout';
 import { ScrollAnimation, StaggerContainer } from './animations/ScrollAnimations';
 
 type PreviewMode = 'desktop' | 'tablet' | 'mobile';
 
-export type RenderMode = 'preview' | 'editor';
-
 interface SiteRendererProps {
   siteSpec: SiteSpec | null;
   pageIndex?: number;
   isLoading: boolean;
-  renderMode?: RenderMode;
-  businessIntent?: BusinessIntent;
   onUpdateHeroContent?: (sectionId: string, field: keyof HeroContent, value: string) => void;
   onUpdateFeaturesContent?: (sectionId: string, field: keyof FeaturesContent, value: string) => void;
   onUpdateFeatureItem?: (sectionId: string, index: number, field: keyof FeatureItem, value: string) => void;
-  onUpdateTestimonialsContent?: (sectionId: string, field: keyof TestimonialsContent, value: string) => void;
-  onUpdateTestimonialItem?: (sectionId: string, index: number, field: keyof TestimonialItem, value: string) => void;
-  onUpdatePricingContent?: (sectionId: string, field: keyof PricingContent, value: string) => void;
-  onUpdatePricingItem?: (sectionId: string, index: number, field: keyof PricingTier, value: string | string[]) => void;
-  onUpdateFAQContent?: (sectionId: string, field: keyof FAQContent, value: string) => void;
-  onUpdateFAQItem?: (sectionId: string, index: number, field: keyof FAQItem, value: string) => void;
-  onUpdateContactContent?: (sectionId: string, field: keyof ContactContent, value: string) => void;
-  onUpdateCTAContent?: (sectionId: string, field: keyof CTAContent, value: string) => void;
-  onUpdateStatsContent?: (sectionId: string, field: keyof StatsContent, value: string) => void;
-  onUpdateStatsItem?: (sectionId: string, index: number, field: keyof StatsItem, value: string) => void;
   onUpdateSiteName?: (name: string) => void;
   onUpdateNavItem?: (index: number, label: string) => void;
   onReorderSections?: (oldIndex: number, newIndex: number) => void;
   onPageChange?: (pageIndex: number) => void;
   motionIntensity?: MotionIntensity;
-  visualModeActive?: boolean;
 }
 
 // Convert SiteSpec theme to app-spec compatible theme
@@ -105,27 +86,14 @@ export function SiteRenderer({
   siteSpec, 
   pageIndex = 0,
   isLoading,
-  renderMode = 'preview',
-  businessIntent: propBusinessIntent,  // NUCLEAR FIX: Make optional, read from siteSpec
   onUpdateHeroContent,
   onUpdateFeaturesContent,
   onUpdateFeatureItem,
-  onUpdateTestimonialsContent,
-  onUpdateTestimonialItem,
-  onUpdatePricingContent,
-  onUpdatePricingItem,
-  onUpdateFAQContent,
-  onUpdateFAQItem,
-  onUpdateContactContent,
-  onUpdateCTAContent,
-  onUpdateStatsContent,
-  onUpdateStatsItem,
   onUpdateSiteName,
   onUpdateNavItem,
   onReorderSections,
   onPageChange,
   motionIntensity = 'premium',
-  visualModeActive = false,
 }: SiteRendererProps) {
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
   const [horizontalScrollIndex, setHorizontalScrollIndex] = useState(0);
@@ -148,12 +116,11 @@ export function SiteRenderer({
 
   // Only show loading screen if there's no existing site to display
   // Keep showing the current preview while generating updates
-  // Use min-height to prevent CLS when switching states
   if (!siteSpec) {
     if (isLoading) {
       return (
-        <div className="h-full min-h-[400px] flex items-center justify-center bg-muted/20">
-          <div className="text-center space-y-3 min-h-[80px]">
+        <div className="h-full flex items-center justify-center bg-muted/20">
+          <div className="text-center space-y-3">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
             <p className="text-sm text-muted-foreground">Generating site...</p>
           </div>
@@ -162,8 +129,8 @@ export function SiteRenderer({
     }
     
     return (
-      <div className="h-full min-h-[400px] flex items-center justify-center bg-muted/20">
-        <div className="text-center text-muted-foreground max-w-xs min-h-[80px]">
+      <div className="h-full flex items-center justify-center bg-muted/20">
+        <div className="text-center text-muted-foreground max-w-xs">
           <Monitor className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">
             Describe your business to see a live preview.
@@ -173,29 +140,8 @@ export function SiteRenderer({
     );
   }
 
-  // SPEC-FIRST: Read businessIntent from siteSpec, use as-is
-  const businessIntent = siteSpec?.businessIntent || 'service_business';
-  console.log('[SiteRenderer] Using businessIntent:', businessIntent);
-
-  // SPEC-FIRST: No fallback filling - render exactly what AI provided
-  const effectiveSpec = siteSpec;
-
-  const { theme, pages = [], navigation = [], footer, layoutStructure } = effectiveSpec;
-  const currentPage = pages.length > 0 ? (pages[pageIndex] || pages[0]) : null;
-  
-  // Show loading state if pages haven't been parsed yet during streaming
-  // Use min-height to prevent CLS when switching states
-  if (!currentPage) {
-    return (
-      <div className="h-full min-h-[400px] flex items-center justify-center bg-muted/20">
-        <div className="text-center space-y-3 min-h-[80px]">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground">Building your pages...</p>
-        </div>
-      </div>
-    );
-  }
-  
+  const { theme, pages, navigation, footer, layoutStructure } = siteSpec;
+  const currentPage = pages[pageIndex] || pages[0];
   const legacyTheme = toSectionTheme(theme);
   const isEditable = !!onUpdateHeroContent;
 
@@ -237,7 +183,7 @@ export function SiteRenderer({
   const renderSection = (section: SiteSection, asTile: boolean = false) => {
     const key = section.id;
     const legacySection = toLegacySection(section);
-    const commonProps = { section: legacySection, theme: legacyTheme, asTile, renderMode };
+    const commonProps = { section: legacySection, theme: legacyTheme, asTile };
 
     let sectionContent;
     switch (section.type) {
@@ -260,47 +206,19 @@ export function SiteRenderer({
         );
         break;
       case 'pricing':
-        sectionContent = (
-          <PricingSection 
-            {...commonProps}
-            onUpdateContent={onUpdatePricingContent ? (field, value) => onUpdatePricingContent(section.id, field, value) : undefined}
-            onUpdateItem={onUpdatePricingItem ? (index, field, value) => onUpdatePricingItem(section.id, index, field, value) : undefined}
-          />
-        );
+        sectionContent = <PricingSection {...commonProps} />;
         break;
       case 'testimonials':
-        sectionContent = (
-          <TestimonialsSection 
-            {...commonProps}
-            onUpdateContent={onUpdateTestimonialsContent ? (field, value) => onUpdateTestimonialsContent(section.id, field, value) : undefined}
-            onUpdateItem={onUpdateTestimonialItem ? (index, field, value) => onUpdateTestimonialItem(section.id, index, field, value) : undefined}
-          />
-        );
+        sectionContent = <TestimonialsSection {...commonProps} />;
         break;
       case 'faq':
-        sectionContent = (
-          <FAQSection 
-            {...commonProps}
-            onUpdateContent={onUpdateFAQContent ? (field, value) => onUpdateFAQContent(section.id, field, value) : undefined}
-            onUpdateItem={onUpdateFAQItem ? (index, field, value) => onUpdateFAQItem(section.id, index, field, value) : undefined}
-          />
-        );
+        sectionContent = <FAQSection {...commonProps} />;
         break;
       case 'contact':
-        sectionContent = (
-          <ContactSection 
-            {...commonProps}
-            onUpdateContent={onUpdateContactContent ? (field, value) => onUpdateContactContent(section.id, field, value) : undefined}
-          />
-        );
+        sectionContent = <ContactSection {...commonProps} />;
         break;
       case 'cta':
-        sectionContent = (
-          <CTASection 
-            {...commonProps}
-            onUpdateContent={onUpdateCTAContent ? (field, value) => onUpdateCTAContent(section.id, field, value) : undefined}
-          />
-        );
+        sectionContent = <CTASection {...commonProps} />;
         break;
       case 'stats':
         sectionContent = (
@@ -312,8 +230,6 @@ export function SiteRenderer({
               textColor: theme.textColor,
             }}
             asTile={asTile}
-            onUpdateContent={onUpdateStatsContent ? (field, value) => onUpdateStatsContent(section.id, field, value) : undefined}
-            onUpdateItem={onUpdateStatsItem ? (index, field, value) => onUpdateStatsItem(section.id, index, field, value) : undefined}
           />
         );
         break;
@@ -329,15 +245,6 @@ export function SiteRenderer({
       case 'portfolio':
         sectionContent = <PortfolioSection {...commonProps} />;
         break;
-      case 'before-after':
-        sectionContent = <BeforeAfterSection {...commonProps} />;
-        break;
-      case 'process-steps':
-        sectionContent = <ProcessStepsSection {...commonProps} />;
-        break;
-      case 'logo-grid':
-        sectionContent = <LogoGridSection {...commonProps} />;
-        break;
       default:
         sectionContent = <CustomSection {...commonProps} />;
     }
@@ -351,8 +258,7 @@ export function SiteRenderer({
     );
   };
 
-  const sections = currentPage.sections ?? [];
-  const sectionIds = sections.map((s) => s.id);
+  const sectionIds = currentPage?.sections?.map((s) => s.id) || [];
 
   // Determine layout type
   const useBentoLayout = layoutStructure === 'bento';
@@ -754,135 +660,70 @@ export function SiteRenderer({
     ?.flatMap(s => (s.content as any)?.items?.map((i: any) => i.title || i.name) || [])
     ?.filter(Boolean) || [];
 
-  // Handler for visual edit property changes
-  const handleVisualPropertyChange = (sectionId: string, itemIndex: number | undefined, key: string, value: string) => {
-    // Route the property change to the appropriate update handler
-    const section = currentPage?.sections?.find(s => s.id === sectionId);
-    if (!section) return;
-
-    // Map common keys to their handlers
-    if (section.type === 'hero') {
-      if (['headline', 'subheadline', 'ctaText', 'secondaryCtaText', 'backgroundImage'].includes(key)) {
-        onUpdateHeroContent?.(sectionId, key as keyof HeroContent, value);
-      }
-    } else if (section.type === 'features') {
-      if (itemIndex !== undefined) {
-        onUpdateFeatureItem?.(sectionId, itemIndex, key as keyof FeatureItem, value);
-      } else if (['title', 'subtitle'].includes(key)) {
-        onUpdateFeaturesContent?.(sectionId, key as keyof FeaturesContent, value);
-      }
-    } else if (section.type === 'testimonials') {
-      if (itemIndex !== undefined) {
-        onUpdateTestimonialItem?.(sectionId, itemIndex, key as keyof TestimonialItem, value);
-      } else if (['title', 'subtitle'].includes(key)) {
-        onUpdateTestimonialsContent?.(sectionId, key as keyof TestimonialsContent, value);
-      }
-    } else if (section.type === 'pricing') {
-      if (itemIndex !== undefined) {
-        onUpdatePricingItem?.(sectionId, itemIndex, key as keyof PricingTier, value);
-      } else if (['title', 'subtitle'].includes(key)) {
-        onUpdatePricingContent?.(sectionId, key as keyof PricingContent, value);
-      }
-    } else if (section.type === 'faq') {
-      if (itemIndex !== undefined) {
-        onUpdateFAQItem?.(sectionId, itemIndex, key as keyof FAQItem, value);
-      } else if (['title', 'subtitle'].includes(key)) {
-        onUpdateFAQContent?.(sectionId, key as keyof FAQContent, value);
-      }
-    } else if (section.type === 'contact') {
-      if (['title', 'subtitle', 'email', 'phone', 'address'].includes(key)) {
-        onUpdateContactContent?.(sectionId, key as keyof ContactContent, value);
-      }
-    } else if (section.type === 'cta') {
-      if (['headline', 'subheadline', 'buttonText', 'buttonLink'].includes(key)) {
-        onUpdateCTAContent?.(sectionId, key as keyof CTAContent, value);
-      }
-    } else if (section.type === 'stats') {
-      if (itemIndex !== undefined) {
-        onUpdateStatsItem?.(sectionId, itemIndex, key as keyof StatsItem, value);
-      } else if (['title', 'subtitle'].includes(key)) {
-        onUpdateStatsContent?.(sectionId, key as keyof StatsContent, value);
-      }
-    }
-  };
-
   return (
-    <VisualModeProvider 
-      active={visualModeActive} 
-      onPropertyChange={handleVisualPropertyChange}
+    <MotionProvider
+      businessName={siteSpec.name}
+      description={siteSpec.description}
+      services={derivedServices}
+      intensity={motionIntensity}
     >
-      <MotionProvider
-        businessName={siteSpec.name}
-        description={siteSpec.description}
-        services={derivedServices}
-        intensity={motionIntensity}
-      >
-        <div className="h-full flex flex-col">
-          {/* Preview controls - fixed height to prevent CLS */}
-          <div className="h-10 min-h-[40px] border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
-            <span className="text-xs text-muted-foreground min-w-[120px]">
-              {siteSpec.name || 'Generated Site'}
-              {layoutStructure && layoutStructure !== 'standard' && (
-                <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-primary/20 text-primary">
-                  {layoutStructure.toUpperCase()}
-                </span>
-              )}
-              {isEditable && <span className="ml-2 text-primary">(Click text to edit, drag to reorder)</span>}
-              {visualModeActive && (
-                <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-blue-500/20 text-blue-400">
-                  VISUAL EDIT MODE
-                </span>
-              )}
-            </span>
-            <div className="flex items-center gap-1">
-              <Button
-                variant={previewMode === 'desktop' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => setPreviewMode('desktop')}
-              >
-                <Monitor className="w-3.5 h-3.5" />
-              </Button>
-              <Button
-                variant={previewMode === 'tablet' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => setPreviewMode('tablet')}
-              >
-                <Tablet className="w-3.5 h-3.5" />
-              </Button>
-              <Button
-                variant={previewMode === 'mobile' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => setPreviewMode('mobile')}
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Preview content */}
-          <div className="flex-1 overflow-auto bg-[#1a1a1a] flex justify-center p-4">
-            <div 
-              className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300 relative`}
+      <div className="h-full flex flex-col">
+        {/* Preview controls */}
+        <div className="h-10 border-b border-border/50 px-3 flex items-center justify-between bg-background/80 flex-shrink-0">
+          <span className="text-xs text-muted-foreground">
+            {siteSpec.name || 'Generated Site'}
+            {layoutStructure && layoutStructure !== 'standard' && (
+              <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-primary/20 text-primary">
+                {layoutStructure.toUpperCase()}
+              </span>
+            )}
+            {isEditable && <span className="ml-2 text-primary">(Click text to edit, drag to reorder)</span>}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant={previewMode === 'desktop' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPreviewMode('desktop')}
             >
-              {useBentoLayout 
-                ? renderBentoLayout() 
-                : useLayeredLayout
-                  ? renderLayeredLayout()
-                  : useHorizontalLayout
-                    ? renderHorizontalLayout()
-                    : renderStandardLayout()
-              }
-            </div>
+              <Monitor className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant={previewMode === 'tablet' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPreviewMode('tablet')}
+            >
+              <Tablet className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant={previewMode === 'mobile' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setPreviewMode('mobile')}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+            </Button>
           </div>
         </div>
 
-        {/* Visual Edit Panel */}
-        <VisualEditPanel />
-      </MotionProvider>
-    </VisualModeProvider>
+        {/* Preview content */}
+        <div className="flex-1 overflow-auto bg-[#1a1a1a] flex justify-center p-4">
+          <div 
+            className={`${previewWidth[previewMode]} h-fit min-h-full rounded-lg overflow-hidden shadow-2xl transition-all duration-300 relative`}
+          >
+            {useBentoLayout 
+              ? renderBentoLayout() 
+              : useLayeredLayout
+                ? renderLayeredLayout()
+                : useHorizontalLayout
+                  ? renderHorizontalLayout()
+                  : renderStandardLayout()
+            }
+          </div>
+        </div>
+      </div>
+    </MotionProvider>
   );
 }
 

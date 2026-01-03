@@ -34,61 +34,67 @@ const PRICE_IDS = {
 const aiBuilderPlans = [
   {
     name: "Free",
-    description: "Try it before you pay.",
+    description: "Discover what Excellion can do",
     monthlyPrice: 0,
     yearlyPrice: 0,
     credits: 20,
     features: [
-      "1 draft-only project (can't publish)",
-      "Generate a full website draft for your business",
-      "Edit content + layout in Studio",
+      "1 project (draft-only)",
+      "Drafts + editing in Studio",
+      "Basic templates",
+      "Mobile responsive editing",
+      "Community support/docs",
     ],
     note: "Publishing requires Starter or higher.",
-    cta: "Start Free",
+    cta: "Get Started",
     highlighted: false,
   },
   {
     name: "Starter",
-    description: "Get your website live.",
+    description: "Launch your first website",
     monthlyPrice: 15,
     yearlyPrice: 150,
-    credits: 200,
+    credits: 50,
     features: [
-      "Publish your site + connect your domain",
-      "Enough build credits for a full site + key edits",
-      "Basic SEO + simple traffic stats",
+      "1 published site (custom domain)",
+      "No watermark",
+      "Basic SEO (Title/Meta/OG)",
+      "Simple analytics (views/visitors)",
     ],
-    cta: "Get Starter",
+    cta: "Get Started",
     highlighted: false,
   },
   {
     name: "Pro",
-    description: "More building power + better features.",
+    description: "For serious builders",
     monthlyPrice: 29,
     yearlyPrice: 290,
-    credits: 500,
+    credits: 100,
     badge: "Best Seller",
     features: [
-      "More build credits for more edits and improvements",
-      "Add payments, bookings, and email signups (integrations)",
-      "More advanced sections (pricing, gallery, menus, etc.)",
+      "Unlimited drafts + 1 published site",
+      "Integrations: Stripe, Calendly, Mailchimp",
+      "Advanced components: pricing, CMS, galleries",
       "Code export (Annual only)",
     ],
-    cta: "Get Pro",
+    cta: "Get Started",
     highlighted: true,
   },
   {
     name: "Agency",
-    description: "For people building lots of sites.",
+    description: "For teams managing clients",
     monthlyPrice: 129,
     yearlyPrice: 1290,
-    credits: 3000,
+    credits: 500,
     features: [
-      "Highest build credits for high volume work",
-      "Multiple team seats",
-      "White-label options + code export",
+      "10 published sites",
+      "White-label dashboard",
+      "Team seats + roles",
+      "Client management & billing transfer",
+      "Priority build queue",
+      "Full code export included",
     ],
-    cta: "Get Agency",
+    cta: "Get Started",
     highlighted: false,
   },
 ];
@@ -239,16 +245,16 @@ const BuilderPricing = () => {
           </div>
 
           {/* Sprint Pass Banner */}
-          <div id="sprint-pass" className="mb-8 p-5 rounded-xl bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 max-w-3xl mx-auto scroll-mt-24">
+          <div className="mb-8 p-5 rounded-xl bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 max-w-3xl mx-auto">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-accent/20">
                   <Zap className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 30 days</p>
+                  <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 7 days</p>
                   <p className="text-sm text-muted-foreground">
-                    Launch fast for cheap. Includes 150 build credits for generating + modifying your website for 30 days. Renews to Pro ($29/mo) unless you cancel.
+                    First-time only. Includes +50 credits. Full Pro access for 7 days. Auto-renews to Pro $29/mo unless you cancel.
                   </p>
                 </div>
               </div>
@@ -269,19 +275,19 @@ const BuilderPricing = () => {
                     <ul className="space-y-3 mt-4">
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">150 build credits for generating + modifying your website</span>
+                        <span className="text-foreground">+50 credits (rollover forever)</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">One Sprint Pass per account</span>
+                        <span className="text-foreground">Publishing + custom domain enabled during Sprint</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">Renews to Pro ($29/mo) after 30 days unless you cancel</span>
+                        <span className="text-foreground">First-time only — one Sprint Pass per account</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground text-sm">Cancel anytime before renewal</span>
+                        <span className="text-foreground">Auto-renews to Pro ($29/mo) after 7 days unless canceled</span>
                       </li>
                     </ul>
                     <div className="mt-6">
@@ -339,40 +345,37 @@ const BuilderPricing = () => {
             </div>
             
             {/* How Credits Work Link */}
-            <div className="flex flex-col items-center gap-1">
-              <Dialog open={creditsModalOpen} onOpenChange={setCreditsModalOpen}>
-                <DialogTrigger asChild>
-                  <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Info className="w-4 h-4" />
-                    How credits work
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>How Build Credits Work</DialogTitle>
-                  </DialogHeader>
-                  <ul className="space-y-4 mt-4">
-                    <li className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                      <span className="text-foreground">Build credits = what you spend to generate and modify your website.</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                      <span className="text-foreground">Credits roll over forever (no expiry, no cap).</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                      <span className="text-foreground">Free credits are always spendable on Free (draft-only).</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                      <span className="text-foreground">Paid credits are spendable only while a paid plan is active; if you cancel, your paid credits are preserved and unlock again when you resubscribe.</span>
-                    </li>
-                  </ul>
-                </DialogContent>
-              </Dialog>
-              <span className="text-xs text-muted-foreground">Build credits = what you spend to generate and modify your website.</span>
-            </div>
+            <Dialog open={creditsModalOpen} onOpenChange={setCreditsModalOpen}>
+              <DialogTrigger asChild>
+                <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Info className="w-4 h-4" />
+                  How credits work
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>How Credits Work</DialogTitle>
+                </DialogHeader>
+                <ul className="space-y-4 mt-4">
+                  <li className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                    <span className="text-foreground">Credits are used for AI actions (generation, rewrites, rebuilds).</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                    <span className="text-foreground">Credits roll over forever (no expiry, no cap).</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                    <span className="text-foreground">Free credits are always spendable on Free (draft-only).</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                    <span className="text-foreground">Paid credits are spendable only while a paid plan is active; if you cancel, your paid credits are preserved and unlock again when you resubscribe.</span>
+                  </li>
+                </ul>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* AI Builder Cards */}
@@ -411,7 +414,7 @@ const BuilderPricing = () => {
                   <div className="mt-2">
                     <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent/15 text-accent px-2.5 py-1 rounded-full">
                       <Sparkles className="w-3 h-3" />
-                      {plan.credits} build credits / month (rolls over)
+                      {plan.credits} AI credits/mo • rollover
                     </span>
                   </div>
                   <div className="h-6 mt-2">

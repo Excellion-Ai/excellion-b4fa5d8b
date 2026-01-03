@@ -1,5 +1,8 @@
 project_id = "twaljzxgbbkhhjjocilf"
 
+[functions.send-survey-sms]
+verify_jwt = false
+
 [functions.send-survey-email]
 verify_jwt = false
 
@@ -61,37 +64,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.generate-niche-image]
-verify_jwt = false
-
-[functions.prompt-refiner]
-verify_jwt = false
-
-[functions.github-oauth-callback]
-verify_jwt = false
-
-[functions.sync-to-github]
-verify_jwt = false
-
-[functions.deploy-to-vercel]
-verify_jwt = false
-
-[functions.stripe-webhook]
-verify_jwt = false
-
-[functions.credit-rollover-cron]
-verify_jwt = false
-
-[functions.customer-portal]
-verify_jwt = false
-
-[functions.purge-old-analytics]
-verify_jwt = false
-
-[functions.generate-site]
-verify_jwt = true
-
-[functions.classify-business]
-verify_jwt = false
-
-[functions.audit-sitespec]
 verify_jwt = false

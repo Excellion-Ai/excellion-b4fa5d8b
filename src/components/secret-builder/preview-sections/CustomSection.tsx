@@ -30,7 +30,7 @@ export function CustomSection({ section, theme }: CustomSectionProps) {
       return (
         <section 
           id={section.id}
-          className="py-16 px-6 min-h-[200px] contain-layout"
+          className="py-16 px-6"
           style={{ 
             backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff'
           }}
@@ -53,7 +53,7 @@ export function CustomSection({ section, theme }: CustomSectionProps) {
   return (
     <section 
       id={section.id}
-      className="py-16 px-6 min-h-[150px] contain-layout"
+      className="py-16 px-6"
       style={{ 
         backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff'
       }}
@@ -78,7 +78,7 @@ export function CustomSection({ section, theme }: CustomSectionProps) {
               color: isDarkMode ? '#9ca3af' : '#6b7280'
             }}
           >
-            {section.description || content?.body || ''}
+            {section.description || content?.body || 'Custom section content goes here.'}
           </p>
         </ScrollAnimation>
       </div>

@@ -163,7 +163,7 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
             subtitle: 'Book your table and let us create a memorable evening',
             phone: '(555) 123-4567',
             email: 'reservations@restaurant.com',
-            address: '123 Main Street, Your City, State 12345',
+            address: '123 Culinary Street, Downtown',
           },
         },
       ],

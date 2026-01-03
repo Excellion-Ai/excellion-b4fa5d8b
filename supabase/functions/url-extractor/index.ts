@@ -6,139 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// ============ RATE LIMITING ============
-
-const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per minute per IP
-
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-function checkRateLimit(ip: string): { allowed: boolean; remaining: number; resetIn: number } {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-  
-  // Clean up expired entries periodically
-  if (rateLimitMap.size > 1000) {
-    for (const [key, value] of rateLimitMap.entries()) {
-      if (now > value.resetTime) {
-        rateLimitMap.delete(key);
-      }
-    }
-  }
-  
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - 1, resetIn: RATE_LIMIT_WINDOW_MS };
-  }
-  
-  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
-    return { allowed: false, remaining: 0, resetIn: record.resetTime - now };
-  }
-  
-  record.count++;
-  return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - record.count, resetIn: record.resetTime - now };
-}
-
-function getClientIP(req: Request): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-         req.headers.get("x-real-ip") ||
-         req.headers.get("cf-connecting-ip") ||
-         "unknown";
-}
-
-// ============ SSRF PROTECTION ============
-
-// Private/internal IP ranges that should be blocked
-const BLOCKED_IP_PATTERNS = [
-  /^127\./,                          // Loopback
-  /^10\./,                           // Private Class A
-  /^172\.(1[6-9]|2[0-9]|3[0-1])\./,  // Private Class B
-  /^192\.168\./,                     // Private Class C
-  /^169\.254\./,                     // Link-local
-  /^0\./,                            // Current network
-  /^224\./,                          // Multicast
-  /^240\./,                          // Reserved
-  /^255\./,                          // Broadcast
-  /^::1$/,                           // IPv6 loopback
-  /^fe80:/i,                         // IPv6 link-local
-  /^fc00:/i,                         // IPv6 unique local
-  /^fd00:/i,                         // IPv6 unique local
-];
-
-// Blocked hostnames
-const BLOCKED_HOSTNAMES = [
-  'localhost',
-  'localhost.localdomain',
-  '0.0.0.0',
-  '[::]',
-  '[::1]',
-  'metadata.google.internal',        // GCP metadata
-  '169.254.169.254',                 // Cloud metadata endpoints
-  'metadata.google',
-  'metadata',
-];
-
-// Blocked URL schemes
-const ALLOWED_SCHEMES = ['http:', 'https:'];
-
-// Validate URL is safe from SSRF attacks
-async function validateUrlSecurity(urlString: string): Promise<{ safe: boolean; error?: string }> {
-  try {
-    const url = new URL(urlString);
-    
-    // Check scheme
-    if (!ALLOWED_SCHEMES.includes(url.protocol)) {
-      return { safe: false, error: `Blocked scheme: ${url.protocol}` };
-    }
-    
-    // Check for blocked hostnames
-    const hostname = url.hostname.toLowerCase();
-    if (BLOCKED_HOSTNAMES.includes(hostname)) {
-      return { safe: false, error: `Blocked hostname: ${hostname}` };
-    }
-    
-    // Check for IP address patterns in hostname
-    for (const pattern of BLOCKED_IP_PATTERNS) {
-      if (pattern.test(hostname)) {
-        return { safe: false, error: `Blocked internal IP: ${hostname}` };
-      }
-    }
-    
-    // Resolve DNS to check for internal IPs
-    try {
-      const addresses = await Deno.resolveDns(hostname, "A");
-      for (const ip of addresses) {
-        for (const pattern of BLOCKED_IP_PATTERNS) {
-          if (pattern.test(ip)) {
-            console.warn(`DNS resolution blocked: ${hostname} -> ${ip}`);
-            return { safe: false, error: `Hostname resolves to blocked IP: ${ip}` };
-          }
-        }
-      }
-    } catch (dnsError) {
-      // If DNS resolution fails for non-IP hostnames, allow the request
-      // The fetch will fail naturally if the host doesn't exist
-      console.log(`DNS resolution skipped for ${hostname}:`, dnsError);
-    }
-    
-    // Check for suspicious port numbers (only allow 80, 443, or default)
-    const port = url.port;
-    if (port && !['80', '443', ''].includes(port)) {
-      // Allow common web ports but block internal service ports
-      const portNum = parseInt(port, 10);
-      if (portNum < 1024 || [3000, 5000, 8080, 8443, 9000].includes(portNum)) {
-        // These are common dev ports, allow them for flexibility
-      } else if (portNum > 49151) {
-        return { safe: false, error: `Suspicious port number: ${port}` };
-      }
-    }
-    
-    return { safe: true };
-  } catch (parseError) {
-    return { safe: false, error: `Invalid URL: ${parseError}` };
-  }
-}
-
 // Color extraction patterns
 const HEX_COLOR_REGEX = /#([0-9A-Fa-f]{3,8})\b/g;
 const RGB_COLOR_REGEX = /rgba?\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/gi;
@@ -587,31 +454,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Rate limiting check
-  const clientIP = getClientIP(req);
-  const rateLimit = checkRateLimit(clientIP);
-  
-  if (!rateLimit.allowed) {
-    console.warn(`Rate limit exceeded for IP: ${clientIP}`);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: "Rate limit exceeded. Please try again later.",
-        retryAfter: Math.ceil(rateLimit.resetIn / 1000)
-      }),
-      { 
-        status: 429, 
-        headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json",
-          "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)),
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": String(Math.ceil(rateLimit.resetIn / 1000))
-        } 
-      }
-    );
-  }
-
   try {
     const { url } = await req.json();
     
@@ -626,16 +468,6 @@ serve(async (req) => {
     let normalizedUrl = url.trim();
     if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
       normalizedUrl = `https://${normalizedUrl}`;
-    }
-    
-    // SSRF protection: validate URL before fetching
-    const securityCheck = await validateUrlSecurity(normalizedUrl);
-    if (!securityCheck.safe) {
-      console.warn(`SSRF blocked: ${normalizedUrl} - ${securityCheck.error}`);
-      return new Response(
-        JSON.stringify({ success: false, error: "URL not allowed for security reasons" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
     
     const result = await extractFromUrl(normalizedUrl);

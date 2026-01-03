@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Palette, Moon, Sun, Monitor, Loader2, Check } from 'lucide-react';
+import { Palette, Moon, Sun, Monitor, Loader2 } from 'lucide-react';
 
 const THEME_OPTIONS = [
   { id: 'dark', label: 'Dark', icon: Moon, description: 'Dark mode for low-light environments' },
@@ -16,7 +16,6 @@ const THEME_OPTIONS = [
 export default function AppearanceSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [accent, setAccent] = useState<string | null>(null);
 
@@ -89,8 +88,6 @@ export default function AppearanceSettings() {
 
       if (error) throw error;
       toast.success('Appearance settings saved');
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
     } catch (error) {
       console.error('Error saving settings:', error);
       toast.error('Failed to save settings');
@@ -159,13 +156,9 @@ export default function AppearanceSettings() {
             </div>
           </RadioGroup>
 
-          <Button onClick={handleSave} disabled={saving || saved}>
-            {saving ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : saved ? (
-              <Check className="w-4 h-4 mr-2 text-green-500" />
-            ) : null}
-            {saved ? 'Changes Saved' : 'Save Preferences'}
+          <Button onClick={handleSave} disabled={saving}>
+            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Save Preferences
           </Button>
         </CardContent>
       </Card>

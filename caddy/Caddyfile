@@ -22,50 +22,6 @@
         on_demand
     }
     
-    # Security headers
-    header {
-        # Prevent clickjacking
-        X-Frame-Options "DENY"
-        # Prevent MIME type sniffing
-        X-Content-Type-Options "nosniff"
-        # XSS Protection (legacy browsers)
-        X-XSS-Protection "1; mode=block"
-        # Referrer policy
-        Referrer-Policy "strict-origin-when-cross-origin"
-        # Content Security Policy
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.hcaptcha.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.unsplash.com https://*.hcaptcha.com wss://*.supabase.co; frame-src https://hcaptcha.com https://challenges.cloudflare.com https://js.stripe.com https://www.google.com; frame-ancestors 'none';"
-        # Permissions Policy
-        Permissions-Policy "camera=(), microphone=(), geolocation=()"
-    }
-    
-    # HTTP/2 Server Push hints for critical resources
-    # These Link headers trigger HTTP/2 push for key assets
-    @html_push {
-        path / *.html
-        not path *.js *.css *.woff* *.png *.jpg *.svg
-    }
-    header @html_push Link "</assets/index.css>; rel=preload; as=style, </assets/index.js>; rel=preload; as=script; crossorigin, </fonts/inter-var.woff2>; rel=preload; as=font; type=font/woff2; crossorigin"
-    
-    # Early Hints (103) for even faster resource discovery
-    header @html_push {
-        Link "</assets/index.css>; rel=preload; as=style"
-    }
-    
-    # Cache static assets for 1 year (immutable)
-    @static {
-        path *.js *.css *.woff *.woff2 *.ttf *.eot *.ico *.png *.jpg *.jpeg *.webp *.avif *.gif *.svg *.mp4 *.webm
-    }
-    header @static Cache-Control "public, max-age=31536000, immutable"
-    
-    # Cache HTML for 10 minutes with revalidation
-    @html {
-        path / *.html
-    }
-    header @html Cache-Control "public, max-age=600, stale-while-revalidate=86400"
-    
-    # Enable compression
-    encode gzip zstd
-    
     reverse_proxy https://twaljzxgbbkhhjjocilf.supabase.co/functions/v1/serve-site {
         header_up Host {upstream_hostport}
         header_up X-Forwarded-Host {host}
@@ -85,44 +41,6 @@
     tls {
         on_demand
     }
-    
-    # Security headers
-    header {
-        # Prevent clickjacking
-        X-Frame-Options "DENY"
-        # Prevent MIME type sniffing
-        X-Content-Type-Options "nosniff"
-        # XSS Protection (legacy browsers)
-        X-XSS-Protection "1; mode=block"
-        # Referrer policy
-        Referrer-Policy "strict-origin-when-cross-origin"
-        # Content Security Policy
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.hcaptcha.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.unsplash.com https://*.hcaptcha.com wss://*.supabase.co; frame-src https://hcaptcha.com https://challenges.cloudflare.com https://js.stripe.com https://www.google.com; frame-ancestors 'none';"
-        # Permissions Policy
-        Permissions-Policy "camera=(), microphone=(), geolocation=()"
-    }
-    
-    # HTTP/2 Server Push hints for critical resources
-    @html_push {
-        path / *.html
-        not path *.js *.css *.woff* *.png *.jpg *.svg
-    }
-    header @html_push Link "</assets/index.css>; rel=preload; as=style, </assets/index.js>; rel=preload; as=script; crossorigin, </fonts/inter-var.woff2>; rel=preload; as=font; type=font/woff2; crossorigin"
-    
-    # Cache static assets for 1 year (immutable)
-    @static {
-        path *.js *.css *.woff *.woff2 *.ttf *.eot *.ico *.png *.jpg *.jpeg *.webp *.avif *.gif *.svg *.mp4 *.webm
-    }
-    header @static Cache-Control "public, max-age=31536000, immutable"
-    
-    # Cache HTML for 10 minutes with revalidation
-    @html {
-        path / *.html
-    }
-    header @html Cache-Control "public, max-age=600, stale-while-revalidate=86400"
-    
-    # Enable compression
-    encode gzip zstd
     
     reverse_proxy https://twaljzxgbbkhhjjocilf.supabase.co/functions/v1/serve-site {
         header_up Host {upstream_hostport}

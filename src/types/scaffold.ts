@@ -67,12 +67,6 @@ export type CtaRules = {
   urgency?: string;
 };
 
-export type CustomTheme = {
-  primaryColor: string;
-  accentColor: string;
-  backgroundMode: 'dark' | 'light';
-};
-
 export type GenerationScaffold = {
   category: string;
   goal: string;
@@ -82,7 +76,6 @@ export type GenerationScaffold = {
   forbiddenPhrases: string[];
   integrations: IntegrationType[];
   layoutSignature?: string;
-  customTheme?: CustomTheme | null;
 };
 
 export type PageMap = Record<string, Array<SiteSection['type']>>;

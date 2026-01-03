@@ -1,79 +1,51 @@
-import { SiteSection, SiteTheme } from '@/types/app-spec';
-import { TestimonialsContent, TestimonialItem } from '@/types/site-spec';
-import { Star, ExternalLink } from 'lucide-react';
+import { SiteSection, SiteTheme, TestimonialsContent, TestimonialItem } from '@/types/app-spec';
+import { Star } from 'lucide-react';
 import { ScrollAnimation } from '../animations/ScrollAnimations';
-import { EditableText } from '../EditableText';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { SetupRequiredCard } from '../SetupRequiredCard';
-import type { RenderMode } from '../SiteRenderer';
 
 interface TestimonialsSectionProps {
   section: SiteSection;
   theme: SiteTheme;
-  renderMode?: RenderMode;
-  onUpdateContent?: (field: keyof TestimonialsContent, value: string) => void;
-  onUpdateItem?: (index: number, field: keyof TestimonialItem, value: string) => void;
 }
 
-// Preview-mode fallback testimonials
-const PREVIEW_FALLBACK_TESTIMONIALS: TestimonialItem[] = [
-  { name: 'Sarah M.', role: 'Verified Customer', quote: 'Absolutely fantastic experience! The team went above and beyond to deliver exactly what I needed. Highly recommend!', rating: 5 },
-  { name: 'James K.', role: 'Local Business Owner', quote: 'Professional, reliable, and great results. I\'ve been a repeat customer for over a year now.', rating: 5 },
-  { name: 'Maria L.', role: 'Happy Client', quote: 'The quality exceeded my expectations. Will definitely be coming back for more!', rating: 5 },
+const defaultTestimonials: TestimonialItem[] = [
+  { 
+    name: 'Sarah Johnson', 
+    role: 'CEO, TechCorp',
+    quote: 'This product has completely transformed how we work. Highly recommended!',
+    rating: 5
+  },
+  { 
+    name: 'Michael Chen', 
+    role: 'Designer, Creative Studio',
+    quote: "The best investment we've made this year. The results speak for themselves.",
+    rating: 5
+  },
+  { 
+    name: 'Emily Davis', 
+    role: 'Founder, StartupXYZ',
+    quote: "Outstanding service and incredible results. We couldn't be happier.",
+    rating: 5
+  },
 ];
 
-export function TestimonialsSection({ section, theme, renderMode = 'preview', onUpdateContent, onUpdateItem }: TestimonialsSectionProps) {
+export function TestimonialsSection({ section, theme }: TestimonialsSectionProps) {
   const content = section.content as TestimonialsContent | undefined;
   const isDark = theme.darkMode ?? theme.backgroundStyle === 'dark';
   
-  const title = content?.title || '';
-  const subtitle = content?.subtitle || '';
-  const rawItems = content?.items || [];
+  const title = content?.title || section.label || 'What Our Customers Say';
+  const subtitle = content?.subtitle || section.description || 'Trusted by thousands of happy customers';
+  const items = content?.items || defaultTestimonials;
 
-  // In preview mode, use fallback content instead of SetupRequiredCard
-  const items = rawItems.length === 0 && renderMode === 'preview' ? PREVIEW_FALLBACK_TESTIMONIALS : rawItems;
-
-  // Only show SetupRequiredCard in editor mode when content is empty
-  if (rawItems.length === 0 && renderMode === 'editor') {
-    return (
-      <section 
-        id={section.id}
-        className="py-10 md:py-14 px-4 md:px-8 w-full min-h-[300px] contain-layout"
-        style={{ 
-          backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
-        }}
-      >
-        <SetupRequiredCard 
-          type="testimonials"
-          sectionLabel={section.label || 'Customer Reviews'}
-          onGenerate={() => {
-            toast.info('Generate testimonials via the chat panel', {
-              description: 'Ask the AI to "add customer testimonials" to generate reviews for your business.',
-            });
-          }}
-          onManualAdd={() => {
-            toast.info('Connect Google Reviews', {
-              description: 'To import real reviews, visit your Google Business Profile and copy your reviews, or use a reviews widget service.',
-              duration: 8000,
-            });
-          }}
-        />
-      </section>
-    );
-  }
-
-  const handleConnectGoogleReviews = () => {
-    toast.info('Google Reviews Integration', {
-      description: 'To import real reviews, visit your Google Business Profile and copy your reviews, or use a reviews widget service like EmbedSocial or Elfsight.',
-      duration: 8000,
-    });
-  };
+  // Determine optimal column count based on number of items
+  const itemCount = items.length;
+  const gridCols = itemCount === 1 ? 'grid-cols-1' 
+    : itemCount === 2 ? 'grid-cols-1 md:grid-cols-2' 
+    : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
 
   return (
     <section 
       id={section.id}
-      className="py-10 md:py-14 px-4 md:px-8 w-full min-h-[300px] contain-layout"
+      className="py-10 md:py-14 px-4 md:px-8 w-full"
       style={{ 
         backgroundColor: isDark ? '#0a0a0a' : '#f9fafb'
       }}
@@ -81,71 +53,30 @@ export function TestimonialsSection({ section, theme, renderMode = 'preview', on
       <div className="w-full">
         <div className="text-center mb-6 md:mb-8">
           <ScrollAnimation animation="fade-up">
-            {onUpdateContent ? (
-              <EditableText
-                value={title || 'What Our Customers Say'}
-                onSave={(val) => onUpdateContent('title', val)}
-                as="h2"
-                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
-                style={{ 
-                  fontFamily: theme.fontHeading || 'system-ui',
-                  color: isDark ? '#ffffff' : '#111827'
-                }}
-              />
-            ) : (
-              <h2 
-                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
-                style={{ 
-                  fontFamily: theme.fontHeading || 'system-ui',
-                  color: isDark ? '#ffffff' : '#111827'
-                }}
-              >
-                {title || 'What Our Customers Say'}
-              </h2>
-            )}
-          </ScrollAnimation>
-          <ScrollAnimation animation="fade-up" delay={100}>
-            {onUpdateContent ? (
-              <EditableText
-                value={subtitle || 'Real feedback from real customers'}
-                onSave={(val) => onUpdateContent('subtitle', val)}
-                as="p"
-                className="text-base md:text-lg max-w-2xl mx-auto px-4"
-                style={{ 
-                  fontFamily: theme.fontBody || 'system-ui',
-                  color: isDark ? '#9ca3af' : '#6b7280'
-                }}
-              />
-            ) : (
-              <p 
-                className="text-base md:text-lg max-w-2xl mx-auto px-4"
-                style={{ 
-                  fontFamily: theme.fontBody || 'system-ui',
-                  color: isDark ? '#9ca3af' : '#6b7280'
-                }}
-              >
-                {subtitle || 'Real feedback from real customers'}
-              </p>
-            )}
-          </ScrollAnimation>
-          
-          <ScrollAnimation animation="fade-up" delay={150}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleConnectGoogleReviews}
-              className="mt-4 gap-2"
-              style={{
-                borderColor: theme.primaryColor,
-                color: theme.primaryColor,
+            <h2 
+              className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
+              style={{ 
+                fontFamily: theme.fontHeading || 'system-ui',
+                color: isDark ? '#ffffff' : '#111827'
               }}
             >
-              <ExternalLink className="w-4 h-4" />
-              Connect Google Reviews
-            </Button>
+              {title}
+            </h2>
+          </ScrollAnimation>
+          <ScrollAnimation animation="fade-up" delay={100}>
+            <p 
+              className="text-base md:text-lg max-w-2xl mx-auto px-4"
+              style={{ 
+                fontFamily: theme.fontBody || 'system-ui',
+                color: isDark ? '#9ca3af' : '#6b7280'
+              }}
+            >
+              {subtitle}
+            </p>
           </ScrollAnimation>
         </div>
         
+        {/* Use CSS Grid with proper min-width to prevent narrow cards */}
         <div 
           className="grid gap-6 md:gap-8 w-full"
           style={{
@@ -177,31 +108,16 @@ export function TestimonialsSection({ section, theme, renderMode = 'preview', on
                     ))}
                   </div>
                 )}
-                {onUpdateItem ? (
-                  <EditableText
-                    value={testimonial.quote}
-                    onSave={(val) => onUpdateItem(index, 'quote', val)}
-                    as="p"
-                    multiline
-                    className="text-base md:text-lg mb-6 flex-grow leading-relaxed break-words"
-                    style={{ 
-                      fontFamily: theme.fontBody || 'system-ui',
-                      color: isDark ? '#d1d5db' : '#4b5563',
-                      overflowWrap: 'anywhere'
-                    }}
-                  />
-                ) : (
-                  <p 
-                    className="text-base md:text-lg mb-6 flex-grow leading-relaxed break-words"
-                    style={{ 
-                      fontFamily: theme.fontBody || 'system-ui',
-                      color: isDark ? '#d1d5db' : '#4b5563',
-                      overflowWrap: 'anywhere'
-                    }}
-                  >
-                    "{testimonial.quote}"
-                  </p>
-                )}
+                <p 
+                  className="text-base md:text-lg mb-6 flex-grow leading-relaxed break-words"
+                  style={{ 
+                    fontFamily: theme.fontBody || 'system-ui',
+                    color: isDark ? '#d1d5db' : '#4b5563',
+                    overflowWrap: 'anywhere'
+                  }}
+                >
+                  "{testimonial.quote}"
+                </p>
                 <div className="flex items-center gap-3 mt-auto pt-4 border-t" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }}>
                   <div 
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0"
@@ -210,49 +126,23 @@ export function TestimonialsSection({ section, theme, renderMode = 'preview', on
                     {testimonial.name.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    {onUpdateItem ? (
-                      <>
-                        <EditableText
-                          value={testimonial.name}
-                          onSave={(val) => onUpdateItem(index, 'name', val)}
-                          as="p"
-                          className="font-semibold text-sm truncate"
-                          style={{ 
-                            fontFamily: theme.fontHeading || 'system-ui',
-                            color: isDark ? '#ffffff' : '#111827'
-                          }}
-                        />
-                        <EditableText
-                          value={testimonial.role}
-                          onSave={(val) => onUpdateItem(index, 'role', val)}
-                          as="p"
-                          className="text-xs truncate"
-                          style={{ 
-                            color: isDark ? '#9ca3af' : '#6b7280'
-                          }}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <p 
-                          className="font-semibold text-sm truncate"
-                          style={{ 
-                            fontFamily: theme.fontHeading || 'system-ui',
-                            color: isDark ? '#ffffff' : '#111827'
-                          }}
-                        >
-                          {testimonial.name}
-                        </p>
-                        <p 
-                          className="text-xs truncate"
-                          style={{ 
-                            color: isDark ? '#9ca3af' : '#6b7280'
-                          }}
-                        >
-                          {testimonial.role}
-                        </p>
-                      </>
-                    )}
+                    <p 
+                      className="font-semibold text-sm truncate"
+                      style={{ 
+                        fontFamily: theme.fontHeading || 'system-ui',
+                        color: isDark ? '#ffffff' : '#111827'
+                      }}
+                    >
+                      {testimonial.name}
+                    </p>
+                    <p 
+                      className="text-xs truncate"
+                      style={{ 
+                        color: isDark ? '#9ca3af' : '#6b7280'
+                      }}
+                    >
+                      {testimonial.role}
+                    </p>
                   </div>
                 </div>
               </div>

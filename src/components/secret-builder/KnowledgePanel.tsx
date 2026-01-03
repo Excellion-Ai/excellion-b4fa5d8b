@@ -113,12 +113,6 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
     
     setInstructionsSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Please sign in to save');
-        return;
-      }
-
       // Check if entry exists
       const { data: existing } = await supabase
         .from('knowledge_base')
@@ -141,7 +135,6 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
           .from('knowledge_base')
           .insert({
             project_id: projectId,
-            user_id: user.id,
             name: CUSTOM_INSTRUCTIONS_KEY,
             content: customInstructions,
             file_type: 'instructions',
@@ -249,17 +242,10 @@ export function KnowledgePanel({ projectId }: KnowledgePanelProps) {
 
     setIsSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Please sign in to save');
-        return;
-      }
-
       const { error } = await supabase
         .from('knowledge_base')
         .insert({
           project_id: projectId,
-          user_id: user.id,
           name: newEntry.name.trim(),
           content: newEntry.content.trim(),
           file_type: 'text',

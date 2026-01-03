@@ -51,12 +51,9 @@ export function AnimatedPlaceholder({
   }, [displayText, isDeleting, currentIndex, suggestions, typingSpeed, deletingSpeed, pauseDuration]);
 
   return (
-    <span className="text-muted-foreground/60 inline-flex items-center min-h-[1.5em]">
-      <span className="min-w-[1ch]">{displayText || "\u00A0"}</span>
-      <span 
-        className="inline-block w-[2px] h-[1em] bg-muted-foreground/60 ml-0.5 animate-blink flex-shrink-0" 
-        style={{ contain: 'layout size' }}
-      />
+    <span className="text-muted-foreground/60">
+      {displayText}
+      <span className="inline-block w-[2px] h-[1.1em] bg-muted-foreground/60 ml-0.5 animate-blink align-middle translate-y-[1px]" />
     </span>
   );
 }

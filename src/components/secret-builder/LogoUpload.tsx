@@ -45,18 +45,9 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
 
     setIsUploading(true);
     try {
-      // Get current user for user-specific logo storage
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-      
-      if (!userId) {
-        toast.error('Please log in to upload logos');
-        return;
-      }
-
       const fileExt = file.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
-      const filePath = `logos/${userId}/${fileName}`;
+      const filePath = `logos/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('builder-images')
@@ -96,13 +87,12 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
 
     setIsGenerating(true);
     try {
-      // Use generate-image function with type: 'logo' to save to logos/ folder
+      // Use generate-image function which saves to the generated/ folder for the library
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: { 
           prompt: `Minimalist professional logo design: ${logoPrompt}. Simple, clean, iconic, suitable for a brand logo, white or transparent background, vector-style.`,
           width: 512,
-          height: 512,
-          type: 'logo'
+          height: 512
         }
       });
 

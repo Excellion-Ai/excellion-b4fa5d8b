@@ -9,8 +9,8 @@ const scrollBarVariants = cva(
     variants: {
       variant: {
         default: "",
-        gold: "bg-zinc-800/50 rounded-full",
-        purple: "bg-muted/50 rounded-full",
+        gold: "bg-zinc-900 rounded-full",
+        purple: "bg-zinc-900/50 rounded-full",
       },
       orientation: {
         vertical: "h-full w-2.5 border-l border-l-transparent p-[1px]",
@@ -31,7 +31,7 @@ const scrollThumbVariants = cva(
       variant: {
         default: "bg-border",
         gold: "bg-orange-500 hover:bg-orange-400 transition-colors",
-        purple: "bg-purple-500/70 hover:bg-purple-500 transition-colors",
+        purple: "bg-purple-950 hover:bg-purple-900 transition-colors",
       },
     },
     defaultVariants: {
@@ -50,7 +50,7 @@ const ScrollArea = React.forwardRef<
 >(({ className, children, scrollbarVariant = "purple", ...props }, ref) => (
   <ScrollAreaPrimitive.Root ref={ref} className={cn("relative overflow-hidden", className)} {...props}>
     <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">{children}</ScrollAreaPrimitive.Viewport>
-    <ScrollBar variant={scrollbarVariant} forceMount />
+    <ScrollBar variant={scrollbarVariant} />
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 ));

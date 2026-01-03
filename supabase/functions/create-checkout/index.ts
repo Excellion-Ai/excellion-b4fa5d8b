@@ -9,15 +9,13 @@ const corsHeaders = {
 
 // Price IDs for subscription plans
 const PRICE_IDS = {
-  starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",  // $15/mo - 200 credits
-  pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",       // $29/mo - 500 credits
-  agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",   // $129/mo - 3000 credits
+  starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",  // $15/mo - 50 credits
+  pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",       // $29/mo - 100 credits
+  agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",   // $129/mo - 500 credits
   // Annual prices
   starter_annual: "price_1SgKPjPCTHzXvqDgQP63Wygw",  // $156/year
   pro_annual: "price_1SgKQHPCTHzXvqDgNxuBVF8D",       // $288/year
   agency_annual: "price_1SgKQdPCTHzXvqDgCsz1sXw5",   // $1,296/year
-  // Sprint Pass - one-time $9 fee
-  sprint_fee: "price_1SgsMOPCTHzXvqDg7Q23a28h",      // $9 one-time
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
@@ -37,14 +35,8 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
     logStep("Stripe key verified");
 
-    // Create Supabase client with service role for database operations
+    // Create Supabase client
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
-    // Create Supabase client with anon key for auth
-    const supabaseAuth = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
@@ -56,7 +48,7 @@ serve(async (req) => {
 
     // Authenticate the user
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) throw new Error(`Authentication error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
@@ -64,7 +56,17 @@ serve(async (req) => {
 
     // Parse request body
     const { priceId, planType } = await req.json();
-    logStep("Request body parsed", { priceId, planType });
+    
+    // Validate the price ID
+    let selectedPriceId = priceId;
+    if (!selectedPriceId && planType) {
+      selectedPriceId = PRICE_IDS[planType as keyof typeof PRICE_IDS];
+    }
+    
+    if (!selectedPriceId) {
+      throw new Error("Invalid plan type or price ID");
+    }
+    logStep("Price ID selected", { selectedPriceId, planType });
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -79,128 +81,8 @@ serve(async (req) => {
       logStep("No existing customer, will create during checkout");
     }
 
-    const origin = req.headers.get("origin") || "https://excellionweb.com";
-
-    // Handle Sprint Pass checkout specially
-    if (planType === "sprint") {
-      logStep("Processing Sprint Pass checkout");
-
-      // Check if user has already used Sprint Pass
-      const { data: userCredits, error: creditsError } = await supabaseClient
-        .from("user_credits")
-        .select("sprint_pass_used")
-        .eq("user_id", user.id)
-        .single();
-
-      if (creditsError && creditsError.code !== "PGRST116") {
-        logStep("Error checking sprint pass status", { error: creditsError.message });
-        throw new Error("Failed to check Sprint Pass eligibility");
-      }
-
-      if (userCredits?.sprint_pass_used) {
-        logStep("User has already used Sprint Pass");
-        throw new Error("Sprint Pass can only be used once per account");
-      }
-
-      // Create Sprint Pass checkout session
-      // Pro subscription with 7-day trial + $9 one-time Sprint fee
-      const session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        customer_email: customerId ? undefined : user.email,
-        line_items: [
-          {
-            // Pro subscription with 7-day trial
-            price: PRICE_IDS.pro,
-            quantity: 1,
-          },
-          {
-            // One-time Sprint Pass fee ($9)
-            price: PRICE_IDS.sprint_fee,
-            quantity: 1,
-          },
-        ],
-        mode: "subscription",
-        subscription_data: {
-          trial_period_days: 30,
-          metadata: {
-            is_sprint: "true",
-            user_id: user.id,
-          },
-        },
-        success_url: `${origin}/pricing?success=true&sprint=true`,
-        cancel_url: `${origin}/pricing?canceled=true`,
-        metadata: {
-          user_id: user.id,
-          plan_type: "sprint",
-        },
-      });
-      logStep("Sprint Pass checkout session created", { sessionId: session.id, url: session.url });
-
-      // Mark Sprint Pass as used and grant +150 credits
-      const sprintExpiresAt = new Date();
-      sprintExpiresAt.setDate(sprintExpiresAt.getDate() + 30);
-
-      // Update user_credits to mark sprint as used and set expiry
-      const { error: updateError } = await supabaseClient
-        .from("user_credits")
-        .update({
-          sprint_pass_used: true,
-          sprint_expires_at: sprintExpiresAt.toISOString(),
-          current_plan: "sprint",
-        })
-        .eq("user_id", user.id);
-
-      if (updateError) {
-        logStep("Warning: Failed to mark sprint as used", { error: updateError.message });
-        // Don't throw - let checkout proceed, we'll handle this on webhook/success
-      }
-
-      // Grant +150 credits for Sprint Pass
-      const { data: currentCredits } = await supabaseClient
-        .from("user_credits")
-        .select("balance, total_earned")
-        .eq("user_id", user.id)
-        .single();
-
-      if (currentCredits) {
-        await supabaseClient
-          .from("user_credits")
-          .update({
-            balance: currentCredits.balance + 150,
-            total_earned: currentCredits.total_earned + 150,
-          })
-          .eq("user_id", user.id);
-
-        // Log the transaction
-        await supabaseClient.from("credit_transactions").insert({
-          user_id: user.id,
-          amount: 150,
-          type: "bonus",
-          action_type: "sprint_pass",
-          description: "Sprint Pass bonus - 150 credits",
-        });
-
-        logStep("Sprint Pass credits granted", { credits: 150 });
-      }
-
-      return new Response(JSON.stringify({ url: session.url }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // Standard subscription checkout
-    let selectedPriceId = priceId;
-    if (!selectedPriceId && planType) {
-      selectedPriceId = PRICE_IDS[planType as keyof typeof PRICE_IDS];
-    }
-
-    if (!selectedPriceId) {
-      throw new Error("Invalid plan type or price ID");
-    }
-    logStep("Price ID selected", { selectedPriceId, planType });
-
     // Create checkout session
+    const origin = req.headers.get("origin") || "https://excellionweb.com";
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,

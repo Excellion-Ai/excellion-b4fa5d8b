@@ -48,8 +48,7 @@ export function useNicheImageGeneration() {
           niche: detectedNiche,
           imageType,
           customPrompt,
-          count,
-          saveToLibrary: true // Manual hook usage always saves to library
+          count
         }
       });
 

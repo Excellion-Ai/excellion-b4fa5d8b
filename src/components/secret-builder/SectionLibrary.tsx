@@ -35,9 +35,14 @@ const SECTION_TEMPLATES: SectionTemplate[] = [
     icon: <Grid3X3 className="h-5 w-5" />,
     description: 'Showcase your product features or services',
     defaultContent: {
-      title: 'What We Offer',
-      subtitle: '',
-      items: [],
+      title: 'Our Features',
+      subtitle: 'Everything you need to succeed',
+      items: [
+        { title: 'Feature One', description: 'Description of your first feature' },
+        { title: 'Feature Two', description: 'Description of your second feature' },
+        { title: 'Feature Three', description: 'Description of your third feature' },
+        { title: 'Feature Four', description: 'Description of your fourth feature' },
+      ],
     } as FeaturesContent,
   },
   {
@@ -96,7 +101,7 @@ const SECTION_TEMPLATES: SectionTemplate[] = [
       subtitle: 'We\'d love to hear from you',
       email: 'hello@example.com',
       phone: '+1 (555) 123-4567',
-      address: '123 Main Street, Your City, State 12345',
+      address: '123 Main Street, City, State 12345',
       formFields: ['name', 'email', 'message'],
     } as ContactContent,
   },
@@ -106,10 +111,10 @@ const SECTION_TEMPLATES: SectionTemplate[] = [
     icon: <Zap className="h-5 w-5" />,
     description: 'Encourage visitors to take action',
     defaultContent: {
-      headline: 'Let\'s Work Together',
-      subheadline: 'We\'re here to help. Reach out today.',
+      headline: 'Ready to Get Started?',
+      subheadline: 'Join thousands of satisfied customers today.',
       ctas: [
-        { label: 'Contact Us', href: '#contact', variant: 'primary' },
+        { label: 'Start Free Trial', href: '#', variant: 'primary' },
       ],
     } as CTAContent,
   },

@@ -10,15 +10,14 @@ interface CreditBalanceProps {
 }
 
 export function CreditBalance({ className }: CreditBalanceProps) {
-  const { balance, loading, authenticated, plan, totalEarned } = useCredits();
+  const { balance, loading, authenticated, plan } = useCredits();
   const navigate = useNavigate();
 
-  // Reserve consistent space for all states to prevent CLS
   if (loading) {
     return (
-      <div className={cn("flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse min-w-[90px] min-h-[32px]", className)}>
-        <Coins className="h-3.5 w-3.5 shrink-0" />
-        <span className="w-8">...</span>
+      <div className={cn("flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse", className)}>
+        <Coins className="h-3.5 w-3.5" />
+        <span>...</span>
       </div>
     );
   }
@@ -29,45 +28,29 @@ export function CreditBalance({ className }: CreditBalanceProps) {
         variant="ghost"
         size="sm"
         onClick={() => navigate('/auth')}
-        className={cn("text-xs gap-1.5 min-w-[90px] min-h-[32px]", className)}
+        className={cn("text-xs gap-1.5", className)}
       >
-        <Coins className="h-3.5 w-3.5 shrink-0" />
-        <span className="hidden sm:inline">Sign in for credits</span>
-        <span className="sm:hidden">Sign in</span>
+        <Coins className="h-3.5 w-3.5" />
+        Sign in for credits
       </Button>
     );
   }
 
-  // Calculate percentage based on totalEarned (or use balance as max if totalEarned is 0)
-  const maxCredits = totalEarned > 0 ? totalEarned : Math.max(balance, 100);
-  const percentage = maxCredits > 0 ? (balance / maxCredits) * 100 : 0;
-  
-  // Color classes based on percentage thresholds
-  const getColorClasses = () => {
-    if (percentage >= 50) {
-      return "text-green-600 dark:text-green-400 border-green-500/50";
-    } else if (percentage >= 25) {
-      return "text-yellow-600 dark:text-yellow-400 border-yellow-500/50";
-    } else {
-      return "text-red-600 dark:text-red-400 border-red-500/50";
-    }
-  };
-
+  const isLow = balance <= 5;
   const isEmpty = balance <= 0;
-  const colorClasses = getColorClasses();
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="outline"
+            variant={isEmpty ? "destructive" : isLow ? "outline" : "ghost"}
             size="sm"
             onClick={() => navigate('/billing')}
             className={cn(
-              "text-xs gap-1 sm:gap-1.5 font-medium px-2 sm:px-3 min-w-[90px] min-h-[32px]",
-              colorClasses,
+              "text-xs gap-1 sm:gap-1.5 font-medium px-2 sm:px-3",
               isEmpty && "animate-pulse",
+              isLow && !isEmpty && "border-yellow-500/50 text-yellow-600 dark:text-yellow-400",
               className
             )}
           >
@@ -91,12 +74,14 @@ export function CreditBalance({ className }: CreditBalanceProps) {
               <li>• Export: {CREDIT_COSTS.export} credits</li>
               <li>• Publish: Free</li>
             </ul>
-            <p className={cn("font-medium pt-1", colorClasses)}>
-              {Math.round(percentage)}% remaining
-            </p>
             {isEmpty && (
               <p className="text-destructive font-medium pt-1">
                 No credits remaining. Click to add more.
+              </p>
+            )}
+            {isLow && !isEmpty && (
+              <p className="text-yellow-600 dark:text-yellow-400 font-medium pt-1">
+                Low credits. Click to add more.
               </p>
             )}
             <p className="text-muted-foreground pt-1">

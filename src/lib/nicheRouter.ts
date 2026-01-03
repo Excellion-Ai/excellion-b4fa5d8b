@@ -1,7 +1,4 @@
 // Universal Niche Router - Deterministic category + goal + integrations detection
-// SPEC-FIRST: No content schemas or fallbacks
-
-import { HeroVariant, FeaturesVariant } from '@/types/app-spec';
 
 export type NicheCategory = 
   | 'ecommerce' 
@@ -15,10 +12,7 @@ export type NicheCategory =
   | 'real_estate' 
   | 'nonprofit' 
   | 'portfolio' 
-  | 'community'
-  | 'fitness'
-  | 'dental'
-  | 'contractor';
+  | 'community';
 
 export type ConversionGoal = 
   | 'buy_now' 
@@ -45,11 +39,9 @@ export type NicheRoute = {
   integrationsNeeded: IntegrationType[];
   confidence: number;
   clarifyingQuestions?: string[];
-  preferredHeroVariant?: HeroVariant;
-  preferredFeaturesVariant?: FeaturesVariant;
 };
 
-// Goal word patterns
+// Goal word patterns - highest priority
 const GOAL_PATTERNS: { pattern: RegExp; goal: ConversionGoal }[] = [
   { pattern: /\b(order|checkout|buy|cart|purchase|shop)\b/i, goal: 'buy_now' },
   { pattern: /\b(book|appointment|schedule|session|consult)\b/i, goal: 'book' },
@@ -62,16 +54,6 @@ const GOAL_PATTERNS: { pattern: RegExp; goal: ConversionGoal }[] = [
 
 // Category detection patterns
 const CATEGORY_PATTERNS: { patterns: RegExp[]; category: NicheCategory; baseIntegrations: IntegrationType[] }[] = [
-  {
-    category: 'dental',
-    patterns: [/\b(dentist|dental|orthodont|teeth|oral|smile)\b/i],
-    baseIntegrations: ['calendly', 'maps', 'email_capture'],
-  },
-  {
-    category: 'contractor',
-    patterns: [/\b(contractor|construction|builder|remodel|renovation|handyman|carpent)\b/i],
-    baseIntegrations: ['calendly', 'maps', 'email_capture'],
-  },
   {
     category: 'ecommerce',
     patterns: [/\b(store|shop|products?|merch|sell|ecommerce|retail)\b/i],
@@ -89,13 +71,8 @@ const CATEGORY_PATTERNS: { patterns: RegExp[]; category: NicheCategory; baseInte
   },
   {
     category: 'local_service',
-    patterns: [/\b(plumb|hvac|electric|clean|repair|lawn|landscap|roof|paint|detail|mobile|service)\b/i],
+    patterns: [/\b(plumb|hvac|electric|clean|repair|lawn|landscap|roof|paint|handyman|detail|mobile|service|contractor)\b/i],
     baseIntegrations: ['calendly', 'maps', 'email_capture'],
-  },
-  {
-    category: 'real_estate',
-    patterns: [/\b(real estate|property|listing|home|house|apartment|realtor|broker|mortgage|realty)\b/i],
-    baseIntegrations: ['email_capture', 'maps', 'calendly'],
   },
   {
     category: 'saas',
@@ -118,6 +95,11 @@ const CATEGORY_PATTERNS: { patterns: RegExp[]; category: NicheCategory; baseInte
     baseIntegrations: ['stripe', 'email_capture'],
   },
   {
+    category: 'real_estate',
+    patterns: [/\b(real estate|property|listing|home|house|apartment|realtor|broker|mortgage)\b/i],
+    baseIntegrations: ['email_capture', 'maps', 'calendly'],
+  },
+  {
     category: 'nonprofit',
     patterns: [/\b(nonprofit|charity|foundation|ngo|cause|mission|volunteer|donate)\b/i],
     baseIntegrations: ['stripe', 'email_capture'],
@@ -131,11 +113,6 @@ const CATEGORY_PATTERNS: { patterns: RegExp[]; category: NicheCategory; baseInte
     category: 'community',
     patterns: [/\b(community|membership|club|forum|group|network|association)\b/i],
     baseIntegrations: ['stripe', 'email_capture'],
-  },
-  {
-    category: 'fitness',
-    patterns: [/\b(gym|fitness|yoga|pilates|crossfit|personal train|workout|strength|boxing|martial art|athletic)\b/i],
-    baseIntegrations: ['stripe', 'calendly'],
   },
 ];
 
@@ -151,19 +128,22 @@ const INTEGRATION_KEYWORDS: { pattern: RegExp; integration: IntegrationType }[] 
 ];
 
 function detectGoal(input: string, category: NicheCategory): ConversionGoal {
+  // Restaurant-specific goal detection
   if (category === 'restaurant') {
-    if (/\b(reservation|reserve|table|book|booking)\b/i.test(input)) return 'book';
-    if (/\b(order|delivery|pickup|takeout)\b/i.test(input)) return 'buy_now';
+    if (/\b(reservation|reserve|table|book|booking)\b/i.test(input)) {
+      return 'book';
+    }
+    if (/\b(order|delivery|pickup|takeout)\b/i.test(input)) {
+      return 'buy_now'; // Online ordering
+    }
+    // Default for restaurants is to drive visits/orders
     return 'buy_now';
   }
 
-  if (category === 'fitness') {
-    if (/\b(book|class|session|schedule)\b/i.test(input)) return 'book';
-    return 'subscribe';
-  }
-
   for (const { pattern, goal } of GOAL_PATTERNS) {
-    if (pattern.test(input)) return goal;
+    if (pattern.test(input)) {
+      return goal;
+    }
   }
   return 'visit';
 }
@@ -171,7 +151,9 @@ function detectGoal(input: string, category: NicheCategory): ConversionGoal {
 function detectCategory(input: string): { category: NicheCategory; baseIntegrations: IntegrationType[] } {
   for (const { patterns, category, baseIntegrations } of CATEGORY_PATTERNS) {
     for (const pattern of patterns) {
-      if (pattern.test(input)) return { category, baseIntegrations };
+      if (pattern.test(input)) {
+        return { category, baseIntegrations };
+      }
     }
   }
   return { category: 'local_service', baseIntegrations: ['email_capture', 'maps'] };
@@ -181,7 +163,9 @@ function detectIntegrations(input: string, baseIntegrations: IntegrationType[]):
   const integrations = new Set<IntegrationType>(baseIntegrations);
   
   for (const { pattern, integration } of INTEGRATION_KEYWORDS) {
-    if (pattern.test(input)) integrations.add(integration);
+    if (pattern.test(input)) {
+      integrations.add(integration);
+    }
   }
   
   return Array.from(integrations);
@@ -190,6 +174,7 @@ function detectIntegrations(input: string, baseIntegrations: IntegrationType[]):
 function calculateConfidence(input: string, category: NicheCategory, goal: ConversionGoal): number {
   let confidence = 0.5;
   
+  // Category match adds confidence
   const categoryMatch = CATEGORY_PATTERNS.find(p => p.category === category);
   if (categoryMatch) {
     for (const pattern of categoryMatch.patterns) {
@@ -200,7 +185,12 @@ function calculateConfidence(input: string, category: NicheCategory, goal: Conve
     }
   }
   
-  if (goal !== 'visit') confidence += 0.15;
+  // Goal match adds confidence
+  if (goal !== 'visit') {
+    confidence += 0.15;
+  }
+  
+  // Longer, more specific input adds confidence
   if (input.length > 50) confidence += 0.1;
   if (input.length > 100) confidence += 0.05;
   
@@ -226,6 +216,7 @@ function generateClarifyingQuestions(confidence: number, category: NicheCategory
 export function routeNiche(input: string): NicheRoute {
   const lowerInput = input.toLowerCase();
   
+  // Detect category first so we can use category-specific goal detection
   const { category, baseIntegrations } = detectCategory(lowerInput);
   const goal = detectGoal(lowerInput, category);
   const integrationsNeeded = detectIntegrations(lowerInput, baseIntegrations);
