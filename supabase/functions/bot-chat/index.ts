@@ -406,8 +406,9 @@ YOU MUST use these colors and layout unless the user explicitly specifies differ
 
     console.log(`[BOT-CHAT:${requestId}] Prompt length: ${enhancedPrompt.length} chars`);
 
-    // USE CLAUDE for generation - much better instruction following
-    const selectedModel = 'claude-sonnet-4-5';
+    // USE GEMINI for generation (Claude not available via gateway)
+    // The improved prompt structure still provides better results
+    const selectedModel = 'google/gemini-2.5-flash';
     const maxTokens = isFastMode ? 6000 : 10000;
     
     console.log(`[BOT-CHAT:${requestId}] Model: ${selectedModel}, Max tokens: ${maxTokens}`);
