@@ -67,11 +67,42 @@ serve(async (req) => {
       console.log('[HELP-CHAT] Skipping global instructions (missing env vars)');
     }
 
+    // Master Blueprint context for architecture-aligned responses
+    const masterBlueprint = `
+## EXCELLION MASTER BLUEPRINT CONTEXT
+
+You are supporting users of Excellion Secret Builder - a high-end, AI-powered website builder.
+
+### Technical Architecture (for accurate support):
+- **Database**: Supabase (core table: generated_sites, builder_projects)
+- **AI Generation**: Handled via Edge Functions (bot-chat, generate-site, builder-agent)
+- **Models**: Gemini 2.5 Flash for site generation, Gemini 2.5 Flash Image for visuals
+- **Workflow**: Two-step process: 1. Architect Plan (UX Flow) -> 2. Developer Implementation
+
+### Design System:
+- Framework: Tailwind CSS
+- Default Theme: High-Tech Dark Mode (Slate-900 backgrounds, slate-50 text, gold accents)
+- Typography: Inter font with professional hierarchy
+
+### Key Features to Reference:
+- Three-layer image system ensures professional stock photos
+- Hero variants: split, centered, glassmorphism, minimal
+- Layout structures: Bento, F-Pattern, Editorial Split, Brutalist
+- Publishing to lovable.app subdomain
+- Custom domains for paid plans
+
+### Security:
+- Row Level Security (RLS) ensures users only access their own sites
+- All API keys stored in Edge Function Secrets
+
+When answering questions, align responses with this architecture.
+`;
+
     // Combine system prompts - global instructions enhance the base prompt
-    const basePrompt = systemPrompt || 'You are a helpful assistant.';
+    const basePrompt = systemPrompt || 'You are a helpful assistant for Excellion Secret Builder.';
     const enhancedSystemPrompt = globalInstructions 
-      ? `${basePrompt}\n\n## KNOWLEDGE BASE\nUse the following knowledge to answer questions about features, integrations, billing, and technical details:\n\n${globalInstructions}`
-      : basePrompt;
+      ? `${basePrompt}\n\n${masterBlueprint}\n\n## KNOWLEDGE BASE\nUse the following knowledge to answer questions about features, integrations, billing, and technical details:\n\n${globalInstructions}`
+      : `${basePrompt}\n\n${masterBlueprint}`;
 
     console.log('[HELP-CHAT] Calling AI with enhanced prompt');
 
