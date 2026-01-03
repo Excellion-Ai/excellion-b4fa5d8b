@@ -62,9 +62,31 @@ Respond with ONLY valid JSON, no explanation.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[CLASSIFY:${requestId}] AI error:`, response.status, errorText);
+      console.error(`[CLASSIFY:${requestId}] AI error (${response.status}):`, errorText);
       
-      // Return fallback classification
+      // Parse GPT-5 specific errors for logging
+      let errorCode = "AI_ERROR";
+      try {
+        const errorJson = JSON.parse(errorText);
+        const apiError = errorJson.error?.message || errorJson.error || "";
+        
+        if (apiError.includes("Invalid parameter: temperature")) {
+          errorCode = "GPT5_PARAM_TEMPERATURE";
+        } else if (apiError.includes("Invalid parameter: max_tokens")) {
+          errorCode = "GPT5_PARAM_MAX_TOKENS";
+        } else if (apiError.includes("model_not_found") || apiError.includes("does not exist")) {
+          errorCode = "MODEL_NOT_FOUND";
+        } else if (response.status === 429) {
+          errorCode = "RATE_LIMIT";
+        } else if (response.status === 402) {
+          errorCode = "USAGE_LIMIT";
+        }
+        console.error(`[CLASSIFY:${requestId}] Error code: ${errorCode}`);
+      } catch {
+        // Not JSON, continue with fallback
+      }
+      
+      // Return fallback classification (don't block generation)
       return new Response(JSON.stringify({
         industry: "service",
         businessModel: "SERVICE_BASED",
@@ -74,7 +96,8 @@ Respond with ONLY valid JSON, no explanation.`;
         layoutHint: "standard",
         heroVariant: "centered",
         confidenceScore: 30,
-        fallback: true
+        fallback: true,
+        errorCode
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
