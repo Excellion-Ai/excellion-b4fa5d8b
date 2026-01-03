@@ -1515,8 +1515,41 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           });
 
           if (!fetchResponse.ok) {
-            const error = await fetchResponse.json();
-            throw new Error(error.error || 'Failed to generate website');
+            const errorData = await fetchResponse.json();
+            const errorCode = errorData.code || 'UNKNOWN';
+            const errorMsg = errorData.error || 'Failed to generate website';
+            
+            // Show specific toasts based on error type
+            if (errorCode === 'RATE_LIMIT') {
+              toast.error('Rate limit exceeded', {
+                description: 'Please wait 30 seconds and try again.',
+                duration: 5000,
+              });
+            } else if (errorCode === 'USAGE_LIMIT') {
+              toast.error('Credits depleted', {
+                description: 'Add more credits to continue building.',
+                action: {
+                  label: 'Add Credits',
+                  onClick: () => window.open('/billing', '_blank'),
+                },
+              });
+            } else if (errorCode.startsWith('GPT5_')) {
+              toast.error('AI Configuration Error', {
+                description: errorMsg,
+                duration: 8000,
+              });
+              console.error(`[handleGenerate] GPT-5 error [${errorCode}]:`, errorMsg);
+            } else if (errorCode === 'CONTENT_POLICY') {
+              toast.error('Content Policy', {
+                description: 'Please modify your prompt and try again.',
+              });
+            } else if (errorCode === 'CONTEXT_LENGTH') {
+              toast.error('Prompt Too Long', {
+                description: 'Try a shorter description.',
+              });
+            }
+            
+            throw new Error(errorMsg);
           }
           
           response = fetchResponse;

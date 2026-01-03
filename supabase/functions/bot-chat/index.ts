@@ -432,21 +432,73 @@ YOU MUST use these colors and layout unless the user explicitly specifies differ
     console.log(`[BOT-CHAT:${requestId}] AI response: ${response.status} (${Date.now() - startTime}ms)`);
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[BOT-CHAT:${requestId}] AI error (${response.status}):`, errorText);
+      
+      // Parse error for GPT-5 specific issues
+      let errorMessage = "AI service error";
+      let errorCode = "AI_ERROR";
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        const apiError = errorJson.error?.message || errorJson.error || "";
+        
+        // GPT-5 specific parameter errors
+        if (apiError.includes("Invalid parameter: temperature")) {
+          errorMessage = "Model configuration error: temperature not supported";
+          errorCode = "GPT5_PARAM_TEMPERATURE";
+        } else if (apiError.includes("Invalid parameter: max_tokens")) {
+          errorMessage = "Model configuration error: use max_completion_tokens";
+          errorCode = "GPT5_PARAM_MAX_TOKENS";
+        } else if (apiError.includes("model_not_found") || apiError.includes("does not exist")) {
+          errorMessage = "Model not available. Please try again.";
+          errorCode = "MODEL_NOT_FOUND";
+        } else if (apiError.includes("context_length_exceeded")) {
+          errorMessage = "Request too large. Try a shorter prompt.";
+          errorCode = "CONTEXT_LENGTH";
+        } else if (apiError.includes("content_policy") || apiError.includes("content_filter")) {
+          errorMessage = "Content policy violation. Please modify your request.";
+          errorCode = "CONTENT_POLICY";
+        } else if (apiError) {
+          errorMessage = apiError.substring(0, 150); // Truncate long errors
+        }
+      } catch {
+        // Not JSON, use status-based fallback
+      }
+      
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+        return new Response(JSON.stringify({ 
+          error: "Rate limit exceeded. Please wait a moment and try again.",
+          code: "RATE_LIMIT",
+          retryAfter: 30
+        }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Usage limit reached" }), {
+        return new Response(JSON.stringify({ 
+          error: "Usage limit reached. Please add credits to continue.",
+          code: "USAGE_LIMIT"
+        }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const errorText = await response.text();
-      console.error(`[BOT-CHAT:${requestId}] AI error:`, errorText);
-      return new Response(JSON.stringify({ error: "AI service error" }), {
+      if (response.status === 400) {
+        return new Response(JSON.stringify({ 
+          error: errorMessage,
+          code: errorCode
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      return new Response(JSON.stringify({ 
+        error: errorMessage,
+        code: errorCode
+      }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
