@@ -126,18 +126,35 @@ ${context?.locale ? `Locale: ${context.locale}` : ''}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-lite',
+        model: 'openai/gpt-5-mini',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userMessage }
         ],
-        max_tokens: 1500,
+        max_completion_tokens: 1500,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[REFINER] AI gateway error:', response.status, errorText);
+      
+      // Parse GPT-5 specific errors for logging
+      let errorCode = "AI_ERROR";
+      try {
+        const errorJson = JSON.parse(errorText);
+        const apiError = errorJson.error?.message || errorJson.error || "";
+        if (apiError.includes("Invalid parameter: temperature")) {
+          errorCode = "GPT5_PARAM_TEMPERATURE";
+        } else if (apiError.includes("Invalid parameter: max_tokens")) {
+          errorCode = "GPT5_PARAM_MAX_TOKENS";
+        } else if (response.status === 429) {
+          errorCode = "RATE_LIMIT";
+        } else if (response.status === 402) {
+          errorCode = "USAGE_LIMIT";
+        }
+        console.error(`[REFINER] Error code: ${errorCode}`);
+      } catch {}
       
       // Fallback on error
       return new Response(JSON.stringify({
@@ -146,10 +163,11 @@ ${context?.locale ? `Locale: ${context.locale}` : ''}`;
           detectedIndustry: null,
           inferredGoals: [],
           inferredTone: 'professional',
-          assumptions: ['AI service unavailable - using original prompt'],
+          assumptions: [`AI service error (${errorCode}) - using original prompt`],
           confidence: 'low'
         },
         fallback: true,
+        errorCode,
         latencyMs: Date.now() - startTime
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
