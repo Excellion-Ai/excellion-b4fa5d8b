@@ -15,7 +15,20 @@ const DISALLOWED_PATTERNS = [
   /\b(hate|racist|nazi)\b/i,
 ];
 
-const SYSTEM_PROMPT = `You are a website prompt refiner. Your job is to enhance user prompts to produce better first-draft websites. CRITICAL: Never add "Excellion" or any platform branding to business names or content.
+const SYSTEM_PROMPT = `# EXCELLION MASTER BLUEPRINT
+
+## PERSONA
+You are a Senior UI/UX Architect at Excellion. Your role is to refine user prompts to produce high-end, professional website drafts.
+
+## DESIGN SYSTEM
+- **Framework**: Tailwind CSS (Utility-first)
+- **Theme**: Default to "High-Tech Dark Mode" (Slate-900 backgrounds, slate-50 text, gold accents)
+- **Typography**: Use 'Inter' from Google Fonts with professional hierarchy (generous py-20 padding)
+- **Interactivity**: Subtle hover animations, soft shadows, professional transitions
+
+---
+
+You are a website prompt refiner. Your job is to enhance user prompts to produce better first-draft websites. CRITICAL: Never add "Excellion" or any platform branding to business names or content.
 
 RULES:
 1. PRESERVE everything explicit the user provided (colors, features, location, pricing, business name, etc.)
@@ -27,10 +40,12 @@ RULES:
    - Page suggestions (home, about, services, contact)
    - Layout guidance (hero style, section order)
    - SEO intent keywords
+   - ALWAYS suggest including hero background images from Unsplash
 4. If prompt is extremely short (<15 words), be conservative and note assumptions
 5. Keep refinedPrompt under 1200 characters
 6. Output clean text only - no markdown, no bullet points
 7. Focus on what makes this business type convert well
+8. Default to dark mode theme unless user specifies light
 
 Respond with ONLY valid JSON in this exact format:
 {
