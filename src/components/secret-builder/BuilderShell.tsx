@@ -1450,6 +1450,37 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         throw new Error('Session expired. Please sign in again.');
       }
       
+      // Phase 3: Pre-classify the business using Claude for accurate context
+      let classification: { 
+        industry?: string; 
+        businessModel?: string;
+        primaryColor?: string;
+        secondaryColor?: string;
+        layoutHint?: string;
+        heroVariant?: string;
+      } | null = null;
+      
+      if (messages.length === 0) { // Only on first generation
+        try {
+          console.log('[handleGenerate] Running Claude-powered classification...');
+          const classifyResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/classify-business`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ prompt: executionPrompt }),
+          });
+          
+          if (classifyResponse.ok) {
+            classification = await classifyResponse.json();
+            console.log('[handleGenerate] Classification result:', classification);
+          }
+        } catch (classifyError) {
+          console.warn('[handleGenerate] Classification failed, continuing without:', classifyError);
+        }
+      }
+      
       // Fetch with retry logic for connection issues
       const maxRetries = 2;
       let lastError: Error | null = null;
@@ -1476,7 +1507,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               modelMode, 
               projectId,
               scaffold: generationScaffold,
-              speedMode: messages.length <= 1 ? 'fast' : 'normal'
+              speedMode: messages.length <= 1 ? 'fast' : 'normal',
+              classification, // Pass Claude's pre-classification to bot-chat
             }),
           });
 

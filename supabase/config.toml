@@ -89,3 +89,9 @@ verify_jwt = false
 
 [functions.generate-site]
 verify_jwt = true
+
+[functions.classify-business]
+verify_jwt = false
+
+[functions.audit-sitespec]
+verify_jwt = false
