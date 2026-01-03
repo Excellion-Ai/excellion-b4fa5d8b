@@ -101,7 +101,6 @@ import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
 import { TEMPLATES } from '@/components/secret-builder/templateSpecs';
 import { InterviewStepper } from '@/components/InterviewStepper';
 import { useInterviewIntake } from '@/hooks/useInterviewIntake';
-import { useRailwayGeneration } from '@/hooks/useRailwayGeneration';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
@@ -208,9 +207,6 @@ export default function SecretBuilderHub() {
   
   // Interview intake hook
   const interview = useInterviewIntake(idea);
-  
-  // Railway generation hook
-  const railwayGen = useRailwayGeneration();
   
   // Theme state for quick toggle
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -1168,18 +1164,13 @@ export default function SecretBuilderHub() {
                     
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    {/* Build Website button - uses original flow + Railway API in background */}
-                    <Button 
-                      onClick={() => {
-                        // Also fire Railway API in background (fire and forget)
-                        railwayGen.generateSite(idea);
-                        // Use original generation flow for navigation + progress
-                        handleGenerate();
-                      }}
-                      disabled={!idea.trim() || isGenerating}
-                      className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
-                    >
+                    <div className="flex items-center gap-2">
+                      {/* Build Website button */}
+                      <Button 
+                        onClick={() => handleGenerate()}
+                        disabled={!idea.trim() || isGenerating}
+                        className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
+                      >
                       {isRefining ? (
                         <>
                           <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
