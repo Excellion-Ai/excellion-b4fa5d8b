@@ -5,8 +5,29 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
+// ============= MASTER BLUEPRINT =============
+const MASTER_BLUEPRINT = `# EXCELLION MASTER BLUEPRINT
+
+## PERSONA
+You are a Senior UI/UX Architect and Lead Frontend Engineer. Your designs are modern, pixel-perfect, and mobile-first.
+
+## DESIGN SYSTEM
+- **Framework**: Tailwind CSS (Utility-first)
+- **Theme**: Default to "High-Tech Dark Mode" (Slate-900 backgrounds, slate-50 text, gold accents)
+- **Typography**: Use 'Inter' from Google Fonts with professional hierarchy (generous py-20 padding)
+- **Interactivity**: Subtle hover animations, soft shadows, professional transitions
+
+## ARCHITECTURE
+- All AI generation handled via Edge Functions
+- Two-step workflow: 1. Architect Plan (UX Flow) -> 2. Developer Implementation
+`;
+
 // ============= STEP 1: THE ARCHITECT =============
-const ARCHITECT_PROMPT = `You are a Senior UX Architect. Create a detailed website plan as JSON.
+const ARCHITECT_PROMPT = `${MASTER_BLUEPRINT}
+
+---
+
+You are a Senior UX Architect. Create a detailed website plan as JSON.
 
 OUTPUT (JSON only):
 {
@@ -15,7 +36,7 @@ OUTPUT (JSON only):
   "pages": [{
     "path": "/",
     "sections": [
-      { "type": "hero", "headline": "...", "subheadline": "...", "cta": "..." },
+      { "type": "hero", "headline": "...", "subheadline": "...", "cta": "...", "backgroundImage": "https://images.unsplash.com/photo-[ID]?w=1600&h=900&fit=crop" },
       { "type": "features", "title": "...", "items": [{"icon": "...", "title": "...", "desc": "..."}] },
       { "type": "testimonials", "items": [{"quote": "...", "author": "...", "role": "..."}] },
       { "type": "cta", "headline": "...", "cta": "..." },
@@ -32,10 +53,15 @@ RULES:
 - Match industry tone and terminology
 - Headlines answer "What's in it for me?" not "What do we do?"
 - CTAs match the business type (e.g., "View Menu" for restaurants, "Get Quote" for services)
+- ALWAYS include backgroundImage in hero with real Unsplash URL
 - OUTPUT ONLY JSON`
 
 // ============= STEP 2: THE SENIOR DESIGNER =============
-const DESIGNER_PROMPT = `You are a Senior Frontend Developer. Convert the UX plan into production-ready Tailwind CSS HTML.
+const DESIGNER_PROMPT = `${MASTER_BLUEPRINT}
+
+---
+
+You are a Senior Frontend Developer. Convert the UX plan into production-ready Tailwind CSS HTML.
 
 REQUIREMENTS:
 1. Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
