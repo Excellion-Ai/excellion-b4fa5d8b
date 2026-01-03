@@ -1398,6 +1398,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
     setIsGenerating(true);
     // Don't clear the existing preview - keep it visible until new one is ready
     setGeneratedHtml(null);
+    // Clear previous issues before new generation
+    setCurrentIssues([]);
     // resetSiteSpec removed: Keep existing preview during generation
     setSteps(INITIAL_STEPS.map((s) => ({ ...s, status: 'pending' })));
 
@@ -1737,6 +1739,92 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           console.log('[FINAL_VALIDATION] Retrying - found banned content:', bannedPhrases);
           toast.info('Removing generic content...');
           return handleGenerate(`${ideaToUse}\n\n[STRICT CONTENT RULES: Remove these banned phrases: ${bannedPhrases}. Generate specific content for this business only.]`, retryCount + 1);
+        }
+        
+        // ============ CLAUDE AUDIT (Post-Generation Quality Check) ============
+        let auditIssues: BuilderIssue[] = [];
+        try {
+          console.log('[AUDIT] Running Claude-powered quality audit...');
+          const auditResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/audit-sitespec`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ 
+              siteSpec: parsedSpec, 
+              industry: classification?.industry || route.category 
+            }),
+          });
+          
+          if (auditResponse.ok) {
+            const auditResult = await auditResponse.json();
+            console.log('[AUDIT] Result:', auditResult);
+            
+            // Convert audit issues to BuilderIssues format
+            auditIssues = (auditResult.issues || []).map((issue: any, idx: number) => ({
+              id: `audit-${idx}`,
+              title: issue.message,
+              description: issue.suggestion || 'Review this content for quality',
+              severity: issue.type === 'error' ? 'error' : issue.type === 'warning' ? 'warning' : 'info',
+              path: issue.path || '',
+            }));
+            
+            // Auto-fix: Apply suggested CTA fixes directly to spec
+            if (auditResult.issues?.some((i: any) => i.message?.includes('Generic CTA'))) {
+              const industryCtaMap: Record<string, string> = {
+                restaurant: 'View Menu',
+                gym: 'Start Free Trial',
+                fitness: 'Start Free Trial',
+                salon: 'Book Appointment',
+                plumber: 'Get Free Quote',
+                lawyer: 'Free Consultation',
+                dental: 'Book Appointment',
+                contractor: 'Get Estimate',
+                landscaping: 'Get Quote',
+                real_estate: 'View Listings',
+                realestate: 'View Listings',
+                auto: 'Book Service',
+                ecommerce: 'Shop Now',
+              };
+              
+              const industryCta = industryCtaMap[classification?.industry?.toLowerCase() || route.category] || 'Contact Us';
+              
+              // Fix hero CTAs in the spec
+              for (const page of parsedSpec.pages || []) {
+                for (const section of page.sections || []) {
+                  if (section.type === 'hero') {
+                    const content = section.content as any;
+                    const currentCta = content?.ctaText?.toLowerCase() || '';
+                    if (['get started', 'learn more', 'contact us', 'sign up', 'explore'].some(g => currentCta.includes(g))) {
+                      console.log(`[AUDIT] Auto-fixing CTA: "${content?.ctaText}" -> "${industryCta}"`);
+                      content.ctaText = industryCta;
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Show audit results if there are issues
+            if (auditResult.score < 70) {
+              toast.warning(`Quality score: ${auditResult.score}/100`, {
+                description: `${auditResult.summary?.errors || 0} errors, ${auditResult.summary?.warnings || 0} warnings detected`,
+                action: auditIssues.length > 0 ? {
+                  label: 'View Issues',
+                  onClick: () => setShowIssuesPanel(true),
+                } : undefined,
+              });
+            } else if (auditResult.score >= 90) {
+              console.log('[AUDIT] High quality generation - score:', auditResult.score);
+            }
+          }
+        } catch (auditError) {
+          console.warn('[AUDIT] Audit failed, continuing without:', auditError);
+        }
+        
+        // Update issues state with audit results
+        if (auditIssues.length > 0) {
+          setCurrentIssues(prev => [...prev, ...auditIssues]);
         }
         
         // Record the generation for diversity tracking

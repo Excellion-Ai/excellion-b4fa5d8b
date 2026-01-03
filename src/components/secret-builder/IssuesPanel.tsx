@@ -39,6 +39,9 @@ const fixActionIcons = {
   add_page: Plus,
   add_integration: Link2,
   edit_content: Edit2,
+  fix_cta: Edit2,
+  fix_image: Link2,
+  ask_ai: AlertTriangle,
 };
 
 export function IssuesPanel({ issues, onClose, onFixIssue }: IssuesPanelProps) {
