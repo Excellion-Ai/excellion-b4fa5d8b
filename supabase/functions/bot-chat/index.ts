@@ -59,18 +59,54 @@ Start with: "Here's what I created for [Business Name]:"
 }
 
 ## SECTION TYPES & CONTENT
-- **hero**: headline, subheadline, ctaText, secondaryCtaText?, backgroundImage?, variant (centered|split|glassmorphism)
+- **hero**: headline, subheadline, ctaText, secondaryCtaText?, backgroundImage (REQUIRED - Unsplash URL), variant (centered|split|glassmorphism)
 - **features**: title, subtitle?, items[] (title, description, icon)
-- **services**: title, subtitle?, items[] (title, description, price?, icon?)
-- **testimonials**: title, items[] (name, role, quote, rating?)
+- **services**: title, subtitle?, items[] (title, description, price?, icon?, image?)
+- **testimonials**: title, items[] (name, role, quote, rating?, avatar?)
 - **pricing**: title, subtitle?, items[] (name, price, features[], highlighted?, ctaText)
 - **faq**: title, items[] (question, answer)
 - **contact**: title, subtitle?, email?, phone?, formFields[]
 - **cta**: headline, subheadline?, ctaText
 - **stats**: items[] (value, label)
-- **gallery**: title, items[] (image, caption?)
-- **team**: title, items[] (name, role, bio?, avatar?)
-- **portfolio**: title, items[] (title, description?, image, category?)
+- **gallery**: title, items[] (image (REQUIRED - Unsplash URL), caption?)
+- **team**: title, items[] (name, role, bio?, avatar (Unsplash face URL)?)
+- **portfolio**: title, items[] (title, description?, image (REQUIRED - Unsplash URL), category?)
+
+## IMAGE REQUIREMENTS (CRITICAL - NEVER SKIP)
+Every professional website MUST include high-quality images. Do NOT use placeholders or gradients.
+
+### Hero Section (MANDATORY)
+ALWAYS include "backgroundImage" with a real Unsplash URL:
+- Format: "https://images.unsplash.com/photo-[ID]?w=1600&h=900&fit=crop"
+- Match the image to the business type
+
+### Gallery/Portfolio Sections
+EVERY item MUST have an "image" field with an Unsplash URL.
+
+### Team Section
+Include "avatar" URLs using face photos: "https://images.unsplash.com/photo-[ID]?w=200&h=200&fit=crop&facepad=2"
+
+### Unsplash Photo IDs by Industry (USE THESE)
+| Industry | Hero Photo ID | Feature Photo IDs |
+|----------|--------------|-------------------|
+| Restaurant | 1517248135467-4c7edcad34c4 | 1414235077428-338989a2e8c0, 1504674900247-0877df9cc836 |
+| Fitness | 1534438327276-14e5300c3a48 | 1571019613454-1cb2f99b2d8b, 1540497077202-3c2a7b880d76 |
+| Salon | 1560066984-138dadb4c035 | 1522337360788-8b13dee7a37e, 1487412912498-0447578fcca8 |
+| Dental | 1629909613654-28e377c37b09 | 1588776814546-daab30f310ce, 1606811841689-23dfddce3e95 |
+| Real Estate | 1560518883-ce09059eeffa | 1600596542815-ffad4c1539a9, 1600585154340-be6161a56a0c |
+| Legal | 1589829545856-d10d557cf95f | 1450101499163-c8848c66ca85, 1521791136064-7986c2920216 |
+| Construction | 1504307651254-35680f356dfd | 1581094794329-c8112a89af12, 1503387762-592deb58ef4e |
+| SaaS/Tech | 1551434678-e076c223a692 | 1460925895917-afdab827c52f, 1551288049-bebda4e38f71 |
+| Photography | 1452587925148-ce544e77e70d | 1516035069371-29a1b244cc32, 1542038784456-1ea8e935640e |
+| Plumbing | 1585704032915-c3400ca199e7 | 1558618666-fcd25c85cd64, 1504328345606-18bbc8c9d7d1 |
+| Auto | 1492144534655-ae79c964c9d7 | 1503376780353-7e6692767b70, 1552519507-da3b142c6e3b |
+| Pet | 1587300003388-59208cc962cb | 1548199973-03cce0bbc87b, 1583511655857-d19b40a7a54e |
+| Landscaping | 1558904541-efa843a96f01 | 1416879595882-3373a0480b5b, 1585320806297-9794b3e4eeae |
+
+### Hero Variant Selection
+- Restaurants, Salons, Real Estate, Photography: Use "split" (shows image prominently)
+- SaaS, Legal, Finance: Use "centered" or "glassmorphism"
+- Construction, Plumbing, Auto: Use "split" with action imagery
 
 ## DESIGN RULES (NON-NEGOTIABLE)
 

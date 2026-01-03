@@ -76,6 +76,7 @@ import type { LayoutStructure as LayoutStructureType } from '@/types/site-spec';
 import { speculativeParse, shouldAttemptParse, mergeSpeculative } from '@/lib/speculativeParser';
 import { refinePrompt } from '@/lib/promptRefiner';
 import { validateFinalSpec } from '@/lib/contentPipeline/contentValidator';
+import { fillImages } from '@/lib/nicheIntel/imageFiller';
 import { cn } from '@/lib/utils';
 import { 
   formatChatResponse,
@@ -1718,6 +1719,33 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         } catch (imgErr) {
           console.warn('[ImageGen] Failed to process image prompts:', imgErr);
           // Continue with original spec - images will use fallbacks
+        }
+        
+        // Fill any missing images with stock photos as safety net
+        try {
+          const route = routeNiche(ideaToUse);
+          const brief = {
+            businessName: processedSpec.name || 'Business',
+            industry: route.category as string,
+            intent: (processedSpec.businessIntent || 'service_business') as any,
+            nicheCategory: 'general' as const,
+            primaryGoal: 'leads' as const,
+            offerings: [],
+            location: null,
+            differentiators: [],
+            tone: [],
+            primaryCTA: 'Get Started',
+            secondaryCTA: null,
+            needsEcommerce: false,
+            needsBooking: false,
+            needsPoliciesPage: false,
+            seo: { primaryKeywords: [], serviceAreaKeywords: [] },
+          };
+          const { filledSpec } = fillImages(processedSpec, brief, {} as any, { mode: 'static' });
+          processedSpec = filledSpec;
+          console.log('[ImageFill] Filled missing images with stock photos');
+        } catch (fillErr) {
+          console.warn('[ImageFill] Failed to fill images:', fillErr);
         }
         
         newSiteSpec = processedSpec;
