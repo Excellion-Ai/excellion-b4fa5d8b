@@ -1,5 +1,42 @@
-# Excellion Design Rules (v1.0)
+# Excellion Design Rules (v2.0)
 # This file is automatically injected into AI generation prompts
+
+## IMAGE REQUIREMENTS (CRITICAL - HIGHEST PRIORITY)
+
+### Hero Section Images
+- **ALWAYS** include `backgroundImage` with a real Unsplash URL
+- Format: `https://images.unsplash.com/photo-[ID]?w=1600&h=900&fit=crop`
+- Match image to the business type (restaurant = food images, gym = fitness images)
+- NEVER use placeholder text or empty strings
+- Prefer `split` hero variant for visual businesses (shows image prominently)
+
+### Gallery/Portfolio Section Images
+- EVERY item MUST have an `image` field with Unsplash URL
+- Use relevant keywords matching the business niche
+
+### Team Section Avatars
+- Include `avatar` URLs using: `https://images.unsplash.com/photo-[ID]?w=200&h=200&fit=crop&facepad=2`
+- Use professional headshot-style photos
+
+### Services Section Images
+- Include `image` fields for visual service cards
+- Match images to specific service offerings
+
+### Stock Photo Keywords by Industry
+| Industry | Unsplash Keywords |
+|----------|------------------|
+| Restaurant | restaurant interior, chef cooking, fine dining, food plating |
+| Fitness | gym equipment, workout, personal training, fitness class |
+| Salon | hair salon, beauty treatment, stylist, spa |
+| Contractor | construction worker, renovation, tools, home improvement |
+| Dental | dental office, dentist, smile, dental care |
+| Real Estate | modern home, house exterior, luxury interior, architecture |
+| Legal | law office, legal documents, courthouse, professional meeting |
+| Medical | medical office, healthcare, doctor patient, clinic |
+| Automotive | car dealership, auto repair, mechanic, vehicle |
+| Photography | camera, studio, portrait session, photography equipment |
+| Pet Services | dog grooming, pet care, veterinary, happy pets |
+| Landscaping | garden design, lawn care, outdoor living, landscaping |
 
 ## TYPOGRAPHY RULES (MANDATORY)
 
@@ -87,11 +124,21 @@ Every headline must pass: "Can I understand the value in 3 seconds?"
 ## VARIANT SELECTION GUIDELINES
 
 ### Hero Variants
+- `split`: Use for services, portfolios, visual businesses (PREFERRED - shows images)
 - `simple-centered`: Use for SaaS, apps, minimal brands
-- `split-image-right`: Use for services, portfolios, visual businesses
 - `minimal-impact`: Use for luxury brands, high-end services
+- `glassmorphism`: Use for tech, creative agencies
 
 ### Features Variants  
 - `grid-3`: Default for most businesses (balanced, scannable)
 - `bento-box`: Use for tech companies, creative agencies
 - `zigzag-large`: Use for detailed explanations, process-heavy services
+
+## THREE-LAYER IMAGE PROTECTION SYSTEM
+
+The Secret Builder uses three layers to ensure professional images:
+1. **AI Prompt Layer**: Bot-chat instructs AI to include Unsplash URLs
+2. **Post-Processor Layer**: BuilderShell calls imageFiller after parsing
+3. **Renderer Fallback**: SiteRenderer fills missing images before display
+
+If any layer fails, the next layer catches missing images.
