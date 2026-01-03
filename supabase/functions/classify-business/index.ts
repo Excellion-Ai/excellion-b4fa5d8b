@@ -51,7 +51,7 @@ Respond with ONLY valid JSON, no explanation.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-5",
+        model: "google/gemini-2.5-flash", // Use Gemini (Claude not available via gateway)
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Classify this business prompt:\n\n"${prompt}"` }
