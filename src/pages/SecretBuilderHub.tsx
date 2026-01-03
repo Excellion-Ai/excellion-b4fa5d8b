@@ -101,6 +101,7 @@ import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
 import { TEMPLATES } from '@/components/secret-builder/templateSpecs';
 import { InterviewStepper } from '@/components/InterviewStepper';
 import { useInterviewIntake } from '@/hooks/useInterviewIntake';
+import { useSiteGeneration } from '@/hooks/useSiteGeneration';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 
@@ -208,7 +209,8 @@ export default function SecretBuilderHub() {
   // Interview intake hook
   const interview = useInterviewIntake(idea);
   
-  // Theme state for quick toggle
+  // Site generation hook (replaces Railway)
+  const siteGen = useSiteGeneration();
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -1165,9 +1167,14 @@ export default function SecretBuilderHub() {
                   </div>
                   
                     <div className="flex items-center gap-2">
-                      {/* Build Website button */}
+                      {/* Build Website button - triggers main flow + background HTML generation */}
                       <Button 
-                        onClick={() => handleGenerate()}
+                        onClick={() => {
+                          // Also fire edge function in background (fire and forget for HTML generation)
+                          siteGen.generateSite(idea);
+                          // Use original generation flow for navigation + progress
+                          handleGenerate();
+                        }}
                         disabled={!idea.trim() || isGenerating}
                         className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/90"
                       >
