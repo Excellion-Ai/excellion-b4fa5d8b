@@ -3220,7 +3220,7 @@ ${projectEntries.map((entry: { name: string; content: string }) => `### ${entry.
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-pro',
+          model: 'google/gemini-3-pro-preview',
           messages: [
             { role: "system", content: questionPrompt },
             ...messages,
@@ -3485,12 +3485,12 @@ If you cannot fulfill these requirements, explain why in your conversational res
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
     console.log(`[BOT-CHAT:${requestId}] Total messages to send: ${messages.length + 1}`);
 
-    // Model selection: gemini-2.5-pro for highest quality reasoning and copy
-    // Upgraded from flash for better intelligence at the cost of ~2x latency
-    const selectedModel = 'google/gemini-2.5-pro';
+    // Model selection: gemini-3-pro-preview for best reasoning, creativity, and copy quality
+    // Upgraded from gemini-2.5-pro for improved site generation capabilities
+    const selectedModel = 'google/gemini-3-pro-preview';
     
-    // Token limits: 4000 for fast mode, 8000 for refinements (pro model handles larger outputs better)
-    const maxTokens = isFastMode ? 4000 : 8000;
+    // Token limits: 6000 for fast mode, 12000 for refinements (Gemini 3 handles larger outputs)
+    const maxTokens = isFastMode ? 6000 : 12000;
     
     console.log(`[BOT-CHAT:${requestId}] Model: ${selectedModel}, Max tokens: ${maxTokens}`);
 
