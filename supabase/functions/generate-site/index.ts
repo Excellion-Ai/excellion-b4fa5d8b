@@ -150,21 +150,35 @@ Deno.serve(async (req) => {
           'Authorization': `Bearer ${LOVABLE_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: 'openai/gpt-5',
           messages: [
             { role: 'system', content: ARCHITECT_PROMPT },
             { role: 'user', content: `Create a website plan for: ${prompt}` }
           ],
-          max_tokens: 4000,
-          temperature: 0.7
+          max_completion_tokens: 4000,
         })
       }
     )
 
     if (!planResponse.ok) {
       const errorText = await planResponse.text()
-      console.error(`[GENERATE:${requestId}] Architect API error:`, errorText)
-      throw new Error(`Architect failed: ${planResponse.status}`)
+      console.error(`[GENERATE:${requestId}] Architect API error (${planResponse.status}):`, errorText)
+      
+      // Parse GPT-5 specific errors
+      let errorDetail = `Architect failed: ${planResponse.status}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        const apiError = errorJson.error?.message || errorJson.error || "";
+        if (apiError.includes("Invalid parameter")) {
+          errorDetail = `GPT-5 config error: ${apiError.substring(0, 100)}`;
+        } else if (planResponse.status === 429) {
+          errorDetail = "Rate limit exceeded";
+        } else if (planResponse.status === 402) {
+          errorDetail = "Usage limit reached";
+        }
+      } catch {}
+      
+      throw new Error(errorDetail)
     }
 
     const planData = await planResponse.json()
@@ -198,21 +212,35 @@ Deno.serve(async (req) => {
           'Authorization': `Bearer ${LOVABLE_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: 'openai/gpt-5',
           messages: [
             { role: 'system', content: DESIGNER_PROMPT },
             { role: 'user', content: `Convert this UX plan into HTML:\n\n${uxPlan}` }
           ],
-          max_tokens: 16000,
-          temperature: 0.3
+          max_completion_tokens: 16000,
         })
       }
     )
 
     if (!designResponse.ok) {
       const errorText = await designResponse.text()
-      console.error(`[GENERATE:${requestId}] Designer API error:`, errorText)
-      throw new Error(`Designer failed: ${designResponse.status}`)
+      console.error(`[GENERATE:${requestId}] Designer API error (${designResponse.status}):`, errorText)
+      
+      // Parse GPT-5 specific errors
+      let errorDetail = `Designer failed: ${designResponse.status}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        const apiError = errorJson.error?.message || errorJson.error || "";
+        if (apiError.includes("Invalid parameter")) {
+          errorDetail = `GPT-5 config error: ${apiError.substring(0, 100)}`;
+        } else if (designResponse.status === 429) {
+          errorDetail = "Rate limit exceeded";
+        } else if (designResponse.status === 402) {
+          errorDetail = "Usage limit reached";
+        }
+      } catch {}
+      
+      throw new Error(errorDetail)
     }
 
     const designData = await designResponse.json()

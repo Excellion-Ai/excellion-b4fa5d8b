@@ -113,13 +113,12 @@ When answering questions, align responses with this architecture.
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-5-mini',
         messages: [
           { role: 'system', content: enhancedSystemPrompt },
           ...messages
         ],
-        max_tokens: 1000,
-        temperature: 0.7,
+        max_completion_tokens: 1000,
       }),
     });
 
@@ -127,22 +126,38 @@ When answering questions, align responses with this architecture.
       const errorText = await response.text();
       console.error('[HELP-CHAT] AI API error:', response.status, errorText);
       
+      // Parse GPT-5 specific errors
+      let errorCode = "AI_ERROR";
+      let errorMessage = "Failed to get AI response";
+      try {
+        const errorJson = JSON.parse(errorText);
+        const apiError = errorJson.error?.message || errorJson.error || "";
+        if (apiError.includes("Invalid parameter: temperature")) {
+          errorCode = "GPT5_PARAM_TEMPERATURE";
+          errorMessage = "Model configuration error";
+        } else if (apiError.includes("Invalid parameter: max_tokens")) {
+          errorCode = "GPT5_PARAM_MAX_TOKENS";
+          errorMessage = "Model configuration error";
+        }
+        console.error(`[HELP-CHAT] Error code: ${errorCode}`);
+      } catch {}
+      
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.', code: 'RATE_LIMIT' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'Usage limit reached. Please check your account.' }),
+          JSON.stringify({ error: 'Usage limit reached. Please check your account.', code: 'USAGE_LIMIT' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       return new Response(
-        JSON.stringify({ error: 'Failed to get AI response' }),
+        JSON.stringify({ error: errorMessage, code: errorCode }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
