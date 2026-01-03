@@ -51,12 +51,12 @@ Respond with ONLY valid JSON, no explanation.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash", // Use Gemini (Claude not available via gateway)
+        model: "openai/gpt-5",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Classify this business prompt:\n\n"${prompt}"` }
         ],
-        max_tokens: 500,
+        max_completion_tokens: 500,
       }),
     });
 
