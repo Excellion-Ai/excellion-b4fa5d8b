@@ -28,8 +28,10 @@ OUTPUT (JSON only):
 
 RULES:
 - 3-5 sections per page
-- Benefit-driven, persuasive headlines
-- Match industry tone
+- Benefit-driven, persuasive headlines (not generic)
+- Match industry tone and terminology
+- Headlines answer "What's in it for me?" not "What do we do?"
+- CTAs match the business type (e.g., "View Menu" for restaurants, "Get Quote" for services)
 - OUTPUT ONLY JSON`
 
 // ============= STEP 2: THE SENIOR DESIGNER =============
@@ -94,12 +96,12 @@ Deno.serve(async (req) => {
     console.log(`[GENERATE:${requestId}] Starting for row: ${row_id}`)
     console.log(`[GENERATE:${requestId}] Prompt: ${prompt.slice(0, 80)}...`)
 
-    const GEMINI_KEY = Deno.env.get('GEMINI_API_KEY')
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-    if (!GEMINI_KEY) {
-      throw new Error('GEMINI_API_KEY not configured')
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured')
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
@@ -114,18 +116,21 @@ Deno.serve(async (req) => {
     console.log(`[GENERATE:${requestId}] STEP 1: Architect planning...`)
     
     const planResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro:generateContent?key=${GEMINI_KEY}`,
+      'https://ai.gateway.lovable.dev/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `${ARCHITECT_PROMPT}\n\nCreate a website plan for: ${prompt}` }]
-          }],
-          generationConfig: {
-            maxOutputTokens: 4000,
-            temperature: 0.7
-          }
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: ARCHITECT_PROMPT },
+            { role: 'user', content: `Create a website plan for: ${prompt}` }
+          ],
+          max_tokens: 4000,
+          temperature: 0.7
         })
       }
     )
@@ -137,11 +142,20 @@ Deno.serve(async (req) => {
     }
 
     const planData = await planResponse.json()
-    let uxPlan = planData.candidates?.[0]?.content?.parts?.[0]?.text || ""
+    let uxPlan = planData.choices?.[0]?.message?.content || ""
     
     // Extract JSON from markdown if needed
     const jsonMatch = uxPlan.match(/```(?:json)?\s*([\s\S]*?)```/)
     if (jsonMatch) uxPlan = jsonMatch[1].trim()
+    
+    // Also try to extract raw JSON
+    if (!uxPlan.startsWith('{')) {
+      const firstBrace = uxPlan.indexOf('{')
+      const lastBrace = uxPlan.lastIndexOf('}')
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        uxPlan = uxPlan.substring(firstBrace, lastBrace + 1)
+      }
+    }
 
     const architectTime = Date.now() - startTime
     console.log(`[GENERATE:${requestId}] Architect done in ${architectTime}ms (${uxPlan.length} chars)`)
@@ -150,18 +164,21 @@ Deno.serve(async (req) => {
     console.log(`[GENERATE:${requestId}] STEP 2: Designer coding...`)
     
     const designResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro:generateContent?key=${GEMINI_KEY}`,
+      'https://ai.gateway.lovable.dev/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `${DESIGNER_PROMPT}\n\nConvert this UX plan into HTML:\n\n${uxPlan}` }]
-          }],
-          generationConfig: {
-            maxOutputTokens: 16000,
-            temperature: 0.3
-          }
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: DESIGNER_PROMPT },
+            { role: 'user', content: `Convert this UX plan into HTML:\n\n${uxPlan}` }
+          ],
+          max_tokens: 16000,
+          temperature: 0.3
         })
       }
     )
@@ -173,7 +190,7 @@ Deno.serve(async (req) => {
     }
 
     const designData = await designResponse.json()
-    let finalCode = designData.candidates?.[0]?.content?.parts?.[0]?.text || ""
+    let finalCode = designData.choices?.[0]?.message?.content || ""
     
     // Extract HTML from markdown if needed
     const htmlMatch = finalCode.match(/```(?:html)?\s*([\s\S]*?)```/)
