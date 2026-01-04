@@ -1904,8 +1904,8 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   sandbox="allow-scripts"
                 />
               ) : siteSpec ? (
-                <div className="h-full overflow-auto isolate">
-                  <SiteRenderer 
+                <div className="h-full overflow-auto relative" style={{ isolation: 'isolate', contain: 'layout paint' }}>
+                  <SiteRenderer
                     siteSpec={siteSpec}
                     pageIndex={currentPageIndex}
                     isLoading={isGenerating}

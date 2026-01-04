@@ -91,8 +91,8 @@ export function BentoPillNav({
   
   return (
     <nav 
-      className="sticky top-0 z-40 mx-auto mt-4 mb-0 w-fit px-6 py-3 rounded-full backdrop-blur-xl shadow-lg flex items-center gap-6"
-      style={{ 
+      className="sticky top-0 z-30 mx-auto mt-4 mb-0 w-fit px-6 py-3 rounded-full backdrop-blur-xl shadow-lg flex items-center gap-6"
+      style={{
         backgroundColor: isDark ? 'rgba(17, 17, 17, 0.98)' : 'rgba(255, 255, 255, 0.98)',
         border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
         boxShadow: '0 4px 20px -4px rgba(0, 0, 0, 0.15)',

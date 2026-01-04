@@ -542,8 +542,8 @@ export function SiteRenderer({
     >
       {/* Navigation bar - stays within preview container with sticky positioning */}
       <nav 
-        className="sticky top-0 z-40 px-6 py-4 flex items-center justify-between"
-        style={{ 
+        className="sticky top-0 z-30 px-6 py-4 flex items-center justify-between"
+        style={{
           backgroundColor: theme.darkMode ? '#111111' : '#ffffff',
           borderBottom: `1px solid ${theme.darkMode ? '#1f1f1f' : '#e5e7eb'}`
         }}
