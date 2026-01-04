@@ -1904,19 +1904,21 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   sandbox="allow-scripts"
                 />
               ) : siteSpec ? (
-                <SiteRenderer 
-                  siteSpec={siteSpec}
-                  pageIndex={currentPageIndex}
-                  isLoading={isGenerating}
-                  onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
-                  onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
-                  onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
-                  onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
-                  onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
-                  onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
-                  onPageChange={setCurrentPageIndex}
-                  motionIntensity={motionIntensity}
-                />
+                <div className="h-full overflow-auto isolate">
+                  <SiteRenderer 
+                    siteSpec={siteSpec}
+                    pageIndex={currentPageIndex}
+                    isLoading={isGenerating}
+                    onUpdateHeroContent={visualEditsEnabled ? editor.updateHeroContent : undefined}
+                    onUpdateFeaturesContent={visualEditsEnabled ? editor.updateFeaturesContent : undefined}
+                    onUpdateFeatureItem={visualEditsEnabled ? editor.updateFeatureItem : undefined}
+                    onUpdateSiteName={visualEditsEnabled ? editor.updateSiteName : undefined}
+                    onUpdateNavItem={visualEditsEnabled ? editor.updateNavItem : undefined}
+                    onReorderSections={visualEditsEnabled ? editor.reorderSections : undefined}
+                    onPageChange={setCurrentPageIndex}
+                    motionIntensity={motionIntensity}
+                  />
+                </div>
               ) : (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center p-8">

@@ -157,6 +157,8 @@ export type Database = {
       builder_projects: {
         Row: {
           created_at: string
+          github_last_synced_at: string | null
+          github_repo_url: string | null
           id: string
           idea: string
           name: string
@@ -165,9 +167,13 @@ export type Database = {
           spec: Json | null
           updated_at: string
           user_id: string | null
+          versions: Json | null
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string
+          github_last_synced_at?: string | null
+          github_repo_url?: string | null
           id?: string
           idea: string
           name: string
@@ -176,9 +182,13 @@ export type Database = {
           spec?: Json | null
           updated_at?: string
           user_id?: string | null
+          versions?: Json | null
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string
+          github_last_synced_at?: string | null
+          github_repo_url?: string | null
           id?: string
           idea?: string
           name?: string
@@ -187,8 +197,18 @@ export type Database = {
           spec?: Json | null
           updated_at?: string
           user_id?: string | null
+          versions?: Json | null
+          workspace_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "builder_projects_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       credit_transactions: {
         Row: {
@@ -283,6 +303,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      generated_sites: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          prompt: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          prompt: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          prompt?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      github_connections: {
+        Row: {
+          access_token: string
+          connected_at: string
+          github_user_id: string | null
+          github_username: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          connected_at?: string
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          connected_at?: string
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       inquiries: {
         Row: {
@@ -603,6 +683,8 @@ export type Database = {
         Row: {
           balance: number
           current_plan: string
+          sprint_expires_at: string | null
+          sprint_pass_used: boolean
           total_earned: number
           total_spent: number
           updated_at: string
@@ -611,6 +693,8 @@ export type Database = {
         Insert: {
           balance?: number
           current_plan?: string
+          sprint_expires_at?: string | null
+          sprint_pass_used?: boolean
           total_earned?: number
           total_spent?: number
           updated_at?: string
@@ -619,6 +703,8 @@ export type Database = {
         Update: {
           balance?: number
           current_plan?: string
+          sprint_expires_at?: string | null
+          sprint_pass_used?: boolean
           total_earned?: number
           total_spent?: number
           updated_at?: string
@@ -794,6 +880,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_workspace_member: {
+        Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
     }
