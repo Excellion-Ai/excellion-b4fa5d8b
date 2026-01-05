@@ -155,13 +155,15 @@ const WebBuilderHome = () => {
         email: email.trim(),
         project_type: "email_capture",
         source: "web_builder_home",
-        description: "User signed up for examples and guide",
+        description: prompt.trim() || "User signed up for examples",
+        brand_name: prompt.trim() || undefined,
       });
       
       if (error) throw error;
       
       toast.success("Thanks! We'll send you examples and tips soon.");
       setEmail("");
+      setPrompt("");
     } catch (error) {
       console.error("Email capture error:", error);
       toast.error("Failed to sign up. Please try again.");
@@ -252,14 +254,14 @@ const WebBuilderHome = () => {
                 </button>
                 <button
                   onClick={() => handleSwitchMode('interview')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1 ${
                     inputMode === 'interview'
                       ? 'bg-primary text-primary-foreground'
                       : 'text-foreground/70 hover:text-foreground'
                   }`}
                 >
-                  <Zap className="w-3.5 h-3.5 inline mr-1" />
-                  Guided Interview
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Build Assist
                 </button>
               </div>
             </div>
@@ -343,7 +345,7 @@ const WebBuilderHome = () => {
                       onClick={() => handleSwitchMode('interview')}
                       className="text-primary hover:underline"
                     >
-                      Want a better first draft? Try Guided Interview (60 sec)
+                      Want a better first draft? Try Build Assist (60 sec)
                     </button>
                   </p>
                 </>
@@ -491,35 +493,54 @@ const WebBuilderHome = () => {
 
       {/* Email Capture Section */}
       <section className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-xl mx-auto text-center">
+        <div className="max-w-2xl mx-auto text-center">
           <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            Not ready to build today?
+            Get 3 real website examples for your business
           </h2>
-          <p className="text-muted-foreground mb-6">
-            Drop your email and we'll send you example sites and a short guide on what your website needs to convert in 2025.
+          <p className="text-muted-foreground mb-8">
+            Enter your business/niche and email. We'll send a mini pack: layouts, copy structure, and the exact sections that convert.
           </p>
-          <form onSubmit={handleEmailSubmit} className="flex gap-3 max-w-md mx-auto">
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="flex-1"
-              required
-              disabled={isSubmitting}
-            />
-            <Button type="submit" disabled={isSubmitting}>
+          <form onSubmit={handleEmailSubmit} className="space-y-4 max-w-xl mx-auto">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="text-left">
+                <label className="text-sm text-muted-foreground mb-1.5 block">Business / Niche</label>
+                <Input
+                  type="text"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="e.g., Roofing company, Italian restaurant,"
+                  className="w-full"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="text-left">
+                <label className="text-sm text-muted-foreground mb-1.5 block">Email</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@domain.com"
+                  className="w-full"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto px-8">
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Sending...
                 </>
               ) : (
-                "Send me examples"
+                "Send my examples"
               )}
             </Button>
           </form>
+          <p className="text-xs text-muted-foreground mt-4">
+            No spam. Unsubscribe anytime.
+          </p>
         </div>
       </section>
 
