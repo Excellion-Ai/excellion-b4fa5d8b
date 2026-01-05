@@ -34,65 +34,59 @@ const PRICE_IDS = {
 const aiBuilderPlans = [
   {
     name: "Free",
-    description: "Discover what Excellion can do",
+    description: "Try it before you pay.",
     monthlyPrice: 0,
     yearlyPrice: 0,
     credits: 20,
     features: [
-      "1 project (draft-only)",
-      "Drafts + editing in Studio",
-      "Basic templates",
-      "Mobile responsive editing",
-      "Community support/docs",
+      "1 draft-only project (can't publish)",
+      "Generate a full website draft for your business",
+      "Edit content + layout in Studio",
     ],
     note: "Publishing requires Starter or higher.",
     cta: "Get Started",
     highlighted: false,
+    subtext: "Free forever",
   },
   {
     name: "Starter",
-    description: "Launch your first website",
+    description: "Get your website live.",
     monthlyPrice: 15,
     yearlyPrice: 150,
-    credits: 50,
+    credits: 200,
     features: [
-      "1 published site (custom domain)",
-      "No watermark",
-      "Basic SEO (Title/Meta/OG)",
-      "Simple analytics (views/visitors)",
+      "Publish your site + connect your domain",
+      "Enough build credits for a full site + key edits",
+      "Basic SEO + simple traffic stats",
     ],
     cta: "Get Started",
     highlighted: false,
   },
   {
     name: "Pro",
-    description: "For serious builders",
+    description: "More building power + better features.",
     monthlyPrice: 29,
     yearlyPrice: 290,
-    credits: 100,
+    credits: 500,
     badge: "Best Seller",
     features: [
-      "Unlimited drafts + 1 published site",
-      "Integrations: Stripe, Calendly, Mailchimp",
-      "Advanced components: pricing, CMS, galleries",
-      "Code export (Annual only)",
+      "More build credits for more edits and improvements",
+      "Add payments, bookings, and email signups (integrations)",
+      "More advanced sections (pricing, gallery, menus, etc.)",
     ],
     cta: "Get Started",
     highlighted: true,
   },
   {
     name: "Agency",
-    description: "For teams managing clients",
+    description: "For people building lots of sites.",
     monthlyPrice: 129,
     yearlyPrice: 1290,
-    credits: 500,
+    credits: 3000,
     features: [
-      "10 published sites",
-      "White-label dashboard",
-      "Team seats + roles",
-      "Client management & billing transfer",
-      "Priority build queue",
-      "Full code export included",
+      "Highest build credits for high volume work",
+      "Multiple team seats",
+      "White-label options + code export",
     ],
     cta: "Get Started",
     highlighted: false,
@@ -252,9 +246,9 @@ const BuilderPricing = () => {
                   <Zap className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 7 days</p>
+                  <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 30 days</p>
                   <p className="text-sm text-muted-foreground">
-                    First-time only. Includes +50 credits. Full Pro access for 7 days. Auto-renews to Pro $29/mo unless you cancel.
+                    Launch fast for cheap. Includes 150 build credits for generating + modifying your website for 30 days. Renews to Pro ($29/mo) unless you cancel.
                   </p>
                 </div>
               </div>
@@ -275,7 +269,7 @@ const BuilderPricing = () => {
                     <ul className="space-y-3 mt-4">
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">+50 credits (rollover forever)</span>
+                        <span className="text-foreground">150 build credits (rollover forever)</span>
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
@@ -287,7 +281,7 @@ const BuilderPricing = () => {
                       </li>
                       <li className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <span className="text-foreground">Auto-renews to Pro ($29/mo) after 7 days unless canceled</span>
+                        <span className="text-foreground">Auto-renews to Pro ($29/mo) after 30 days unless canceled</span>
                       </li>
                     </ul>
                     <div className="mt-6">
@@ -328,7 +322,7 @@ const BuilderPricing = () => {
           </div>
 
           {/* Billing Toggle */}
-          <div className="flex flex-col items-center gap-3 mb-8">
+          <div className="flex flex-col items-center gap-3 mb-4">
             <div className="flex items-center gap-3">
               <span className={`text-sm ${!isAnnual ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                 Monthly
@@ -376,10 +370,15 @@ const BuilderPricing = () => {
                 </ul>
               </DialogContent>
             </Dialog>
+            
+            {/* Credits explanation */}
+            <p className="text-sm text-muted-foreground">
+              Build credits = what you spend to generate and modify your website.
+            </p>
           </div>
 
           {/* AI Builder Cards */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch mt-8">
             {aiBuilderPlans.map((plan) => (
               <Card 
                 key={plan.name}
@@ -398,7 +397,7 @@ const BuilderPricing = () => {
                   </div>
                 )}
                 
-                <CardHeader className="pb-4 h-[210px] flex flex-col">
+                <CardHeader className="pb-4 flex flex-col">
                   <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
                   <p className="text-sm text-muted-foreground">{plan.description}</p>
                   <div className="mt-4">
@@ -414,12 +413,12 @@ const BuilderPricing = () => {
                   <div className="mt-2">
                     <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-accent/15 text-accent px-2.5 py-1 rounded-full">
                       <Sparkles className="w-3 h-3" />
-                      {plan.credits} AI credits/mo • rollover
+                      {plan.credits} build credits / month (rolls over)
                     </span>
                   </div>
                   <div className="h-6 mt-2">
-                    {plan.monthlyPrice === 0 && (
-                      <p className="text-sm text-muted-foreground">Free forever</p>
+                    {plan.subtext && (
+                      <p className="text-sm text-muted-foreground">{plan.subtext}</p>
                     )}
                   </div>
                 </CardHeader>
