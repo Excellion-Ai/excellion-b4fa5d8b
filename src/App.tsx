@@ -2,38 +2,39 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
-// Lazy load all routes for faster initial load
-const WebBuilderHome = lazy(() => import("./pages/WebBuilderHome"));
-const BuilderPricing = lazy(() => import("./pages/BuilderPricing"));
-const FAQ = lazy(() => import("./pages/FAQ"));
-const BuilderFAQ = lazy(() => import("./pages/BuilderFAQ"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Legal = lazy(() => import("./pages/Legal"));
-const Auth = lazy(() => import("./pages/Auth"));
-const Admin = lazy(() => import("./pages/Admin"));
-const ThankYou = lazy(() => import("./pages/ThankYou"));
-const MaintenanceRequest = lazy(() => import("./pages/MaintenanceRequest"));
-const SecretBuilder = lazy(() => import("./pages/SecretBuilder"));
-const SecretBuilderHub = lazy(() => import("./pages/SecretBuilderHub"));
-const Billing = lazy(() => import("./pages/Billing"));
-const Checkout = lazy(() => import("./pages/Checkout"));
-const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Lazy load all routes with retry logic for cache busting
+const WebBuilderHome = lazyWithRetry(() => import("./pages/WebBuilderHome"), "WebBuilderHome");
+const BuilderPricing = lazyWithRetry(() => import("./pages/BuilderPricing"), "BuilderPricing");
+const FAQ = lazyWithRetry(() => import("./pages/FAQ"), "FAQ");
+const BuilderFAQ = lazyWithRetry(() => import("./pages/BuilderFAQ"), "BuilderFAQ");
+const Contact = lazyWithRetry(() => import("./pages/Contact"), "Contact");
+const Legal = lazyWithRetry(() => import("./pages/Legal"), "Legal");
+const Auth = lazyWithRetry(() => import("./pages/Auth"), "Auth");
+const Admin = lazyWithRetry(() => import("./pages/Admin"), "Admin");
+const ThankYou = lazyWithRetry(() => import("./pages/ThankYou"), "ThankYou");
+const MaintenanceRequest = lazyWithRetry(() => import("./pages/MaintenanceRequest"), "MaintenanceRequest");
+const SecretBuilder = lazyWithRetry(() => import("./pages/SecretBuilder"), "SecretBuilder");
+const SecretBuilderHub = lazyWithRetry(() => import("./pages/SecretBuilderHub"), "SecretBuilderHub");
+const Billing = lazyWithRetry(() => import("./pages/Billing"), "Billing");
+const Checkout = lazyWithRetry(() => import("./pages/Checkout"), "Checkout");
+const CheckoutSuccess = lazyWithRetry(() => import("./pages/CheckoutSuccess"), "CheckoutSuccess");
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "NotFound");
 
 // Settings pages
-const Settings = lazy(() => import("./pages/Settings"));
-const ProfileSettings = lazy(() => import("./pages/settings/ProfileSettings"));
-const BillingSettings = lazy(() => import("./pages/settings/BillingSettings"));
-const NotificationsSettings = lazy(() => import("./pages/settings/NotificationsSettings"));
-const WorkspaceSettings = lazy(() => import("./pages/settings/WorkspaceSettings"));
-const TeamSettings = lazy(() => import("./pages/settings/TeamSettings"));
-const DomainsSettings = lazy(() => import("./pages/settings/DomainsSettings"));
-const AppearanceSettings = lazy(() => import("./pages/settings/AppearanceSettings"));
-const ShortcutsSettings = lazy(() => import("./pages/settings/ShortcutsSettings"));
-const HelpSettings = lazy(() => import("./pages/settings/HelpSettings"));
-const SupportSettings = lazy(() => import("./pages/settings/SupportSettings"));
+const Settings = lazyWithRetry(() => import("./pages/Settings"), "Settings");
+const ProfileSettings = lazyWithRetry(() => import("./pages/settings/ProfileSettings"), "ProfileSettings");
+const BillingSettings = lazyWithRetry(() => import("./pages/settings/BillingSettings"), "BillingSettings");
+const NotificationsSettings = lazyWithRetry(() => import("./pages/settings/NotificationsSettings"), "NotificationsSettings");
+const WorkspaceSettings = lazyWithRetry(() => import("./pages/settings/WorkspaceSettings"), "WorkspaceSettings");
+const TeamSettings = lazyWithRetry(() => import("./pages/settings/TeamSettings"), "TeamSettings");
+const DomainsSettings = lazyWithRetry(() => import("./pages/settings/DomainsSettings"), "DomainsSettings");
+const AppearanceSettings = lazyWithRetry(() => import("./pages/settings/AppearanceSettings"), "AppearanceSettings");
+const ShortcutsSettings = lazyWithRetry(() => import("./pages/settings/ShortcutsSettings"), "ShortcutsSettings");
+const HelpSettings = lazyWithRetry(() => import("./pages/settings/HelpSettings"), "HelpSettings");
+const SupportSettings = lazyWithRetry(() => import("./pages/settings/SupportSettings"), "SupportSettings");
 // const Index = lazy(() => import("./pages/Index"));
 // const DFY = lazy(() => import("./pages/DFY"));
 // const BookCall = lazy(() => import("./pages/BookCall"));
