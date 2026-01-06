@@ -496,20 +496,20 @@ const handleChipClick = (suggestion: string) => {
         <div className="max-w-2xl mx-auto text-center">
           <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            Get 3 real website examples for your business
+            Learn how course websites are structured
           </h2>
           <p className="text-muted-foreground mb-8">
-            Enter your business/niche and email. We'll send a mini pack: layouts, copy structure, and the exact sections that convert.
+            Tell us your course topic and we'll email you real examples, plus a simple checklist of the sections to include.
           </p>
           <form onSubmit={handleEmailSubmit} className="space-y-4 max-w-xl mx-auto">
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="text-left">
-                <label className="text-sm text-muted-foreground mb-1.5 block">Business / Niche</label>
+                <label className="text-sm text-muted-foreground mb-1.5 block">Course topic</label>
                 <Input
                   type="text"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g., Roofing company, Italian restaurant,"
+                  placeholder="e.g., fat loss at home, Notion for freelancers, AI for beginners"
                   className="w-full"
                   disabled={isSubmitting}
                 />
@@ -534,7 +534,7 @@ const handleChipClick = (suggestion: string) => {
                   Sending...
                 </>
               ) : (
-                "Send my examples"
+                "Send me the examples"
               )}
             </Button>
           </form>
