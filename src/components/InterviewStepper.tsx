@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { 
   WebsiteType, 
-  ServiceMode, 
   PrimaryGoal, 
   StyleVibe,
   InterviewAnswers 
@@ -27,30 +26,21 @@ interface InterviewStepperProps {
 }
 
 const WEBSITE_TYPES: { value: WebsiteType; label: string }[] = [
-  { value: 'local_service', label: 'Local Service' },
-  { value: 'restaurant', label: 'Restaurant' },
-  { value: 'ecommerce', label: 'E-commerce' },
+  { value: 'coaching', label: 'Course / Coaching' },
+  { value: 'saas', label: 'SaaS' },
   { value: 'portfolio', label: 'Portfolio' },
   { value: 'agency', label: 'Agency' },
-  { value: 'saas', label: 'SaaS' },
-  { value: 'coaching', label: 'Coaching/Course' },
+  { value: 'ecommerce', label: 'E-commerce' },
   { value: 'event', label: 'Event' },
   { value: 'other', label: 'Other' },
 ];
 
-const SERVICE_MODES: { value: ServiceMode; label: string }[] = [
-  { value: 'local', label: 'Local' },
-  { value: 'online', label: 'Online' },
-  { value: 'both', label: 'Both' },
-];
-
 const PRIMARY_GOALS: { value: PrimaryGoal; label: string }[] = [
-  { value: 'get_quote', label: 'Get a quote' },
-  { value: 'book_appointment', label: 'Book an appointment' },
-  { value: 'call_me', label: 'Call me' },
-  { value: 'buy_product', label: 'Buy a product' },
+  { value: 'buy_course', label: 'Buy the course' },
+  { value: 'join_waitlist', label: 'Join a waitlist' },
   { value: 'join_email', label: 'Join email list' },
-  { value: 'contact_me', label: 'Contact me' },
+  { value: 'book_call', label: 'Book a discovery call' },
+  { value: 'apply_program', label: 'Apply to program' },
 ];
 
 const STYLE_VIBES: { value: StyleVibe; label: string }[] = [
@@ -60,6 +50,19 @@ const STYLE_VIBES: { value: StyleVibe; label: string }[] = [
   { value: 'luxury', label: 'Luxury' },
   { value: 'playful', label: 'Playful' },
   { value: 'dark', label: 'Dark/Sleek' },
+];
+
+// Offer placeholders for course structure
+const OFFER_PLACEHOLDERS = [
+  'e.g. Fat loss fundamentals',
+  'e.g. Weekly meal plans + workouts',
+  'e.g. Private community + check-ins',
+];
+
+const OFFER_LABELS = [
+  'Module 1 / Core result',
+  'Module 2 / Core result',
+  'Bonus / Support (community, calls, templates)',
 ];
 
 function ChipGroup<T extends string>({
@@ -140,12 +143,12 @@ export function InterviewStepper({
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              What's your business name?
+              What's the name of your course or brand?
             </h3>
             <Input
               value={answers.businessName}
               onChange={(e) => onUpdateAnswer('businessName', e.target.value)}
-              placeholder="e.g., Tony's Pizza, Apex Roofing..."
+              placeholder="e.g. Lean Body Blueprint, Client Magnet OS, AI for Beginners"
               className="bg-background/50 border-border/50"
               autoFocus
             />
@@ -156,26 +159,18 @@ export function InterviewStepper({
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              Local or online business?
+              Who is this course for, and what will they achieve?
             </h3>
-            <ChipGroup
-              options={SERVICE_MODES}
-              value={answers.serviceMode}
-              onChange={(v) => onUpdateAnswer('serviceMode', v)}
+            <p className="text-sm text-muted-foreground">
+              Be specific. The clearer the transformation, the stronger the site.
+            </p>
+            <Textarea
+              value={answers.audienceTransformation}
+              onChange={(e) => onUpdateAnswer('audienceTransformation', e.target.value)}
+              placeholder="e.g. Busy women who want to lose fat at home without a gym"
+              className="bg-background/50 border-border/50 min-h-[100px] resize-none"
+              autoFocus
             />
-            {(answers.serviceMode === 'local' || answers.serviceMode === 'both') && (
-              <div className="pt-2">
-                <label className="text-sm text-muted-foreground mb-2 block">
-                  City/Area you serve
-                </label>
-                <Input
-                  value={answers.serviceArea}
-                  onChange={(e) => onUpdateAnswer('serviceArea', e.target.value)}
-                  placeholder="e.g., Denver, CO"
-                  className="bg-background/50 border-border/50"
-                />
-              </div>
-            )}
           </div>
         );
 
@@ -183,7 +178,7 @@ export function InterviewStepper({
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              What's the primary goal of your site?
+              What should visitors do first on your course site?
             </h3>
             <ChipGroup
               options={PRIMARY_GOALS}
@@ -197,17 +192,21 @@ export function InterviewStepper({
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              Top 3 things you offer <span className="text-muted-foreground font-normal">(optional)</span>
+              What does your course include? <span className="text-muted-foreground font-normal">(optional)</span>
             </h3>
             <div className="space-y-3">
               {[0, 1, 2].map((i) => (
-                <Input
-                  key={i}
-                  value={answers.offers[i as 0 | 1 | 2]}
-                  onChange={(e) => onUpdateOffer(i as 0 | 1 | 2, e.target.value)}
-                  placeholder={`Offer ${i + 1}`}
-                  className="bg-background/50 border-border/50"
-                />
+                <div key={i} className="space-y-1">
+                  <label className="text-xs text-muted-foreground">
+                    {OFFER_LABELS[i]}
+                  </label>
+                  <Input
+                    value={answers.offers[i as 0 | 1 | 2]}
+                    onChange={(e) => onUpdateOffer(i as 0 | 1 | 2, e.target.value)}
+                    placeholder={OFFER_PLACEHOLDERS[i]}
+                    className="bg-background/50 border-border/50"
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -217,7 +216,7 @@ export function InterviewStepper({
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              Pick a style vibe
+              Pick a visual style for your course brand
             </h3>
             <ChipGroup
               options={STYLE_VIBES}
@@ -257,7 +256,7 @@ export function InterviewStepper({
       </div>
 
       {/* Step content */}
-      <div className="min-h-[120px]">
+      <div className="min-h-[140px]">
         {renderStepContent()}
       </div>
 

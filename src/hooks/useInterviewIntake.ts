@@ -1,25 +1,20 @@
 import { useState, useCallback, useMemo } from 'react';
 
 export type WebsiteType = 
-  | 'local_service' 
-  | 'restaurant' 
-  | 'ecommerce' 
+  | 'coaching' 
+  | 'saas' 
   | 'portfolio' 
   | 'agency' 
-  | 'saas' 
-  | 'coaching' 
+  | 'ecommerce' 
   | 'event' 
   | 'other';
 
-export type ServiceMode = 'local' | 'online' | 'both';
-
 export type PrimaryGoal = 
-  | 'get_quote' 
-  | 'book_appointment' 
-  | 'call_me' 
-  | 'buy_product' 
+  | 'buy_course' 
+  | 'join_waitlist' 
   | 'join_email' 
-  | 'contact_me';
+  | 'book_call' 
+  | 'apply_program';
 
 export type StyleVibe = 
   | 'modern' 
@@ -32,11 +27,10 @@ export type StyleVibe =
 export interface InterviewAnswers {
   websiteType: WebsiteType | null;
   websiteTypeOther: string; // Custom type when "other" is selected
-  businessName: string;
-  serviceMode: ServiceMode | null;
-  serviceArea: string;
+  businessName: string; // Course or brand name
+  audienceTransformation: string; // Who is this for + what will they achieve
   primaryGoal: PrimaryGoal | null;
-  offers: [string, string, string];
+  offers: [string, string, string]; // Course modules/structure
   vibe: StyleVibe | null;
 }
 
@@ -50,8 +44,7 @@ const INITIAL_ANSWERS: InterviewAnswers = {
   websiteType: null,
   websiteTypeOther: '',
   businessName: '',
-  serviceMode: null,
-  serviceArea: '',
+  audienceTransformation: '',
   primaryGoal: null,
   offers: ['', '', ''],
   vibe: null,
@@ -60,24 +53,21 @@ const INITIAL_ANSWERS: InterviewAnswers = {
 const TOTAL_STEPS = 6;
 
 const WEBSITE_TYPE_LABELS: Record<WebsiteType, string> = {
-  local_service: 'Local Service',
-  restaurant: 'Restaurant',
-  ecommerce: 'E-commerce',
+  coaching: 'Course / Coaching',
+  saas: 'SaaS',
   portfolio: 'Portfolio',
   agency: 'Agency',
-  saas: 'SaaS',
-  coaching: 'Coaching/Course',
+  ecommerce: 'E-commerce',
   event: 'Event',
   other: 'Other',
 };
 
 const GOAL_LABELS: Record<PrimaryGoal, string> = {
-  get_quote: 'Get a quote',
-  book_appointment: 'Book an appointment',
-  call_me: 'Call me',
-  buy_product: 'Buy a product',
+  buy_course: 'Buy the course',
+  join_waitlist: 'Join a waitlist',
   join_email: 'Join email list',
-  contact_me: 'Contact me',
+  book_call: 'Book a discovery call',
+  apply_program: 'Apply to program',
 };
 
 const VIBE_LABELS: Record<StyleVibe, string> = {
@@ -166,7 +156,7 @@ export function useInterviewIntake(initialPrompt: string = '') {
         }
         return answers.websiteType !== null;
       case 2: return answers.businessName.trim().length > 0;
-      case 3: return answers.serviceMode !== null;
+      case 3: return answers.audienceTransformation.trim().length > 0;
       case 4: return answers.primaryGoal !== null;
       case 5: return true; // Offers are optional
       case 6: return answers.vibe !== null;
@@ -180,6 +170,7 @@ export function useInterviewIntake(initialPrompt: string = '') {
     return (
       answers.websiteType !== null &&
       answers.businessName.trim().length > 0 &&
+      answers.audienceTransformation.trim().length > 0 &&
       answers.primaryGoal !== null &&
       answers.vibe !== null
     );
@@ -198,24 +189,13 @@ export function useInterviewIntake(initialPrompt: string = '') {
         : '';
     const goalLabel = answers.primaryGoal ? GOAL_LABELS[answers.primaryGoal] : '';
     const vibeLabel = answers.vibe ? VIBE_LABELS[answers.vibe] : '';
-    
-    let serviceInfo = '';
-    if (answers.serviceMode === 'both' && answers.serviceArea) {
-      serviceInfo = ` Serves both local (${answers.serviceArea}) and online customers.`;
-    } else if (answers.serviceMode === 'both') {
-      serviceInfo = ' Serves both local and online customers.';
-    } else if (answers.serviceMode === 'local' && answers.serviceArea) {
-      serviceInfo = ` Serves ${answers.serviceArea}.`;
-    } else if (answers.serviceMode === 'online') {
-      serviceInfo = ' Operates online.';
-    }
 
     const offersFiltered = answers.offers.filter(o => o.trim());
     const offersText = offersFiltered.length > 0
-      ? ` Top offers: ${offersFiltered.join(', ')}.`
+      ? ` Course includes: ${offersFiltered.join(', ')}.`
       : '';
 
-    return `Build a ${typeLabel.toLowerCase()} website for ${answers.businessName}.${serviceInfo} Primary goal: ${goalLabel.toLowerCase()}.${offersText} Style vibe: ${vibeLabel.toLowerCase()}. Generate a high-converting homepage plus essential pages.`;
+    return `Build a ${typeLabel.toLowerCase()} website for "${answers.businessName}". Target audience and transformation: ${answers.audienceTransformation}. Primary goal: ${goalLabel.toLowerCase()}.${offersText} Style vibe: ${vibeLabel.toLowerCase()}. Generate a high-converting course landing page.`;
   }, [state, canSubmit]);
 
   // Structured data for backend
@@ -224,8 +204,7 @@ export function useInterviewIntake(initialPrompt: string = '') {
     return {
       websiteType: answers.websiteType === 'other' ? answers.websiteTypeOther : answers.websiteType,
       businessName: answers.businessName,
-      serviceMode: answers.serviceMode,
-      serviceArea: answers.serviceArea || null,
+      audienceTransformation: answers.audienceTransformation,
       primaryGoal: answers.primaryGoal,
       offers: answers.offers.filter(o => o.trim()),
       vibe: answers.vibe,
