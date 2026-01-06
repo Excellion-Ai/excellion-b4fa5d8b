@@ -992,7 +992,71 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      github_connections_safe: {
+        Row: {
+          connected_at: string | null
+          github_user_id: string | null
+          github_username: string | null
+          id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          connected_at?: string | null
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          connected_at?: string | null
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      workspace_invites_safe: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string | null
+          role: string | null
+          status: string | null
+          token: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string | null
+          role?: string | null
+          status?: string | null
+          token?: never
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string | null
+          role?: string | null
+          status?: string | null
+          token?: never
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_invites_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       check_domain_verification: {
