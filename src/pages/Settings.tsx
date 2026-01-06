@@ -19,6 +19,7 @@ import {
   LogOut,
   ArrowLeft,
   ChevronRight,
+  BookOpen,
 } from 'lucide-react';
 import excellionLogo from '@/assets/excellion-logo.png';
 
@@ -39,8 +40,9 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: 'Publishing',
+    title: 'Studio',
     items: [
+      { label: 'Knowledge Base', path: '/settings/knowledge', icon: BookOpen },
       { label: 'Domains', path: '/settings/domains', icon: Globe },
     ],
   },

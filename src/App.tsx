@@ -31,6 +31,7 @@ const NotificationsSettings = lazyWithRetry(() => import("./pages/settings/Notif
 const WorkspaceSettings = lazyWithRetry(() => import("./pages/settings/WorkspaceSettings"), "WorkspaceSettings");
 const TeamSettings = lazyWithRetry(() => import("./pages/settings/TeamSettings"), "TeamSettings");
 const DomainsSettings = lazyWithRetry(() => import("./pages/settings/DomainsSettings"), "DomainsSettings");
+const KnowledgeSettings = lazyWithRetry(() => import("./pages/settings/KnowledgeSettings"), "KnowledgeSettings");
 const AppearanceSettings = lazyWithRetry(() => import("./pages/settings/AppearanceSettings"), "AppearanceSettings");
 const ShortcutsSettings = lazyWithRetry(() => import("./pages/settings/ShortcutsSettings"), "ShortcutsSettings");
 const HelpSettings = lazyWithRetry(() => import("./pages/settings/HelpSettings"), "HelpSettings");
@@ -82,6 +83,7 @@ const App = () => (
           <Route path="notifications" element={<NotificationsSettings />} />
           <Route path="workspace" element={<WorkspaceSettings />} />
           <Route path="team" element={<TeamSettings />} />
+          <Route path="knowledge" element={<KnowledgeSettings />} />
           <Route path="domains" element={<DomainsSettings />} />
           <Route path="appearance" element={<AppearanceSettings />} />
           <Route path="shortcuts" element={<ShortcutsSettings />} />
