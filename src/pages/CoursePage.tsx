@@ -23,6 +23,7 @@ interface Course {
   duration_weeks: number | null;
   modules: CourseModule[];
   status: string | null;
+  subdomain: string | null;
   published_url: string | null;
   published_at: string | null;
   created_at: string;
@@ -45,11 +46,26 @@ export default function CoursePage() {
 
       console.log('[CoursePage] Fetching course with subdomain:', subdomain);
 
-      const { data, error: fetchError } = await supabase
+      // Try subdomain first, fallback to ID for backwards compatibility
+      let query = supabase
         .from('courses')
         .select('*')
-        .eq('id', subdomain)
+        .eq('subdomain', subdomain)
         .single();
+
+      let { data, error: fetchError } = await query;
+
+      // If not found by subdomain, try by ID (UUID)
+      if (fetchError && subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        const idQuery = await supabase
+          .from('courses')
+          .select('*')
+          .eq('id', subdomain)
+          .single();
+        
+        data = idQuery.data;
+        fetchError = idQuery.error;
+      }
 
       if (fetchError) {
         console.error('[CoursePage] Fetch error:', fetchError);
