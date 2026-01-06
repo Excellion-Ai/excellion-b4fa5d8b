@@ -192,7 +192,7 @@ const handleChipClick = (suggestion: string) => {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-20 pb-12">
         {/* Video Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <video
