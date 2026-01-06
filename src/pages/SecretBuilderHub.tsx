@@ -349,6 +349,14 @@ export default function SecretBuilderHub() {
     }
   };
 
+  // Handle Build Assist interview submission
+  const handleInterviewSubmit = useCallback(() => {
+    if (interview.canSubmit && interview.composedPrompt) {
+      setInterviewOpen(false);
+      handleGenerate(interview.composedPrompt);
+    }
+  }, [interview.canSubmit, interview.composedPrompt]);
+
   const handleGenerate = useCallback(async (promptOverride?: string) => {
     const ideaToUse = promptOverride || idea;
     if (!ideaToUse.trim() || isGenerating || isSubmittingRef.current) return;
@@ -1379,6 +1387,30 @@ export default function SecretBuilderHub() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Build Assist Dialog */}
+      <Dialog open={interviewOpen} onOpenChange={setInterviewOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Build Assist</DialogTitle>
+          </DialogHeader>
+          <InterviewStepper
+            step={interview.step}
+            totalSteps={interview.totalSteps}
+            answers={interview.answers}
+            canProceed={interview.canProceed}
+            canSubmit={interview.canSubmit}
+            onUpdateAnswer={interview.updateAnswer}
+            onUpdateOffer={interview.updateOffer}
+            onNext={interview.nextStep}
+            onBack={interview.prevStep}
+            onSkip={interview.skipStep}
+            onSubmit={handleInterviewSubmit}
+            onSwitchToQuickPrompt={() => setInterviewOpen(false)}
+            isGenerating={isGenerating}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
