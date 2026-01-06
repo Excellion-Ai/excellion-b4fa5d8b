@@ -1847,27 +1847,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               <span>AI Image</span>
             </Button>
 
-            {/* Layout */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                const layouts: Array<'standard' | 'bento' | 'layered' | 'horizontal'> = ['standard', 'bento', 'layered', 'horizontal'];
-                const currentLayout = siteSpec?.layoutStructure || 'standard';
-                const currentIndex = layouts.indexOf(currentLayout);
-                const nextIndex = (currentIndex + 1) % layouts.length;
-                const nextLayout = layouts[nextIndex];
-                if (siteSpec) {
-                  setSiteSpec({ ...siteSpec, layoutStructure: nextLayout });
-                  toast.success(`Layout: ${nextLayout.charAt(0).toUpperCase() + nextLayout.slice(1)}`);
-                }
-              }}
-              className="gap-1.5 text-xs px-3 h-9 text-muted-foreground hover:text-foreground"
-              disabled={!siteSpec}
-            >
-              <LayoutGrid className="h-4 w-4" />
-              <span>Layout</span>
-            </Button>
 
             {/* Bookmarks */}
             <BookmarksPanel
