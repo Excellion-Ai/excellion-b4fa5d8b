@@ -767,7 +767,11 @@ export default function SecretBuilderHub() {
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">Workspace</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Studio</DropdownMenuLabel>
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/knowledge')}>
+                <BookOpen className="w-4 h-4" />
+                <span>Knowledge Base</span>
+              </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/workspace')}>
                 <FolderKanban className="w-4 h-4" />
                 <span>Workspace Settings</span>
