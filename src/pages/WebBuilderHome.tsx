@@ -304,7 +304,7 @@ const handleChipClick = (suggestion: string) => {
                     </div>
                   </>
                 ) : (
-                  /* Guided Interview Mode */
+                  /* Build Assist Mode */
                   <InterviewStepper
                     step={interview.step}
                     totalSteps={interview.totalSteps}
