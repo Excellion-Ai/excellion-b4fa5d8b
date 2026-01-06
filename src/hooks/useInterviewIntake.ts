@@ -1,12 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
 
 export type WebsiteType = 
-  | 'coaching' 
-  | 'saas' 
-  | 'portfolio' 
-  | 'agency' 
-  | 'ecommerce' 
-  | 'event' 
+  | 'self_paced_course' 
+  | 'cohort_program' 
+  | 'coaching_mentorship' 
+  | 'workshop_challenge' 
+  | 'digital_product' 
   | 'other';
 
 export type PrimaryGoal = 
@@ -53,13 +52,12 @@ const INITIAL_ANSWERS: InterviewAnswers = {
 const TOTAL_STEPS = 6;
 
 const WEBSITE_TYPE_LABELS: Record<WebsiteType, string> = {
-  coaching: 'Course / Coaching',
-  saas: 'SaaS',
-  portfolio: 'Portfolio',
-  agency: 'Agency',
-  ecommerce: 'E-commerce',
-  event: 'Event',
-  other: 'Other',
+  self_paced_course: 'Online course (self-paced)',
+  cohort_program: 'Cohort-based program',
+  coaching_mentorship: 'Coaching or mentorship program',
+  workshop_challenge: 'Workshop or challenge',
+  digital_product: 'Digital product or training library',
+  other: 'Something else',
 };
 
 const GOAL_LABELS: Record<PrimaryGoal, string> = {
