@@ -221,6 +221,7 @@ export type Database = {
           published_at: string | null
           published_url: string | null
           status: string | null
+          subdomain: string | null
           title: string
           updated_at: string
           user_id: string
@@ -235,6 +236,7 @@ export type Database = {
           published_at?: string | null
           published_url?: string | null
           status?: string | null
+          subdomain?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -249,6 +251,7 @@ export type Database = {
           published_at?: string | null
           published_url?: string | null
           status?: string | null
+          subdomain?: string | null
           title?: string
           updated_at?: string
           user_id?: string
