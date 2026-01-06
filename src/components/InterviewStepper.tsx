@@ -26,13 +26,12 @@ interface InterviewStepperProps {
 }
 
 const WEBSITE_TYPES: { value: WebsiteType; label: string }[] = [
-  { value: 'coaching', label: 'Course / Coaching' },
-  { value: 'saas', label: 'SaaS' },
-  { value: 'portfolio', label: 'Portfolio' },
-  { value: 'agency', label: 'Agency' },
-  { value: 'ecommerce', label: 'E-commerce' },
-  { value: 'event', label: 'Event' },
-  { value: 'other', label: 'Other' },
+  { value: 'self_paced_course', label: 'Online course (self-paced)' },
+  { value: 'cohort_program', label: 'Cohort-based program' },
+  { value: 'coaching_mentorship', label: 'Coaching or mentorship' },
+  { value: 'workshop_challenge', label: 'Workshop or challenge' },
+  { value: 'digital_product', label: 'Digital product / training library' },
+  { value: 'other', label: 'Something else' },
 ];
 
 const PRIMARY_GOALS: { value: PrimaryGoal; label: string }[] = [
@@ -117,20 +116,20 @@ export function InterviewStepper({
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              What type of website are you building?
+              What are you creating?
             </h3>
             <ChipGroup
               options={WEBSITE_TYPES}
               value={answers.websiteType}
               onChange={(v) => onUpdateAnswer('websiteType', v)}
             />
-            {/* Show text input when "Other" is selected */}
+            {/* Show text input when "Something else" is selected */}
             {answers.websiteType === 'other' && (
               <div className="pt-2">
                 <Input
                   value={answers.websiteTypeOther}
                   onChange={(e) => onUpdateAnswer('websiteTypeOther', e.target.value)}
-                  placeholder="Describe your business type (e.g., Pet grooming, Music lessons...)"
+                  placeholder="Describe what you're building (e.g., Membership site, Certification program...)"
                   className="bg-background/50 border-border/50"
                   autoFocus
                 />
@@ -241,9 +240,9 @@ export function InterviewStepper({
         <button
           type="button"
           onClick={onSwitchToQuickPrompt}
-          className="text-primary hover:underline text-sm"
+          className="text-muted-foreground/60 hover:text-muted-foreground text-xs transition-colors"
         >
-          Switch to Quick Prompt
+          or use quick prompt
         </button>
       </div>
 
