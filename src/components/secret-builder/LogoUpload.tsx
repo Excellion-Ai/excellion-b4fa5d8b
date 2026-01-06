@@ -19,10 +19,16 @@ interface LogoUploadProps {
   onUpdateLogo: (logo: string | undefined) => void;
   generatedImages?: GeneratedImage[];
   isLoadingImages?: boolean;
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
 }
 
-export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoadingImages = false }: LogoUploadProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoadingImages = false, externalOpen, onExternalOpenChange }: LogoUploadProps) {
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  
+  // Use external control if provided, otherwise use internal state
+  const isExpanded = externalOpen !== undefined ? externalOpen : internalExpanded;
+  const setIsExpanded = onExternalOpenChange || setInternalExpanded;
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
