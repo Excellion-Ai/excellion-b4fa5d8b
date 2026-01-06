@@ -220,27 +220,27 @@ const handleChipClick = (suggestion: string) => {
           </video>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-          <div className="bg-background/50 backdrop-blur-sm px-4 md:px-8 py-6 md:py-10 rounded-lg border border-border/50">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-6">
-              <Sparkles className="w-4 h-4" />
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-3 sm:px-4">
+          <div className="bg-background/50 backdrop-blur-sm px-3 sm:px-4 md:px-8 py-4 sm:py-6 md:py-10 rounded-lg border border-border/50">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs sm:text-sm text-primary mb-3 sm:mb-6">
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
               <span>AI-Powered Website Builder</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-2 sm:mb-4">
               Your course website,{" "}
               <span className="text-accent">written and structured by AI.</span>
             </h1>
-            <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold">
+            <p className="text-sm sm:text-xl text-accent max-w-3xl mx-auto mb-4 sm:mb-8 font-semibold">
               Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
             </p>
 
             {/* Mode Toggle */}
-            <div className="max-w-2xl mx-auto mb-4">
+            <div className="max-w-2xl mx-auto mb-3 sm:mb-4">
               <div className="inline-flex p-1 rounded-lg bg-background/30 border border-border/30 backdrop-blur-sm">
                 <button
                   onClick={() => handleSwitchMode('quick')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
                     inputMode === 'quick'
                       ? 'bg-primary text-primary-foreground'
                       : 'text-foreground/70 hover:text-foreground'
@@ -250,13 +250,13 @@ const handleChipClick = (suggestion: string) => {
                 </button>
                 <button
                   onClick={() => handleSwitchMode('interview')}
-                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1 ${
+                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all flex items-center gap-1 ${
                     inputMode === 'interview'
                       ? 'bg-primary text-primary-foreground'
                       : 'text-foreground/70 hover:text-foreground'
                   }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   Build Assist
                 </button>
               </div>
@@ -264,7 +264,7 @@ const handleChipClick = (suggestion: string) => {
 
             {/* Input Area */}
             <div className="max-w-2xl mx-auto">
-              <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-4">
+              <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-3 sm:p-4">
                 {inputMode === 'quick' ? (
                   <>
                     {/* Quick Prompt Mode */}
@@ -273,7 +273,7 @@ const handleChipClick = (suggestion: string) => {
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="border-0 bg-transparent text-base min-h-[48px] max-h-[200px] px-4 py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
+                        className="border-0 bg-transparent text-sm sm:text-base min-h-[40px] sm:min-h-[48px] max-h-[200px] px-3 sm:px-4 py-2 sm:py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
                         rows={1}
                         style={{ height: 'auto' }}
                         onInput={(e) => {
@@ -283,7 +283,7 @@ const handleChipClick = (suggestion: string) => {
                         }}
                       />
                       {!prompt && (
-                        <div className="absolute top-0 left-0 px-4 py-3 pointer-events-none text-base text-left">
+                        <div className="absolute top-0 left-0 px-3 sm:px-4 py-2 sm:py-3 pointer-events-none text-sm sm:text-base text-left">
                           <AnimatedPlaceholder 
                             suggestions={placeholderSuggestions}
                             typingSpeed={25}
@@ -293,13 +293,13 @@ const handleChipClick = (suggestion: string) => {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2 text-left px-4">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2 text-left px-3 sm:px-4">
                       Include your audience, the transformation, and your offer type. Excellion handles structure, page flow, and sales copy.
                     </p>
-                    <div className="flex items-center justify-end mt-3">
-                      <Button onClick={handleStart} className="h-10 px-4 gap-2">
-                        <span className="text-sm">Generate course site draft</span>
-                        <ArrowRight className="w-4 h-4" />
+                    <div className="flex items-center justify-end mt-2 sm:mt-3">
+                      <Button onClick={handleStart} className="h-8 sm:h-10 px-3 sm:px-4 gap-1.5 sm:gap-2">
+                        <span className="text-xs sm:text-sm">Generate course site draft</span>
+                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   </>
@@ -326,12 +326,12 @@ const handleChipClick = (suggestion: string) => {
               {inputMode === 'quick' && (
                 <>
                   {/* Suggestion Chips */}
-                  <div className="flex flex-wrap justify-center gap-2 mt-4">
+                  <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-4">
                     {suggestionChips.map((chip, index) => (
                       <button
                         key={index}
                         onClick={() => handleChipClick(chip)}
-                        className="px-3 py-1.5 rounded-full text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
                       >
                         {chip}
                       </button>
@@ -339,7 +339,7 @@ const handleChipClick = (suggestion: string) => {
                   </div>
 
                   {/* Interview prompt link */}
-                  <p className="text-xs text-foreground/60 mt-4 font-light">
+                  <p className="text-[10px] sm:text-xs text-foreground/60 mt-3 sm:mt-4 font-light">
                     No credit card required.{' '}
                     <button
                       onClick={() => handleSwitchMode('interview')}
