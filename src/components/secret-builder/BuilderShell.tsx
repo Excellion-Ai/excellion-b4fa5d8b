@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, Image as ImageIcon } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -448,6 +448,8 @@ export function BuilderShell() {
   const [showDiffViewer, setShowDiffViewer] = useState(false);
   const [pendingSpec, setPendingSpec] = useState<SiteSpec | null>(null);
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
+  const [logoUploadOpen, setLogoUploadOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const fallbackForcedOnceRef = useRef<boolean>(false);
   
@@ -1663,13 +1665,40 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   onUpdateLogo={editor.updateLogo}
                   generatedImages={generatedImages}
                   isLoadingImages={isLoadingImages}
+                  externalOpen={logoUploadOpen}
+                  onExternalOpenChange={setLogoUploadOpen}
                 />
-                <HelpChat />
+                <HelpChat 
+                  externalOpen={helpOpen}
+                  onExternalOpenChange={setHelpOpen}
+                />
               </div>
             )}
 
             {/* Chat Input */}
             <div className="border-t border-border p-4">
+              {/* Quick Action Buttons */}
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full text-xs px-4 h-8 border-border/50 bg-card/30 hover:bg-card/50"
+                  onClick={() => setLogoUploadOpen(true)}
+                >
+                  <ImageIcon className="h-3.5 w-3.5 mr-1.5" />
+                  Add logo
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full text-xs px-4 h-8 border-border/50 bg-card/30 hover:bg-card/50"
+                  onClick={() => setHelpOpen(true)}
+                >
+                  <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
+                  Help
+                </Button>
+              </div>
+
               {/* Attachments preview */}
               <AttachmentChips 
                 attachments={attachments} 

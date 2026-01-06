@@ -39,8 +39,17 @@ const WELCOME_MESSAGE: Message = {
 
 const STORAGE_KEY = 'excellion-chat-history';
 
-export function HelpChat() {
-  const [isOpen, setIsOpen] = useState(false);
+interface HelpChatProps {
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
+}
+
+export function HelpChat({ externalOpen, onExternalOpenChange }: HelpChatProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Use external control if provided, otherwise use internal state
+  const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setIsOpen = onExternalOpenChange || setInternalOpen;
   const [showHistory, setShowHistory] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
     try {
