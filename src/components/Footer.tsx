@@ -13,7 +13,7 @@ const Footer = () => {
               <span className="text-xl font-bold text-foreground">Excellion AI</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Build beautiful websites with AI. No coding required. Excellion turns a short conversation into a real website with pages, copy, forms, and a clear launch plan.
+              Build course websites with AI. No code required. Excellion turns a short chat into a complete course site draft with pages, lessons, and clear calls-to-action.
             </p>
           </div>
 
@@ -68,11 +68,6 @@ const Footer = () => {
               <li>
                 <Link to="/faq" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                   FAQ
-                </Link>
-              </li>
-              <li>
-                <Link to="/maintenance-request" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                  Maintenance
                 </Link>
               </li>
             </ul>
