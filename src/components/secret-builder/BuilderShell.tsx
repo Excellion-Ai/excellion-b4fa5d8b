@@ -1678,23 +1678,21 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             {/* Chat Input */}
             <div className="border-t border-border p-4">
               {/* Quick Action Buttons */}
-              <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="flex items-center justify-center gap-3 mb-4">
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="rounded-full text-xs px-4 h-8 border-border/50 bg-card/30 hover:bg-card/50"
+                  className="rounded-full px-5 h-10 border-primary/30 bg-card/80 hover:bg-card text-primary hover:text-primary"
                   onClick={() => setLogoUploadOpen(true)}
                 >
-                  <ImageIcon className="h-3.5 w-3.5 mr-1.5" />
+                  <ImageIcon className="h-4 w-4 mr-2 text-primary" />
                   Add logo
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="rounded-full text-xs px-4 h-8 border-border/50 bg-card/30 hover:bg-card/50"
+                  className="rounded-full px-5 h-10 border-primary/30 bg-card/80 hover:bg-card text-primary hover:text-primary"
                   onClick={() => setHelpOpen(true)}
                 >
-                  <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
+                  <HelpCircle className="h-4 w-4 mr-2 text-primary" />
                   Help
                 </Button>
               </div>
