@@ -90,11 +90,11 @@ const Hero = () => {
             </div>
             
             <h1 className="text-3xl md:text-7xl font-bold text-foreground leading-tight">
-              Your dream course, <span className="text-accent">generated in seconds.</span>
+              Your course website, <span className="text-accent">written and structured by AI.</span>
             </h1>
 
             <p className="text-base md:text-xl text-accent max-w-2xl mx-auto mt-3 md:mt-6 font-semibold">
-              An AI course builder that generates a complete curriculum in seconds. Make changes by chat, customize lessons, and publish with your own domain.
+              Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
             </p>
 
             <p className="text-xs text-foreground/80 dark:text-foreground/60 mt-3 md:mt-6 font-light">
