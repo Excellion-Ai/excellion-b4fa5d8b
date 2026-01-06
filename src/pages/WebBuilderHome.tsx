@@ -40,16 +40,17 @@ const suggestionChips = [
 
 
 const greatAtItems = [
-  "Designs clean, modern layouts based on your business type.",
-  "Writes conversion-focused copy for leads, bookings, or orders.",
-  "Suggests pages and sections you might be missing.",
-  "Sets you up with clear calls-to-action and forms."
+  "Turns your course idea into a clear site structure (in the right order)",
+  "Writes simple, persuasive sales copy that fits your audience",
+  "Builds the key sections: what you'll learn, curriculum, pricing, FAQs, and CTA",
+  "Helps you organize your course with lessons and video sections",
+  "Sets up clear \"Buy / Join Waitlist / Apply\" buttons so visitors know what to do"
 ];
 
 const notMagicItems = [
-  "Still needs your input on what you offer and how you work.",
-  "Won't replace a full brand designer for pixel-perfect identity.",
-  "Doesn't run your ads or marketing for you – it focuses on the site."
+  "Still needs your input on who it's for and the result students get",
+  "Won't replace your personal voice — you should tweak the wording",
+  "Doesn't run your ads or grow your audience — it focuses on the course site"
 ];
 
 type InputMode = 'quick' | 'interview';
