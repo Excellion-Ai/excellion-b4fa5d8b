@@ -149,29 +149,29 @@ const THEME_OPTIONS = [
 
 const QUICK_PROMPTS = [
   { 
-    label: 'Restaurant with online ordering', 
-    icon: Store,
-    fullPrompt: 'Build a modern restaurant website with online ordering, menu sections organized by category, hours/location info, and a prominent pickup/delivery CTA. Include a hero with food photography, testimonials, and a newsletter signup.'
-  },
-  { 
-    label: 'Service business lead-gen', 
+    label: 'Beginner coding bootcamp', 
     icon: Briefcase,
-    fullPrompt: 'Build a service business lead-gen site with a compelling hero CTA, services grid with icons, customer reviews/testimonials, FAQ section, and a contact form. Include trust badges and a clear value proposition.'
+    fullPrompt: 'Build a beginner-friendly coding bootcamp course covering HTML, CSS, and JavaScript fundamentals. Include hands-on projects, quizzes, and a final capstone project. Target complete beginners with no prior experience.'
   },
   { 
-    label: 'Booking / appointments', 
-    icon: Calendar,
-    fullPrompt: 'Build a booking site with a services list, availability CTA button, booking form with date/time selection, confirmation messages, and a pricing section. Include staff profiles and customer reviews.'
-  },
-  { 
-    label: 'Portfolio', 
+    label: 'Fitness coaching program', 
     icon: Users,
-    fullPrompt: 'Build a personal portfolio with a projects grid showing case studies, about section with skills, contact form, and social links. Include a hero with headline and a clean, minimal design.'
+    fullPrompt: 'Build a comprehensive fitness coaching program covering workout routines, nutrition basics, mindset, and habit building. Include video demonstrations, weekly workout plans, and progress tracking assignments.'
   },
   { 
-    label: 'Agency site', 
+    label: 'Online cooking class', 
+    icon: Store,
+    fullPrompt: 'Build an online cooking class covering essential techniques, knife skills, and 20 signature recipes. Include step-by-step video lessons, ingredient lists, and cooking assignments for each module.'
+  },
+  { 
+    label: 'Language learning course', 
+    icon: BookOpen,
+    fullPrompt: 'Build a language learning course for beginners covering vocabulary, grammar, pronunciation, and conversation skills. Include audio lessons, interactive quizzes, and speaking practice exercises.'
+  },
+  { 
+    label: 'Business coaching program', 
     icon: Rocket,
-    fullPrompt: 'Build an agency site with case studies, our process section, team profiles, pricing tiers, and a contact form. Include a compelling hero, client logos, and testimonials.'
+    fullPrompt: 'Build a business coaching program covering business planning, marketing strategy, sales techniques, and financial management. Include worksheets, case studies, and action-oriented assignments.'
   },
 ];
 
@@ -657,8 +657,8 @@ export default function SecretBuilderHub() {
                         variant="ghost"
                         className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                       >
-                        <Folder className="w-4 h-4" />
-                        <span className="text-sm flex-1 text-left">Projects</span>
+                                        <Folder className="w-4 h-4" />
+                                        <span className="text-sm flex-1 text-left">Courses</span>
                         <ChevronDown className={`w-4 h-4 transition-transform ${projectsFolderOpen ? 'rotate-180' : ''}`} />
                       </Button>
                     </CollapsibleTrigger>
@@ -860,8 +860,8 @@ export default function SecretBuilderHub() {
                 variant="ghost"
                 className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
               >
-                <Folder className="w-4 h-4" />
-                <span className="text-sm flex-1 text-left">Projects Folder</span>
+                        <Folder className="w-4 h-4" />
+                        <span className="text-sm flex-1 text-left">Courses Folder</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${projectsFolderOpen ? 'rotate-180' : ''}`} />
               </Button>
             </CollapsibleTrigger>
@@ -976,10 +976,10 @@ export default function SecretBuilderHub() {
           {/* Hero Section */}
           <section className="text-center mb-10">
             <h1 className="text-3xl lg:text-4xl font-semibold text-foreground mb-3">
-              Let's build your next site
+              Let's build your next course
             </h1>
             <p className="text-base text-muted-foreground max-w-lg mx-auto">
-              Describe what you want. Excellion generates a full site you can edit and publish.
+              Describe what you want. Excellion generates a full course you can edit and publish.
             </p>
           </section>
 
@@ -993,7 +993,7 @@ export default function SecretBuilderHub() {
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Describe your website idea..."
+                    placeholder="Describe your course idea..."
                     className="min-h-[100px] resize-none border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 p-0 pr-8 text-base"
                     disabled={isGenerating}
                   />
@@ -1121,7 +1121,7 @@ export default function SecretBuilderHub() {
           <section id="projects-section" className="mb-12">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-foreground">
-                Your Projects
+                Your Courses
               </h2>
               {projects.length > 6 && (
                 <Button 
@@ -1154,9 +1154,9 @@ export default function SecretBuilderHub() {
                   <div className="w-16 h-16 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto mb-4">
                     <FolderKanban className="w-8 h-8 text-muted-foreground/50" />
                   </div>
-                  <h3 className="text-base font-medium text-foreground mb-2">No projects yet</h3>
+                  <h3 className="text-base font-medium text-foreground mb-2">No courses yet</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Describe your website idea above to create your first project.
+                    Describe your course idea above to create your first course.
                   </p>
                 </CardContent>
               </Card>

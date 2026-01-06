@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.generate-niche-image]
 verify_jwt = false
+
+[functions.generate-course]
+verify_jwt = false

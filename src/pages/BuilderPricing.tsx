@@ -39,9 +39,9 @@ const aiBuilderPlans = [
     yearlyPrice: 0,
     credits: 20,
     features: [
-      "1 draft-only project (can't publish)",
-      "Generate a full website draft for your business",
-      "Edit content + layout in Studio",
+      "1 draft-only course (can't publish)",
+      "Generate a full course curriculum for your topic",
+      "Edit content + structure in Studio",
     ],
     note: "Publishing requires Starter or higher.",
     cta: "Get Started",
@@ -50,14 +50,14 @@ const aiBuilderPlans = [
   },
   {
     name: "Starter",
-    description: "Get your website live.",
+    description: "Get your course live.",
     monthlyPrice: 15,
     yearlyPrice: 150,
     credits: 200,
     features: [
-      "Publish your site + connect your domain",
-      "Enough build credits for a full site + key edits",
-      "Basic SEO + simple traffic stats",
+      "Publish your course + connect your domain",
+      "Enough build credits for a full course + key edits",
+      "Basic SEO + simple student analytics",
     ],
     cta: "Get Started",
     highlighted: false,
@@ -70,21 +70,21 @@ const aiBuilderPlans = [
     credits: 500,
     badge: "Best Seller",
     features: [
-      "More build credits for more edits and improvements",
-      "Add payments, bookings, and email signups (integrations)",
-      "More advanced sections (pricing, gallery, menus, etc.)",
+      "More build credits for more edits",
+      "Add payments, student enrollment, and certificates",
+      "More advanced sections (quizzes, assignments, etc.)",
     ],
     cta: "Get Started",
     highlighted: true,
   },
   {
     name: "Agency",
-    description: "For people building lots of sites.",
+    description: "For people building lots of courses.",
     monthlyPrice: 129,
     yearlyPrice: 1290,
     credits: 3000,
     features: [
-      "Highest build credits for high volume work",
+      "Highest build credits for high volume",
       "Multiple team seats",
       "White-label options + code export",
     ],
@@ -214,8 +214,8 @@ const BuilderPricing = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Pricing | Excellion AI Website Builder</title>
-        <meta name="description" content="Choose your plan. AI-powered website builder starting free, or let our team build it for you." />
+        <title>Pricing | Excellion AI Course Builder</title>
+        <meta name="description" content="Choose your plan. AI-powered course builder starting free. Create and publish complete online courses." />
       </Helmet>
 
       <Navigation />
@@ -224,18 +224,18 @@ const BuilderPricing = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Pricing
+            AI Course Builder Plans
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Start for free. Upgrade when you're ready to publish.
+            Build it yourself with AI assistance
           </p>
         </div>
 
         {/* AI Builder Pricing */}
         <section id="ai-builder" className="mb-24 scroll-mt-24">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-2">AI Builder Plans</h2>
-            <p className="text-muted-foreground">Build it yourself with AI assistance</p>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Choose Your Plan</h2>
+            <p className="text-muted-foreground">Start for free. Upgrade when you're ready to publish.</p>
           </div>
 
           {/* Sprint Pass Banner */}
@@ -248,7 +248,7 @@ const BuilderPricing = () => {
                 <div>
                   <p className="font-semibold text-foreground text-lg">Sprint Pass — $9 for 30 days</p>
                   <p className="text-sm text-muted-foreground">
-                    Launch fast for cheap. Includes 150 build credits for generating + modifying your website for 30 days. Renews to Pro ($29/mo) unless you cancel.
+                    Launch fast for cheap. Includes 150 build credits for generating + modifying your course for 30 days. Renews to Pro ($29/mo) unless you cancel.
                   </p>
                 </div>
               </div>
@@ -373,7 +373,7 @@ const BuilderPricing = () => {
             
             {/* Credits explanation */}
             <p className="text-sm text-muted-foreground">
-              Build credits = what you spend to generate and modify your website.
+              Build credits = what you spend to generate and modify your courses.
             </p>
           </div>
 
