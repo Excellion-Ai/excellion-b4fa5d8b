@@ -415,24 +415,24 @@ const handleChipClick = (suggestion: string) => {
       <section id="pricing" className="py-20 px-4 border-t border-border/50">
         <div className="max-w-3xl mx-auto">
           <div className="p-8 rounded-xl bg-card border border-border">
-            <span className="text-xs font-medium text-primary uppercase tracking-wide mb-2 block">AI Builder</span>
-            <h3 className="text-2xl font-semibold text-foreground mb-6">Build with Excellion AI</h3>
+            <span className="text-xs font-medium text-primary uppercase tracking-wide mb-2 block">AI Course Builder</span>
+            <h3 className="text-2xl font-semibold text-foreground mb-6">Build your course site with Excellion AI</h3>
             <ul className="space-y-4 mb-6">
               <li className="flex items-start gap-3 text-muted-foreground">
                 <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                Best if you want to stay hands-on without starting from a blank page.
+                Tell us your course idea and who it's for
               </li>
               <li className="flex items-start gap-3 text-muted-foreground">
                 <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                Describe what you want and Excellion generates a full site draft in seconds.
+                Get a complete course site draft in seconds
               </li>
               <li className="flex items-start gap-3 text-muted-foreground">
                 <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                Edit pages, sections, and copy directly inside the builder.
+                Edit pages, sections, and copy anytime inside the builder
               </li>
             </ul>
             <p className="text-sm text-muted-foreground mb-6">
-              Start free with a draft site. Only pay when you're ready to launch.
+              Start free with a draft site.
             </p>
             <Button 
               onClick={() => user ? navigate("/secret-builder-hub") : navigate("/auth?redirect=/secret-builder-hub")} 
