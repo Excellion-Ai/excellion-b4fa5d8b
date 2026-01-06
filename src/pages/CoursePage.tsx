@@ -1,18 +1,32 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Clock, BookOpen, GraduationCap, Check } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+
+interface Lesson {
+  id: string;
+  title: string;
+  type: 'video' | 'text' | 'quiz' | 'assignment';
+  duration_minutes?: number;
+  duration?: string;
+  content?: string;
+  is_preview?: boolean;
+  content_type?: string;
+}
 
 interface CourseModule {
   id: string;
   title: string;
-  lessons: Array<{
-    id: string;
-    title: string;
-    type: 'video' | 'text' | 'quiz' | 'assignment';
-    duration_minutes?: number;
-    content?: string;
-  }>;
+  description?: string;
+  lessons: Lesson[];
 }
 
 interface Course {
@@ -22,6 +36,7 @@ interface Course {
   difficulty: string | null;
   duration_weeks: number | null;
   modules: CourseModule[];
+  learningOutcomes?: string[];
   status: string | null;
   subdomain: string | null;
   published_url: string | null;
@@ -29,6 +44,30 @@ interface Course {
   created_at: string;
   updated_at: string;
 }
+
+const LessonTypeIcon = ({ type, contentType }: { type: string; contentType?: string }) => {
+  const displayType = contentType || type;
+  const icons: Record<string, React.ReactNode> = {
+    video: <span className="text-base">🎥</span>,
+    text: <span className="text-base">📖</span>,
+    quiz: <span className="text-base">❓</span>,
+    assignment: <span className="text-base">📝</span>,
+  };
+  return icons[displayType] || <span className="text-base">📖</span>;
+};
+
+const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
+  const colors: Record<string, string> = {
+    beginner: 'bg-green-500/20 text-green-400 border-green-500/30',
+    intermediate: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    advanced: 'bg-red-500/20 text-red-400 border-red-500/30',
+  };
+  return (
+    <Badge className={colors[difficulty?.toLowerCase()] || colors.beginner}>
+      {difficulty ? difficulty.charAt(0).toUpperCase() + difficulty.slice(1) : 'Beginner'}
+    </Badge>
+  );
+};
 
 export default function CoursePage() {
   const { subdomain } = useParams<{ subdomain: string }>();
@@ -44,9 +83,6 @@ export default function CoursePage() {
         return;
       }
 
-      console.log('[CoursePage] Fetching course with subdomain:', subdomain);
-
-      // Try subdomain first, fallback to ID for backwards compatibility
       let query = supabase
         .from('courses')
         .select('*')
@@ -55,7 +91,6 @@ export default function CoursePage() {
 
       let { data, error: fetchError } = await query;
 
-      // If not found by subdomain, try by ID (UUID)
       if (fetchError && subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         const idQuery = await supabase
           .from('courses')
@@ -68,14 +103,14 @@ export default function CoursePage() {
       }
 
       if (fetchError) {
-        console.error('[CoursePage] Fetch error:', fetchError);
         setError(fetchError.message);
       } else if (data) {
-        console.log('[CoursePage] Course JSON fetched:', data);
         const modules = Array.isArray(data.modules) ? (data.modules as unknown as CourseModule[]) : [];
+        const learningOutcomes = (data as any).learningOutcomes || (data as any).learning_outcomes || [];
         setCourse({
           ...data,
           modules,
+          learningOutcomes: Array.isArray(learningOutcomes) ? learningOutcomes : [],
         });
       }
 
@@ -115,12 +150,124 @@ export default function CoursePage() {
     );
   }
 
+  const totalLessons = course.modules.reduce((acc, mod) => acc + mod.lessons.length, 0);
+
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
-        <pre className="bg-card border border-border rounded-lg p-6 overflow-auto text-xs font-mono">
-          {JSON.stringify(course, null, 2)}
-        </pre>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto px-4 py-12 space-y-8">
+        {/* Course Header */}
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-3xl md:text-4xl">{course.title}</CardTitle>
+            {course.description && (
+              <p className="text-lg text-muted-foreground mt-2">{course.description}</p>
+            )}
+
+            <div className="flex flex-wrap gap-3 mt-6">
+              <DifficultyBadge difficulty={course.difficulty || 'beginner'} />
+              {course.duration_weeks && (
+                <Badge variant="outline" className="gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  {course.duration_weeks} weeks
+                </Badge>
+              )}
+              <Badge variant="outline" className="gap-1.5">
+                <BookOpen className="w-3.5 h-3.5" />
+                {course.modules.length} modules
+              </Badge>
+              <Badge variant="outline" className="gap-1.5">
+                <GraduationCap className="w-3.5 h-3.5" />
+                {totalLessons} lessons
+              </Badge>
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Learning Outcomes */}
+        {course.learningOutcomes && course.learningOutcomes.length > 0 && (
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-primary" />
+                What You'll Learn
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="grid gap-3 md:grid-cols-2">
+                {course.learningOutcomes.map((outcome, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-400 mt-0.5 shrink-0" />
+                    <span className="text-foreground/80">{outcome}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Course Curriculum */}
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-xl">Course Curriculum</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="multiple" className="space-y-3">
+              {course.modules.map((module, moduleIdx) => (
+                <AccordionItem
+                  key={module.id}
+                  value={module.id}
+                  className="border border-border rounded-lg px-4 bg-muted/20"
+                >
+                  <AccordionTrigger className="hover:no-underline py-4">
+                    <div className="flex items-center gap-3 text-left">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary text-sm font-semibold shrink-0">
+                        {moduleIdx + 1}
+                      </span>
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          Week {moduleIdx + 1}: {module.title}
+                        </p>
+                        {module.description && (
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            {module.lessons.length} lessons • {module.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-4">
+                    <div className="space-y-2 pl-11">
+                      {module.lessons.map((lesson) => (
+                        <div
+                          key={lesson.id}
+                          className="flex items-center justify-between p-3 rounded-md bg-background/50 border border-border/50"
+                        >
+                          <div className="flex items-center gap-3">
+                            <LessonTypeIcon type={lesson.type} contentType={lesson.content_type} />
+                            <p className="text-sm font-medium text-foreground">
+                              {lesson.title}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {lesson.is_preview && (
+                              <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
+                                Preview
+                              </Badge>
+                            )}
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {lesson.duration || `${lesson.duration_minutes || 10} min`}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ import { SiteSpec } from '@/types/site-spec';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
+import { CoursePreview } from './CoursePreview';
 import { ThemeEditor } from './ThemeEditor';
 import { LogoUpload } from './LogoUpload';
 import { HelpChat } from './HelpChat';
@@ -390,6 +391,26 @@ export function BuilderShell() {
     canRedo,
     reset: resetSiteSpec 
   } = useHistory<SiteSpec | null>(null);
+  const [courseSpec, setCourseSpec] = useState<{
+    title: string;
+    description: string;
+    difficulty: string;
+    duration_weeks: number;
+    modules: Array<{
+      id: string;
+      title: string;
+      description: string;
+      lessons: Array<{
+        id: string;
+        title: string;
+        duration: string;
+        type: 'video' | 'text' | 'quiz' | 'assignment';
+        description?: string;
+        is_preview?: boolean;
+      }>;
+    }>;
+    learningOutcomes?: string[];
+  } | null>(null);
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -687,9 +708,108 @@ export function BuilderShell() {
     }
   };
 
+  // Course-specific generation handler
+  const handleGenerateCourse = async (ideaToUse: string) => {
+    // Deduct credits for course generation
+    const canProceed = await deductCredits('generation', 'Course generation', 3);
+    if (!canProceed) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: ideaToUse,
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setIdea('');
+    setAttachments([]);
+
+    setIsGenerating(true);
+    setCourseSpec(null);
+    setSiteSpec(null);
+    setGeneratedHtml(null);
+    setSteps([
+      { id: 1, label: 'Analyzing course idea', status: 'pending' },
+      { id: 2, label: 'Generating curriculum', status: 'pending' },
+      { id: 3, label: 'Building preview', status: 'pending' },
+    ]);
+
+    try {
+      updateStep(1, 'active');
+      await new Promise((r) => setTimeout(r, 300));
+      updateStep(1, 'complete');
+
+      updateStep(2, 'active');
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Please sign in to generate courses');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-course`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          prompt: ideaToUse,
+          options: {
+            difficulty: 'beginner',
+            duration_weeks: 6,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate course');
+      }
+
+      const data = await response.json();
+      updateStep(2, 'complete');
+
+      updateStep(3, 'active');
+      
+      if (data.course) {
+        setCourseSpec(data.course);
+        setProjectName(data.course.title || 'New Course');
+        
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Course "${data.course.title}" generated! Check the preview on the right.`,
+        };
+        const allMessages = [...messages, userMessage, assistantMessage];
+        setMessages(allMessages);
+        
+        await saveProject(null, allMessages, ideaToUse, null);
+      }
+
+      updateStep(3, 'complete');
+    } catch (error) {
+      console.error('Course generation error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to generate course');
+      setSteps((prev) =>
+        prev.map((s) => (s.status === 'active' ? { ...s, status: 'error' } : s))
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleGenerate = async (inputIdea?: string, retryCount: number = 0) => {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
+
+    // ============ COURSE DETECTION ============
+    // Check if this is a course-related prompt
+    const courseKeywords = /\b(course|curriculum|program|teach|teaching|lesson|module|cohort|self-paced|coaching|masterclass|bootcamp|training|workshop|learn|students|certification)\b/i;
+    const isCoursePrompt = courseKeywords.test(ideaToUse);
+    
+    if (isCoursePrompt) {
+      return handleGenerateCourse(ideaToUse);
+    }
 
     // ============ ROUTING & SCAFFOLDING ============
     // Step 1: Run niche router to detect category, goal, integrations
@@ -1579,7 +1699,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Describe your website idea..."
+                  placeholder="Describe your course idea..."
                   className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
                   disabled={isGenerating}
                 />
@@ -1903,6 +2023,20 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   title="Generated Website Preview"
                   sandbox="allow-scripts"
                 />
+              ) : courseSpec ? (
+                <div className="h-full overflow-auto p-6">
+                  <CoursePreview
+                    course={courseSpec}
+                    onUpdate={(updated) => setCourseSpec(updated)}
+                    onPublish={() => {
+                      toast.success('Course publishing coming soon!');
+                    }}
+                    onRefine={() => {
+                      setIdea('Improve and expand this course curriculum');
+                    }}
+                    isPublishing={isPublishing}
+                  />
+                </div>
               ) : siteSpec ? (
                 <div className="h-full overflow-auto relative" style={{ isolation: 'isolate', contain: 'layout paint' }}>
                   <SiteRenderer
@@ -1924,7 +2058,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   <div className="text-center p-8">
                     <Monitor className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                     <p className="text-muted-foreground">
-                      No site generated yet. Enter an idea to see a live preview.
+                      Describe your course to see a live preview.
                     </p>
                   </div>
                 </div>

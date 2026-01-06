@@ -33,6 +33,8 @@ interface Lesson {
   duration: string;
   type: 'video' | 'text' | 'quiz' | 'assignment';
   description?: string;
+  is_preview?: boolean;
+  content_type?: string;
 }
 
 interface Module {
@@ -59,14 +61,16 @@ interface CoursePreviewProps {
   isPublishing?: boolean;
 }
 
-const LessonTypeIcon = ({ type }: { type: Lesson['type'] }) => {
-  const icons = {
-    video: <Video className="w-4 h-4 text-blue-400" />,
-    text: <FileText className="w-4 h-4 text-green-400" />,
-    quiz: <HelpCircle className="w-4 h-4 text-purple-400" />,
+const LessonTypeIcon = ({ type, contentType }: { type: Lesson['type']; contentType?: string }) => {
+  // Use content_type if provided, otherwise fall back to type
+  const displayType = contentType || type;
+  const icons: Record<string, React.ReactNode> = {
+    video: <span className="text-base">🎥</span>,
+    text: <span className="text-base">📖</span>,
+    quiz: <span className="text-base">❓</span>,
     assignment: <ClipboardCheck className="w-4 h-4 text-orange-400" />,
   };
-  return icons[type] || <FileText className="w-4 h-4" />;
+  return icons[displayType] || <span className="text-base">📖</span>;
 };
 
 const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
@@ -285,7 +289,7 @@ export function CoursePreview({
                         className="flex items-center justify-between p-3 rounded-md bg-background/50 border border-border/50"
                       >
                         <div className="flex items-center gap-3">
-                          <LessonTypeIcon type={lesson.type} />
+                          <LessonTypeIcon type={lesson.type} contentType={lesson.content_type} />
                           <div>
                             <p className="text-sm font-medium text-foreground">
                               {lesson.title}
@@ -298,9 +302,11 @@ export function CoursePreview({
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {lesson.type}
-                          </Badge>
+                          {lesson.is_preview && (
+                            <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
+                              Preview
+                            </Badge>
+                          )}
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {lesson.duration}
