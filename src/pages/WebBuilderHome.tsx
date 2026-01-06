@@ -29,18 +29,13 @@ import { InterviewStepper } from "@/components/InterviewStepper";
 import { useInterviewIntake } from "@/hooks/useInterviewIntake";
 
 const placeholderSuggestions = [
-  "A local restaurant with online ordering and menu...",
-  "A roofing contractor website with quote forms...",
-  "A fitness coach selling training packages...",
-  "A hair salon with booking and services...",
-  "A law firm with practice areas and contact...",
-  "A mobile car detailing service with booking...",
+  "I teach [who] how to [outcome]. It's a [self-paced, cohort, or coaching] program.",
 ];
 
 const suggestionChips = [
-  "Restaurant taking online orders",
-  "Local home services business", 
-  "Online coach selling packages"
+  "Online fitness influencer course to help clients lose fat at home",
+  "Cohort program helping freelancers land 5 clients in 30 days", 
+  "Self-paced course teaching beginners how to use Notion for work"
 ];
 
 
@@ -140,8 +135,8 @@ const WebBuilderHome = () => {
     }
   };
 
-  const handleChipClick = (suggestion: string) => {
-    setPrompt(`Create a website for a ${suggestion.toLowerCase()}`);
+const handleChipClick = (suggestion: string) => {
+    setPrompt(suggestion);
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -297,9 +292,13 @@ const WebBuilderHome = () => {
                         </div>
                       )}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-2 text-left px-4">
+                      Include your audience, the transformation, and your offer type. Excellion handles structure, page flow, and sales copy.
+                    </p>
                     <div className="flex items-center justify-end mt-3">
-                      <Button onClick={handleStart} size="icon" className="h-10 w-10">
-                        <ArrowRight className="w-5 h-5" />
+                      <Button onClick={handleStart} className="h-10 px-4 gap-2">
+                        <span className="text-sm">Generate course site draft</span>
+                        <ArrowRight className="w-4 h-4" />
                       </Button>
                     </div>
                   </>
