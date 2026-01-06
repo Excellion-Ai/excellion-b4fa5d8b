@@ -14,20 +14,41 @@ const BuilderFAQ = () => {
       title: "Getting Started",
       items: [
         {
-          question: "Do I need any technical skills to use this?",
-          answer: "No. You answer questions in plain language, and Excellion AI handles the layout, copy, and page structure. You'll only need to approve things and connect your domain when you're ready."
+          question: "Do I need technical skills to use Excellion?",
+          answer: "No. If you can describe your course idea in plain language, Excellion can build your course site. No coding or design experience required."
         },
         {
-          question: "How long does it take to build a website?",
-          answer: "Your initial site can be generated in minutes. Most users have a polished, publish-ready site within an hour of starting—depending on how much customization you want to do."
+          question: "How long does it take to build a course website?",
+          answer: "Your first draft is generated in seconds. Most creators spend their time refining copy and structure before publishing."
         },
         {
           question: "What information do I need to get started?",
-          answer: "Just your business name and a brief description of what you do. The AI will ask follow-up questions to fill in the rest. Having your logo and brand colors ready helps speed things up."
+          answer: "You'll need to know who the course is for, what outcome it delivers, and how it's offered (self-paced, cohort, or coaching)."
         },
         {
-          question: "Can I see a preview before publishing?",
-          answer: "Absolutely. You'll see a live preview as the AI builds your site, and you can make changes before going live. Nothing is published until you click the publish button."
+          question: "Can I preview my course site before publishing?",
+          answer: "Yes. You can view and edit your full course site draft before it goes live."
+        }
+      ]
+    },
+    {
+      title: "Course-Specific Questions",
+      items: [
+        {
+          question: "What kind of courses can I build with Excellion?",
+          answer: "Excellion works for self-paced courses, cohort programs, coaching offers, workshops, and challenges in any niche."
+        },
+        {
+          question: "Does Excellion support lessons and videos?",
+          answer: "Yes. You can organize lessons, add video sections, and structure your course content directly in your site."
+        },
+        {
+          question: "Can I sell my course directly from the site?",
+          answer: "Yes. Excellion builds course sites with clear calls-to-action and checkout-ready sections for selling or collecting signups."
+        },
+        {
+          question: "Can I create multiple courses or offers?",
+          answer: "Yes. You can build and manage multiple course sites or offers inside Excellion."
         }
       ]
     },
@@ -35,24 +56,20 @@ const BuilderFAQ = () => {
       title: "Editing & Customization",
       items: [
         {
-          question: "What happens after the AI builds my site?",
-          answer: "You can edit the text and sections yourself, then publish with one click when you're ready. Connect your domain and go live on your own timeline."
+          question: "What happens after the AI builds my course site?",
+          answer: "You can edit pages, sections, lessons, and copy anytime using chat or the visual editor."
         },
         {
           question: "Can I change the design after it's generated?",
-          answer: "Yes. You can customize colors, fonts, layouts, images, and text directly in the editor. You can also ask the AI to make changes by describing what you want."
+          answer: "Yes. You can adjust layout, style, and content whenever you want."
         },
         {
           question: "Can I add my own images and videos?",
-          answer: "Yes. Upload your own photos, videos, and graphics. You can also generate new images with Excellion AI, and it can suggest visuals that match your content and brand."
+          answer: "Yes. You can upload and embed your own images and videos throughout your course site."
         },
         {
-          question: "What if I don't like what the AI created?",
-          answer: "Just tell the AI what you'd like changed. You can regenerate sections, adjust the tone, or completely restyle your site. The AI learns from your feedback to get closer to your vision."
-        },
-        {
-          question: "Can I add custom sections or pages?",
-          answer: "Yes. Create new pages, duplicate sections, and build custom layouts. Excellion AI can generate new sections from a prompt and help you refine structure, copy, and styling as you go."
+          question: "What if I don't like the first draft?",
+          answer: "You can regenerate sections, edit the copy, or guide the AI with new instructions until it matches your vision."
         }
       ]
     },
@@ -60,20 +77,20 @@ const BuilderFAQ = () => {
       title: "Publishing & Domains",
       items: [
         {
-          question: "How do I publish my website?",
-          answer: "Click Publish when you're ready. Your site goes live instantly on a free subdomain — and then you can connect your own custom domain."
+          question: "How do I publish my course site?",
+          answer: "Publish with one click when you're ready."
         },
         {
           question: "Can I use my own domain name?",
-          answer: "Yes. You can connect any domain you own. We'll guide you through updating your DNS settings—it usually takes just a few minutes to set up."
+          answer: "Yes. You can connect a custom domain to your course site."
         },
         {
           question: "Is hosting included?",
-          answer: "Yes. Hosting, SSL certificates, and CDN are all included. Your site is served from fast, global servers with automatic backups and 99.9% uptime."
+          answer: "Yes. Hosting is included when your site is published."
         },
         {
-          question: "Can I unpublish or take down my site?",
-          answer: "Yes. You can unpublish your site at any time from the dashboard. Your content is saved and you can republish whenever you're ready."
+          question: "Can I unpublish or take my site down later?",
+          answer: "Yes. You can unpublish or update your site at any time."
         }
       ]
     },
@@ -82,40 +99,15 @@ const BuilderFAQ = () => {
       items: [
         {
           question: "Is there a free plan?",
-          answer: "Yes. You can build and preview your site for free. Publishing requires a paid plan, which includes hosting, your custom domain, and ongoing support."
+          answer: "You can start free with a draft course site before upgrading."
         },
         {
           question: "Can I cancel anytime?",
-          answer: "Yes. All plans are month-to-month with no long-term contracts. Cancel anytime from your account settings—your site stays live until the end of your billing period."
+          answer: "Yes. There are no long-term contracts."
         },
         {
           question: "Are there any hidden fees?",
-          answer: "No. The price you see is the price you pay. Hosting, SSL, and standard support are all included. Custom domain registration is separate if you don't already own one."
-        }
-      ]
-    },
-    {
-      title: "Features & Integrations",
-      items: [
-        {
-          question: "How is this different from Wix or Squarespace?",
-          answer: "Instead of starting from a generic template, Excellion AI writes custom copy and structures pages around your business. You get a site that actually sounds like you—not a fill-in-the-blank layout."
-        },
-        {
-          question: "Can I add a contact form?",
-          answer: "Yes. Contact forms are built-in and automatically connected. Form submissions go straight to your email, and you can add custom fields for your specific needs."
-        },
-        {
-          question: "Does my site work on mobile?",
-          answer: "Yes. All sites are fully responsive and optimized for phones, tablets, and desktops. The AI automatically adjusts layouts for different screen sizes."
-        },
-        {
-          question: "Can I add analytics to track visitors?",
-          answer: "Yes. Built-in analytics show you page views, visitor locations, and traffic sources. You can also connect Google Analytics or other tracking tools."
-        },
-        {
-          question: "Can I integrate with other tools?",
-          answer: "Yes. Connect your site to email marketing platforms, CRMs, payment processors, and more. We support popular integrations like Mailchimp, Stripe, and Calendly."
+          answer: "No. Pricing is transparent and shown clearly before you upgrade."
         }
       ]
     },
@@ -124,23 +116,19 @@ const BuilderFAQ = () => {
       items: [
         {
           question: "Can I talk to a real person if I get stuck?",
-          answer: "Yes. You can call our support agent for step-by-step help. If it can't resolve your issue, you'll be transferred to a founder directly—no runaround."
+          answer: "Yes. You can reach our team through support or the community."
         },
         {
-          question: "Who owns the website once it's built?",
-          answer: "You do. Your content, branding, and domain are yours, and you're free to move or export if your needs change later."
+          question: "Who owns my course website and content?",
+          answer: "You do. All course content and sites you create belong to you."
         },
         {
-          question: "Is my website secure?",
-          answer: "Yes. All sites include free SSL certificates, automatic security updates, and DDoS protection. Your data is encrypted and backed up regularly."
+          question: "Is my course site secure?",
+          answer: "Yes. Excellion uses modern hosting and security practices to keep your site protected."
         },
         {
-          question: "How fast will my website load?",
-          answer: "Very fast. Sites are optimized for speed with compressed images, efficient code, and global CDN distribution. Most pages load in under 2 seconds."
-        },
-        {
-          question: "Can I export my website?",
-          answer: "Yes. You can export your site's code and content at any time. We don't lock you in—if you want to move to another platform, you can take everything with you."
+          question: "How fast will my course site load?",
+          answer: "Course sites are optimized for fast load times on desktop and mobile."
         }
       ]
     }
@@ -149,8 +137,8 @@ const BuilderFAQ = () => {
   return (
     <>
       <Helmet>
-        <title>AI Website Builder FAQ | Excellion</title>
-        <meta name="description" content="Frequently asked questions about Excellion's AI website builder. Learn how it works, what happens after your site is built, and more." />
+        <title>Course Website Builder FAQ | Excellion</title>
+        <meta name="description" content="Everything you need to know about building and launching a course website with Excellion AI." />
       </Helmet>
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -161,7 +149,7 @@ const BuilderFAQ = () => {
               Frequently Asked Questions
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to know about building your website with Excellion AI.
+              Everything you need to know about building and launching a course website with Excellion AI.
             </p>
           </div>
 
