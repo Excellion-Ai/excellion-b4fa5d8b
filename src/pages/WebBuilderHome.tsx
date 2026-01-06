@@ -358,10 +358,10 @@ const handleChipClick = (suggestion: string) => {
       <section id="how-it-works" className="py-20 px-4 border-t border-border/50 scroll-mt-20">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-foreground text-center mb-4">
-            How Excellion AI builds your site
+            How Excellion builds your course site
           </h2>
           <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Three simple steps from idea to launch
+            Three simple steps from idea to enrollments
           </p>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -372,10 +372,10 @@ const handleChipClick = (suggestion: string) => {
               </div>
               <span className="text-xs font-medium text-primary uppercase tracking-wide">01</span>
               <h3 className="text-xl font-semibold text-foreground mt-1 mb-2">
-                You chat in plain language
+                Tell us what your course is about
               </h3>
               <p className="text-muted-foreground text-sm">
-                Tell Excellion what you do, what you sell, and what your site needs to accomplish – more leads, bookings, or online orders.
+                Who it's for, what they'll learn, and the result they'll get.
               </p>
             </div>
 
@@ -386,10 +386,10 @@ const handleChipClick = (suggestion: string) => {
               </div>
               <span className="text-xs font-medium text-primary uppercase tracking-wide">02</span>
               <h3 className="text-xl font-semibold text-foreground mt-1 mb-2">
-                It drafts a custom website
+                Get your course site draft
               </h3>
               <p className="text-muted-foreground text-sm">
-                The bot creates a full layout with pages, sections, headlines, and copy tailored to your business type and goals.
+                We generate the page layout, sections, and sales copy for you.
               </p>
             </div>
 
@@ -400,10 +400,10 @@ const handleChipClick = (suggestion: string) => {
               </div>
               <span className="text-xs font-medium text-primary uppercase tracking-wide">03</span>
               <h3 className="text-xl font-semibold text-foreground mt-1 mb-2">
-                You launch – it's that simple
+                Edit and launch
               </h3>
               <p className="text-muted-foreground text-sm">
-                Publish your site with one click. Connect your domain and go live whenever you're ready.
+                Change anything you want, connect your domain, and publish when you're ready.
               </p>
             </div>
           </div>
