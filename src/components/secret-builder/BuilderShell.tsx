@@ -1651,9 +1651,9 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               </div>
             </ScrollArea>
 
-            {/* Theme Editor - show when site exists */}
+            {/* Quick Actions Bar - show when site exists */}
             {siteSpec && (
-              <div className="border-t border-border p-3 flex flex-wrap gap-2">
+              <div className="border-t border-border p-3 flex items-center justify-center gap-2">
                 <ThemeEditor 
                   theme={siteSpec.theme} 
                   onUpdateTheme={editor.updateTheme}
@@ -1668,7 +1668,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               </div>
             )}
 
-
+            {/* Chat Input */}
             <div className="border-t border-border p-4">
               {/* Attachments preview */}
               <AttachmentChips 
@@ -1676,31 +1676,19 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                 onRemove={removeAttachment} 
               />
               
-              <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 py-2">
+              <div className="flex items-center gap-2 bg-card/50 border border-border rounded-full px-4 py-2">
                 <AttachmentMenu
                   onAddAttachment={handleAddAttachment}
                   disabled={isGenerating}
                   attachmentCount={attachments.length}
                   previewRef={previewContainerRef as React.RefObject<HTMLElement>}
                 />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  onClick={() => {
-                    setVisualEditsEnabled(!visualEditsEnabled);
-                    toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
-                  }}
-                  title={visualEditsEnabled ? 'Disable visual edits' : 'Enable visual edits'}
-                >
-                  <MousePointer2 className={`h-4 w-4 ${visualEditsEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
-                </Button>
                 <Input
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Describe your course idea..."
-                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm"
+                  placeholder="Describe your website idea..."
+                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/60"
                   disabled={isGenerating}
                 />
                 <Button
