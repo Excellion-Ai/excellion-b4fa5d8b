@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, Image as ImageIcon } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, Image as ImageIcon, Pencil, Bookmark, BookOpen, Github } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -1815,83 +1815,60 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             </Button>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {/* SectionLibrary hidden but code preserved */}
-            {/* {siteSpec && siteSpec.pages[currentPageIndex] && (
-              <SectionLibrary
-                onAddSection={editor.addSection}
-                onRemoveSection={editor.removeSection}
-                onUpdateAnimation={editor.updateSectionAnimation}
-                existingSections={siteSpec.pages[currentPageIndex].sections}
-              />
-            )} */}
-            
+          {/* Toolbar buttons matching screenshot */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Visual */}
             <Button
-              variant="outline"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setVisualEditsEnabled(!visualEditsEnabled);
+                toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
+              }}
+              className={`gap-1.5 text-xs px-3 h-9 ${visualEditsEnabled ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              <Pencil className="h-4 w-4" />
+              <span>Visual</span>
+            </Button>
+
+            {/* AI Image */}
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setShowImageDialog(true)}
-              className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+              className="gap-1.5 text-xs px-3 h-9 text-muted-foreground hover:text-foreground"
               disabled={isGeneratingImage}
             >
               {isGeneratingImage ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <ImagePlus className="h-3.5 w-3.5" />
+                <ImagePlus className="h-4 w-4" />
               )}
-              <span className="hidden md:inline">AI Image</span>
+              <span>AI Image</span>
             </Button>
-            
+
+            {/* Layout */}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => {
                 const layouts: Array<'standard' | 'bento' | 'layered' | 'horizontal'> = ['standard', 'bento', 'layered', 'horizontal'];
-                const currentLayout = siteSpec.layoutStructure || 'standard';
+                const currentLayout = siteSpec?.layoutStructure || 'standard';
                 const currentIndex = layouts.indexOf(currentLayout);
                 const nextIndex = (currentIndex + 1) % layouts.length;
                 const nextLayout = layouts[nextIndex];
-                setSiteSpec({ ...siteSpec, layoutStructure: nextLayout });
-                toast.success(`Layout: ${nextLayout.charAt(0).toUpperCase() + nextLayout.slice(1)}`);
+                if (siteSpec) {
+                  setSiteSpec({ ...siteSpec, layoutStructure: nextLayout });
+                  toast.success(`Layout: ${nextLayout.charAt(0).toUpperCase() + nextLayout.slice(1)}`);
+                }
               }}
-              className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+              className="gap-1.5 text-xs px-3 h-9 text-muted-foreground hover:text-foreground"
+              disabled={!siteSpec}
             >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              <span className="hidden md:inline">Layout</span>
+              <LayoutGrid className="h-4 w-4" />
+              <span>Layout</span>
             </Button>
-            
-            {/* Motion Intensity Toggle */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline capitalize">{motionIntensity}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                {(['off', 'subtle', 'premium', 'wild'] as MotionIntensity[]).map((level) => (
-                  <DropdownMenuItem
-                    key={level}
-                    onClick={() => {
-                      setMotionIntensity(level);
-                      localStorage.setItem('excellion-motion-intensity', level);
-                      toast.success(`Motion: ${level.charAt(0).toUpperCase() + level.slice(1)}`);
-                    }}
-                    className={`gap-2 capitalize ${motionIntensity === level ? 'bg-accent' : ''}`}
-                  >
-                    {level === 'off' && '⏸️'}
-                    {level === 'subtle' && '✨'}
-                    {level === 'premium' && '💫'}
-                    {level === 'wild' && '🔥'}
-                    {level}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
+
             {/* Bookmarks */}
             <BookmarksPanel
               projectId={projectId}
@@ -1902,79 +1879,58 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                 setShowDiffViewer(true);
               }}
             />
-            
-            {/* Knowledge Base */}
+
+            {/* Knowledge */}
             <KnowledgePanel projectId={projectId} />
-            
-            {/* Domains button - hidden, moved to publish dropdown */}
-            {/* <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowDomainsDialog(true)}
-              className="gap-1.5 text-xs"
-              disabled={!projectId}
-            >
-              <Globe className="h-3.5 w-3.5" />
-              Domains
-            </Button> */}
-            
+
+            {/* Database */}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setShowSchemaDialog(true)}
-              className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+              className="gap-1.5 text-xs px-3 h-9 text-muted-foreground hover:text-foreground"
             >
-              <Database className="h-3.5 w-3.5" />
-              <span className="hidden md:inline">Database</span>
+              <Database className="h-4 w-4" />
+              <span>Database</span>
             </Button>
-            
-            {/* 3D Button - hidden but code preserved */}
-            {/* <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowThreeDDialog(true)}
-              className="gap-1.5 text-xs"
-            >
-              <Box className="h-3.5 w-3.5" />
-              3D
-            </Button> */}
-            
-            {/* Security button - hidden, moved to publish dropdown */}
-            {/* <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSecurityDialog(true)}
-              className="gap-1.5 text-xs"
-            >
-              <Shield className="h-3.5 w-3.5" />
-              Security
-            </Button> */}
-            
+
+            {/* Analytics */}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setShowAnalyticsDialog(true)}
-              className="gap-1 sm:gap-1.5 text-xs px-2 sm:px-3"
+              className="gap-1.5 text-xs px-3 h-9 text-muted-foreground hover:text-foreground"
               disabled={!projectId}
             >
-              <BarChart3 className="h-3.5 w-3.5" />
-              <span className="hidden md:inline">Analytics</span>
+              <BarChart3 className="h-4 w-4" />
+              <span>Analytics</span>
             </Button>
-            
-            {/* Publish dropdown with Domains and Security */}
+
+            {/* GitHub */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => toast.info('GitHub sync coming soon!')}
+              className="gap-1.5 text-xs px-3 h-9 text-muted-foreground hover:text-foreground"
+            >
+              <Github className="h-4 w-4" />
+              <span>GitHub</span>
+            </Button>
+
+            {/* Publish */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   size="sm"
                   disabled={!siteSpec || isPublishing}
-                  className="gap-1 sm:gap-1.5 bg-primary hover:bg-primary/90 px-2 sm:px-3"
+                  className="gap-1.5 bg-primary hover:bg-primary/90 px-4 h-9"
                 >
                   {isPublishing ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Upload className="h-3.5 w-3.5" />
+                    <Upload className="h-4 w-4" />
                   )}
-                  <span className="hidden sm:inline">{isPublishing ? 'Publishing...' : 'Publish'}</span>
+                  <span>{isPublishing ? 'Publishing...' : 'Publish'}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
