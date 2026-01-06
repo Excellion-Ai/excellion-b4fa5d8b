@@ -232,11 +232,11 @@ const WebBuilderHome = () => {
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-              Your dream website, generated in{" "}
-              <span className="text-accent">seconds.</span>
+              Your course website,{" "}
+              <span className="text-accent">written and structured by AI.</span>
             </h1>
             <p className="text-base sm:text-xl text-accent max-w-3xl mx-auto mb-8 font-semibold">
-              An AI website builder that generates a complete site in seconds. Make changes by chat, customize pages, and publish with your own domain.
+              Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
             </p>
 
             {/* Mode Toggle */}
