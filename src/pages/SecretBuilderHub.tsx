@@ -365,8 +365,8 @@ export default function SecretBuilderHub() {
 
       toast({ title: 'Project created', description: 'Opening builder...' });
       
-      // Navigate to builder
-      navigate('/secret-builder', { 
+      // Navigate to builder with persistent URL
+      navigate(`/studio/${data.id}`, { 
         state: { 
           projectId: data.id, 
           initialIdea: ideaToUse,
@@ -425,7 +425,7 @@ export default function SecretBuilderHub() {
 
       toast({ title: 'Template loaded', description: 'Opening builder...' });
       
-      navigate('/secret-builder', { 
+      navigate(`/studio/${data.id}`, { 
         state: { 
           projectId: data.id, 
           initialIdea: template.prompt,
@@ -465,7 +465,7 @@ export default function SecretBuilderHub() {
 
   const handleOpenProject = (projectId: string) => {
     localStorage.setItem(LS_LAST_PROJECT_ID, projectId);
-    navigate('/secret-builder', { state: { projectId } });
+    navigate(`/studio/${projectId}`);
   };
 
   const handleChipClick = (fullPrompt: string) => {
