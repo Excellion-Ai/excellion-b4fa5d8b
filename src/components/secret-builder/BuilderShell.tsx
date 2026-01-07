@@ -20,6 +20,7 @@ import { CourseBuilderPanel } from './CourseBuilderPanel';
 import { RefineChat } from './RefineChat';
 import { CourseSettingsDialog } from './CourseSettingsDialog';
 import { CourseActionBar } from './CourseActionBar';
+import { CoursePublishDialog } from './CoursePublishDialog';
 import { ThemeEditor } from './ThemeEditor';
 import { LogoUpload } from './LogoUpload';
 import { HelpChat } from './HelpChat';
@@ -1581,6 +1582,117 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
     }
   };
 
+  // Course publishing states
+  const [courseId, setCourseId] = useState<string | null>(null);
+  const [coursePublishedUrl, setCoursePublishedUrl] = useState<string | null>(null);
+  const [showCoursePublishDialog, setShowCoursePublishDialog] = useState(false);
+
+  const handlePublishCourse = async () => {
+    if (!courseSpec) {
+      toast.error('No course to publish');
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please sign in to publish');
+        return;
+      }
+
+      // Generate a URL-friendly subdomain from title
+      const subdomain = courseSpec.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 50) + '-' + Date.now().toString(36);
+
+      const courseUrl = `${window.location.origin}/course/${subdomain}`;
+
+      // If we have an existing course ID, update it
+      if (courseId) {
+        const { error } = await supabase
+          .from('courses')
+          .update({
+            status: 'published',
+            published_at: new Date().toISOString(),
+            published_url: courseUrl,
+            subdomain,
+            title: courseSpec.title,
+            description: courseSpec.description,
+            difficulty: courseSpec.difficulty,
+            duration_weeks: courseSpec.duration_weeks,
+            modules: courseSpec.modules as any,
+          })
+          .eq('id', courseId);
+
+        if (error) throw error;
+      } else {
+        // Create new course
+        const { data, error } = await supabase
+          .from('courses')
+          .insert({
+            user_id: user.id,
+            status: 'published',
+            published_at: new Date().toISOString(),
+            published_url: courseUrl,
+            subdomain,
+            title: courseSpec.title,
+            description: courseSpec.description,
+            difficulty: courseSpec.difficulty,
+            duration_weeks: courseSpec.duration_weeks,
+            modules: courseSpec.modules as any,
+          })
+          .select('id')
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setCourseId(data.id);
+        }
+      }
+
+      setCoursePublishedUrl(courseUrl);
+      setShowCoursePublishDialog(true);
+      toast.success('Course published successfully!');
+    } catch (error) {
+      console.error('Course publish error:', error);
+      toast.error('Failed to publish course');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleUnpublishCourse = async () => {
+    if (!courseId) {
+      toast.error('No course to unpublish');
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .update({
+          status: 'draft',
+          published_at: null,
+          published_url: null,
+        })
+        .eq('id', courseId);
+
+      if (error) throw error;
+
+      setCoursePublishedUrl(null);
+      toast.success('Course unpublished');
+    } catch (error) {
+      console.error('Course unpublish error:', error);
+      toast.error('Failed to unpublish course');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   const copyUrl = () => {
     if (publishedUrl) {
       navigator.clipboard.writeText(publishedUrl);
@@ -1918,15 +2030,21 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   <CoursePreview
                     course={courseSpec}
                     onUpdate={(updated) => setCourseSpec(updated)}
-                    onPublish={() => {
-                      toast.success('Course publishing coming soon!');
-                    }}
+                    onPublish={handlePublishCourse}
+                    onUnpublish={handleUnpublishCourse}
                     onRefine={() => setShowRefineChat(true)}
                     onOpenSettings={() => setShowCourseSettings(true)}
-                    onPreviewAsStudent={() => toast.info('Student preview coming soon!')}
+                    onPreviewAsStudent={() => {
+                      if (coursePublishedUrl) {
+                        window.open(coursePublishedUrl, '_blank');
+                      } else {
+                        toast.info('Publish course first to view as student');
+                      }
+                    }}
                     onDuplicate={() => toast.info('Course duplicated!')}
                     onUploadThumbnail={() => toast.info('Thumbnail upload coming soon!')}
                     isPublishing={isPublishing}
+                    isPublished={!!coursePublishedUrl}
                   />
                   <RefineChat
                     open={showRefineChat}
@@ -1945,6 +2063,12 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     settings={courseSettings}
                     onUpdateSettings={setCourseSettings}
                     onUploadThumbnail={() => toast.info('Thumbnail upload coming soon!')}
+                  />
+                  <CoursePublishDialog
+                    open={showCoursePublishDialog}
+                    onOpenChange={setShowCoursePublishDialog}
+                    courseUrl={coursePublishedUrl || ''}
+                    courseTitle={courseSpec.title}
                   />
                 </div>
               ) : siteSpec ? (
