@@ -250,7 +250,7 @@ const WebBuilderHome = () => {
           </div>
 
           {/* Transparent Glass Box Container */}
-          <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6">
             <div className="bg-background/70 backdrop-blur-xl rounded-3xl border border-white/10 p-8 sm:p-12 shadow-2xl">
               {/* Badge */}
               <div className="flex justify-center mb-6">
