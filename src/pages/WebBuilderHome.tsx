@@ -326,13 +326,14 @@ const handleChipClick = (suggestion: string) => {
               {inputMode === 'quick' && (
                 <>
                   {/* Suggestion Chips */}
-                  <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-4">
+                  <div className="flex flex-col items-center gap-2 sm:gap-2.5 mt-4 sm:mt-6">
                     {suggestionChips.map((chip, index) => (
                       <button
                         key={index}
                         onClick={() => handleChipClick(chip)}
-                        className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm bg-background/50 text-foreground/80 hover:bg-background/70 hover:text-foreground border border-border/50 transition-colors backdrop-blur-sm"
+                        className="group px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm bg-gradient-to-r from-background/60 to-background/40 text-foreground/90 hover:text-foreground border border-primary/20 hover:border-primary/40 transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow-md hover:shadow-primary/10 flex items-center gap-2"
                       >
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors" />
                         {chip}
                       </button>
                     ))}
