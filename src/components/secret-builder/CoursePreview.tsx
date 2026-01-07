@@ -78,6 +78,7 @@ interface Course {
   modules: Module[];
   learningOutcomes?: string[];
   thumbnail?: string;
+  brand_color?: string;
 }
 
 interface CoursePreviewProps {
@@ -198,7 +199,7 @@ function SortableLesson({
       </div>
       <div className="flex items-center gap-2 shrink-0">
         {lesson.is_preview && (
-          <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">Preview</Badge>
+          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">Free Preview</Badge>
         )}
         <span className="text-xs text-muted-foreground flex items-center gap-1">
           <Clock className="w-3 h-3" />
@@ -280,6 +281,9 @@ function SortableModule({
             ) : (
               <div className="flex items-center gap-2">
                 <p className="font-medium text-foreground">{module.title}</p>
+                {module.lessons.some(l => l.type === 'quiz') && (
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs">Quiz</Badge>
+                )}
                 <Button
                   size="icon"
                   variant="ghost"
@@ -481,6 +485,13 @@ export function CoursePreview({
     <div className="space-y-6 pb-20">
       {/* Course Header with Thumbnail */}
       <Card className="bg-card border-border overflow-hidden">
+        {/* Brand Color Header Bar */}
+        {course.brand_color && (
+          <div 
+            className="h-1.5" 
+            style={{ backgroundColor: course.brand_color }}
+          />
+        )}
         {/* Hidden file input for thumbnail */}
         <input
           ref={thumbnailInputRef}
