@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,23 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   ChevronDown,
   Clock,
@@ -25,6 +42,12 @@ import {
   GraduationCap,
   BookOpen,
   Users,
+  GripVertical,
+  Settings,
+  Copy,
+  Eye,
+  Image as ImageIcon,
+  Upload,
 } from 'lucide-react';
 
 interface Lesson {
@@ -51,6 +74,7 @@ interface Course {
   duration_weeks: number;
   modules: Module[];
   learningOutcomes?: string[];
+  thumbnail?: string;
 }
 
 interface CoursePreviewProps {
@@ -58,17 +82,20 @@ interface CoursePreviewProps {
   onUpdate?: (course: Course) => void;
   onPublish?: () => void;
   onRefine?: () => void;
+  onOpenSettings?: () => void;
+  onPreviewAsStudent?: () => void;
+  onDuplicate?: () => void;
+  onUploadThumbnail?: () => void;
   isPublishing?: boolean;
 }
 
 const LessonTypeIcon = ({ type, contentType }: { type: Lesson['type']; contentType?: string }) => {
-  // Use content_type if provided, otherwise fall back to type
   const displayType = contentType || type;
   const icons: Record<string, React.ReactNode> = {
     video: <span className="text-base">🎥</span>,
     text: <span className="text-base">📖</span>,
     quiz: <span className="text-base">❓</span>,
-    assignment: <ClipboardCheck className="w-4 h-4 text-orange-400" />,
+    assignment: <span className="text-base">📝</span>,
   };
   return icons[displayType] || <span className="text-base">📖</span>;
 };
@@ -86,22 +113,224 @@ const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
   );
 };
 
+// Sortable Lesson Item
+function SortableLesson({
+  lesson,
+  lessonIdx,
+  onEdit,
+  isEditing,
+  editValue,
+  setEditValue,
+  onSave,
+  onCancel,
+}: {
+  lesson: Lesson;
+  lessonIdx: number;
+  onEdit: () => void;
+  isEditing: boolean;
+  editValue: string;
+  setEditValue: (val: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: lesson.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between p-3 rounded-md bg-background/50 border border-border/50 group"
+    >
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-1 -ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </button>
+        <span className="text-xs text-muted-foreground shrink-0 w-6">{lessonIdx + 1}.</span>
+        <LessonTypeIcon type={lesson.type} contentType={lesson.content_type} />
+        <div className="flex-1 min-w-0">
+          {isEditing ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="h-7 text-sm"
+                autoFocus
+              />
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onSave}>
+                <Check className="w-3.5 h-3.5 text-green-400" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onCancel}>
+                <X className="w-3.5 h-3.5 text-red-400" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-foreground truncate">{lesson.title}</p>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                onClick={onEdit}
+              >
+                <Pencil className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+          {lesson.description && !isEditing && (
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{lesson.description}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {lesson.is_preview && (
+          <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">Preview</Badge>
+        )}
+        <span className="text-xs text-muted-foreground flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          {lesson.duration}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Sortable Module Item
+function SortableModule({
+  module,
+  moduleIdx,
+  children,
+  onEditTitle,
+  isEditingTitle,
+  editTitleValue,
+  setEditTitleValue,
+  onSaveTitle,
+  onCancelTitle,
+}: {
+  module: Module;
+  moduleIdx: number;
+  children: React.ReactNode;
+  onEditTitle: () => void;
+  isEditingTitle: boolean;
+  editTitleValue: string;
+  setEditTitleValue: (val: string) => void;
+  onSaveTitle: () => void;
+  onCancelTitle: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: module.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <AccordionItem
+      ref={setNodeRef}
+      style={style}
+      value={module.id}
+      className="border border-border rounded-lg px-4 bg-muted/20"
+    >
+      <AccordionTrigger className="hover:no-underline py-4 group">
+        <div className="flex items-center gap-3 text-left flex-1">
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1 -ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-medium shrink-0">
+            {moduleIdx + 1}
+          </span>
+          <div className="flex-1 min-w-0">
+            {isEditingTitle ? (
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <Input
+                  value={editTitleValue}
+                  onChange={(e) => setEditTitleValue(e.target.value)}
+                  className="h-8"
+                  autoFocus
+                />
+                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={onSaveTitle}>
+                  <Check className="w-4 h-4 text-green-400" />
+                </Button>
+                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={onCancelTitle}>
+                  <X className="w-4 h-4 text-red-400" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-foreground">{module.title}</p>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditTitle();
+                  }}
+                >
+                  <Pencil className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {module.lessons.length} lessons • {module.description}
+            </p>
+          </div>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="pb-4">
+        <div className="space-y-2 pl-10">{children}</div>
+      </AccordionContent>
+    </AccordionItem>
+  );
+}
+
 export function CoursePreview({
   course,
   onUpdate,
   onPublish,
   onRefine,
+  onOpenSettings,
+  onPreviewAsStudent,
+  onDuplicate,
+  onUploadThumbnail,
   isPublishing = false,
 }: CoursePreviewProps) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [tempTitle, setTempTitle] = useState(course.title);
   const [tempDescription, setTempDescription] = useState(course.description);
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [tempModuleTitle, setTempModuleTitle] = useState('');
+  const [tempLessonTitle, setTempLessonTitle] = useState('');
 
-  const totalLessons = course.modules.reduce(
-    (acc, module) => acc + module.lessons.length,
-    0
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
+
+  const totalLessons = course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
 
   const handleSaveTitle = () => {
     if (onUpdate && tempTitle.trim()) {
@@ -127,10 +356,91 @@ export function CoursePreview({
     setEditingDescription(false);
   };
 
+  const handleModuleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !onUpdate) return;
+
+    const oldIndex = course.modules.findIndex((m) => m.id === active.id);
+    const newIndex = course.modules.findIndex((m) => m.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newModules = arrayMove(course.modules, oldIndex, newIndex);
+      onUpdate({ ...course, modules: newModules });
+    }
+  };
+
+  const handleLessonDragEnd = (moduleId: string) => (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !onUpdate) return;
+
+    const moduleIndex = course.modules.findIndex((m) => m.id === moduleId);
+    if (moduleIndex === -1) return;
+
+    const module = course.modules[moduleIndex];
+    const oldIndex = module.lessons.findIndex((l) => l.id === active.id);
+    const newIndex = module.lessons.findIndex((l) => l.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newLessons = arrayMove(module.lessons, oldIndex, newIndex);
+      const newModules = [...course.modules];
+      newModules[moduleIndex] = { ...module, lessons: newLessons };
+      onUpdate({ ...course, modules: newModules });
+    }
+  };
+
+  const handleSaveModuleTitle = (moduleId: string) => {
+    if (onUpdate && tempModuleTitle.trim()) {
+      const newModules = course.modules.map((m) =>
+        m.id === moduleId ? { ...m, title: tempModuleTitle.trim() } : m
+      );
+      onUpdate({ ...course, modules: newModules });
+    }
+    setEditingModuleId(null);
+  };
+
+  const handleSaveLessonTitle = (moduleId: string, lessonId: string) => {
+    if (onUpdate && tempLessonTitle.trim()) {
+      const newModules = course.modules.map((m) =>
+        m.id === moduleId
+          ? {
+              ...m,
+              lessons: m.lessons.map((l) =>
+                l.id === lessonId ? { ...l, title: tempLessonTitle.trim() } : l
+              ),
+            }
+          : m
+      );
+      onUpdate({ ...course, modules: newModules });
+    }
+    setEditingLessonId(null);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Course Header */}
-      <Card className="bg-card border-border">
+    <div className="space-y-6 pb-20">
+      {/* Course Header with Thumbnail */}
+      <Card className="bg-card border-border overflow-hidden">
+        {/* Thumbnail Area */}
+        <div
+          onClick={onUploadThumbnail}
+          className="relative h-40 bg-gradient-to-br from-primary/20 to-accent/20 cursor-pointer group"
+        >
+          {course.thumbnail ? (
+            <img
+              src={course.thumbnail}
+              alt="Course thumbnail"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+              <Upload className="h-8 w-8" />
+              <span className="text-sm">Click to upload course thumbnail</span>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+            <ImageIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+        </div>
+
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -216,7 +526,7 @@ export function CoursePreview({
 
         <CardContent className="pt-0">
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={onPublish}
               disabled={isPublishing}
@@ -228,6 +538,18 @@ export function CoursePreview({
             <Button variant="outline" onClick={onRefine}>
               <Sparkles className="w-4 h-4 mr-2" />
               Refine with AI
+            </Button>
+            <Button variant="outline" onClick={onOpenSettings}>
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </Button>
+            <Button variant="outline" onClick={onPreviewAsStudent}>
+              <Eye className="w-4 h-4 mr-2" />
+              Student View
+            </Button>
+            <Button variant="ghost" onClick={onDuplicate}>
+              <Copy className="w-4 h-4 mr-2" />
+              Duplicate
             </Button>
           </div>
         </CardContent>
@@ -255,70 +577,72 @@ export function CoursePreview({
         </Card>
       )}
 
-      {/* Course Curriculum */}
+      {/* Course Curriculum with Drag & Drop */}
       <Card className="bg-card border-border">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Course Curriculum</CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Drag to reorder modules and lessons
+          </p>
         </CardHeader>
         <CardContent>
-          <Accordion type="multiple" className="space-y-2">
-            {course.modules.map((module, moduleIdx) => (
-              <AccordionItem
-                key={module.id}
-                value={module.id}
-                className="border border-border rounded-lg px-4 bg-muted/20"
-              >
-                <AccordionTrigger className="hover:no-underline py-4">
-                  <div className="flex items-center gap-3 text-left">
-                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-medium shrink-0">
-                      {moduleIdx + 1}
-                    </span>
-                    <div>
-                      <p className="font-medium text-foreground">{module.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {module.lessons.length} lessons • {module.description}
-                      </p>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="space-y-2 pl-10">
-                    {module.lessons.map((lesson, lessonIdx) => (
-                      <div
-                        key={lesson.id}
-                        className="flex items-center justify-between p-3 rounded-md bg-background/50 border border-border/50"
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleModuleDragEnd}
+          >
+            <SortableContext
+              items={course.modules.map((m) => m.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <Accordion type="multiple" className="space-y-2">
+                {course.modules.map((module, moduleIdx) => (
+                  <SortableModule
+                    key={module.id}
+                    module={module}
+                    moduleIdx={moduleIdx}
+                    isEditingTitle={editingModuleId === module.id}
+                    editTitleValue={tempModuleTitle}
+                    setEditTitleValue={setTempModuleTitle}
+                    onEditTitle={() => {
+                      setEditingModuleId(module.id);
+                      setTempModuleTitle(module.title);
+                    }}
+                    onSaveTitle={() => handleSaveModuleTitle(module.id)}
+                    onCancelTitle={() => setEditingModuleId(null)}
+                  >
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleLessonDragEnd(module.id)}
+                    >
+                      <SortableContext
+                        items={module.lessons.map((l) => l.id)}
+                        strategy={verticalListSortingStrategy}
                       >
-                        <div className="flex items-center gap-3">
-                          <LessonTypeIcon type={lesson.type} contentType={lesson.content_type} />
-                          <div>
-                            <p className="text-sm font-medium text-foreground">
-                              {lesson.title}
-                            </p>
-                            {lesson.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {lesson.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {lesson.is_preview && (
-                            <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
-                              Preview
-                            </Badge>
-                          )}
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {lesson.duration}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+                        {module.lessons.map((lesson, lessonIdx) => (
+                          <SortableLesson
+                            key={lesson.id}
+                            lesson={lesson}
+                            lessonIdx={lessonIdx}
+                            isEditing={editingLessonId === lesson.id}
+                            editValue={tempLessonTitle}
+                            setEditValue={setTempLessonTitle}
+                            onEdit={() => {
+                              setEditingLessonId(lesson.id);
+                              setTempLessonTitle(lesson.title);
+                            }}
+                            onSave={() => handleSaveLessonTitle(module.id, lesson.id)}
+                            onCancel={() => setEditingLessonId(null)}
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
+                  </SortableModule>
+                ))}
+              </Accordion>
+            </SortableContext>
+          </DndContext>
         </CardContent>
       </Card>
     </div>
