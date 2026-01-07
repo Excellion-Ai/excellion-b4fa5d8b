@@ -1,11 +1,23 @@
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
+import { Zap } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { InterviewStepper } from "@/components/InterviewStepper";
+import { useInterviewIntake } from "@/hooks/useInterviewIntake";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 
 const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
+  const [interviewOpen, setInterviewOpen] = useState(false);
+  const interview = useInterviewIntake();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -45,6 +57,19 @@ const Hero = () => {
     };
   }, []);
 
+  // Handle Build Assist interview submission - store in sessionStorage and navigate
+  const handleInterviewSubmit = useCallback(() => {
+    if (interview.canSubmit && interview.composedPrompt) {
+      // Store the composed prompt for the builder to pick up
+      sessionStorage.setItem('pendingBuilderData', JSON.stringify({
+        prompt: interview.composedPrompt,
+        answers: interview.answers,
+        source: 'build-assist'
+      }));
+      setInterviewOpen(false);
+      navigate("/secret-builder-hub");
+    }
+  }, [interview.canSubmit, interview.composedPrompt, interview.answers, navigate]);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden" aria-label="Hero section">
@@ -105,16 +130,53 @@ const Hero = () => {
             <div className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 size="lg" 
-                onClick={() => navigate("/secret-builder-hub")}
-                aria-label="Start building your course with Excellion"
+                onClick={() => setInterviewOpen(true)}
+                aria-label="Start building your course with guided questions"
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
               >
-                Start Building Your Course
+                <Zap className="w-5 h-5 mr-2" />
+                Build My Course
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate("/secret-builder-hub")}
+                aria-label="Skip to builder with quick prompt"
+                className="font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg border-border/50 hover:bg-background/80"
+              >
+                Skip to Builder
               </Button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Build Assist Dialog */}
+      <Dialog open={interviewOpen} onOpenChange={setInterviewOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Build Assist</DialogTitle>
+          </DialogHeader>
+          <InterviewStepper
+            step={interview.step}
+            totalSteps={interview.totalSteps}
+            answers={interview.answers}
+            canProceed={interview.canProceed}
+            canSubmit={interview.canSubmit}
+            onUpdateAnswer={interview.updateAnswer}
+            onUpdateOffer={interview.updateOffer}
+            onNext={interview.nextStep}
+            onBack={interview.prevStep}
+            onSkip={interview.skipStep}
+            onSubmit={handleInterviewSubmit}
+            onSwitchToQuickPrompt={() => {
+              setInterviewOpen(false);
+              navigate("/secret-builder-hub");
+            }}
+            isGenerating={false}
+          />
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
