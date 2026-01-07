@@ -85,12 +85,14 @@ interface CoursePreviewProps {
   course: Course;
   onUpdate?: (course: Course) => void;
   onPublish?: () => void;
+  onUnpublish?: () => void;
   onRefine?: () => void;
   onOpenSettings?: () => void;
   onPreviewAsStudent?: () => void;
   onDuplicate?: () => void;
   onUploadThumbnail?: () => void;
   isPublishing?: boolean;
+  isPublished?: boolean;
 }
 
 const LessonTypeIcon = ({ type, contentType }: { type: Lesson['type']; contentType?: string }) => {
@@ -314,12 +316,14 @@ export function CoursePreview({
   course,
   onUpdate,
   onPublish,
+  onUnpublish,
   onRefine,
   onOpenSettings,
   onPreviewAsStudent,
   onDuplicate,
   onUploadThumbnail,
   isPublishing = false,
+  isPublished = false,
 }: CoursePreviewProps) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
@@ -615,14 +619,25 @@ export function CoursePreview({
         <CardContent className="pt-0">
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={onPublish}
-              disabled={isPublishing}
-              className="bg-accent text-accent-foreground hover:bg-accent/90"
-            >
-              <Globe className="w-4 h-4 mr-2" />
-              {isPublishing ? 'Publishing...' : 'Publish Course'}
-            </Button>
+            {isPublished ? (
+              <Button
+                onClick={onUnpublish}
+                disabled={isPublishing}
+                variant="destructive"
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                {isPublishing ? 'Unpublishing...' : 'Unpublish Course'}
+              </Button>
+            ) : (
+              <Button
+                onClick={onPublish}
+                disabled={isPublishing}
+                className="bg-accent text-accent-foreground hover:bg-accent/90"
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                {isPublishing ? 'Publishing...' : 'Publish Course'}
+              </Button>
+            )}
             <Button variant="outline" onClick={onRefine}>
               <Sparkles className="w-4 h-4 mr-2" />
               Refine with AI

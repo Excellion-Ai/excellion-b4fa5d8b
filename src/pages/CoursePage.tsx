@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Clock, BookOpen, GraduationCap, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Accordion,
   AccordionContent,
@@ -83,19 +84,21 @@ export default function CoursePage() {
         return;
       }
 
-      let query = supabase
+      // Fetch published courses by subdomain
+      let { data, error: fetchError } = await supabase
         .from('courses')
         .select('*')
         .eq('subdomain', subdomain)
+        .eq('status', 'published')
         .single();
 
-      let { data, error: fetchError } = await query;
-
+      // Fallback to UUID lookup for published courses
       if (fetchError && subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         const idQuery = await supabase
           .from('courses')
           .select('*')
           .eq('id', subdomain)
+          .eq('status', 'published')
           .single();
         
         data = idQuery.data;
@@ -103,7 +106,7 @@ export default function CoursePage() {
       }
 
       if (fetchError) {
-        setError(fetchError.message);
+        setError('Course not found');
       } else if (data) {
         const modules = Array.isArray(data.modules) ? (data.modules as unknown as CourseModule[]) : [];
         const learningOutcomes = (data as any).learningOutcomes || (data as any).learning_outcomes || [];
@@ -128,23 +131,17 @@ export default function CoursePage() {
     );
   }
 
-  if (error) {
+  if (error || !course) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-2">Error</h1>
-          <p className="text-muted-foreground">{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!course) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Course Not Found</h1>
-          <p className="text-muted-foreground">The requested course does not exist.</p>
+        <div className="text-center max-w-md mx-auto px-4">
+          <h1 className="text-3xl font-bold mb-4">Course Not Found</h1>
+          <p className="text-muted-foreground mb-6">
+            The course you're looking for doesn't exist or hasn't been published yet.
+          </p>
+          <Button onClick={() => window.location.href = '/'}>
+            Go Home
+          </Button>
         </div>
       </div>
     );
@@ -266,6 +263,19 @@ export default function CoursePage() {
                 </AccordionItem>
               ))}
             </Accordion>
+          </CardContent>
+        </Card>
+
+        {/* Enroll CTA */}
+        <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30">
+          <CardContent className="py-8 text-center">
+            <h3 className="text-2xl font-bold mb-2">Ready to get started?</h3>
+            <p className="text-muted-foreground mb-6">
+              Join thousands of students who have already enrolled.
+            </p>
+            <Button size="lg" className="bg-primary hover:bg-primary/90">
+              Enroll Now
+            </Button>
           </CardContent>
         </Card>
       </div>
