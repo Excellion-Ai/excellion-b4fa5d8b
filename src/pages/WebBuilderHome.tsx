@@ -448,22 +448,22 @@ const WebBuilderHome = () => {
                 </Button>
               </div>
 
-              {/* Pro Plan */}
+              {/* Sprint Pass */}
               <div className="p-8 rounded-2xl bg-card border-2 border-primary relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                  Most Popular
+                  Best Value
                 </div>
-                <div className="text-sm font-medium text-primary mb-2">Pro</div>
-                <div className="text-4xl font-bold text-foreground mb-1">$29</div>
-                <div className="text-muted-foreground text-sm mb-6">per month</div>
+                <div className="text-sm font-medium text-primary mb-2">Sprint Pass</div>
+                <div className="text-4xl font-bold text-foreground mb-1">$9</div>
+                <div className="text-muted-foreground text-sm mb-6">one-time</div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
-                    Everything in Free
+                    150 generation credits
                   </li>
                   <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
-                    Publish unlimited courses
+                    Publish your course site
                   </li>
                   <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
@@ -471,11 +471,11 @@ const WebBuilderHome = () => {
                   </li>
                   <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
-                    Analytics dashboard
+                    No subscription required
                   </li>
                   <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
-                    Priority support
+                    Renews to Pro if you want more
                   </li>
                 </ul>
                 <Button 
