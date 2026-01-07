@@ -15,14 +15,6 @@ export type PrimaryGoal =
   | 'book_call' 
   | 'apply_program';
 
-export type StyleVibe = 
-  | 'modern' 
-  | 'bold' 
-  | 'warm' 
-  | 'luxury' 
-  | 'playful' 
-  | 'dark';
-
 export interface InterviewAnswers {
   websiteType: WebsiteType | null;
   websiteTypeOther: string; // Custom type when "other" is selected
@@ -30,7 +22,6 @@ export interface InterviewAnswers {
   audienceTransformation: string; // Who is this for + what will they achieve
   primaryGoal: PrimaryGoal | null;
   offers: [string, string, string]; // Course modules/structure
-  vibe: StyleVibe | null;
 }
 
 export interface InterviewState {
@@ -46,10 +37,9 @@ const INITIAL_ANSWERS: InterviewAnswers = {
   audienceTransformation: '',
   primaryGoal: null,
   offers: ['', '', ''],
-  vibe: null,
 };
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 5;
 
 const WEBSITE_TYPE_LABELS: Record<WebsiteType, string> = {
   self_paced_course: 'Online course (self-paced)',
@@ -68,14 +58,6 @@ const GOAL_LABELS: Record<PrimaryGoal, string> = {
   apply_program: 'Apply to program',
 };
 
-const VIBE_LABELS: Record<StyleVibe, string> = {
-  modern: 'Modern',
-  bold: 'Bold',
-  warm: 'Warm',
-  luxury: 'Luxury',
-  playful: 'Playful',
-  dark: 'Dark/Sleek',
-};
 
 export function useInterviewIntake(initialPrompt: string = '') {
   const [state, setState] = useState<InterviewState>({
@@ -156,8 +138,7 @@ export function useInterviewIntake(initialPrompt: string = '') {
       case 2: return answers.businessName.trim().length > 0;
       case 3: return answers.audienceTransformation.trim().length > 0;
       case 4: return answers.primaryGoal !== null;
-      case 5: return true; // Offers are optional
-      case 6: return answers.vibe !== null;
+      case 5: return true; // Offers are optional (last step)
       default: return false;
     }
   }, [state]);
@@ -169,8 +150,7 @@ export function useInterviewIntake(initialPrompt: string = '') {
       answers.websiteType !== null &&
       answers.businessName.trim().length > 0 &&
       answers.audienceTransformation.trim().length > 0 &&
-      answers.primaryGoal !== null &&
-      answers.vibe !== null
+      answers.primaryGoal !== null
     );
   }, [state]);
 
@@ -186,14 +166,13 @@ export function useInterviewIntake(initialPrompt: string = '') {
         ? WEBSITE_TYPE_LABELS[answers.websiteType] 
         : '';
     const goalLabel = answers.primaryGoal ? GOAL_LABELS[answers.primaryGoal] : '';
-    const vibeLabel = answers.vibe ? VIBE_LABELS[answers.vibe] : '';
 
     const offersFiltered = answers.offers.filter(o => o.trim());
     const offersText = offersFiltered.length > 0
       ? ` Course includes: ${offersFiltered.join(', ')}.`
       : '';
 
-    return `Build a ${typeLabel.toLowerCase()} website for "${answers.businessName}". Target audience and transformation: ${answers.audienceTransformation}. Primary goal: ${goalLabel.toLowerCase()}.${offersText} Style vibe: ${vibeLabel.toLowerCase()}. Generate a high-converting course landing page.`;
+    return `Build a ${typeLabel.toLowerCase()} website for "${answers.businessName}". Target audience and transformation: ${answers.audienceTransformation}. Primary goal: ${goalLabel.toLowerCase()}.${offersText} Generate a high-converting course landing page.`;
   }, [state, canSubmit]);
 
   // Structured data for backend
@@ -205,7 +184,6 @@ export function useInterviewIntake(initialPrompt: string = '') {
       audienceTransformation: answers.audienceTransformation,
       primaryGoal: answers.primaryGoal,
       offers: answers.offers.filter(o => o.trim()),
-      vibe: answers.vibe,
     };
   }, [state]);
 
@@ -239,7 +217,6 @@ export function useInterviewIntake(initialPrompt: string = '') {
     labels: {
       websiteTypes: WEBSITE_TYPE_LABELS,
       goals: GOAL_LABELS,
-      vibes: VIBE_LABELS,
     },
   };
 }
