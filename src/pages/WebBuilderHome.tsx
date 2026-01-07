@@ -103,9 +103,13 @@ const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [interviewOpen, setInterviewOpen] = useState(false);
+  const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const interview = useInterviewIntake();
+
+  const placeholderText = "Help [WHO] achieve [RESULT] in [TIMEFRAME] — without getting stuck or confused.";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -118,6 +122,41 @@ const WebBuilderHome = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Typing and deleting animation for placeholder
+  useEffect(() => {
+    if (prompt) return; // Don't animate if user has typed something
+    
+    let timeout: NodeJS.Timeout;
+    const typeSpeed = 50;
+    const deleteSpeed = 30;
+    const pauseBeforeDelete = 2000;
+    const pauseBeforeType = 500;
+
+    if (!isDeleting) {
+      if (animatedPlaceholder.length < placeholderText.length) {
+        timeout = setTimeout(() => {
+          setAnimatedPlaceholder(placeholderText.slice(0, animatedPlaceholder.length + 1));
+        }, typeSpeed);
+      } else {
+        timeout = setTimeout(() => {
+          setIsDeleting(true);
+        }, pauseBeforeDelete);
+      }
+    } else {
+      if (animatedPlaceholder.length > 0) {
+        timeout = setTimeout(() => {
+          setAnimatedPlaceholder(animatedPlaceholder.slice(0, -1));
+        }, deleteSpeed);
+      } else {
+        timeout = setTimeout(() => {
+          setIsDeleting(false);
+        }, pauseBeforeType);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [animatedPlaceholder, isDeleting, prompt, placeholderText]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -272,16 +311,21 @@ const WebBuilderHome = () => {
               </h2>
 
               {/* Prompt Input */}
-              <div className="w-full">
+              <div className="w-full relative">
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Help [WHO] achieve [RESULT] in [TIMEFRAME] — without getting stuck or confused."
                   aria-label="Describe your course idea"
                   className="w-full border border-white/10 bg-background/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
                   rows={4}
                 />
+                {!prompt && (
+                  <div className="absolute top-4 left-4 pointer-events-none text-muted-foreground">
+                    {animatedPlaceholder}
+                    <span className="inline-block w-0.5 h-5 bg-primary ml-0.5 animate-pulse align-middle" />
+                  </div>
+                )}
                 <div className="flex gap-3 mt-4">
                   <Button 
                     onClick={() => setInterviewOpen(true)}
