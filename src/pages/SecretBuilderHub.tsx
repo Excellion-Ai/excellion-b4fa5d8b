@@ -46,7 +46,8 @@ import {
   MessageSquare,
   LogOut,
   User,
-  Zap
+  Zap,
+  Headphones
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import {
@@ -692,12 +693,22 @@ export default function SecretBuilderHub() {
                       </ScrollArea>
                     </CollapsibleContent>
                   </Collapsible>
+
+                  {/* Expert Builder Support */}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    onClick={() => { navigate('/settings/support'); setMobileMenuOpen(false); }}
+                  >
+                    <Headphones className="w-4 h-4" />
+                    <span className="text-sm">Expert Builder Support</span>
+                  </Button>
                 </nav>
 
                 {/* Bottom CTA */}
                 <div className="p-3 border-t border-border">
                   <Button 
-                    variant="outline" 
+                    variant="outline"
                     size="sm" 
                     className="w-full text-xs h-8 text-muted-foreground hover:text-foreground"
                     onClick={() => { navigate('/pricing#pro'); setMobileMenuOpen(false); }}
@@ -962,6 +973,16 @@ export default function SecretBuilderHub() {
               </ScrollArea>
             </CollapsibleContent>
           </Collapsible>
+
+          {/* Expert Builder Support */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            onClick={() => navigate('/settings/support')}
+          >
+            <Headphones className="w-4 h-4" />
+            <span className="text-sm">Expert Builder Support</span>
+          </Button>
         </nav>
 
         {/* Bottom CTA */}
