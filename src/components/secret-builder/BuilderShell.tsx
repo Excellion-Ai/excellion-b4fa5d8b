@@ -1,6 +1,6 @@
 // BuilderShell - Main component for secret builder
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -366,8 +366,11 @@ function containsUrl(text: string): boolean {
 export function BuilderShell() {
   const location = useLocation();
   const navigate = useNavigate();
+  const params = useParams<{ projectId?: string }>();
   const state = location.state as LocationState | null;
   const initialIdea = state?.initialIdea || '';
+  // Support both URL params and state for project ID
+  const projectIdFromUrl = params.projectId || null;
   const projectIdFromState = state?.projectId || null;
   const templateSpecFromState = state?.templateSpec || null;
 
@@ -425,7 +428,7 @@ export function BuilderShell() {
   const [copied, setCopied] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [projectId, setProjectId] = useState<string | null>(projectIdFromState);
+  const [projectId, setProjectId] = useState<string | null>(projectIdFromUrl || projectIdFromState);
   const [projectName, setProjectName] = useState<string>('New Project');
   const [modelMode, setModelMode] = useState<'fast' | 'quality'>('quality');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -548,10 +551,16 @@ export function BuilderShell() {
       setPublishedUrl(data.published_url);
     }
     
-    const spec = data.spec as { html?: string; messages?: Message[]; siteSpec?: SiteSpec; themeId?: string } | null;
+    const spec = data.spec as { 
+      html?: string; 
+      messages?: Message[]; 
+      siteSpec?: SiteSpec; 
+      courseSpec?: typeof courseSpec;
+      themeId?: string 
+    } | null;
     
-    // Check if project has generated content
-    const hasContent = spec?.html || spec?.siteSpec || (spec?.messages && spec.messages.length > 0);
+    // Check if project has generated content (including courseSpec)
+    const hasContent = spec?.html || spec?.siteSpec || spec?.courseSpec || (spec?.messages && spec.messages.length > 0);
     
     if (hasContent) {
       // Load existing content
@@ -560,6 +569,10 @@ export function BuilderShell() {
       }
       if (spec?.siteSpec) {
         setSiteSpec(spec.siteSpec);
+      }
+      // Load courseSpec if it exists
+      if (spec?.courseSpec) {
+        setCourseSpec(spec.courseSpec);
       }
       if (spec?.messages && Array.isArray(spec.messages)) {
         setMessages(spec.messages.map((m, i) => ({
@@ -596,12 +609,18 @@ export function BuilderShell() {
     );
   };
 
-  const saveProject = async (html: string | null, allMessages: Message[], ideaText: string, currentSiteSpec: SiteSpec | null) => {
+  const saveProject = async (
+    html: string | null, 
+    allMessages: Message[], 
+    ideaText: string, 
+    currentSiteSpec: SiteSpec | null,
+    currentCourseSpec?: typeof courseSpec
+  ) => {
     // Get current user for new projects
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Use AI-generated site name if available, otherwise fall back to idea text
-    const aiGeneratedName = currentSiteSpec?.name;
+    // Use AI-generated site/course name if available, otherwise fall back to idea text
+    const aiGeneratedName = currentSiteSpec?.name || currentCourseSpec?.title;
     const name = projectName !== 'New Project' ? projectName : (aiGeneratedName || ideaText.slice(0, 50));
     
     const projectData = {
@@ -610,6 +629,7 @@ export function BuilderShell() {
       spec: { 
         html, 
         siteSpec: currentSiteSpec,
+        courseSpec: currentCourseSpec || null,
         messages: allMessages.map(m => ({
           id: m.id,
           role: m.role,
@@ -628,6 +648,8 @@ export function BuilderShell() {
 
       if (error) {
         console.error('Failed to update project:', error);
+      } else {
+        setSaveStatus('saved');
       }
     } else {
       const { data, error } = await supabase
@@ -641,7 +663,11 @@ export function BuilderShell() {
       } else if (data) {
         setProjectId(data.id);
         setProjectName(name);
+        setSaveStatus('saved');
         toast.success('Project saved!');
+        
+        // Update URL to include project ID for persistence
+        navigate(`/studio/${data.id}`, { replace: true, state: { projectId: data.id } });
       }
     }
   };
@@ -650,9 +676,17 @@ export function BuilderShell() {
   useEffect(() => {
     if (siteSpec && projectId) {
       const firstUserMessage = messages.find(m => m.role === 'user');
-      saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec);
+      saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, courseSpec);
     }
   }, [siteSpec]);
+
+  // Auto-save when courseSpec changes (from inline editing or generation)
+  useEffect(() => {
+    if (courseSpec && projectId) {
+      const firstUserMessage = messages.find(m => m.role === 'user');
+      saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, courseSpec);
+    }
+  }, [courseSpec]);
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
@@ -807,7 +841,6 @@ export function BuilderShell() {
       if (data.course) {
         setCourseSpec(data.course);
         setProjectName(data.course.title || 'New Course');
-        setSaveStatus('saved');
         
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -817,7 +850,8 @@ export function BuilderShell() {
         const allMessages = [...messages, userMessage, assistantMessage];
         setMessages(allMessages);
         
-        await saveProject(null, allMessages, ideaToUse, null);
+        // Save with the new courseSpec
+        await saveProject(null, allMessages, ideaToUse, null, data.course);
       }
 
       updateStep(4, 'complete');

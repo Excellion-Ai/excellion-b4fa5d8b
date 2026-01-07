@@ -59,7 +59,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <Toaster />
     <Suspense fallback={<PageLoader />}>
-      <Routes>
+    <Routes>
         <Route path="/" element={<WebBuilderHome />} />
         <Route path="/pricing" element={<BuilderPricing />} />
         <Route path="/faq" element={<FAQ />} />
@@ -72,6 +72,7 @@ const App = () => (
         <Route path="/maintenance-request" element={<MaintenanceRequest />} />
         <Route path="/secret-builder-hub" element={<SecretBuilderHub />} />
         <Route path="/secret-builder" element={<SecretBuilder />} />
+        <Route path="/studio/:projectId" element={<SecretBuilder />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
