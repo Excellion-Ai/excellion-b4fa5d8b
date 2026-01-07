@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { 
   WebsiteType, 
   PrimaryGoal, 
-  StyleVibe,
   InterviewAnswers 
 } from '@/hooks/useInterviewIntake';
 
@@ -40,15 +39,6 @@ const PRIMARY_GOALS: { value: PrimaryGoal; label: string }[] = [
   { value: 'join_email', label: 'Join email list' },
   { value: 'book_call', label: 'Book a discovery call' },
   { value: 'apply_program', label: 'Apply to program' },
-];
-
-const STYLE_VIBES: { value: StyleVibe; label: string }[] = [
-  { value: 'modern', label: 'Modern' },
-  { value: 'bold', label: 'Bold' },
-  { value: 'warm', label: 'Warm' },
-  { value: 'luxury', label: 'Luxury' },
-  { value: 'playful', label: 'Playful' },
-  { value: 'dark', label: 'Dark/Sleek' },
 ];
 
 // Offer placeholders for course structure
@@ -208,20 +198,6 @@ export function InterviewStepper({
                 </div>
               ))}
             </div>
-          </div>
-        );
-
-      case 6:
-        return (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Pick a visual style for your course brand
-            </h3>
-            <ChipGroup
-              options={STYLE_VIBES}
-              value={answers.vibe}
-              onChange={(v) => onUpdateAnswer('vibe', v)}
-            />
           </div>
         );
 
