@@ -282,14 +282,25 @@ const WebBuilderHome = () => {
                   className="border border-white/10 bg-background/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
                   rows={4}
                 />
-                <Button 
-                  onClick={handleStart} 
-                  size="lg"
-                  className="w-full mt-4 h-12 text-base gap-2"
-                >
-                  Generate Course
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                  <Button 
+                    onClick={handleStart} 
+                    size="lg"
+                    className="flex-1 h-12 text-base gap-2"
+                  >
+                    Generate Course
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    onClick={() => setInterviewOpen(true)}
+                    size="lg"
+                    variant="outline"
+                    className="flex-1 h-12 text-base gap-2 border-primary/30 hover:bg-primary/10"
+                  >
+                    <Zap className="w-4 h-4" />
+                    Build Assist
+                  </Button>
+                </div>
               </div>
 
               {/* Example Chips */}
@@ -303,17 +314,6 @@ const WebBuilderHome = () => {
                     {chip}
                   </button>
                 ))}
-              </div>
-
-              {/* Build Assist Link */}
-              <div className="text-center mt-6 pt-4 border-t border-white/10">
-                <button
-                  onClick={() => setInterviewOpen(true)}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-2"
-                >
-                  <Zap className="w-4 h-4" />
-                  Need help? Try Build Assist
-                </button>
               </div>
             </div>
           </div>
