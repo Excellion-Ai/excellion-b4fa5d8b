@@ -7,11 +7,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Price IDs for subscription plans
+// Price IDs for subscription plans - Monthly
 const PRICE_IDS: Record<string, string> = {
-  starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",
-  pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",
-  agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",
+  starter: "price_1SmmvRPCTHzXvqDgcuiCxcqD",        // $19/mo
+  pro: "price_1SmmvnPCTHzXvqDgbSE6wxMV",            // $39/mo
+  agency: "price_1Smmy1PCTHzXvqDg1t7EjziF",         // $99/mo
+};
+
+// Annual price IDs
+const ANNUAL_PRICE_IDS: Record<string, string> = {
+  starter: "price_1SmmyuPCTHzXvqDgr8k0y8s6",        // $192/year ($16/mo)
+  pro: "price_1Smn0VPCTHzXvqDgXLwyNKJ3",            // $396/year ($33/mo)
+  agency: "price_1Smn33PCTHzXvqDgxuGNuQkT",         // $996/year ($83/mo)
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
@@ -51,14 +58,15 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     // Parse request body
-    const { planType } = await req.json();
+    const { planType, isAnnual } = await req.json();
     
-    // Validate the plan type
-    const selectedPriceId = PRICE_IDS[planType];
+    // Validate the plan type and select correct price ID
+    const priceMap = isAnnual ? ANNUAL_PRICE_IDS : PRICE_IDS;
+    const selectedPriceId = priceMap[planType];
     if (!selectedPriceId) {
       throw new Error(`Invalid plan type: ${planType}`);
     }
-    logStep("Price ID selected", { selectedPriceId, planType });
+    logStep("Price ID selected", { selectedPriceId, planType, isAnnual });
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });

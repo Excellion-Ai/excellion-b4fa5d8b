@@ -9,13 +9,13 @@ const corsHeaders = {
 
 // Price IDs for subscription plans
 const PRICE_IDS = {
-  starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",  // $15/mo - 50 credits
-  pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",       // $29/mo - 100 credits
-  agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",   // $129/mo - 500 credits
+  starter: "price_1SmmvRPCTHzXvqDgcuiCxcqD",        // $19/mo
+  pro: "price_1SmmvnPCTHzXvqDgbSE6wxMV",            // $39/mo
+  agency: "price_1Smmy1PCTHzXvqDg1t7EjziF",         // $99/mo
   // Annual prices
-  starter_annual: "price_1SgKPjPCTHzXvqDgQP63Wygw",  // $156/year
-  pro_annual: "price_1SgKQHPCTHzXvqDgNxuBVF8D",       // $288/year
-  agency_annual: "price_1SgKQdPCTHzXvqDgCsz1sXw5",   // $1,296/year
+  starter_annual: "price_1SmmyuPCTHzXvqDgr8k0y8s6", // $192/year ($16/mo)
+  pro_annual: "price_1Smn0VPCTHzXvqDgXLwyNKJ3",     // $396/year ($33/mo)
+  agency_annual: "price_1Smn33PCTHzXvqDgxuGNuQkT",  // $996/year ($83/mo)
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {

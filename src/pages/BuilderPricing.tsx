@@ -23,12 +23,19 @@ import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// Stripe Price IDs
+// Stripe Price IDs - Monthly
 const PRICE_IDS = {
-  starter: "price_1Sfw4OPCTHzXvqDgdFp9vMUR",
-  pro: "price_1Sfw4iPCTHzXvqDgFQqJmiAW",
-  agency: "price_1Sfw4yPCTHzXvqDgtGCn2iWD",
+  starter: "price_1SmmvRPCTHzXvqDgcuiCxcqD",       // $19/mo
+  pro: "price_1SmmvnPCTHzXvqDgbSE6wxMV",           // $39/mo
+  agency: "price_1Smmy1PCTHzXvqDg1t7EjziF",        // $99/mo
   sprint: "price_1SgsMOPCTHzXvqDg7Q23a28h",
+};
+
+// Stripe Price IDs - Annual
+const ANNUAL_PRICE_IDS = {
+  starter: "price_1SmmyuPCTHzXvqDgr8k0y8s6",       // $192/yr ($16/mo)
+  pro: "price_1Smn0VPCTHzXvqDgXLwyNKJ3",           // $396/yr ($33/mo)
+  agency: "price_1Smn33PCTHzXvqDgxuGNuQkT",        // $996/yr ($83/mo)
 };
 
 const aiBuilderPlans = [
@@ -52,7 +59,7 @@ const aiBuilderPlans = [
     name: "Starter",
     description: "Launch your course.",
     monthlyPrice: 19,
-    yearlyPrice: 190,
+    yearlyPrice: 192,  // $16/mo annual
     credits: 200,
     features: [
       "Publish your course site + connect your domain",
@@ -66,7 +73,7 @@ const aiBuilderPlans = [
     name: "Pro",
     description: "Grow and iterate faster.",
     monthlyPrice: 39,
-    yearlyPrice: 390,
+    yearlyPrice: 396,  // $33/mo annual
     credits: 500,
     badge: "Best Seller",
     features: [
@@ -81,7 +88,7 @@ const aiBuilderPlans = [
     name: "Agency",
     description: "For teams and high volume.",
     monthlyPrice: 99,
-    yearlyPrice: 990,
+    yearlyPrice: 996,  // $83/mo annual
     credits: 3000,
     features: [
       "Highest build credits for heavy use",
@@ -159,7 +166,7 @@ const BuilderPricing = () => {
       
       if (!session) {
         toast.error("Please sign in to subscribe");
-        navigate("/auth?redirect=/checkout?plan=" + planName.toLowerCase());
+        navigate("/auth?redirect=/checkout?plan=" + planName.toLowerCase() + (isAnnual ? "&annual=true" : ""));
         return;
       }
 
@@ -170,8 +177,8 @@ const BuilderPricing = () => {
         return;
       }
 
-      // Navigate to embedded checkout page
-      navigate(`/checkout?plan=${planType}`);
+      // Navigate to embedded checkout page with annual flag
+      navigate(`/checkout?plan=${planType}${isAnnual ? "&annual=true" : ""}`);
     } catch (error) {
       console.error("Checkout error:", error);
       toast.error("Failed to start checkout. Please try again.");
