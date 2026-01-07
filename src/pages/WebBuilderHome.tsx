@@ -286,7 +286,8 @@ const WebBuilderHome = () => {
                   <Button 
                     onClick={() => setInterviewOpen(true)}
                     size="lg"
-                    className="flex-1 h-12 text-base gap-2"
+                    variant="outline"
+                    className="flex-1 h-12 text-base gap-2 border-primary/30 hover:bg-primary/10"
                   >
                     <Zap className="w-4 h-4" />
                     Build Assist
@@ -294,8 +295,7 @@ const WebBuilderHome = () => {
                   <Button 
                     onClick={handleStart} 
                     size="lg"
-                    variant="outline"
-                    className="flex-1 h-12 text-base gap-2 border-primary/30 hover:bg-primary/10"
+                    className="flex-1 h-12 text-base gap-2"
                   >
                     Generate Course
                     <ArrowRight className="w-4 h-4" />
