@@ -1,71 +1,101 @@
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { 
   Sparkles, 
   ArrowRight, 
   MessageSquare,
-  Layout,
-  Rocket,
+  Zap,
+  Globe,
+  PenTool,
   Check,
-  AlertCircle,
-  ChevronRight,
-  Phone,
-  Mail,
-  Loader2,
-  Zap
+  HelpCircle,
+  ChevronDown,
+  GraduationCap,
+  Users,
+  BarChart3,
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
-import { AnimatedPlaceholder } from "@/components/AnimatedPlaceholder";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
-import { InterviewStepper } from "@/components/InterviewStepper";
-import { useInterviewIntake } from "@/hooks/useInterviewIntake";
-
-const placeholderSuggestions = [
-  "I teach [who] how to [outcome]. It's a [self-paced, cohort, or coaching] program.",
-];
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const suggestionChips = [
-  "Online fitness influencer course to help clients lose fat at home",
-  "Cohort program helping freelancers land 5 clients in 30 days", 
-  "Self-paced course teaching beginners how to use Notion for work"
+  "Beginner photography course",
+  "Freelance business bootcamp", 
+  "Learn Notion in 30 days"
 ];
 
-
-const greatAtItems = [
-  "Turns your course idea into a clear site structure (in the right order)",
-  "Writes simple, persuasive sales copy that fits your audience",
-  "Builds the key sections: what you'll learn, curriculum, pricing, FAQs, and CTA",
-  "Helps you organize your course with lessons and video sections",
-  "Sets up clear \"Buy / Join Waitlist / Apply\" buttons so visitors know what to do"
+const features = [
+  {
+    icon: Zap,
+    title: "AI-Generated Curriculum",
+    description: "Get a complete course outline with modules, lessons, and learning objectives in seconds."
+  },
+  {
+    icon: PenTool,
+    title: "Sales Copy That Converts",
+    description: "Compelling headlines, benefit-driven copy, and clear calls-to-action written for you."
+  },
+  {
+    icon: Globe,
+    title: "Publish Instantly",
+    description: "One-click publishing with custom domains. Your course is live in minutes, not weeks."
+  },
+  {
+    icon: GraduationCap,
+    title: "Student-Ready Pages",
+    description: "Professional landing pages, curriculum views, and checkout flows out of the box."
+  },
+  {
+    icon: Users,
+    title: "Built for Creators",
+    description: "Coaches, educators, and experts use Excellion to launch courses without technical skills."
+  },
+  {
+    icon: BarChart3,
+    title: "Analytics Included",
+    description: "Track enrollments, page views, and conversions to optimize your course business."
+  }
 ];
 
-const notMagicItems = [
-  "Still needs your input on who it's for and the result students get",
-  "Won't replace your personal voice — you should tweak the wording",
-  "Doesn't run your ads or grow your audience — it focuses on the course site"
+const faqItems = [
+  {
+    question: "Do I need technical skills to use Excellion?",
+    answer: "No. Excellion is designed for course creators, not developers. You describe your course idea in plain language, and the AI generates everything for you. Edit with simple clicks, not code."
+  },
+  {
+    question: "What types of courses can I create?",
+    answer: "Any type — video courses, text-based lessons, cohort programs, coaching programs, bootcamps, or self-paced courses. Excellion adapts to your format and audience."
+  },
+  {
+    question: "How long does it take to create a course?",
+    answer: "Most users go from idea to published course in under 10 minutes. The AI generates your curriculum and landing page instantly. You just review and customize."
+  },
+  {
+    question: "Can I use my own domain?",
+    answer: "Yes. Connect any custom domain you own. Your course will be accessible at yourdomain.com with SSL included."
+  },
+  {
+    question: "Is there a free plan?",
+    answer: "Yes. Start for free and generate your first course draft at no cost. Upgrade when you're ready to publish and sell."
+  }
 ];
-
-type InputMode = 'quick' | 'interview';
 
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [inputMode, setInputMode] = useState<InputMode>('quick');
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
-  
-  // Interview intake hook
-  const interview = useInterviewIntake(prompt);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -113,15 +143,11 @@ const WebBuilderHome = () => {
   }, []);
 
   const handleStart = () => {
-    const promptToUse = inputMode === 'interview' ? interview.composedPrompt : prompt;
-    const structuredData = inputMode === 'interview' ? interview.structuredData : null;
-    
-    if (promptToUse.trim()) {
+    if (prompt.trim()) {
       navigate("/secret-builder-hub", { 
         state: { 
-          initialIdea: promptToUse, 
-          autoGenerate: true,
-          interviewData: structuredData
+          initialIdea: prompt, 
+          autoGenerate: true
         } 
       });
     } else {
@@ -136,418 +162,364 @@ const WebBuilderHome = () => {
     }
   };
 
-const handleChipClick = (suggestion: string) => {
+  const handleChipClick = (suggestion: string) => {
     setPrompt(suggestion);
   };
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || isSubmitting) return;
-    
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase.from("quote_requests").insert({
-        name: "Email Capture",
-        email: email.trim(),
-        project_type: "email_capture",
-        source: "web_builder_home",
-        description: prompt.trim() || "User signed up for examples",
-        brand_name: prompt.trim() || undefined,
-      });
-      
-      if (error) throw error;
-      
-      toast.success("Thanks! We'll send you examples and tips soon.");
-      setEmail("");
-      setPrompt("");
-    } catch (error) {
-      console.error("Email capture error:", error);
-      toast.error("Failed to sign up. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+  const schemaMarkup = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Excellion",
+    "applicationCategory": "Course Builder",
+    "description": "AI-powered course creation platform that generates curriculum, landing pages, and sales copy.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
     }
-  };
-
-  const handleSwitchMode = (mode: InputMode) => {
-    // Preserve state when switching
-    if (mode === 'interview' && prompt.trim()) {
-      interview.setQuickPrompt(prompt);
-    } else if (mode === 'quick' && interview.quickPrompt) {
-      setPrompt(interview.quickPrompt);
-    }
-    setInputMode(mode);
-  };
-
-  const handleInterviewSubmit = () => {
-    handleStart();
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <meta name="robots" content="noindex, nofollow" />
-        <title>Website Builder AI | Build Your Site with AI</title>
+        <title>Excellion — AI Course Builder | Create & Sell Online Courses</title>
+        <meta name="description" content="Create professional online courses in minutes with AI. Excellion generates your curriculum, landing page, and sales copy. Start free, publish instantly." />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://excellion.dev" />
+        <script type="application/ld+json">
+          {JSON.stringify(schemaMarkup)}
+        </script>
       </Helmet>
 
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-20 pb-12">
-        {/* Video Background */}
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            disablePictureInPicture
-            className="w-full h-full object-cover"
-            style={{ 
-              backfaceVisibility: 'hidden', 
-              objectPosition: 'center 20%', 
-              transform: 'translateZ(0) scale(1.0)', 
-              minWidth: '100%', 
-              minHeight: '100%',
-              WebkitTransform: 'translateZ(0) scale(1.0)',
-              filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
-              contain: 'paint',
-              willChange: 'transform',
-            } as React.CSSProperties}
-          >
-            <source src={homeBackgroundVideo} type="video/mp4" />
-          </video>
-        </div>
-
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-3 sm:px-4">
-          <div className="bg-background/50 backdrop-blur-sm px-3 sm:px-4 md:px-8 py-4 sm:py-6 md:py-10 rounded-lg border border-border/50">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs sm:text-sm text-primary mb-3 sm:mb-6">
-              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>AI-Powered Website Builder</span>
-            </div>
-
-            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-2 sm:mb-4">
-              Your course website,{" "}
-              <span className="text-accent">written and structured by AI.</span>
-            </h1>
-            <p className="text-sm sm:text-xl text-accent max-w-3xl mx-auto mb-4 sm:mb-8 font-semibold">
-              Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
-            </p>
-
-            {/* Mode Toggle */}
-            <div className="max-w-2xl mx-auto mb-3 sm:mb-4">
-              <div className="inline-flex p-1 rounded-lg bg-background/30 border border-border/30 backdrop-blur-sm">
-                <button
-                  onClick={() => handleSwitchMode('quick')}
-                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
-                    inputMode === 'quick'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground/70 hover:text-foreground'
-                  }`}
-                >
-                  Quick Prompt
-                </button>
-                <button
-                  onClick={() => handleSwitchMode('interview')}
-                  className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all flex items-center gap-1 ${
-                    inputMode === 'interview'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground/70 hover:text-foreground'
-                  }`}
-                >
-                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  Build Assist
-                </button>
-              </div>
-            </div>
-
-            {/* Input Area */}
-            <div className="max-w-2xl mx-auto">
-              <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl border border-border p-3 sm:p-4">
-                {inputMode === 'quick' ? (
-                  <>
-                    {/* Quick Prompt Mode */}
-                    <div className="relative">
-                      <Textarea
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="border-0 bg-transparent text-sm sm:text-base min-h-[40px] sm:min-h-[48px] max-h-[200px] px-3 sm:px-4 py-2 sm:py-3 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden"
-                        rows={1}
-                        style={{ height: 'auto' }}
-                        onInput={(e) => {
-                          const target = e.target as HTMLTextAreaElement;
-                          target.style.height = 'auto';
-                          target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-                        }}
-                      />
-                      {!prompt && (
-                        <div className="absolute top-0 left-0 px-3 sm:px-4 py-2 sm:py-3 pointer-events-none text-sm sm:text-base text-left">
-                          <AnimatedPlaceholder 
-                            suggestions={placeholderSuggestions}
-                            typingSpeed={25}
-                            deletingSpeed={15}
-                            pauseDuration={2000}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2 text-left px-3 sm:px-4">
-                      Include your audience, the transformation, and your offer type. Excellion handles structure, page flow, and sales copy.
-                    </p>
-                    <div className="flex items-center justify-end mt-2 sm:mt-3">
-                      <Button onClick={handleStart} className="h-8 sm:h-10 px-3 sm:px-4 gap-1.5 sm:gap-2">
-                        <span className="text-xs sm:text-sm">Generate course site draft</span>
-                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  /* Build Assist Mode */
-                  <InterviewStepper
-                    step={interview.step}
-                    totalSteps={interview.totalSteps}
-                    answers={interview.answers}
-                    canProceed={interview.canProceed}
-                    canSubmit={interview.canSubmit}
-                    onUpdateAnswer={interview.updateAnswer}
-                    onUpdateOffer={interview.updateOffer}
-                    onNext={interview.nextStep}
-                    onBack={interview.prevStep}
-                    onSkip={interview.skipStep}
-                    onSubmit={handleInterviewSubmit}
-                    onSwitchToQuickPrompt={() => handleSwitchMode('quick')}
-                  />
-                )}
-              </div>
-
-              {/* Quick Prompt extras */}
-              {inputMode === 'quick' && (
-                <>
-                  {/* Suggestion Chips */}
-                  <div className="flex flex-col items-center gap-2 sm:gap-2.5 mt-4 sm:mt-6">
-                    {suggestionChips.map((chip, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleChipClick(chip)}
-                        className="group px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm bg-gradient-to-r from-background/60 to-background/40 text-foreground/90 hover:text-foreground border border-primary/20 hover:border-primary/40 transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow-md hover:shadow-primary/10 flex items-center gap-2"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary/60 group-hover:bg-primary transition-colors" />
-                        {chip}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Interview prompt link */}
-                  <p className="text-[10px] sm:text-xs text-foreground/60 mt-3 sm:mt-4 font-light">
-                    No credit card required.{' '}
-                    <button
-                      onClick={() => handleSwitchMode('interview')}
-                      className="text-primary hover:underline"
-                    >
-                      Want a better first draft? Try Build Assist (60 sec)
-                    </button>
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 border-t border-border/50 scroll-mt-20">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-foreground text-center mb-4">
-            How Excellion builds your course site
-          </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Three simple steps from idea to enrollments
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <div className="relative p-6 rounded-xl bg-card border border-border">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary mb-4">
-                <MessageSquare className="w-6 h-6" />
-              </div>
-              <span className="text-xs font-medium text-primary uppercase tracking-wide">01</span>
-              <h3 className="text-xl font-semibold text-foreground mt-1 mb-2">
-                Tell us what your course is about
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                Who it's for, what they'll learn, and the result they'll get.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="relative p-6 rounded-xl bg-card border border-border">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary mb-4">
-                <Layout className="w-6 h-6" />
-              </div>
-              <span className="text-xs font-medium text-primary uppercase tracking-wide">02</span>
-              <h3 className="text-xl font-semibold text-foreground mt-1 mb-2">
-                Get your course site draft
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                We generate the page layout, sections, and sales copy for you.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="relative p-6 rounded-xl bg-card border border-border">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary mb-4">
-                <Rocket className="w-6 h-6" />
-              </div>
-              <span className="text-xs font-medium text-primary uppercase tracking-wide">03</span>
-              <h3 className="text-xl font-semibold text-foreground mt-1 mb-2">
-                Edit and launch
-              </h3>
-              <p className="text-muted-foreground text-sm">
-                Change anything you want, connect your domain, and publish when you're ready.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      {/* AI Builder Section */}
-      <section id="pricing" className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-3xl mx-auto">
-          <div className="p-8 rounded-xl bg-card border border-border">
-            <span className="text-xs font-medium text-primary uppercase tracking-wide mb-2 block">AI Course Builder</span>
-            <h3 className="text-2xl font-semibold text-foreground mb-6">Build your course site with Excellion AI</h3>
-            <ul className="space-y-4 mb-6">
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                Tell us your course idea and who it's for
-              </li>
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                Get a complete course site draft in seconds
-              </li>
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <Check className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                Edit pages, sections, and copy anytime inside the builder
-              </li>
-            </ul>
-            <p className="text-sm text-muted-foreground mb-6">
-              Start free with a draft site.
-            </p>
-            <Button 
-              onClick={() => user ? navigate("/secret-builder-hub") : navigate("/auth?redirect=/secret-builder-hub")} 
-              className="w-full max-w-md mx-auto flex items-center justify-center gap-2"
-              size="lg"
+      <main>
+        <section 
+          className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-24 pb-16"
+          aria-label="Hero section"
+        >
+          {/* Video Background */}
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              className="w-full h-full object-cover"
+              aria-hidden="true"
+              style={{ 
+                backfaceVisibility: 'hidden', 
+                objectPosition: 'center 20%', 
+                transform: 'translateZ(0) scale(1.0)', 
+                minWidth: '100%', 
+                minHeight: '100%',
+                filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
+                contain: 'paint',
+                willChange: 'transform',
+              }}
             >
-              <ArrowRight className="w-4 h-4" />
-              <span>Studio</span>
-            </Button>
+              <source src={homeBackgroundVideo} type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-background/60" />
           </div>
-        </div>
-      </section>
 
-      {/* Capabilities Section */}
-      <section className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-foreground text-center mb-12">
-            What Excellion AI is great at
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Great At */}
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Check className="w-5 h-5 text-primary" />
-                Great at
-              </h3>
-              <ul className="space-y-3">
-                {greatAtItems.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+          <div className="relative z-10 max-w-3xl mx-auto text-center px-4 sm:px-6">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-8">
+              <Sparkles className="w-4 h-4" />
+              <span>AI Course Builder</span>
             </div>
 
-            {/* Not Magic */}
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-muted-foreground" />
-                Not magic
-              </h3>
-              <ul className="space-y-3">
-                {notMagicItems.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+            {/* H1 - Main SEO Target */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+              Create and sell online courses{" "}
+              <span className="text-primary">in minutes</span>
+            </h1>
 
+            {/* H2 Subheadline */}
+            <h2 className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
+              Describe your course idea. Excellion generates the curriculum, landing page, and sales copy — ready to publish.
+            </h2>
 
-      {/* Email Capture Section */}
-      <section className="py-20 px-4 border-t border-border/50">
-        <div className="max-w-2xl mx-auto text-center">
-          <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            Learn how course websites are structured
-          </h2>
-          <p className="text-muted-foreground mb-8">
-            Tell us your course topic and we'll email you real examples, plus a simple checklist of the sections to include.
-          </p>
-          <form onSubmit={handleEmailSubmit} className="space-y-4 max-w-xl mx-auto">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="text-left">
-                <label className="text-sm text-muted-foreground mb-1.5 block">Course topic</label>
-                <Input
-                  type="text"
+            {/* Prompt Input */}
+            <div className="max-w-xl mx-auto">
+              <div className="bg-card/90 backdrop-blur-sm rounded-2xl border border-border p-4 sm:p-6 shadow-lg">
+                <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g., fat loss at home, Notion for freelancers, AI for beginners"
-                  className="w-full"
-                  disabled={isSubmitting}
+                  onKeyDown={handleKeyDown}
+                  placeholder="A 6-week photography course for beginners..."
+                  aria-label="Describe your course idea"
+                  className="border-0 bg-muted/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
+                  rows={4}
                 />
+                <Button 
+                  onClick={handleStart} 
+                  size="lg"
+                  className="w-full mt-4 h-12 text-base gap-2"
+                >
+                  Generate Course
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </div>
-              <div className="text-left">
-                <label className="text-sm text-muted-foreground mb-1.5 block">Email</label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@domain.com"
-                  className="w-full"
-                  required
-                  disabled={isSubmitting}
-                />
+
+              {/* Example Chips */}
+              <div className="flex flex-wrap justify-center gap-2 mt-6">
+                {suggestionChips.map((chip, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleChipClick(chip)}
+                    className="px-4 py-2 rounded-full text-sm bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50 hover:border-border transition-all"
+                  >
+                    {chip}
+                  </button>
+                ))}
               </div>
             </div>
-            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto px-8">
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                "Send me the examples"
-              )}
-            </Button>
-          </form>
-          <p className="text-xs text-muted-foreground mt-4">
-            No spam. Unsubscribe anytime.
-          </p>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* Footer */}
+        {/* How It Works Section */}
+        <section id="how-it-works" className="py-24 px-4 border-t border-border/30">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-4">
+              How Excellion Works
+            </h2>
+            <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
+              Three steps from idea to published course
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+              {/* Step 1 */}
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">
+                  <MessageSquare className="w-7 h-7" />
+                </div>
+                <div className="text-sm font-medium text-primary mb-2">Step 1</div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">
+                  Describe your course
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Tell us what you teach, who it's for, and the outcome students will achieve.
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">
+                  <Zap className="w-7 h-7" />
+                </div>
+                <div className="text-sm font-medium text-primary mb-2">Step 2</div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">
+                  AI generates everything
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Get a complete curriculum, landing page, and sales copy in seconds.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">
+                  <Globe className="w-7 h-7" />
+                </div>
+                <div className="text-sm font-medium text-primary mb-2">Step 3</div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">
+                  Customize and publish
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Edit anything, connect your domain, and go live when you're ready.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section id="features" className="py-24 px-4 bg-muted/30 border-t border-border/30">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-4">
+              Built for Course Creators
+            </h2>
+            <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
+              Everything you need to create, launch, and sell online courses
+            </p>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div 
+                    key={index}
+                    className="p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors"
+                  >
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary mb-4">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="py-24 px-4 border-t border-border/30">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-4">
+              Pricing Plans
+            </h2>
+            <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
+              Start free. Upgrade when you're ready to publish.
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+              {/* Free Plan */}
+              <div className="p-8 rounded-2xl bg-card border border-border">
+                <div className="text-sm font-medium text-muted-foreground mb-2">Free</div>
+                <div className="text-4xl font-bold text-foreground mb-1">$0</div>
+                <div className="text-muted-foreground text-sm mb-6">Forever free</div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    Generate unlimited course drafts
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    AI curriculum generation
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    Preview before publishing
+                  </li>
+                </ul>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate("/secret-builder-hub")}
+                >
+                  Get Started
+                </Button>
+              </div>
+
+              {/* Pro Plan */}
+              <div className="p-8 rounded-2xl bg-card border-2 border-primary relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                  Most Popular
+                </div>
+                <div className="text-sm font-medium text-primary mb-2">Pro</div>
+                <div className="text-4xl font-bold text-foreground mb-1">$29</div>
+                <div className="text-muted-foreground text-sm mb-6">per month</div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    Everything in Free
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    Publish unlimited courses
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    Custom domain support
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    Analytics dashboard
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    Priority support
+                  </li>
+                </ul>
+                <Button 
+                  className="w-full"
+                  onClick={() => navigate("/pricing")}
+                >
+                  View Pricing
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-center mt-8 text-sm text-muted-foreground">
+              <Link to="/pricing" className="text-primary hover:underline">
+                See full pricing details →
+              </Link>
+            </p>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section id="faq" className="py-24 px-4 bg-muted/30 border-t border-border/30">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground text-center mb-12">
+              Everything you need to know about Excellion
+            </p>
+
+            <Accordion type="single" collapsible className="space-y-4">
+              {faqItems.map((item, index) => (
+                <AccordionItem 
+                  key={index} 
+                  value={`item-${index}`}
+                  className="bg-card border border-border rounded-xl px-6"
+                >
+                  <AccordionTrigger className="text-left text-foreground hover:no-underline py-5">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-5">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-24 px-4 border-t border-border/30">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Ready to create your course?
+            </h2>
+            <p className="text-muted-foreground mb-8">
+              Join thousands of creators who use Excellion to build and sell online courses.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button 
+                size="lg"
+                className="h-12 px-8 gap-2"
+                onClick={() => navigate("/secret-builder-hub")}
+              >
+                Get Started Free
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="outline"
+                size="lg"
+                className="h-12 px-8"
+                onClick={() => user ? navigate("/auth") : navigate("/auth")}
+              >
+                Login
+              </Button>
+            </div>
+          </div>
+        </section>
+      </main>
+
       <Footer />
-
     </div>
   );
 };
