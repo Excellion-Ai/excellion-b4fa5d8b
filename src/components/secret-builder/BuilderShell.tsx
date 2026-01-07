@@ -457,6 +457,7 @@ export function BuilderShell() {
   const [showRefineChat, setShowRefineChat] = useState(false);
   const [showCourseSettings, setShowCourseSettings] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [courseSettings, setCourseSettings] = useState({
     price: null as number | null,
     currency: 'USD',
@@ -728,7 +729,12 @@ export function BuilderShell() {
   };
 
   // Course-specific generation handler
-  const handleGenerateCourse = async (ideaToUse: string) => {
+  const handleGenerateCourse = async (ideaToUse: string, courseOptions?: {
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    duration_weeks: number;
+    includeQuizzes: boolean;
+    includeAssignments: boolean;
+  }) => {
     // Deduct credits for course generation
     const canProceed = await deductCredits('generation', 'Course generation', 3);
     if (!canProceed) return;
@@ -741,15 +747,17 @@ export function BuilderShell() {
     setMessages((prev) => [...prev, userMessage]);
     setIdea('');
     setAttachments([]);
+    setSaveStatus('unsaved');
 
     setIsGenerating(true);
     setCourseSpec(null);
     setSiteSpec(null);
     setGeneratedHtml(null);
     setSteps([
-      { id: 1, label: 'Analyzing course idea', status: 'pending' },
-      { id: 2, label: 'Generating curriculum', status: 'pending' },
-      { id: 3, label: 'Building preview', status: 'pending' },
+      { id: 1, label: 'Understanding your idea...', status: 'pending' },
+      { id: 2, label: 'Creating curriculum structure...', status: 'pending' },
+      { id: 3, label: 'Writing lesson content...', status: 'pending' },
+      { id: 4, label: 'Finalizing course...', status: 'pending' },
     ]);
 
     try {
@@ -774,8 +782,10 @@ export function BuilderShell() {
         body: JSON.stringify({
           prompt: ideaToUse,
           options: {
-            difficulty: 'beginner',
-            duration_weeks: 6,
+            difficulty: courseOptions?.difficulty || 'beginner',
+            duration_weeks: courseOptions?.duration_weeks || 6,
+            includeQuizzes: courseOptions?.includeQuizzes ?? true,
+            includeAssignments: courseOptions?.includeAssignments ?? false,
           },
         }),
       });
@@ -789,10 +799,15 @@ export function BuilderShell() {
       updateStep(2, 'complete');
 
       updateStep(3, 'active');
+      await new Promise((r) => setTimeout(r, 200));
+      updateStep(3, 'complete');
+      
+      updateStep(4, 'active');
       
       if (data.course) {
         setCourseSpec(data.course);
         setProjectName(data.course.title || 'New Course');
+        setSaveStatus('saved');
         
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -805,7 +820,7 @@ export function BuilderShell() {
         await saveProject(null, allMessages, ideaToUse, null);
       }
 
-      updateStep(3, 'complete');
+      updateStep(4, 'complete');
     } catch (error) {
       console.error('Course generation error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate course');
@@ -1608,142 +1623,21 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               </div>
             </div>
             
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {messages.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground text-sm">
-                      Describe your business idea to get started
-                    </p>
-                  </div>
-                )}
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-xl px-4 py-2 text-sm ${
-                        msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground'
-                      }`}
-                    >
-                      {/* Show attachments if present */}
-                      {msg.attachments && msg.attachments.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {msg.attachments.map((att, idx) => (
-                            <div key={idx} className="relative">
-                              {att.type.startsWith('image/') && att.url ? (
-                                <img 
-                                  src={att.url} 
-                                  alt={att.name} 
-                                  className="max-h-32 max-w-full rounded-lg object-cover" 
-                                />
-                              ) : (
-                                <div className="flex items-center gap-1 bg-black/20 rounded px-2 py-1 text-xs">
-                                  <Upload className="h-3 w-3" />
-                                  <span className="truncate max-w-[100px]">{att.name}</span>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-                {isGenerating && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted rounded-xl px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating...
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-
-            {/* Quick Actions Bar - show when site exists */}
-            {siteSpec && (
-              <div className="border-t border-border p-3 flex items-center justify-center gap-2">
-                <ThemeEditor 
-                  theme={siteSpec.theme} 
-                  onUpdateTheme={editor.updateTheme}
-                />
-                <LogoUpload 
-                  logo={siteSpec.logo}
-                  onUpdateLogo={editor.updateLogo}
-                  generatedImages={generatedImages}
-                  isLoadingImages={isLoadingImages}
-                  externalOpen={logoUploadOpen}
-                  onExternalOpenChange={setLogoUploadOpen}
-                />
-                <HelpChat 
-                  externalOpen={helpOpen}
-                  onExternalOpenChange={setHelpOpen}
-                />
-              </div>
-            )}
-
-            {/* Chat Input */}
-            <div className="border-t border-border p-4">
-              {/* Quick Action Buttons */}
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Button
-                  variant="outline"
-                  className="rounded-full px-5 h-10 border-primary/30 bg-card/80 hover:bg-card text-primary hover:text-primary"
-                  onClick={() => setLogoUploadOpen(true)}
-                >
-                  <ImageIcon className="h-4 w-4 mr-2 text-primary" />
-                  Add logo
-                </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-full px-5 h-10 border-primary/30 bg-card/80 hover:bg-card text-primary hover:text-primary"
-                  onClick={() => setHelpOpen(true)}
-                >
-                  <HelpCircle className="h-4 w-4 mr-2 text-primary" />
-                  Help
-                </Button>
-              </div>
-
-              {/* Attachments preview */}
-              <AttachmentChips 
-                attachments={attachments} 
-                onRemove={removeAttachment} 
-              />
-              
-              <div className="flex items-center gap-2 bg-card/50 border border-border rounded-full px-4 py-2">
-                <AttachmentMenu
-                  onAddAttachment={handleAddAttachment}
-                  disabled={isGenerating}
-                  attachmentCount={attachments.length}
-                  previewRef={previewContainerRef as React.RefObject<HTMLElement>}
-                />
-                <Input
-                  value={idea}
-                  onChange={(e) => setIdea(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Describe your course idea..."
-                  className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/60"
-                  disabled={isGenerating}
-                />
-                <Button
-                  size="icon"
-                  onClick={() => handleGenerate()}
-                  disabled={!idea.trim() || isGenerating}
-                  className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90"
-                >
-                  {isGenerating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
+            {/* Course Builder Panel */}
+            <CourseBuilderPanel
+              idea={idea}
+              onIdeaChange={setIdea}
+              onGenerate={(options) => {
+                handleGenerateCourse(idea, options);
+              }}
+              isGenerating={isGenerating}
+              steps={steps}
+              messages={messages}
+              attachments={attachments}
+              onAddAttachment={handleAddAttachment}
+              onRemoveAttachment={removeAttachment}
+              previewRef={previewContainerRef as React.RefObject<HTMLElement>}
+            />
           </div>
         </ResizablePanel>
 
@@ -2440,6 +2334,52 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             <span>?forceFallback=1 to test fallback</span>
           </div>
         </div>
+      )}
+
+      {/* Course Action Bar - Sticky Bottom */}
+      {courseSpec && (
+        <CourseActionBar
+          onSaveDraft={async () => {
+            setSaveStatus('saving');
+            try {
+              await saveProject(null, messages, idea, null);
+              setSaveStatus('saved');
+              toast.success('Draft saved!');
+            } catch (error) {
+              setSaveStatus('unsaved');
+              toast.error('Failed to save draft');
+            }
+          }}
+          onPreview={() => toast.info('Student preview coming soon!')}
+          onPublish={() => {
+            toast.success('Course publishing coming soon!');
+          }}
+          isSaving={saveStatus === 'saving'}
+          isPublishing={isPublishing}
+          saveStatus={saveStatus}
+          checklist={[
+            { 
+              label: 'Title', 
+              complete: Boolean(courseSpec?.title), 
+              required: true 
+            },
+            { 
+              label: 'Modules', 
+              complete: (courseSpec?.modules?.length || 0) >= 3, 
+              required: true 
+            },
+            { 
+              label: 'Thumbnail', 
+              complete: Boolean(courseSettings.thumbnail), 
+              required: false 
+            },
+            { 
+              label: 'Pricing', 
+              complete: courseSettings.price !== null, 
+              required: false 
+            },
+          ]}
+        />
       )}
     </div>
   );
