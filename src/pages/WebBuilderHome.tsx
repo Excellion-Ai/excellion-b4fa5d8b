@@ -109,7 +109,7 @@ const WebBuilderHome = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const interview = useInterviewIntake();
 
-  const placeholderText = "Help [WHO] achieve [RESULT] in [TIMEFRAME] — without getting stuck or confused.";
+  const placeholderText = "Help [WHO] achieve [RESULT] in [TIMEFRAME] — without getting stuck or confused...";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -128,10 +128,10 @@ const WebBuilderHome = () => {
     if (prompt) return; // Don't animate if user has typed something
     
     let timeout: NodeJS.Timeout;
-    const typeSpeed = 50;
-    const deleteSpeed = 30;
-    const pauseBeforeDelete = 2000;
-    const pauseBeforeType = 500;
+    const typeSpeed = 25;
+    const deleteSpeed = 15;
+    const pauseBeforeDelete = 1500;
+    const pauseBeforeType = 300;
 
     if (!isDeleting) {
       if (animatedPlaceholder.length < placeholderText.length) {
