@@ -272,17 +272,17 @@ const WebBuilderHome = () => {
               </h2>
 
               {/* Prompt Input */}
-              <div className="max-w-xl mx-auto">
+              <div className="w-full">
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Help [WHO] achieve [RESULT] in [TIMEFRAME] — without getting stuck or confused."
                   aria-label="Describe your course idea"
-                  className="border border-white/10 bg-background/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
+                  className="w-full border border-white/10 bg-background/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
                   rows={4}
                 />
-                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                <div className="flex gap-3 mt-4">
                   <Button 
                     onClick={() => setInterviewOpen(true)}
                     size="lg"
