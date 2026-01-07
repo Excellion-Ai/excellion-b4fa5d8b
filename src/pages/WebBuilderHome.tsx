@@ -277,7 +277,7 @@ const WebBuilderHome = () => {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="A 6-week photography course for beginners..."
+                  placeholder="Help [WHO] achieve [RESULT] in [TIMEFRAME] — without getting stuck or confused."
                   aria-label="Describe your course idea"
                   className="border border-white/10 bg-background/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
                   rows={4}
