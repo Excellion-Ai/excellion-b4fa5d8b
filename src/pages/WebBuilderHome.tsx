@@ -268,7 +268,7 @@ const WebBuilderHome = () => {
 
               {/* H2 Subheadline */}
               <h2 className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 font-normal leading-relaxed text-center">
-                Describe your course idea. Excellion generates the curriculum, landing page, and sales copy — ready to publish.
+                Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
               </h2>
 
               {/* Prompt Input */}
