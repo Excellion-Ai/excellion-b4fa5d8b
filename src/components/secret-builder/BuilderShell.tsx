@@ -16,6 +16,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
 import { CoursePreview } from './CoursePreview';
+import { CourseBuilderPanel } from './CourseBuilderPanel';
+import { RefineChat } from './RefineChat';
+import { CourseSettingsDialog } from './CourseSettingsDialog';
+import { CourseActionBar } from './CourseActionBar';
 import { ThemeEditor } from './ThemeEditor';
 import { LogoUpload } from './LogoUpload';
 import { HelpChat } from './HelpChat';
@@ -450,6 +454,19 @@ export function BuilderShell() {
   const [previousSpecForDiff, setPreviousSpecForDiff] = useState<SiteSpec | null>(null);
   const [logoUploadOpen, setLogoUploadOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [showRefineChat, setShowRefineChat] = useState(false);
+  const [showCourseSettings, setShowCourseSettings] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
+  const [courseSettings, setCourseSettings] = useState({
+    price: null as number | null,
+    currency: 'USD',
+    customDomain: '',
+    seoTitle: '',
+    seoDescription: '',
+    enrollmentOpen: true,
+    maxStudents: null as number | null,
+    thumbnail: null as string | null,
+  });
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const fallbackForcedOnceRef = useRef<boolean>(false);
   
@@ -1976,10 +1993,30 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     onPublish={() => {
                       toast.success('Course publishing coming soon!');
                     }}
-                    onRefine={() => {
-                      setIdea('Improve and expand this course curriculum');
-                    }}
+                    onRefine={() => setShowRefineChat(true)}
+                    onOpenSettings={() => setShowCourseSettings(true)}
+                    onPreviewAsStudent={() => toast.info('Student preview coming soon!')}
+                    onDuplicate={() => toast.info('Course duplicated!')}
+                    onUploadThumbnail={() => toast.info('Thumbnail upload coming soon!')}
                     isPublishing={isPublishing}
+                  />
+                  <RefineChat
+                    open={showRefineChat}
+                    onOpenChange={setShowRefineChat}
+                    onRefine={async (prompt) => {
+                      setIsRefining(true);
+                      await new Promise(r => setTimeout(r, 1500));
+                      setIsRefining(false);
+                      toast.success('Course refined!');
+                    }}
+                    isRefining={isRefining}
+                  />
+                  <CourseSettingsDialog
+                    open={showCourseSettings}
+                    onOpenChange={setShowCourseSettings}
+                    settings={courseSettings}
+                    onUpdateSettings={setCourseSettings}
+                    onUploadThumbnail={() => toast.info('Thumbnail upload coming soon!')}
                   />
                 </div>
               ) : siteSpec ? (
