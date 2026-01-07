@@ -14,38 +14,41 @@ import { toast } from "sonner";
 // Stripe publishable key
 const stripePromise = loadStripe("pk_live_51Sfw2PPCTHzXvqDgF5hSFN8VJyO5SJWbpMJHPNKCiIEvXIcQy5fOFLdN4EsOqJEP6vpSqqEwKH6nJYnlbxmM99BV00Hl1d5vfU");
 
-const PLAN_DETAILS: Record<string, { name: string; price: string; credits: number; features: string[] }> = {
+const PLAN_DETAILS: Record<string, { name: string; monthlyPrice: string; yearlyPrice: string; monthlyDisplay: string; credits: number; features: string[] }> = {
   starter: {
     name: "Starter",
-    price: "$15",
-    credits: 50,
+    monthlyPrice: "$19",
+    yearlyPrice: "$192",
+    monthlyDisplay: "$16",
+    credits: 200,
     features: [
-      "1 published site",
-      "Custom domain",
-      "No watermark",
-      "Basic SEO",
+      "Publish your course site + connect your domain",
+      "Enough build credits for a full first draft + edits",
+      "Basic SEO + simple analytics",
     ],
   },
   pro: {
     name: "Pro",
-    price: "$29",
-    credits: 100,
+    monthlyPrice: "$39",
+    yearlyPrice: "$396",
+    monthlyDisplay: "$33",
+    credits: 500,
     features: [
-      "Unlimited drafts + 1 published site",
-      "Integrations: Stripe, Calendly, Mailchimp",
-      "Advanced components",
-      "Code export (Annual)",
+      "More build credits for frequent edits",
+      "Multiple pages and offers (upsells, waitlist, lead magnet)",
+      "More advanced sections and layouts",
     ],
   },
   agency: {
     name: "Agency",
-    price: "$129",
-    credits: 500,
+    monthlyPrice: "$99",
+    yearlyPrice: "$996",
+    monthlyDisplay: "$83",
+    credits: 3000,
     features: [
-      "10 published sites",
-      "White-label dashboard",
-      "Team seats + roles",
-      "Priority build queue",
+      "Highest build credits for heavy use",
+      "Multiple team seats",
+      "White-label options + export tools",
     ],
   },
 };
@@ -58,7 +61,9 @@ const Checkout = () => {
   const [error, setError] = useState<string | null>(null);
   
   const plan = searchParams.get("plan") || "pro";
+  const isAnnual = searchParams.get("annual") === "true";
   const planDetails = PLAN_DETAILS[plan] || PLAN_DETAILS.pro;
+  const displayPrice = isAnnual ? planDetails.monthlyDisplay : planDetails.monthlyPrice;
 
   const fetchClientSecret = useCallback(async () => {
     try {
@@ -66,12 +71,12 @@ const Checkout = () => {
       
       if (!session) {
         toast.error("Please sign in to continue");
-        navigate("/auth?redirect=/checkout?plan=" + plan);
+        navigate("/auth?redirect=/checkout?plan=" + plan + (isAnnual ? "&annual=true" : ""));
         return;
       }
 
       const { data, error } = await supabase.functions.invoke("create-embedded-checkout", {
-        body: { planType: plan },
+        body: { planType: plan, isAnnual },
       });
 
       if (error) throw error;
@@ -88,7 +93,7 @@ const Checkout = () => {
     } finally {
       setLoading(false);
     }
-  }, [plan, navigate]);
+  }, [plan, isAnnual, navigate]);
 
   useEffect(() => {
     fetchClientSecret();
@@ -127,13 +132,16 @@ const Checkout = () => {
               
               <div className="p-4 rounded-lg bg-primary/10 border border-primary/30 mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-foreground">{planDetails.name} Plan</span>
-                  <span className="text-2xl font-bold text-foreground">{planDetails.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                  <span className="font-semibold text-foreground">{planDetails.name} Plan {isAnnual && "(Annual)"}</span>
+                  <span className="text-2xl font-bold text-foreground">{displayPrice}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm text-accent">
                   <Sparkles className="w-4 h-4" />
-                  {planDetails.credits} credits/month
+                  {planDetails.credits} build credits/month (rolls over)
                 </div>
+                {isAnnual && (
+                  <p className="text-xs text-muted-foreground mt-2">Billed as {planDetails.yearlyPrice}/year</p>
+                )}
               </div>
 
               <ul className="space-y-3">
