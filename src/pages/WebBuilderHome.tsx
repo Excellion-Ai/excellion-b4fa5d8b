@@ -199,7 +199,7 @@ const WebBuilderHome = () => {
           className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-24 pb-16"
           aria-label="Hero section"
         >
-          {/* Video Background */}
+          {/* Video Background - No dark overlay */}
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <video
               ref={videoRef}
@@ -224,37 +224,39 @@ const WebBuilderHome = () => {
             >
               <source src={homeBackgroundVideo} type="video/mp4" />
             </video>
-            <div className="absolute inset-0 bg-background/60" />
           </div>
 
-          <div className="relative z-10 max-w-3xl mx-auto text-center px-4 sm:px-6">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-8">
-              <Sparkles className="w-4 h-4" />
-              <span>AI Course Builder</span>
-            </div>
+          {/* Transparent Glass Box Container */}
+          <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="bg-background/70 backdrop-blur-xl rounded-3xl border border-white/10 p-8 sm:p-12 shadow-2xl">
+              {/* Badge */}
+              <div className="flex justify-center mb-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-sm text-primary">
+                  <Sparkles className="w-4 h-4" />
+                  <span>AI Course Builder</span>
+                </div>
+              </div>
 
-            {/* H1 - Main SEO Target */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Create and sell online courses{" "}
-              <span className="text-primary">in minutes</span>
-            </h1>
+              {/* H1 - Main SEO Target */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight text-center">
+                Create and sell online courses{" "}
+                <span className="text-primary">in minutes</span>
+              </h1>
 
-            {/* H2 Subheadline */}
-            <h2 className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
-              Describe your course idea. Excellion generates the curriculum, landing page, and sales copy — ready to publish.
-            </h2>
+              {/* H2 Subheadline */}
+              <h2 className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 font-normal leading-relaxed text-center">
+                Describe your course idea. Excellion generates the curriculum, landing page, and sales copy — ready to publish.
+              </h2>
 
-            {/* Prompt Input */}
-            <div className="max-w-xl mx-auto">
-              <div className="bg-card/90 backdrop-blur-sm rounded-2xl border border-border p-4 sm:p-6 shadow-lg">
+              {/* Prompt Input */}
+              <div className="max-w-xl mx-auto">
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="A 6-week photography course for beginners..."
                   aria-label="Describe your course idea"
-                  className="border-0 bg-muted/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
+                  className="border border-white/10 bg-background/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
                   rows={4}
                 />
                 <Button 
@@ -273,7 +275,7 @@ const WebBuilderHome = () => {
                   <button
                     key={index}
                     onClick={() => handleChipClick(chip)}
-                    className="px-4 py-2 rounded-full text-sm bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/50 hover:border-border transition-all"
+                    className="px-4 py-2 rounded-full text-sm bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all"
                   >
                     {chip}
                   </button>
