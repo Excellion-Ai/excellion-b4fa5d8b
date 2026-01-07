@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Users,
   BarChart3,
+  X,
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
@@ -481,6 +482,10 @@ const WebBuilderHome = () => {
                   <li className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     Preview before publishing
+                  </li>
+                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <X className="w-4 h-4 text-muted-foreground/50 shrink-0" />
+                    Publishing not included
                   </li>
                 </ul>
                 <Button 
