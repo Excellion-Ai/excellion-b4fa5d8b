@@ -284,21 +284,21 @@ const WebBuilderHome = () => {
                 />
                 <div className="flex flex-col sm:flex-row gap-3 mt-4">
                   <Button 
-                    onClick={handleStart} 
+                    onClick={() => setInterviewOpen(true)}
                     size="lg"
                     className="flex-1 h-12 text-base gap-2"
                   >
-                    Generate Course
-                    <ArrowRight className="w-4 h-4" />
+                    <Zap className="w-4 h-4" />
+                    Build Assist
                   </Button>
                   <Button 
-                    onClick={() => setInterviewOpen(true)}
+                    onClick={handleStart} 
                     size="lg"
                     variant="outline"
                     className="flex-1 h-12 text-base gap-2 border-primary/30 hover:bg-primary/10"
                   >
-                    <Zap className="w-4 h-4" />
-                    Build Assist
+                    Generate Course
+                    <ArrowRight className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
