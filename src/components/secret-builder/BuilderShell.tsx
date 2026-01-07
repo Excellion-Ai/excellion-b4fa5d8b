@@ -804,14 +804,9 @@ export function BuilderShell() {
     const ideaToUse = inputIdea || idea;
     if (!ideaToUse.trim()) return;
 
-    // ============ COURSE DETECTION ============
-    // Check if this is a course-related prompt
-    const courseKeywords = /\b(course|curriculum|program|teach|teaching|lesson|module|cohort|self-paced|coaching|masterclass|bootcamp|training|workshop|learn|students|certification)\b/i;
-    const isCoursePrompt = courseKeywords.test(ideaToUse);
-    
-    if (isCoursePrompt) {
-      return handleGenerateCourse(ideaToUse);
-    }
+    // ============ COURSE-ONLY BUILDER ============
+    // Always use course generation - this is a COURSE builder, not a website builder
+    return handleGenerateCourse(ideaToUse);
 
     // ============ ROUTING & SCAFFOLDING ============
     // Step 1: Run niche router to detect category, goal, integrations
@@ -1714,7 +1709,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Describe your website idea..."
+                  placeholder="Describe your course idea..."
                   className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/60"
                   disabled={isGenerating}
                 />
