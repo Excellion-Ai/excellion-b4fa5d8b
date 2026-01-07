@@ -250,10 +250,10 @@ const WebBuilderHome = () => {
           </div>
 
           {/* Transparent Glass Box Container */}
-          <div className="relative z-10 max-w-[700px] mx-auto px-4 sm:px-6">
-            <div className="bg-background/70 backdrop-blur-xl rounded-3xl border border-white/10 p-8 sm:p-12 shadow-2xl flex flex-col items-center">
+          <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="bg-background/70 backdrop-blur-xl rounded-3xl border border-white/10 p-8 sm:p-12 shadow-2xl">
               {/* Badge */}
-              <div className="flex justify-center mb-8">
+              <div className="flex justify-center mb-6">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-sm text-primary">
                   <Sparkles className="w-4 h-4" />
                   <span>AI Course Builder</span>
@@ -261,28 +261,28 @@ const WebBuilderHome = () => {
               </div>
 
               {/* H1 - Main SEO Target */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-8 leading-tight text-center">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight text-center">
                 Turn your knowledge into a course site your audience can buy from.{" "}
                 <span className="text-primary">Fast.</span>
               </h1>
 
               {/* H2 Subheadline */}
-              <h2 className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 font-normal leading-relaxed text-center">
+              <h2 className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 font-normal leading-relaxed text-center">
                 Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
               </h2>
 
               {/* Prompt Input */}
-              <div className="w-full max-w-[600px] mt-8">
+              <div className="max-w-xl mx-auto">
                 <Textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="A 6-week photography course for beginners..."
                   aria-label="Describe your course idea"
-                  className="w-full border border-white/10 bg-background/50 text-base min-h-[120px] p-5 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl placeholder:text-muted-foreground/50"
-                  rows={5}
+                  className="border border-white/10 bg-background/50 text-base min-h-[120px] p-4 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
+                  rows={4}
                 />
-                <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full">
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
                   <Button 
                     onClick={() => setInterviewOpen(true)}
                     size="lg"
@@ -304,12 +304,12 @@ const WebBuilderHome = () => {
               </div>
 
               {/* Example Chips */}
-              <div className="flex flex-wrap justify-center gap-3 mt-6 w-full max-w-[600px]">
+              <div className="flex flex-wrap justify-center gap-2 mt-6">
                 {suggestionChips.map((chip, index) => (
                   <button
                     key={index}
                     onClick={() => handleChipClick(chip)}
-                    className="px-5 py-2 rounded-full text-sm bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all"
+                    className="px-4 py-2 rounded-full text-sm bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all"
                   >
                     {chip}
                   </button>
