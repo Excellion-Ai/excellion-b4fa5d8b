@@ -644,6 +644,16 @@ export default function SecretBuilderHub() {
                     <ExternalLink className="w-4 h-4" />
                     <span className="text-sm">Excellion Homepage</span>
                   </Button>
+
+                  {/* Expert Support */}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    onClick={() => { navigate('/settings/support'); setMobileMenuOpen(false); }}
+                  >
+                    <Headphones className="w-4 h-4" />
+                    <span className="text-sm">Expert Support</span>
+                  </Button>
                   
                   {NAV_ITEMS.map((item) => (
                       <Button
@@ -693,16 +703,6 @@ export default function SecretBuilderHub() {
                       </ScrollArea>
                     </CollapsibleContent>
                   </Collapsible>
-
-                  {/* Expert Builder Support */}
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                    onClick={() => { navigate('/settings/support'); setMobileMenuOpen(false); }}
-                  >
-                    <Headphones className="w-4 h-4" />
-                    <span className="text-sm">Expert Builder Support</span>
-                  </Button>
                 </nav>
 
                 {/* Bottom CTA */}
@@ -861,6 +861,16 @@ export default function SecretBuilderHub() {
             <ExternalLink className="w-4 h-4" />
             <span className="text-sm">Excellion Homepage</span>
           </Button>
+
+          {/* Expert Support */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            onClick={() => navigate('/settings/support')}
+          >
+            <Headphones className="w-4 h-4" />
+            <span className="text-sm">Expert Support</span>
+          </Button>
           
           {NAV_ITEMS.map((item) => (
               <Button
@@ -973,16 +983,6 @@ export default function SecretBuilderHub() {
               </ScrollArea>
             </CollapsibleContent>
           </Collapsible>
-
-          {/* Expert Builder Support */}
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            onClick={() => navigate('/settings/support')}
-          >
-            <Headphones className="w-4 h-4" />
-            <span className="text-sm">Expert Builder Support</span>
-          </Button>
         </nav>
 
         {/* Bottom CTA */}
