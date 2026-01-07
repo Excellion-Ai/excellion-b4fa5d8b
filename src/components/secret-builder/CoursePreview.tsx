@@ -1,4 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -322,6 +325,65 @@ export function CoursePreview({
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [tempModuleTitle, setTempModuleTitle] = useState('');
   const [tempLessonTitle, setTempLessonTitle] = useState('');
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !onUpdate) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setIsUploadingThumbnail(true);
+
+    try {
+      // Get user ID for proper path isolation
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id || 'anonymous';
+      
+      // Create a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `thumbnails/${userId}/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('builder-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('builder-images')
+        .getPublicUrl(filePath);
+
+      // Update course with new thumbnail
+      onUpdate({ ...course, thumbnail: publicUrl });
+      toast.success('Thumbnail uploaded!');
+    } catch (error) {
+      console.error('Thumbnail upload error:', error);
+      toast.error('Failed to upload thumbnail');
+    } finally {
+      setIsUploadingThumbnail(false);
+      // Reset input so same file can be selected again
+      if (thumbnailInputRef.current) {
+        thumbnailInputRef.current.value = '';
+      }
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -419,12 +481,25 @@ export function CoursePreview({
     <div className="space-y-6 pb-20">
       {/* Course Header with Thumbnail */}
       <Card className="bg-card border-border overflow-hidden">
+        {/* Hidden file input for thumbnail */}
+        <input
+          ref={thumbnailInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleThumbnailUpload}
+          className="hidden"
+        />
         {/* Thumbnail Area */}
         <div
-          onClick={onUploadThumbnail}
+          onClick={() => !isUploadingThumbnail && thumbnailInputRef.current?.click()}
           className="relative h-40 bg-gradient-to-br from-primary/20 to-accent/20 cursor-pointer group"
         >
-          {course.thumbnail ? (
+          {isUploadingThumbnail ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <span className="text-sm">Uploading...</span>
+            </div>
+          ) : course.thumbnail ? (
             <img
               src={course.thumbnail}
               alt="Course thumbnail"
@@ -436,9 +511,11 @@ export function CoursePreview({
               <span className="text-sm">Click to upload course thumbnail</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-            <ImageIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
+          {!isUploadingThumbnail && (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+              <ImageIcon className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          )}
         </div>
 
         <CardHeader className="pb-4">
