@@ -19,6 +19,8 @@ interface Lesson {
   duration: string;
   type: 'video' | 'text' | 'quiz' | 'assignment';
   description?: string;
+  content_markdown?: string;
+  is_preview?: boolean;
 }
 
 interface Module {
@@ -28,13 +30,49 @@ interface Module {
   lessons: Lesson[];
 }
 
+interface CoursePages {
+  landing_sections: string[];
+  included_bonuses?: string[];
+  show_guarantee?: boolean;
+  target_audience?: string;
+  faq?: Array<{ question: string; answer: string }>;
+}
+
 interface GeneratedCourse {
   title: string;
   description: string;
+  tagline?: string;
   difficulty: string;
   duration_weeks: number;
   modules: Module[];
   learningOutcomes: string[];
+  pages?: CoursePages;
+}
+
+// Available landing sections to randomly select from
+const OPTIONAL_SECTIONS = [
+  'who_is_for',
+  'course_includes',
+  'instructor',
+  'testimonials',
+  'guarantee',
+  'bonuses',
+  'community'
+];
+
+// Randomly select 2-3 optional sections
+function selectRandomSections(): string[] {
+  const shuffled = [...OPTIONAL_SECTIONS].sort(() => Math.random() - 0.5);
+  const count = Math.floor(Math.random() * 2) + 2; // 2-3 sections
+  return shuffled.slice(0, count);
+}
+
+// Select random bonuses
+function selectRandomBonuses(): string[] {
+  const bonuses = ['worksheet', 'template', 'checklist', 'resource_guide', 'community', 'certificate', 'ebook', 'cheatsheet'];
+  const shuffled = bonuses.sort(() => Math.random() - 0.5);
+  const count = Math.floor(Math.random() * 3) + 1; // 1-3 bonuses
+  return shuffled.slice(0, count);
 }
 
 serve(async (req) => {
@@ -66,6 +104,13 @@ serve(async (req) => {
     console.log('Generating course for prompt:', prompt);
     console.log('Options:', { difficulty, duration_weeks });
 
+    // Pre-select random sections for variety
+    const optionalSections = selectRandomSections();
+    const baseSections = ['hero', 'outcomes', 'curriculum', 'pricing', 'faq'];
+    const allLandingSections = [...baseSections.slice(0, 3), ...optionalSections, ...baseSections.slice(3)];
+    const bonuses = selectRandomBonuses();
+    const showGuarantee = Math.random() > 0.5;
+
     const systemPrompt = `You are an expert course curriculum designer. Create a comprehensive, well-structured course based on the user's description.
 
 RULES:
@@ -75,14 +120,26 @@ RULES:
 - Include a mix of content types: video, text, quiz, assignment
 - Learning outcomes should be specific and measurable
 - Titles should be concise and descriptive
+- Create a compelling tagline (1 short sentence hook)
+- Mark first lesson of first module as free preview (is_preview: true)
+- Include content_markdown for text lessons (2-3 paragraphs of actual lesson content)
+- Create relevant FAQ questions and answers for the course
+- Describe the target audience (who this course is for)
 
 OUTPUT FORMAT (strict JSON):
 {
   "title": "Course Title",
+  "tagline": "Short compelling tagline (10 words max)",
   "description": "2-3 sentence course description",
   "difficulty": "${difficulty}",
   "duration_weeks": ${duration_weeks},
+  "target_audience": "Description of ideal student (2 sentences)",
   "learningOutcomes": ["Outcome 1", "Outcome 2", "Outcome 3", "Outcome 4"],
+  "faq": [
+    { "question": "Common question about the course?", "answer": "Helpful answer" },
+    { "question": "Another relevant question?", "answer": "Clear answer" },
+    { "question": "Third question?", "answer": "Informative answer" }
+  ],
   "modules": [
     {
       "id": "module-1",
@@ -94,7 +151,9 @@ OUTPUT FORMAT (strict JSON):
           "title": "Lesson Title",
           "duration": "15 min",
           "type": "video",
-          "description": "What students will learn"
+          "description": "What students will learn",
+          "is_preview": true,
+          "content_markdown": "## Lesson content here\\n\\nThis is the actual lesson content..."
         }
       ]
     }
@@ -114,7 +173,7 @@ OUTPUT FORMAT (strict JSON):
           { role: 'user', content: `Create a ${difficulty} level course (${duration_weeks} weeks) about: ${prompt}` }
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 6000,
       }),
     });
 
@@ -160,9 +219,9 @@ OUTPUT FORMAT (strict JSON):
       jsonStr = jsonMatch[1].trim();
     }
 
-    let course: GeneratedCourse;
+    let rawCourse: GeneratedCourse & { target_audience?: string; faq?: Array<{ question: string; answer: string }> };
     try {
-      course = JSON.parse(jsonStr);
+      rawCourse = JSON.parse(jsonStr);
     } catch (parseError) {
       console.error('Failed to parse course JSON:', parseError);
       console.error('Raw content:', content);
@@ -172,7 +231,39 @@ OUTPUT FORMAT (strict JSON):
       );
     }
 
+    // Add module position flags for layout variations
+    const modulesWithFlags = rawCourse.modules.map((module, idx) => ({
+      ...module,
+      is_first: idx === 0,
+      is_last: idx === rawCourse.modules.length - 1,
+      has_quiz: module.lessons.some(l => l.type === 'quiz'),
+      has_assignment: module.lessons.some(l => l.type === 'assignment'),
+    }));
+
+    // Build the final course with pages config
+    const course: GeneratedCourse = {
+      title: rawCourse.title,
+      tagline: rawCourse.tagline || `Master ${rawCourse.title} in ${duration_weeks} weeks`,
+      description: rawCourse.description,
+      difficulty: rawCourse.difficulty || difficulty,
+      duration_weeks: rawCourse.duration_weeks || duration_weeks,
+      modules: modulesWithFlags,
+      learningOutcomes: rawCourse.learningOutcomes || [],
+      pages: {
+        landing_sections: allLandingSections,
+        included_bonuses: bonuses,
+        show_guarantee: showGuarantee,
+        target_audience: rawCourse.target_audience || 'Anyone interested in learning this topic.',
+        faq: rawCourse.faq || [
+          { question: 'How long do I have access?', answer: 'You have lifetime access to this course.' },
+          { question: 'Is there a money-back guarantee?', answer: 'Yes, we offer a 30-day money-back guarantee.' },
+          { question: 'Do I need any prior experience?', answer: `This course is designed for ${difficulty} level students.` }
+        ],
+      },
+    };
+
     console.log('Course generated successfully:', course.title);
+    console.log('Landing sections:', allLandingSections);
 
     return new Response(
       JSON.stringify({ course }),
