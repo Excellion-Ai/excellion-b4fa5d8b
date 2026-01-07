@@ -301,7 +301,7 @@ const WebBuilderHome = () => {
 
               {/* H1 - Main SEO Target */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight text-center">
-                Turn your knowledge into a course site your audience can buy from.{" "}
+                Turn knowledge into a course site your audience can buy from.{" "}
                 <span className="text-primary">Fast.</span>
               </h1>
 
