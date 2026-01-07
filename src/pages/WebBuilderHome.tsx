@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { InterviewStepper } from "@/components/InterviewStepper";
+import { useInterviewIntake } from "@/hooks/useInterviewIntake";
 
 const suggestionChips = [
   "Beginner photography course",
@@ -94,8 +102,10 @@ const faqItems = [
 const WebBuilderHome = () => {
   const [prompt, setPrompt] = useState("");
   const [user, setUser] = useState<User | null>(null);
+  const [interviewOpen, setInterviewOpen] = useState(false);
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const interview = useInterviewIntake();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -165,6 +175,19 @@ const WebBuilderHome = () => {
   const handleChipClick = (suggestion: string) => {
     setPrompt(suggestion);
   };
+
+  // Handle Build Assist interview submission
+  const handleInterviewSubmit = useCallback(() => {
+    if (interview.canSubmit && interview.composedPrompt) {
+      sessionStorage.setItem('pendingBuilderData', JSON.stringify({
+        prompt: interview.composedPrompt,
+        answers: interview.answers,
+        source: 'build-assist'
+      }));
+      setInterviewOpen(false);
+      navigate("/secret-builder-hub");
+    }
+  }, [interview.canSubmit, interview.composedPrompt, interview.answers, navigate]);
 
   const schemaMarkup = {
     "@context": "https://schema.org",
@@ -280,6 +303,17 @@ const WebBuilderHome = () => {
                     {chip}
                   </button>
                 ))}
+              </div>
+
+              {/* Build Assist Link */}
+              <div className="text-center mt-6 pt-4 border-t border-white/10">
+                <button
+                  onClick={() => setInterviewOpen(true)}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  Need help? Try Build Assist
+                </button>
               </div>
             </div>
           </div>
@@ -522,6 +556,33 @@ const WebBuilderHome = () => {
       </main>
 
       <Footer />
+
+      {/* Build Assist Dialog */}
+      <Dialog open={interviewOpen} onOpenChange={setInterviewOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Build Assist</DialogTitle>
+          </DialogHeader>
+          <InterviewStepper
+            step={interview.step}
+            totalSteps={interview.totalSteps}
+            answers={interview.answers}
+            canProceed={interview.canProceed}
+            canSubmit={interview.canSubmit}
+            onUpdateAnswer={interview.updateAnswer}
+            onUpdateOffer={interview.updateOffer}
+            onNext={interview.nextStep}
+            onBack={interview.prevStep}
+            onSkip={interview.skipStep}
+            onSubmit={handleInterviewSubmit}
+            onSwitchToQuickPrompt={() => {
+              setInterviewOpen(false);
+              navigate("/secret-builder-hub");
+            }}
+            isGenerating={false}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
