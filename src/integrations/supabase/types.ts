@@ -212,6 +212,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          builder_project_id: string | null
           created_at: string
           currency: string | null
           description: string | null
@@ -233,6 +234,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          builder_project_id?: string | null
           created_at?: string
           currency?: string | null
           description?: string | null
@@ -254,6 +256,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          builder_project_id?: string | null
           created_at?: string
           currency?: string | null
           description?: string | null
@@ -274,7 +277,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_builder_project_id_fkey"
+            columns: ["builder_project_id"]
+            isOneToOne: false
+            referencedRelation: "builder_projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       credit_transactions: {
         Row: {
