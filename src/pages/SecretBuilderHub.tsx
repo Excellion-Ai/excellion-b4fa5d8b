@@ -241,6 +241,9 @@ export default function SecretBuilderHub() {
   // Fetch projects and courses
   useEffect(() => {
     const fetchData = async () => {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
       // Fetch builder projects
       const { data: projectData, error: projectError } = await supabase
         .from('builder_projects')
@@ -252,15 +255,18 @@ export default function SecretBuilderHub() {
         setProjects(projectData);
       }
 
-      // Fetch courses with new fields including builder_project_id for navigation
-      const { data: courseData, error: courseError } = await supabase
-        .from('courses')
-        .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url, builder_project_id, modules, difficulty, duration_weeks')
-        .order('created_at', { ascending: false })
-        .limit(20);
+      // Fetch ALL courses for the current user (both drafts and published)
+      if (user) {
+        const { data: courseData, error: courseError } = await supabase
+          .from('courses')
+          .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url, builder_project_id, modules, difficulty, duration_weeks')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(50);
 
-      if (!courseError && courseData) {
-        setCourses(courseData);
+        if (!courseError && courseData) {
+          setCourses(courseData);
+        }
       }
 
       setIsLoading(false);
