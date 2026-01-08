@@ -106,6 +106,27 @@ interface BuilderProject {
   published_at?: string | null;
 }
 
+interface CourseItem {
+  id: string;
+  title: string;
+  subdomain: string | null;
+  status: string | null;
+  thumbnail_url: string | null;
+  price_cents: number | null;
+  currency: string | null;
+  total_students: number | null;
+  created_at: string;
+  updated_at: string;
+  published_url: string | null;
+}
+
+// Format price helper
+const formatPrice = (cents: number | null, currency: string | null) => {
+  if (!cents || cents === 0) return 'Free';
+  const symbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$' };
+  return `${symbols[currency || 'USD'] || '$'}${(cents / 100).toFixed(0)}`;
+};
+
 // Using AttachmentItem from the attachments module instead of local Attachment interface
 
 
@@ -153,6 +174,7 @@ export default function SecretBuilderHub() {
   
   const [idea, setIdea] = useState(locationState?.initialIdea || '');
   const [projects, setProjects] = useState<BuilderProject[]>([]);
+  const [courses, setCourses] = useState<CourseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   
@@ -211,22 +233,35 @@ export default function SecretBuilderHub() {
     }
   }, []);
 
-  // Fetch projects
+  // Fetch projects and courses
   useEffect(() => {
-    const fetchProjects = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      // Fetch builder projects
+      const { data: projectData, error: projectError } = await supabase
         .from('builder_projects')
         .select('id, name, idea, created_at, updated_at, spec, published_url, published_at')
         .order('updated_at', { ascending: false })
         .limit(20);
 
-      if (!error && data) {
-        setProjects(data);
+      if (!projectError && projectData) {
+        setProjects(projectData);
       }
+
+      // Fetch courses with new fields
+      const { data: courseData, error: courseError } = await supabase
+        .from('courses')
+        .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (!courseError && courseData) {
+        setCourses(courseData);
+      }
+
       setIsLoading(false);
     };
 
-    fetchProjects();
+    fetchData();
   }, []);
 
   const handleDeleteClick = (project: BuilderProject, e: React.MouseEvent) => {
@@ -1058,20 +1093,20 @@ export default function SecretBuilderHub() {
             </div>
           </section>
 
-          {/* Projects Section */}
+          {/* Courses Section */}
           <section id="projects-section" className="mb-12">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-foreground">
                 Your Courses
               </h2>
-              {projects.length > 6 && (
+              {courses.length > 6 && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   className="text-muted-foreground hover:text-foreground gap-1.5"
                   onClick={() => setShowAllProjects(!showAllProjects)}
                 >
-                  {showAllProjects ? 'Show less' : `View all (${projects.length})`}
+                  {showAllProjects ? 'Show less' : `View all (${courses.length})`}
                   <ChevronDown className={`h-4 w-4 transition-transform ${showAllProjects ? 'rotate-180' : ''}`} />
                 </Button>
               )}
@@ -1089,7 +1124,7 @@ export default function SecretBuilderHub() {
                   </Card>
                 ))}
               </div>
-            ) : projects.length === 0 ? (
+            ) : courses.length === 0 ? (
               <Card className="bg-card/30 border-border border-dashed">
                 <CardContent className="p-8 text-center">
                   <div className="w-16 h-16 rounded-2xl bg-muted/30 flex items-center justify-center mx-auto mb-4">
@@ -1103,24 +1138,30 @@ export default function SecretBuilderHub() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(showAllProjects ? projects : projects.slice(0, 6)).map((project) => {
+                {(showAllProjects ? courses : courses.slice(0, 6)).map((course) => {
                   return (
                     <Card 
-                      key={project.id}
+                      key={course.id}
                       className="bg-card border-border hover:border-primary/40 transition-all cursor-pointer group overflow-hidden"
-                      onClick={() => handleOpenProject(project.id)}
+                      onClick={() => course.subdomain && window.open(`/course/${course.subdomain}`, '_blank')}
                     >
-                      {/* Preview Thumbnail */}
-                      <div className="h-36 bg-gradient-to-br from-muted/50 to-muted/20 p-3 relative overflow-hidden">
-                        <ProjectPreview 
-                          spec={project.spec?.siteSpec || project.spec} 
-                        />
+                      {/* Thumbnail or gradient placeholder */}
+                      <div className="h-36 relative overflow-hidden">
+                        {course.thumbnail_url ? (
+                          <img 
+                            src={course.thumbnail_url} 
+                            alt={course.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/20 via-muted/30 to-accent/20" />
+                        )}
                         
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button size="sm" variant="secondary" className="gap-1.5">
                             <ExternalLink className="w-3.5 h-3.5" />
-                            Open
+                            View Course
                           </Button>
                         </div>
                       </div>
@@ -1130,10 +1171,10 @@ export default function SecretBuilderHub() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                              {project.name}
+                              {course.title}
                             </p>
-                            <div className="flex items-center gap-2 mt-1.5">
-                              {project.published_url ? (
+                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                              {course.status === 'published' ? (
                                 <Badge className="text-[10px] px-1.5 py-0 h-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                                   <Globe className="w-2.5 h-2.5 mr-0.5" />
                                   Published
@@ -1143,10 +1184,15 @@ export default function SecretBuilderHub() {
                                   Draft
                                 </Badge>
                               )}
-                              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {formatTimeAgo(project.updated_at)}
-                              </span>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-semibold">
+                                {formatPrice(course.price_cents, course.currency)}
+                              </Badge>
+                              {(course.total_students ?? 0) > 0 && (
+                                <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                  <Users className="w-2.5 h-2.5" />
+                                  {course.total_students}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <DropdownMenu>
@@ -1161,31 +1207,24 @@ export default function SecretBuilderHub() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
-                                <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
-                              </DropdownMenuItem>
-                              {project.published_url && (
+                              {course.published_url && (
                                 <DropdownMenuItem 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    window.open(project.published_url!, '_blank');
+                                    window.open(course.published_url!, '_blank');
                                   }}
                                 >
-                                  <Globe className="w-3.5 h-3.5 mr-2" /> View Live Site
+                                  <Globe className="w-3.5 h-3.5 mr-2" /> View Live Course
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem onClick={(e) => openRenameDialog(project, e as unknown as React.MouseEvent)}>
-                                <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => handleDuplicateProject(project, e as unknown as React.MouseEvent)}>
-                                <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                className="text-destructive"
-                                onClick={(e) => handleDeleteClick(project, e as unknown as React.MouseEvent)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(course.published_url || '');
+                                  toast({ title: 'Link copied!' });
+                                }}
                               >
-                                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+                                <Copy className="w-3.5 h-3.5 mr-2" /> Copy Link
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1198,7 +1237,7 @@ export default function SecretBuilderHub() {
             )}
             
             {/* View More / Show Less Button */}
-            {projects.length > 6 && (
+            {courses.length > 6 && (
               <div className="flex justify-center mt-6">
                 <Button
                   variant="outline"
@@ -1214,7 +1253,7 @@ export default function SecretBuilderHub() {
                   ) : (
                     <>
                       <ChevronDown className="h-4 w-4" />
-                      View {projects.length - 6} more projects
+                      View {courses.length - 6} more courses
                     </>
                   )}
                 </Button>

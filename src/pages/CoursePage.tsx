@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Clock, BookOpen, GraduationCap, Check } from 'lucide-react';
+import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Accordion,
   AccordionContent,
@@ -44,6 +45,12 @@ interface Course {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  thumbnail_url: string | null;
+  price_cents: number | null;
+  currency: string | null;
+  instructor_name: string | null;
+  instructor_bio: string | null;
+  total_students: number | null;
 }
 
 const LessonTypeIcon = ({ type, contentType }: { type: string; contentType?: string }) => {
@@ -70,6 +77,12 @@ const DifficultyBadge = ({ difficulty }: { difficulty: string }) => {
   );
 };
 
+const formatPrice = (cents: number | null, currency: string | null) => {
+  if (!cents || cents === 0) return 'Free';
+  const symbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', CAD: 'C$', AUD: 'A$' };
+  return `${symbols[currency || 'USD'] || '$'}${(cents / 100).toFixed(0)}`;
+};
+
 export default function CoursePage() {
   const { subdomain } = useParams<{ subdomain: string }>();
   const [course, setCourse] = useState<Course | null>(null);
@@ -84,7 +97,7 @@ export default function CoursePage() {
         return;
       }
 
-      // Fetch published courses by subdomain
+      // Fetch published courses by subdomain with new fields
       let { data, error: fetchError } = await supabase
         .from('courses')
         .select('*')
@@ -114,7 +127,7 @@ export default function CoursePage() {
           ...data,
           modules,
           learningOutcomes: Array.isArray(learningOutcomes) ? learningOutcomes : [],
-        });
+        } as Course);
       }
 
       setIsLoading(false);
@@ -148,9 +161,22 @@ export default function CoursePage() {
   }
 
   const totalLessons = course.modules.reduce((acc, mod) => acc + mod.lessons.length, 0);
+  const priceText = formatPrice(course.price_cents, course.currency);
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Hero Section with Thumbnail */}
+      {course.thumbnail_url && (
+        <div className="relative w-full h-64 md:h-80 overflow-hidden">
+          <img
+            src={course.thumbnail_url}
+            alt={course.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-8">
         {/* Course Header */}
         <Card className="bg-card border-border">
@@ -176,9 +202,42 @@ export default function CoursePage() {
                 <GraduationCap className="w-3.5 h-3.5" />
                 {totalLessons} lessons
               </Badge>
+              {(course.total_students ?? 0) > 0 && (
+                <Badge variant="outline" className="gap-1.5">
+                  <Users className="w-3.5 h-3.5" />
+                  {course.total_students} students
+                </Badge>
+              )}
             </div>
           </CardHeader>
         </Card>
+
+        {/* Instructor Section */}
+        {course.instructor_name && (
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <User className="w-5 h-5 text-primary" />
+                Your Instructor
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-start gap-4">
+                <Avatar className="h-16 w-16 border-2 border-primary/20">
+                  <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                    {course.instructor_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">{course.instructor_name}</h3>
+                  {course.instructor_bio && (
+                    <p className="text-muted-foreground mt-1">{course.instructor_bio}</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Learning Outcomes */}
         {course.learningOutcomes && course.learningOutcomes.length > 0 && (
@@ -270,11 +329,14 @@ export default function CoursePage() {
         <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30">
           <CardContent className="py-8 text-center">
             <h3 className="text-2xl font-bold mb-2">Ready to get started?</h3>
-            <p className="text-muted-foreground mb-6">
-              Join thousands of students who have already enrolled.
+            <p className="text-muted-foreground mb-2">
+              Join {course.total_students || 0} students who have already enrolled.
+            </p>
+            <p className="text-3xl font-bold text-primary mb-6">
+              {priceText}
             </p>
             <Button size="lg" className="bg-primary hover:bg-primary/90">
-              Enroll Now
+              {course.price_cents && course.price_cents > 0 ? `Enroll for ${priceText}` : 'Enroll for Free'}
             </Button>
           </CardContent>
         </Card>

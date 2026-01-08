@@ -213,46 +213,64 @@ export type Database = {
       courses: {
         Row: {
           created_at: string
+          currency: string | null
           description: string | null
           difficulty: string | null
           duration_weeks: number | null
           id: string
+          instructor_bio: string | null
+          instructor_name: string | null
           modules: Json | null
+          price_cents: number | null
           published_at: string | null
           published_url: string | null
           status: string | null
           subdomain: string | null
+          thumbnail_url: string | null
           title: string
+          total_students: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          currency?: string | null
           description?: string | null
           difficulty?: string | null
           duration_weeks?: number | null
           id?: string
+          instructor_bio?: string | null
+          instructor_name?: string | null
           modules?: Json | null
+          price_cents?: number | null
           published_at?: string | null
           published_url?: string | null
           status?: string | null
           subdomain?: string | null
+          thumbnail_url?: string | null
           title: string
+          total_students?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          currency?: string | null
           description?: string | null
           difficulty?: string | null
           duration_weeks?: number | null
           id?: string
+          instructor_bio?: string | null
+          instructor_name?: string | null
           modules?: Json | null
+          price_cents?: number | null
           published_at?: string | null
           published_url?: string | null
           status?: string | null
           subdomain?: string | null
+          thumbnail_url?: string | null
           title?: string
+          total_students?: number | null
           updated_at?: string
           user_id?: string
         }
