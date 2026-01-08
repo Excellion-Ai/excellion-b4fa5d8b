@@ -1143,7 +1143,7 @@ export default function SecretBuilderHub() {
                     <Card 
                       key={course.id}
                       className="bg-card border-border hover:border-primary/40 transition-all cursor-pointer group overflow-hidden"
-                      onClick={() => course.subdomain && window.open(`/course/${course.subdomain}`, '_blank')}
+                      onClick={() => navigate('/secret-builder', { state: { projectId: course.id, courseMode: true } })}
                     >
                       {/* Thumbnail or gradient placeholder */}
                       <div className="h-36 relative overflow-hidden">
@@ -1160,8 +1160,8 @@ export default function SecretBuilderHub() {
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button size="sm" variant="secondary" className="gap-1.5">
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            View Course
+                            <Pencil className="w-3.5 h-3.5" />
+                            Edit Course
                           </Button>
                         </div>
                       </div>
@@ -1207,6 +1207,14 @@ export default function SecretBuilderHub() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate('/secret-builder', { state: { projectId: course.id, courseMode: true } });
+                                }}
+                              >
+                                <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Course
+                              </DropdownMenuItem>
                               {course.published_url && (
                                 <DropdownMenuItem 
                                   onClick={(e) => {
