@@ -118,6 +118,7 @@ interface CourseItem {
   created_at: string;
   updated_at: string;
   published_url: string | null;
+  builder_project_id: string | null;
 }
 
 // Format price helper
@@ -247,10 +248,10 @@ export default function SecretBuilderHub() {
         setProjects(projectData);
       }
 
-      // Fetch courses with new fields
+      // Fetch courses with new fields including builder_project_id for navigation
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
-        .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url')
+        .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url, builder_project_id')
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -1143,7 +1144,7 @@ export default function SecretBuilderHub() {
                     <Card 
                       key={course.id}
                       className="bg-card border-border hover:border-primary/40 transition-all cursor-pointer group overflow-hidden"
-                      onClick={() => navigate('/secret-builder', { state: { projectId: course.id, courseMode: true } })}
+                      onClick={() => navigate('/secret-builder', { state: { projectId: course.builder_project_id || course.id, courseId: course.id, courseMode: true } })}
                     >
                       {/* Thumbnail or gradient placeholder */}
                       <div className="h-36 relative overflow-hidden">
@@ -1210,7 +1211,7 @@ export default function SecretBuilderHub() {
                               <DropdownMenuItem 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate('/secret-builder', { state: { projectId: course.id, courseMode: true } });
+                                  navigate('/secret-builder', { state: { projectId: course.builder_project_id || course.id, courseId: course.id, courseMode: true } });
                                 }}
                               >
                                 <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Course

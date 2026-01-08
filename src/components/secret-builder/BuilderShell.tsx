@@ -82,6 +82,8 @@ type LocationState = {
   initialIdea?: string;
   projectId?: string;
   templateSpec?: SiteSpec;
+  courseMode?: boolean;
+  courseId?: string;
 };
 
 const INITIAL_STEPS: GenerationStep[] = [
@@ -374,6 +376,8 @@ export function BuilderShell() {
   const projectIdFromUrl = params.projectId || null;
   const projectIdFromState = state?.projectId || null;
   const templateSpecFromState = state?.templateSpec || null;
+  const courseModeFromState = state?.courseMode || false;
+  const courseIdFromState = state?.courseId || null;
 
   // Debug mode query params
   const searchParams = new URLSearchParams(location.search);
@@ -535,11 +539,54 @@ export function BuilderShell() {
   }, []);
 
   const loadProjectAndMaybeGenerate = async (id: string) => {
+    // First try to load from builder_projects
     const { data, error } = await supabase
       .from('builder_projects')
       .select('*')
       .eq('id', id)
       .single();
+
+    // If builder_projects fails and we're in course mode, try loading directly from courses
+    if ((error || !data) && courseModeFromState && courseIdFromState) {
+      console.log('Falling back to courses table for course data');
+      const { data: courseData, error: courseError } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('id', courseIdFromState)
+        .single();
+
+      if (courseError || !courseData) {
+        console.error('Failed to load course:', courseError);
+        toast.error('Failed to load course');
+        return;
+      }
+
+      // Populate state from course data
+      setProjectName(courseData.title || 'Untitled Course');
+      setCourseId(courseData.id);
+      if (courseData.published_url) {
+        setCoursePublishedUrl(courseData.published_url);
+      }
+      if (courseData.modules) {
+        setCourseSpec({
+          title: courseData.title,
+          description: courseData.description || '',
+          difficulty: courseData.difficulty || 'beginner',
+          duration_weeks: courseData.duration_weeks || 6,
+          modules: courseData.modules as any,
+        });
+      }
+      // Load course settings
+      setCourseSettings(prev => ({
+        ...prev,
+        thumbnail: courseData.thumbnail_url || null,
+        price: courseData.price_cents ? courseData.price_cents / 100 : null,
+        currency: courseData.currency || 'USD',
+        instructorName: courseData.instructor_name || '',
+        instructorBio: courseData.instructor_bio || '',
+      }));
+      return;
+    }
 
     if (error || !data) {
       console.error('Failed to load project:', error);
@@ -564,6 +611,30 @@ export function BuilderShell() {
     
     // Check if project has generated content (including courseSpec)
     const hasContent = spec?.html || spec?.siteSpec || spec?.courseSpec || (spec?.messages && spec.messages.length > 0);
+    
+    // Also try to find linked course for courseSettings and courseId
+    if (courseModeFromState || spec?.courseSpec) {
+      const { data: linkedCourse } = await supabase
+        .from('courses')
+        .select('id, thumbnail_url, price_cents, currency, instructor_name, instructor_bio, published_url')
+        .eq('builder_project_id', id)
+        .single();
+      
+      if (linkedCourse) {
+        setCourseId(linkedCourse.id);
+        if (linkedCourse.published_url) {
+          setCoursePublishedUrl(linkedCourse.published_url);
+        }
+        setCourseSettings(prev => ({
+          ...prev,
+          thumbnail: linkedCourse.thumbnail_url || null,
+          price: linkedCourse.price_cents ? linkedCourse.price_cents / 100 : null,
+          currency: linkedCourse.currency || 'USD',
+          instructorName: linkedCourse.instructor_name || '',
+          instructorBio: linkedCourse.instructor_bio || '',
+        }));
+      }
+    }
     
     if (hasContent) {
       // Load existing content
@@ -1585,7 +1656,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
   };
 
   // Course publishing states
-  const [courseId, setCourseId] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string | null>(courseIdFromState);
   const [coursePublishedUrl, setCoursePublishedUrl] = useState<string | null>(null);
   const [showCoursePublishDialog, setShowCoursePublishDialog] = useState(false);
 
@@ -1634,6 +1705,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             currency: courseSettings.currency,
             instructor_name: courseSettings.instructorName || null,
             instructor_bio: courseSettings.instructorBio || null,
+            builder_project_id: projectId, // Link to builder project
           })
           .eq('id', courseId);
 
@@ -1658,6 +1730,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             currency: courseSettings.currency,
             instructor_name: courseSettings.instructorName || null,
             instructor_bio: courseSettings.instructorBio || null,
+            builder_project_id: projectId, // Link to builder project
           })
           .select('id')
           .single();
