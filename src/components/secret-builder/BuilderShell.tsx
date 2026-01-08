@@ -471,6 +471,8 @@ export function BuilderShell() {
     enrollmentOpen: true,
     maxStudents: null as number | null,
     thumbnail: null as string | null,
+    instructorName: '',
+    instructorBio: '',
   });
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const fallbackForcedOnceRef = useRef<boolean>(false);
@@ -1610,6 +1612,9 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
 
       const courseUrl = `${window.location.origin}/course/${subdomain}`;
 
+      // Convert price from dollars to cents
+      const priceCents = courseSettings.price ? Math.round(courseSettings.price * 100) : 0;
+
       // If we have an existing course ID, update it
       if (courseId) {
         const { error } = await supabase
@@ -1624,6 +1629,11 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             difficulty: courseSpec.difficulty,
             duration_weeks: courseSpec.duration_weeks,
             modules: courseSpec.modules as any,
+            thumbnail_url: courseSettings.thumbnail,
+            price_cents: priceCents,
+            currency: courseSettings.currency,
+            instructor_name: courseSettings.instructorName || null,
+            instructor_bio: courseSettings.instructorBio || null,
           })
           .eq('id', courseId);
 
@@ -1643,6 +1653,11 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             difficulty: courseSpec.difficulty,
             duration_weeks: courseSpec.duration_weeks,
             modules: courseSpec.modules as any,
+            thumbnail_url: courseSettings.thumbnail,
+            price_cents: priceCents,
+            currency: courseSettings.currency,
+            instructor_name: courseSettings.instructorName || null,
+            instructor_bio: courseSettings.instructorBio || null,
           })
           .select('id')
           .single();
@@ -2062,7 +2077,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     onOpenChange={setShowCourseSettings}
                     settings={courseSettings}
                     onUpdateSettings={setCourseSettings}
-                    onUploadThumbnail={() => toast.info('Thumbnail upload coming soon!')}
+                    courseId={courseId}
                   />
                   <CoursePublishDialog
                     open={showCoursePublishDialog}
