@@ -94,6 +94,7 @@ import { InterviewStepper } from '@/components/InterviewStepper';
 import { useInterviewIntake } from '@/hooks/useInterviewIntake';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
+import { CourseCardPreview } from '@/components/secret-builder/CourseCardPreview';
 
 interface BuilderProject {
   id: string;
@@ -119,6 +120,9 @@ interface CourseItem {
   updated_at: string;
   published_url: string | null;
   builder_project_id: string | null;
+  modules: any;
+  difficulty: string | null;
+  duration_weeks: number | null;
 }
 
 // Format price helper
@@ -251,7 +255,7 @@ export default function SecretBuilderHub() {
       // Fetch courses with new fields including builder_project_id for navigation
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
-        .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url, builder_project_id')
+        .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url, builder_project_id, modules, difficulty, duration_weeks')
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -1146,7 +1150,7 @@ export default function SecretBuilderHub() {
                       className="bg-card border-border hover:border-primary/40 transition-all cursor-pointer group overflow-hidden"
                       onClick={() => navigate('/secret-builder', { state: { projectId: course.builder_project_id || course.id, courseId: course.id, courseMode: true } })}
                     >
-                      {/* Thumbnail or gradient placeholder */}
+                      {/* Thumbnail or curriculum preview */}
                       <div className="h-36 relative overflow-hidden">
                         {course.thumbnail_url ? (
                           <img 
@@ -1154,12 +1158,21 @@ export default function SecretBuilderHub() {
                             alt={course.title}
                             className="w-full h-full object-cover"
                           />
+                        ) : Array.isArray(course.modules) && course.modules.length > 0 ? (
+                          <CourseCardPreview 
+                            title={course.title}
+                            modules={course.modules}
+                            difficulty={course.difficulty}
+                            durationWeeks={course.duration_weeks}
+                          />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-primary/20 via-muted/30 to-accent/20" />
+                          <div className="w-full h-full bg-gradient-to-br from-primary/20 via-muted/30 to-accent/20 flex items-center justify-center">
+                            <BookOpen className="w-8 h-8 text-muted-foreground/30" />
+                          </div>
                         )}
                         
                         {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button size="sm" variant="secondary" className="gap-1.5">
                             <Pencil className="w-3.5 h-3.5" />
                             Edit Course
