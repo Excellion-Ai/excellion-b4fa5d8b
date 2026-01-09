@@ -386,8 +386,10 @@ export default function SecretBuilderHub() {
         return;
       }
       
-      // Create project in database
-      const projectName = ideaToUse.slice(0, 50) + (ideaToUse.length > 50 ? '...' : '');
+      // Create project in database with unique name (add timestamp suffix)
+      const baseName = ideaToUse.slice(0, 40) + (ideaToUse.length > 40 ? '...' : '');
+      const uniqueSuffix = Date.now().toString(36).slice(-4);
+      const projectName = `${baseName} (${uniqueSuffix})`;
       const { data, error } = await supabase
         .from('builder_projects')
         .insert({
@@ -452,11 +454,14 @@ export default function SecretBuilderHub() {
         return;
       }
       
+      // Add unique suffix to template name to avoid duplicates
+      const uniqueSuffix = Date.now().toString(36).slice(-4);
+      const projectName = `${template.title} (${uniqueSuffix})`;
       const { data, error } = await supabase
         .from('builder_projects')
         .insert([{
           user_id: user.id,
-          name: template.title,
+          name: projectName,
           idea: template.prompt,
           spec: JSON.parse(JSON.stringify({ 
             siteSpec: template.spec,
