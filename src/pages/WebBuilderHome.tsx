@@ -313,30 +313,32 @@ const WebBuilderHome = () => {
               </h2>
 
               {/* Prompt Input */}
-              <div className="w-full relative">
-                <Textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  aria-label="Describe your course idea"
-                  className="w-full border border-white/10 bg-background/50 text-base min-h-[120px] p-4 pr-12 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
-                  rows={4}
-                />
-                {!prompt && (
-                  <div className="absolute top-4 left-4 pointer-events-none text-muted-foreground">
-                    {animatedPlaceholder}
-                    <span className="inline-block w-0.5 h-5 bg-primary ml-0.5 animate-pulse align-middle" />
-                  </div>
-                )}
-                {/* Microphone button */}
-                <button
-                  type="button"
-                  className="absolute bottom-3 right-3 p-2 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary transition-colors"
-                  aria-label="Voice input (coming soon)"
-                  title="Voice input coming soon"
-                >
-                  <Mic className="w-4 h-4" />
-                </button>
+              <div className="w-full">
+                <div className="relative">
+                  <Textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    aria-label="Describe your course idea"
+                    className="w-full border border-white/10 bg-background/50 text-base min-h-[120px] p-4 pr-14 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
+                    rows={4}
+                  />
+                  {!prompt && (
+                    <div className="absolute top-4 left-4 pointer-events-none text-muted-foreground">
+                      {animatedPlaceholder}
+                      <span className="inline-block w-0.5 h-5 bg-primary ml-0.5 animate-pulse align-middle" />
+                    </div>
+                  )}
+                  {/* Microphone button */}
+                  <button
+                    type="button"
+                    className="absolute bottom-4 right-4 p-2.5 rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary transition-all hover:scale-105 z-10"
+                    aria-label="Voice input (coming soon)"
+                    title="Voice input coming soon"
+                  >
+                    <Mic className="w-5 h-5" />
+                  </button>
+                </div>
                 <div className="flex gap-3 mt-4">
                   <Button 
                     onClick={() => setInterviewOpen(true)}
