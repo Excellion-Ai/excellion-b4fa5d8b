@@ -8,18 +8,19 @@ const corsHeaders = {
 interface CourseRequest {
   prompt: string;
   options?: {
-    difficulty?: 'beginner' | 'intermediate' | 'advanced';
+    difficulty?: string;
     duration_weeks?: number;
+    includeQuizzes?: boolean;
+    includeAssignments?: boolean;
   };
 }
 
 interface Lesson {
   id: string;
   title: string;
-  duration: string;
-  type: 'video' | 'text' | 'quiz' | 'assignment';
-  description?: string;
-  content_markdown?: string;
+  duration_minutes: number;
+  content_type: 'video' | 'text' | 'quiz' | 'assignment';
+  description: string;
   is_preview?: boolean;
 }
 
@@ -28,50 +29,78 @@ interface Module {
   title: string;
   description: string;
   lessons: Lesson[];
+  is_first?: boolean;
+  is_last?: boolean;
+  has_quiz?: boolean;
+  has_assignment?: boolean;
 }
 
-interface CoursePages {
-  landing_sections: string[];
-  included_bonuses?: string[];
-  show_guarantee?: boolean;
-  target_audience?: string;
-  faq?: Array<{ question: string; answer: string }>;
+interface LandingPage {
+  hero_headline: string;
+  hero_subheadline: string;
+  features: Array<{ title: string; description: string; icon: string }>;
+  faqs: Array<{ question: string; answer: string }>;
+  sections?: string[];
+  instructor?: {
+    name: string;
+    bio: string;
+    avatar?: string;
+  };
+  pricing?: {
+    amount: number;
+    currency: string;
+    features: string[];
+  };
+}
+
+interface Curriculum {
+  modules: Module[];
+  landing_page: LandingPage;
+  learningOutcomes?: string[];
+  difficulty?: string;
+  duration_weeks?: number;
+  brand_color?: string;
 }
 
 interface GeneratedCourse {
+  id: string;
   title: string;
+  slug: string;
   description: string;
-  tagline?: string;
-  difficulty: string;
-  duration_weeks: number;
-  modules: Module[];
-  learningOutcomes: string[];
-  pages?: CoursePages;
+  tagline: string;
+  curriculum: Curriculum;
+  status: string;
+  thumbnail_url?: string;
 }
 
-// Available landing sections to randomly select from
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .substring(0, 50);
+}
+
 const OPTIONAL_SECTIONS = [
-  'who_is_for',
-  'course_includes',
-  'instructor',
-  'testimonials',
-  'guarantee',
-  'bonuses',
-  'community'
+  'who-is-this-for',
+  'money-back-guarantee',
+  'meet-your-instructor',
+  'success-stories',
+  'bonus-content',
+  'community-access',
 ];
 
-// Randomly select 2-3 optional sections
 function selectRandomSections(): string[] {
+  const count = 2 + Math.floor(Math.random() * 2); // 2-3 sections
   const shuffled = [...OPTIONAL_SECTIONS].sort(() => Math.random() - 0.5);
-  const count = Math.floor(Math.random() * 2) + 2; // 2-3 sections
-  return shuffled.slice(0, count);
-}
-
-// Select random bonuses
-function selectRandomBonuses(): string[] {
-  const bonuses = ['worksheet', 'template', 'checklist', 'resource_guide', 'community', 'certificate', 'ebook', 'cheatsheet'];
-  const shuffled = bonuses.sort(() => Math.random() - 0.5);
-  const count = Math.floor(Math.random() * 3) + 1; // 1-3 bonuses
   return shuffled.slice(0, count);
 }
 
@@ -81,198 +110,240 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, options = {} }: CourseRequest = await req.json();
-    const difficulty = options.difficulty || 'beginner';
-    const duration_weeks = options.duration_weeks || 6;
+    const { prompt, options } = await req.json() as CourseRequest;
 
-    if (!prompt || typeof prompt !== 'string') {
+    if (!prompt || prompt.trim().length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Prompt is required' }),
+        JSON.stringify({ success: false, error: 'Prompt is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not configured');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY is not configured');
       return new Response(
-        JSON.stringify({ error: 'API key not configured' }),
+        JSON.stringify({ success: false, error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Generating course for prompt:', prompt);
-    console.log('Options:', { difficulty, duration_weeks });
+    const difficulty = options?.difficulty || 'beginner';
+    const duration_weeks = options?.duration_weeks || 6;
+    const includeQuizzes = options?.includeQuizzes ?? true;
+    const includeAssignments = options?.includeAssignments ?? false;
 
-    // Pre-select random sections for variety
-    const optionalSections = selectRandomSections();
-    const baseSections = ['hero', 'outcomes', 'curriculum', 'pricing', 'faq'];
-    const allLandingSections = [...baseSections.slice(0, 3), ...optionalSections, ...baseSections.slice(3)];
-    const bonuses = selectRandomBonuses();
-    const showGuarantee = Math.random() > 0.5;
+    const systemPrompt = `You are an expert course curriculum designer. Create comprehensive, engaging online courses.
 
-    const systemPrompt = `You are an expert course curriculum designer. Create a comprehensive, well-structured course based on the user's description.
+OUTPUT FORMAT: Return ONLY valid JSON with this exact structure (no markdown, no code blocks):
 
-RULES:
-- Generate 4-8 modules depending on course complexity
-- Each module should have 3-6 lessons
-- Lesson durations should be realistic (5-30 minutes)
-- Include a mix of content types: video, text, quiz, assignment
-- Learning outcomes should be specific and measurable
-- Titles should be concise and descriptive
-- Create a compelling tagline (1 short sentence hook)
-- Mark first lesson of first module as free preview (is_preview: true)
-- Include content_markdown for text lessons (2-3 paragraphs of actual lesson content)
-- Create relevant FAQ questions and answers for the course
-- Describe the target audience (who this course is for)
-
-OUTPUT FORMAT (strict JSON):
 {
   "title": "Course Title",
-  "tagline": "Short compelling tagline (10 words max)",
   "description": "2-3 sentence course description",
-  "difficulty": "${difficulty}",
-  "duration_weeks": ${duration_weeks},
-  "target_audience": "Description of ideal student (2 sentences)",
+  "tagline": "Short compelling tagline",
   "learningOutcomes": ["Outcome 1", "Outcome 2", "Outcome 3", "Outcome 4"],
-  "faq": [
-    { "question": "Common question about the course?", "answer": "Helpful answer" },
-    { "question": "Another relevant question?", "answer": "Clear answer" },
-    { "question": "Third question?", "answer": "Informative answer" }
-  ],
   "modules": [
     {
       "id": "module-1",
       "title": "Module Title",
-      "description": "Brief module description",
+      "description": "Module description",
       "lessons": [
         {
           "id": "lesson-1-1",
           "title": "Lesson Title",
-          "duration": "15 min",
-          "type": "video",
-          "description": "What students will learn",
-          "is_preview": true,
-          "content_markdown": "## Lesson content here\\n\\nThis is the actual lesson content..."
+          "duration_minutes": 15,
+          "content_type": "video",
+          "description": "Lesson description",
+          "is_preview": true
         }
       ]
     }
-  ]
-}`;
+  ],
+  "landing_page": {
+    "hero_headline": "Transform Your Skills with This Course",
+    "hero_subheadline": "Learn everything you need to know",
+    "features": [
+      {"title": "Feature 1", "description": "Description", "icon": "Star"},
+      {"title": "Feature 2", "description": "Description", "icon": "Trophy"},
+      {"title": "Feature 3", "description": "Description", "icon": "Target"}
+    ],
+    "faqs": [
+      {"question": "Question 1?", "answer": "Answer 1"},
+      {"question": "Question 2?", "answer": "Answer 2"}
+    ],
+    "instructor": {
+      "name": "Instructor Name",
+      "bio": "Expert bio here"
+    },
+    "pricing": {
+      "amount": 199,
+      "currency": "USD",
+      "features": ["Lifetime access", "Certificate", "Community access"]
+    }
+  },
+  "brand_color": "#6366f1"
+}
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+RULES:
+1. Create ${Math.max(3, Math.ceil(duration_weeks / 2))} modules with 4-6 lessons each
+2. Difficulty level: ${difficulty}
+3. Course duration: ${duration_weeks} weeks
+4. ${includeQuizzes ? 'Include quiz lessons (content_type: "quiz") at end of each module' : 'Do not include quizzes'}
+5. ${includeAssignments ? 'Include assignment lessons (content_type: "assignment") for practical exercises' : 'Do not include assignments'}
+6. Make the first lesson of the first module a preview (is_preview: true)
+7. Lesson durations: 10-30 minutes
+8. Content types: "video", "text", "quiz", "assignment"
+9. Create 4-6 learning outcomes
+10. Create 3-5 features for landing page
+11. Create 4-6 FAQs
+12. Return ONLY the JSON object, no additional text`;
+
+    const userPrompt = `Create a complete course curriculum for: ${prompt}`;
+
+    console.log('Calling Claude API with prompt:', userPrompt.substring(0, 100));
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Create a ${difficulty} level course (${duration_weeks} weeks) about: ${prompt}` }
-        ],
-        temperature: 0.7,
-        max_tokens: 6000,
+        model: 'claude-sonnet-4-5-20250514',
+        max_tokens: 8000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
+      console.error('Claude API error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+          JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again in a moment.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'Usage limit reached. Please check your account.' }),
+          JSON.stringify({ success: false, error: 'API quota exceeded. Please check your Anthropic account.' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
+      
       return new Response(
-        JSON.stringify({ error: 'Failed to generate course' }),
+        JSON.stringify({ success: false, error: 'Failed to generate course. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    console.log('Claude API response received');
 
+    const content = data.content?.[0]?.text;
     if (!content) {
-      console.error('No content in AI response');
+      console.error('No content in Claude response:', data);
       return new Response(
-        JSON.stringify({ error: 'No content generated' }),
+        JSON.stringify({ success: false, error: 'No content generated. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Extract JSON from response (handle markdown code blocks)
-    let jsonStr = content;
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1].trim();
-    }
-
-    let rawCourse: GeneratedCourse & { target_audience?: string; faq?: Array<{ question: string; answer: string }> };
+    // Parse JSON from response, handling potential markdown code blocks
+    let courseData;
     try {
-      rawCourse = JSON.parse(jsonStr);
+      let jsonStr = content.trim();
+      
+      // Remove markdown code blocks if present
+      if (jsonStr.startsWith('```json')) {
+        jsonStr = jsonStr.slice(7);
+      } else if (jsonStr.startsWith('```')) {
+        jsonStr = jsonStr.slice(3);
+      }
+      if (jsonStr.endsWith('```')) {
+        jsonStr = jsonStr.slice(0, -3);
+      }
+      jsonStr = jsonStr.trim();
+      
+      courseData = JSON.parse(jsonStr);
     } catch (parseError) {
-      console.error('Failed to parse course JSON:', parseError);
-      console.error('Raw content:', content);
+      console.error('Failed to parse course JSON:', parseError, 'Content:', content.substring(0, 500));
       return new Response(
-        JSON.stringify({ error: 'Failed to parse generated course' }),
+        JSON.stringify({ success: false, error: 'Failed to parse generated course. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Add module position flags for layout variations
-    const modulesWithFlags = rawCourse.modules.map((module, idx) => ({
+    // Validate required fields
+    if (!courseData.title || !courseData.modules || !Array.isArray(courseData.modules)) {
+      console.error('Invalid course structure:', courseData);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid course structure generated. Please try again.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Enrich modules with metadata
+    const enrichedModules = courseData.modules.map((module: Module, index: number) => ({
       ...module,
-      is_first: idx === 0,
-      is_last: idx === rawCourse.modules.length - 1,
-      has_quiz: module.lessons.some(l => l.type === 'quiz'),
-      has_assignment: module.lessons.some(l => l.type === 'assignment'),
+      is_first: index === 0,
+      is_last: index === courseData.modules.length - 1,
+      has_quiz: module.lessons?.some((l: Lesson) => l.content_type === 'quiz') || false,
+      has_assignment: module.lessons?.some((l: Lesson) => l.content_type === 'assignment') || false,
     }));
 
-    // Build the final course with pages config
+    // Build the complete course object
+    const courseId = generateUUID();
+    const courseSlug = slugify(courseData.title);
+    const selectedSections = selectRandomSections();
+
     const course: GeneratedCourse = {
-      title: rawCourse.title,
-      tagline: rawCourse.tagline || `Master ${rawCourse.title} in ${duration_weeks} weeks`,
-      description: rawCourse.description,
-      difficulty: rawCourse.difficulty || difficulty,
-      duration_weeks: rawCourse.duration_weeks || duration_weeks,
-      modules: modulesWithFlags,
-      learningOutcomes: rawCourse.learningOutcomes || [],
-      pages: {
-        landing_sections: allLandingSections,
-        included_bonuses: bonuses,
-        show_guarantee: showGuarantee,
-        target_audience: rawCourse.target_audience || 'Anyone interested in learning this topic.',
-        faq: rawCourse.faq || [
-          { question: 'How long do I have access?', answer: 'You have lifetime access to this course.' },
-          { question: 'Is there a money-back guarantee?', answer: 'Yes, we offer a 30-day money-back guarantee.' },
-          { question: 'Do I need any prior experience?', answer: `This course is designed for ${difficulty} level students.` }
-        ],
+      id: courseId,
+      title: courseData.title,
+      slug: courseSlug,
+      description: courseData.description || '',
+      tagline: courseData.tagline || '',
+      curriculum: {
+        modules: enrichedModules,
+        landing_page: {
+          hero_headline: courseData.landing_page?.hero_headline || courseData.title,
+          hero_subheadline: courseData.landing_page?.hero_subheadline || courseData.description,
+          features: courseData.landing_page?.features || [],
+          faqs: courseData.landing_page?.faqs || [],
+          sections: ['hero', 'curriculum', ...selectedSections, 'pricing', 'faq'],
+          instructor: courseData.landing_page?.instructor,
+          pricing: courseData.landing_page?.pricing,
+        },
+        learningOutcomes: courseData.learningOutcomes || [],
+        difficulty: difficulty,
+        duration_weeks: duration_weeks,
+        brand_color: courseData.brand_color || '#6366f1',
       },
+      status: 'draft',
     };
 
     console.log('Course generated successfully:', course.title);
-    console.log('Landing sections:', allLandingSections);
 
     return new Response(
-      JSON.stringify({ course }),
+      JSON.stringify({
+        success: true,
+        course: course,
+        message: 'Course created successfully!',
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
     console.error('Generate course error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
