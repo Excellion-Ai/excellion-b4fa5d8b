@@ -12,7 +12,10 @@ export type LandingSectionType =
   | 'testimonials'
   | 'guarantee'
   | 'bonuses'
-  | 'community';
+  | 'community'
+  | 'certificate';
+
+export type CourseLayoutStyle = 'creator' | 'technical' | 'academic' | 'visual';
 
 export interface CoursePages {
   landing_sections: LandingSectionType[];
@@ -73,6 +76,80 @@ export interface ExtendedCourse {
   thumbnail?: string;
   brand_color?: string;
   pages?: CoursePages;
+  layout_style?: CourseLayoutStyle;
+}
+
+// Style configuration for each layout type
+export interface LayoutStyleConfig {
+  containerClass: string;
+  cardClass: string;
+  headingClass: string;
+  accentColor: string;
+  moduleLayout: 'timeline' | 'accordion' | 'numbered' | 'grid';
+  showInstructorLarge: boolean;
+  showCertificate: boolean;
+  showTestimonials: boolean;
+  codeBlockStyle: boolean;
+  compactDensity: boolean;
+  imageHeavy: boolean;
+}
+
+export function getLayoutStyleConfig(style: CourseLayoutStyle = 'creator'): LayoutStyleConfig {
+  const configs: Record<CourseLayoutStyle, LayoutStyleConfig> = {
+    creator: {
+      containerClass: 'bg-gradient-to-b from-amber-950/10 via-background to-background',
+      cardClass: 'bg-card/80 border-amber-500/20',
+      headingClass: 'text-amber-100',
+      accentColor: 'amber',
+      moduleLayout: 'timeline',
+      showInstructorLarge: true,
+      showCertificate: false,
+      showTestimonials: true,
+      codeBlockStyle: false,
+      compactDensity: false,
+      imageHeavy: false,
+    },
+    technical: {
+      containerClass: 'bg-slate-950',
+      cardClass: 'bg-slate-900/80 border-slate-700',
+      headingClass: 'text-slate-100 font-mono',
+      accentColor: 'emerald',
+      moduleLayout: 'accordion',
+      showInstructorLarge: false,
+      showCertificate: false,
+      showTestimonials: false,
+      codeBlockStyle: true,
+      compactDensity: true,
+      imageHeavy: false,
+    },
+    academic: {
+      containerClass: 'bg-stone-50 dark:bg-stone-950',
+      cardClass: 'bg-white dark:bg-stone-900 border-stone-300 dark:border-stone-700',
+      headingClass: 'text-stone-900 dark:text-stone-100 font-serif',
+      accentColor: 'blue',
+      moduleLayout: 'numbered',
+      showInstructorLarge: false,
+      showCertificate: true,
+      showTestimonials: false,
+      codeBlockStyle: false,
+      compactDensity: false,
+      imageHeavy: false,
+    },
+    visual: {
+      containerClass: 'bg-gradient-to-br from-violet-950/20 via-background to-fuchsia-950/10',
+      cardClass: 'bg-card/60 backdrop-blur border-violet-500/30',
+      headingClass: 'text-violet-100 font-bold',
+      accentColor: 'violet',
+      moduleLayout: 'grid',
+      showInstructorLarge: false,
+      showCertificate: false,
+      showTestimonials: true,
+      codeBlockStyle: false,
+      compactDensity: false,
+      imageHeavy: true,
+    },
+  };
+  return configs[style] || configs.creator;
 }
 
 // Utility function to determine module layout variant
@@ -110,4 +187,12 @@ export function calculateModuleDuration(lessons: LessonContent[]): string {
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   }
   return `${totalMinutes}m`;
+}
+
+// Format section numbers for academic style
+export function formatSectionNumber(moduleIdx: number, lessonIdx?: number): string {
+  if (lessonIdx !== undefined) {
+    return `${moduleIdx + 1}.${lessonIdx + 1}`;
+  }
+  return `${moduleIdx + 1}.0`;
 }
