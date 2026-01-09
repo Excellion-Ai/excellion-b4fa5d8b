@@ -91,6 +91,7 @@ import { RenameDialog } from '@/components/secret-builder/RenameDialog';
 import { ProjectPreview } from '@/components/secret-builder/ProjectPreview';
 import { TEMPLATES } from '@/components/secret-builder/templateSpecs';
 import { InterviewStepper } from '@/components/InterviewStepper';
+import { VoiceBotPlaceholder } from '@/components/VoiceBotPlaceholder';
 import { useInterviewIntake } from '@/hooks/useInterviewIntake';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
@@ -1387,25 +1388,11 @@ export default function SecretBuilderHub() {
 
       {/* Build Assist Dialog */}
       <Dialog open={interviewOpen} onOpenChange={setInterviewOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Build Assist</DialogTitle>
           </DialogHeader>
-          <InterviewStepper
-            step={interview.step}
-            totalSteps={interview.totalSteps}
-            answers={interview.answers}
-            canProceed={interview.canProceed}
-            canSubmit={interview.canSubmit}
-            onUpdateAnswer={interview.updateAnswer}
-            onUpdateOffer={interview.updateOffer}
-            onNext={interview.nextStep}
-            onBack={interview.prevStep}
-            onSkip={interview.skipStep}
-            onSubmit={handleInterviewSubmit}
-            onSwitchToQuickPrompt={() => setInterviewOpen(false)}
-            isGenerating={isGenerating}
-          />
+          <VoiceBotPlaceholder onClose={() => setInterviewOpen(false)} />
         </DialogContent>
       </Dialog>
     </div>
