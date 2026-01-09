@@ -93,6 +93,7 @@ interface CoursePreviewProps {
   onUploadThumbnail?: () => void;
   isPublishing?: boolean;
   isPublished?: boolean;
+  onLessonClick?: (moduleId: string, lessonId: string) => void;
 }
 
 const LessonTypeIcon = ({ type, contentType }: { type: Lesson['type']; contentType?: string }) => {
@@ -129,6 +130,7 @@ function SortableLesson({
   setEditValue,
   onSave,
   onCancel,
+  onClick,
 }: {
   lesson: Lesson;
   lessonIdx: number;
@@ -138,6 +140,7 @@ function SortableLesson({
   setEditValue: (val: string) => void;
   onSave: () => void;
   onCancel: () => void;
+  onClick?: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: lesson.id,
@@ -153,7 +156,12 @@ function SortableLesson({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center justify-between p-3 rounded-md bg-background/50 border border-border/50 group"
+      className="flex items-center justify-between p-3 rounded-md bg-background/50 border border-border/50 group hover:border-primary/50 cursor-pointer transition-colors"
+      onClick={(e) => {
+        if (!isEditing && onClick) {
+          onClick();
+        }
+      }}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <button
@@ -324,6 +332,7 @@ export function CoursePreview({
   onUploadThumbnail,
   isPublishing = false,
   isPublished = false,
+  onLessonClick,
 }: CoursePreviewProps) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
@@ -737,6 +746,7 @@ export function CoursePreview({
                             }}
                             onSave={() => handleSaveLessonTitle(module.id, lesson.id)}
                             onCancel={() => setEditingLessonId(null)}
+                            onClick={() => onLessonClick?.(module.id, lesson.id)}
                           />
                         ))}
                       </SortableContext>

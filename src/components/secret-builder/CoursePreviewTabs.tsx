@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, BookOpen, Eye, ChevronRight } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, BookOpen, Play } from 'lucide-react';
 import { CoursePreview } from './CoursePreview';
 import { CourseLandingPreview } from './CourseLandingPreview';
 import { CourseStudentView } from './CourseStudentView';
@@ -30,20 +30,23 @@ export function CoursePreviewTabs({
   onUploadThumbnail,
   isPublishing = false,
 }: CoursePreviewTabsProps) {
-  const [activeTab, setActiveTab] = useState<'landing' | 'curriculum' | 'student'>('curriculum');
+  const [activeTab, setActiveTab] = useState<'landing' | 'curriculum' | 'lesson'>('landing');
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
-
-  const handleModuleClick = (moduleId: string) => {
-    setSelectedModuleId(moduleId);
-    setSelectedLessonId(null);
-    setActiveTab('student');
-  };
 
   const handleLessonClick = (moduleId: string, lessonId: string) => {
     setSelectedModuleId(moduleId);
     setSelectedLessonId(lessonId);
-    setActiveTab('student');
+    setActiveTab('lesson');
+  };
+
+  const handleModuleClick = (moduleId: string) => {
+    setSelectedModuleId(moduleId);
+    const module = course.modules.find(m => m.id === moduleId);
+    if (module && module.lessons.length > 0) {
+      setSelectedLessonId(module.lessons[0].id);
+    }
+    setActiveTab('lesson');
   };
 
   return (
@@ -61,14 +64,14 @@ export function CoursePreviewTabs({
                 <BookOpen className="w-3.5 h-3.5" />
                 Curriculum
               </TabsTrigger>
-              <TabsTrigger value="student" className="gap-2 text-xs">
-                <Eye className="w-3.5 h-3.5" />
-                Student View
+              <TabsTrigger value="lesson" className="gap-2 text-xs">
+                <Play className="w-3.5 h-3.5" />
+                Lesson Preview
               </TabsTrigger>
             </TabsList>
 
-            {/* Module quick nav when on student view */}
-            {activeTab === 'student' && course.modules.length > 0 && (
+            {/* Module quick nav when on lesson view */}
+            {activeTab === 'lesson' && course.modules.length > 0 && (
               <div className="flex items-center gap-1">
                 {course.modules.map((module, idx) => (
                   <Button
@@ -104,14 +107,24 @@ export function CoursePreviewTabs({
             onPublish={onPublish}
             onRefine={onRefine}
             onOpenSettings={onOpenSettings}
-            onPreviewAsStudent={() => setActiveTab('student')}
+            onPreviewAsStudent={() => {
+              if (course.modules.length > 0) {
+                const firstModule = course.modules[0];
+                setSelectedModuleId(firstModule.id);
+                if (firstModule.lessons.length > 0) {
+                  setSelectedLessonId(firstModule.lessons[0].id);
+                }
+              }
+              setActiveTab('lesson');
+            }}
             onDuplicate={onDuplicate}
             onUploadThumbnail={onUploadThumbnail}
             isPublishing={isPublishing}
+            onLessonClick={handleLessonClick}
           />
         )}
 
-        {activeTab === 'student' && (
+        {activeTab === 'lesson' && (
           <CourseStudentView
             course={course}
             selectedModuleId={selectedModuleId}
@@ -122,13 +135,7 @@ export function CoursePreviewTabs({
               setSelectedLessonId(lId);
             }}
             onBack={() => {
-              if (selectedLessonId) {
-                setSelectedLessonId(null);
-              } else if (selectedModuleId) {
-                setSelectedModuleId(null);
-              } else {
-                setActiveTab('curriculum');
-              }
+              setActiveTab('curriculum');
             }}
           />
         )}
