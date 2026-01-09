@@ -221,10 +221,28 @@ RULES:
       const errorText = await response.text();
       console.error('Claude API error:', response.status, errorText);
       
+      // Parse Anthropic error for better messaging
+      let errorMessage = 'Failed to generate course. Please try again.';
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.error?.message) {
+          errorMessage = errorJson.error.message;
+        }
+      } catch {
+        // Use default message
+      }
+      
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again in a moment.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (response.status === 400 && errorMessage.includes('credit balance')) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Anthropic API credits exhausted. Please add credits to your Anthropic account.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
@@ -236,7 +254,7 @@ RULES:
       }
       
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to generate course. Please try again.' }),
+        JSON.stringify({ success: false, error: errorMessage }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
