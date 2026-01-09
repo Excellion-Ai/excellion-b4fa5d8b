@@ -862,10 +862,10 @@ export function BuilderShell() {
     setSiteSpec(null);
     setGeneratedHtml(null);
     setSteps([
-      { id: 1, label: 'Understanding your idea...', status: 'pending' },
-      { id: 2, label: 'Creating curriculum structure...', status: 'pending' },
-      { id: 3, label: 'Writing lesson content...', status: 'pending' },
-      { id: 4, label: 'Finalizing course...', status: 'pending' },
+      { id: 1, label: 'Connecting to AI...', status: 'pending' },
+      { id: 2, label: 'Designing your curriculum...', status: 'pending' },
+      { id: 3, label: 'Creating lessons and content...', status: 'pending' },
+      { id: 4, label: 'Finalizing your course...', status: 'pending' },
     ]);
 
     try {
@@ -880,30 +880,22 @@ export function BuilderShell() {
         throw new Error('Please sign in to generate courses');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-course`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('generate-course', {
+        body: {
           prompt: ideaToUse,
           options: {
-            difficulty: courseOptions?.difficulty || 'beginner',
             duration_weeks: courseOptions?.duration_weeks || 6,
+            difficulty: courseOptions?.difficulty || 'beginner',
             includeQuizzes: courseOptions?.includeQuizzes ?? true,
             includeAssignments: courseOptions?.includeAssignments ?? false,
           },
-        }),
+        },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to generate course');
+      if (error || !data?.success) {
+        throw new Error(data?.error || error?.message || 'Failed to generate course');
       }
 
-      const data = await response.json();
       updateStep(2, 'complete');
 
       updateStep(3, 'active');
@@ -912,20 +904,42 @@ export function BuilderShell() {
       
       updateStep(4, 'active');
       
-      if (data.course) {
-        setCourseSpec(data.course);
-        setProjectName(data.course.title || 'New Course');
+      if (data.success && data.course) {
+        const course = data.course;
+        const curriculum = course.curriculum;
+        
+        // Build the courseSpec with modules from curriculum
+        const courseSpec = {
+          title: course.title,
+          description: course.description,
+          tagline: course.tagline,
+          difficulty: curriculum?.difficulty || course.difficulty || 'beginner',
+          duration_weeks: curriculum?.duration_weeks || course.duration_weeks || 6,
+          modules: curriculum?.modules || [],
+          learningOutcomes: curriculum?.learningOutcomes || [],
+          thumbnail: course.thumbnail_url,
+          brand_color: curriculum?.brand_color,
+          pages: curriculum?.landing_page ? {
+            landing_sections: curriculum.landing_page.sections || ['hero', 'curriculum', 'pricing'],
+            instructor: curriculum.landing_page.instructor,
+            pricing: curriculum.landing_page.pricing,
+            faq: curriculum.landing_page.faqs,
+          } : undefined,
+        };
+        
+        setCourseSpec(courseSpec);
+        setProjectName(course.title || 'New Course');
         
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: `Course "${data.course.title}" generated! Check the preview on the right.`,
+          content: `Course "${course.title}" generated! Check the preview on the right.`,
         };
         const allMessages = [...messages, userMessage, assistantMessage];
         setMessages(allMessages);
         
         // Save with the new courseSpec
-        await saveProject(null, allMessages, ideaToUse, null, data.course);
+        await saveProject(null, allMessages, ideaToUse, null, courseSpec);
       }
 
       updateStep(4, 'complete');
