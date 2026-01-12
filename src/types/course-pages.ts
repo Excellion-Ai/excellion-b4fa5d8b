@@ -17,6 +17,75 @@ export type LandingSectionType =
 
 export type CourseLayoutStyle = 'creator' | 'technical' | 'academic' | 'visual';
 
+// Page types that can exist as separate pages
+export type CoursePageType = 
+  | 'landing'      // Main sales/landing page
+  | 'curriculum'   // Full curriculum overview
+  | 'bonuses'      // Bonus materials page
+  | 'community'    // Community/discussion page
+  | 'resources'    // Downloadable resources
+  | 'about'        // About instructor/course
+  | 'testimonials' // Student success stories
+  | 'faq';         // FAQ page
+
+export interface CoursePage {
+  id: string;
+  type: CoursePageType;
+  title: string;
+  slug: string;
+  content: CoursePageContent;
+  isEnabled: boolean;
+  order: number;
+}
+
+export interface CoursePageContent {
+  // Landing page content
+  hero_headline?: string;
+  hero_subheadline?: string;
+  sections?: LandingSectionType[];
+  
+  // Bonuses page content
+  bonuses?: Array<{
+    title: string;
+    description: string;
+    value?: string;
+    icon?: string;
+  }>;
+  
+  // Resources page content
+  resources?: Array<{
+    title: string;
+    description: string;
+    downloadUrl?: string;
+    type: 'pdf' | 'video' | 'template' | 'worksheet' | 'other';
+  }>;
+  
+  // Community page content
+  communityDescription?: string;
+  communityFeatures?: string[];
+  communityPlatform?: string;
+  
+  // Testimonials page content
+  testimonials?: Array<{
+    name: string;
+    role?: string;
+    quote: string;
+    avatar?: string;
+    rating?: number;
+  }>;
+  
+  // FAQ page content
+  faqs?: Array<{
+    question: string;
+    answer: string;
+  }>;
+  
+  // About page content
+  instructorBio?: string;
+  instructorCredentials?: string[];
+  instructorImage?: string;
+}
+
 export interface CoursePages {
   landing_sections: LandingSectionType[];
   included_bonuses?: string[];
@@ -36,6 +105,9 @@ export interface CoursePages {
     question: string;
     answer: string;
   }>;
+  // Multi-page support
+  separatePages?: CoursePage[];
+  isMultiPage?: boolean;
 }
 
 export interface LessonContent {
@@ -78,6 +150,9 @@ export interface ExtendedCourse {
   brand_color?: string;
   pages?: CoursePages;
   layout_style?: CourseLayoutStyle;
+  // Multi-page navigation
+  separatePages?: CoursePage[];
+  isMultiPage?: boolean;
 }
 
 // Style configuration for each layout type
