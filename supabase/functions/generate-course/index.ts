@@ -15,6 +15,11 @@ interface CourseRequest {
     includeQuizzes?: boolean;
     includeAssignments?: boolean;
     template?: CourseTemplate;
+    separatePages?: boolean;
+    includeBonusPage?: boolean;
+    includeResourcesPage?: boolean;
+    includeCommunityPage?: boolean;
+    includeTestimonialsPage?: boolean;
   };
 }
 
@@ -66,6 +71,16 @@ interface Curriculum {
   template?: CourseTemplate;
 }
 
+interface CoursePage {
+  id: string;
+  type: string;
+  title: string;
+  slug: string;
+  content: Record<string, unknown>;
+  isEnabled: boolean;
+  order: number;
+}
+
 interface GeneratedCourse {
   id: string;
   title: string;
@@ -75,6 +90,8 @@ interface GeneratedCourse {
   curriculum: Curriculum;
   status: string;
   thumbnail_url?: string;
+  separatePages?: CoursePage[];
+  isMultiPage?: boolean;
 }
 
 // Template-specific configurations
@@ -270,12 +287,96 @@ serve(async (req) => {
     const duration_weeks = options?.duration_weeks || 6;
     const includeQuizzes = options?.includeQuizzes ?? true;
     const includeAssignments = options?.includeAssignments ?? false;
+    const separatePages = options?.separatePages ?? false;
+    const includeBonusPage = options?.includeBonusPage ?? false;
+    const includeResourcesPage = options?.includeResourcesPage ?? false;
+    const includeCommunityPage = options?.includeCommunityPage ?? false;
+    const includeTestimonialsPage = options?.includeTestimonialsPage ?? false;
     
     // Auto-detect template from prompt if not provided
     const template: CourseTemplate = options?.template || detectTemplate(prompt);
     const templateConfig = TEMPLATE_CONFIG[template];
 
-    console.log(`Detected/selected template: ${template}`);
+    console.log(`Detected/selected template: ${template}, separatePages: ${separatePages}`);
+
+    // Build separate pages instructions if needed
+    let separatePagesInstructions = '';
+    if (separatePages) {
+      const pagesToGenerate: string[] = [];
+      if (includeBonusPage) pagesToGenerate.push('bonuses');
+      if (includeResourcesPage) pagesToGenerate.push('resources');
+      if (includeCommunityPage) pagesToGenerate.push('community');
+      if (includeTestimonialsPage) pagesToGenerate.push('testimonials');
+      
+      if (pagesToGenerate.length > 0) {
+        separatePagesInstructions = `
+
+SEPARATE PAGES TO GENERATE: ${pagesToGenerate.join(', ')}
+
+Include a "separate_pages" array in your JSON with these page types:
+${includeBonusPage ? `
+- bonuses: {
+    "id": "page-bonuses",
+    "type": "bonuses",
+    "title": "Exclusive Bonuses",
+    "slug": "bonuses",
+    "content": {
+      "bonuses": [
+        {"title": "Bonus 1", "description": "Description of bonus", "value": "$197", "icon": "Gift"},
+        {"title": "Bonus 2", "description": "Description of bonus", "value": "$97", "icon": "FileText"}
+      ]
+    },
+    "isEnabled": true,
+    "order": 2
+  }` : ''}
+${includeResourcesPage ? `
+- resources: {
+    "id": "page-resources",
+    "type": "resources",
+    "title": "Course Resources",
+    "slug": "resources",
+    "content": {
+      "resources": [
+        {"title": "Resource 1", "description": "Description", "type": "pdf"},
+        {"title": "Resource 2", "description": "Description", "type": "template"}
+      ]
+    },
+    "isEnabled": true,
+    "order": 3
+  }` : ''}
+${includeCommunityPage ? `
+- community: {
+    "id": "page-community",
+    "type": "community",
+    "title": "Join Our Community",
+    "slug": "community",
+    "content": {
+      "communityDescription": "Connect with fellow students...",
+      "communityFeatures": ["Feature 1", "Feature 2", "Feature 3"],
+      "communityPlatform": "Private Discord/Slack/Forum"
+    },
+    "isEnabled": true,
+    "order": 4
+  }` : ''}
+${includeTestimonialsPage ? `
+- testimonials: {
+    "id": "page-testimonials",
+    "type": "testimonials",
+    "title": "Student Success Stories",
+    "slug": "testimonials",
+    "content": {
+      "testimonials": [
+        {"name": "Student Name", "role": "Their Role", "quote": "Amazing course...", "rating": 5},
+        {"name": "Another Student", "role": "Their Role", "quote": "Transformed my skills...", "rating": 5}
+      ]
+    },
+    "isEnabled": true,
+    "order": 5
+  }` : ''}
+
+Make the content relevant to the course topic and ${template} style.`;
+      }
+    }
 
     const systemPrompt = `You are an expert course curriculum designer specializing in ${template.toUpperCase()} style courses.
 
@@ -330,9 +431,11 @@ OUTPUT FORMAT: Return ONLY valid JSON with this exact structure (no markdown, no
       "currency": "USD",
       "features": ${JSON.stringify(templateConfig.pricingFeatures)}
     }
-  },
+  }${separatePages ? `,
+  "separate_pages": []` : ''},
   "brand_color": "${templateConfig.brandColor}"
 }
+${separatePagesInstructions}
 
 STYLE-SPECIFIC RULES FOR ${template.toUpperCase()}:
 ${template === 'creator' ? `
@@ -494,6 +597,22 @@ GENERAL RULES:
     const courseSlug = slugify(courseData.title);
     const selectedSections = selectRandomSections(template);
 
+    // Process separate pages if they were generated
+    const generatedSeparatePages: CoursePage[] = [];
+    if (separatePages && courseData.separate_pages && Array.isArray(courseData.separate_pages)) {
+      for (const page of courseData.separate_pages) {
+        generatedSeparatePages.push({
+          id: page.id || generateUUID(),
+          type: page.type,
+          title: page.title,
+          slug: page.slug || slugify(page.title),
+          content: page.content || {},
+          isEnabled: page.isEnabled ?? true,
+          order: page.order || generatedSeparatePages.length + 2,
+        });
+      }
+    }
+
     const course: GeneratedCourse = {
       id: courseId,
       title: courseData.title,
@@ -518,15 +637,19 @@ GENERAL RULES:
         template: template,
       },
       status: 'draft',
+      separatePages: generatedSeparatePages.length > 0 ? generatedSeparatePages : undefined,
+      isMultiPage: separatePages && generatedSeparatePages.length > 0,
     };
 
-    console.log('Course generated successfully:', course.title, 'Template:', template);
+    console.log('Course generated successfully:', course.title, 'Template:', template, 'Pages:', generatedSeparatePages.length);
 
     return new Response(
       JSON.stringify({
         success: true,
         course: course,
         template: template,
+        isMultiPage: course.isMultiPage,
+        separatePages: course.separatePages,
         message: 'Course created successfully!',
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

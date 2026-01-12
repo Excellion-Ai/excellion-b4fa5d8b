@@ -37,12 +37,16 @@ import {
   CheckCircle2,
   Sparkles,
   Loader2,
+  Gift,
+  Download,
+  MessageCircle,
+  Star,
 } from 'lucide-react';
-import { ExtendedCourse, ModuleWithContent, LessonContent, calculateModuleDuration } from '@/types/course-pages';
+import { ExtendedCourse, ModuleWithContent, LessonContent, calculateModuleDuration, CoursePage } from '@/types/course-pages';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
 
-type TabType = 'landing' | 'curriculum' | 'lesson' | 'dashboard';
+type TabType = 'landing' | 'curriculum' | 'lesson' | 'dashboard' | 'bonuses' | 'resources' | 'community' | 'testimonials';
 
 interface CoursePreviewTabsProps {
   course: ExtendedCourse;
@@ -56,12 +60,19 @@ interface CoursePreviewTabsProps {
   isPublishing?: boolean;
 }
 
-const TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
+const BASE_TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
   { id: 'landing', label: 'Landing Page', icon: FileText },
   { id: 'curriculum', label: 'Curriculum', icon: BookOpen },
   { id: 'lesson', label: 'Lesson Preview', icon: Play },
   { id: 'dashboard', label: 'Student Dashboard', icon: LayoutDashboard },
 ];
+
+const PAGE_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
+  bonuses: { label: 'Bonuses', icon: Gift },
+  resources: { label: 'Resources', icon: Download },
+  community: { label: 'Community', icon: MessageCircle },
+  testimonials: { label: 'Testimonials', icon: Star },
+};
 
 const LessonTypeIcon = ({ type, size = 'sm' }: { type: string; size?: 'sm' | 'lg' }) => {
   const sizeClass = size === 'lg' ? 'w-5 h-5' : 'w-4 h-4';
@@ -90,6 +101,21 @@ export function CoursePreviewTabs({
   const [selectedLessonIdx, setSelectedLessonIdx] = useState(0);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const isMobile = useIsMobile();
+
+  // Build dynamic tabs based on course configuration
+  const TABS = [...BASE_TABS];
+  if (course.separatePages && course.isMultiPage) {
+    for (const page of course.separatePages) {
+      if (page.isEnabled && PAGE_TYPE_CONFIG[page.type]) {
+        const config = PAGE_TYPE_CONFIG[page.type];
+        TABS.push({
+          id: page.type as TabType,
+          label: page.title || config.label,
+          icon: config.icon,
+        });
+      }
+    }
+  }
 
   // Lesson progress tracking with persistence
   const {
@@ -887,6 +913,115 @@ export function CoursePreviewTabs({
         {activeTab === 'curriculum' && renderCurriculum()}
         {activeTab === 'lesson' && renderLessonPreview()}
         {activeTab === 'dashboard' && renderDashboard()}
+        {['bonuses', 'resources', 'community', 'testimonials'].includes(activeTab) && (
+          <div className="space-y-6">
+            {course.separatePages?.find(p => p.type === activeTab) ? (
+              (() => {
+                const page = course.separatePages?.find(p => p.type === activeTab);
+                if (!page) return null;
+                const content = page.content as Record<string, unknown>;
+                
+                if (activeTab === 'bonuses') {
+                  const bonuses = (content.bonuses as Array<{ title: string; description: string; value?: string }>) || [];
+                  return (
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-bold">{page.title}</h2>
+                      <div className="grid gap-4">
+                        {bonuses.map((bonus, idx) => (
+                          <Card key={idx} className="bg-card/50 border-primary/20">
+                            <CardContent className="p-4 flex items-start gap-4">
+                              <Gift className="w-8 h-8 text-primary shrink-0" />
+                              <div className="flex-1">
+                                <h3 className="font-semibold">{bonus.title}</h3>
+                                <p className="text-sm text-muted-foreground">{bonus.description}</p>
+                                {bonus.value && <Badge className="mt-2 bg-primary/20">{bonus.value} value</Badge>}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                
+                if (activeTab === 'resources') {
+                  const resources = (content.resources as Array<{ title: string; description: string; type: string }>) || [];
+                  return (
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-bold">{page.title}</h2>
+                      <div className="grid gap-3">
+                        {resources.map((res, idx) => (
+                          <Card key={idx} className="bg-card/50">
+                            <CardContent className="p-4 flex items-center gap-4">
+                              <Download className="w-5 h-5 text-primary" />
+                              <div className="flex-1">
+                                <p className="font-medium">{res.title}</p>
+                                <p className="text-xs text-muted-foreground">{res.description}</p>
+                              </div>
+                              <Badge variant="outline">{res.type}</Badge>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                
+                if (activeTab === 'community') {
+                  return (
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-bold">{page.title}</h2>
+                      <Card className="bg-card/50">
+                        <CardContent className="p-6 text-center">
+                          <MessageCircle className="w-12 h-12 mx-auto text-primary mb-4" />
+                          <p className="text-muted-foreground">{(content.communityDescription as string) || 'Join our community!'}</p>
+                          {content.communityFeatures && (
+                            <ul className="mt-4 space-y-2">
+                              {(content.communityFeatures as string[]).map((f, i) => (
+                                <li key={i} className="flex items-center gap-2 justify-center text-sm">
+                                  <Check className="w-4 h-4 text-green-500" /> {f}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                }
+                
+                if (activeTab === 'testimonials') {
+                  const testimonials = (content.testimonials as Array<{ name: string; role?: string; quote: string; rating?: number }>) || [];
+                  return (
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-bold">{page.title}</h2>
+                      <div className="grid gap-4">
+                        {testimonials.map((t, idx) => (
+                          <Card key={idx} className="bg-card/50">
+                            <CardContent className="p-4">
+                              <div className="flex gap-1 mb-2">
+                                {Array.from({ length: t.rating || 5 }).map((_, i) => (
+                                  <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                                ))}
+                              </div>
+                              <p className="text-sm italic mb-3">"{t.quote}"</p>
+                              <p className="text-sm font-medium">{t.name}</p>
+                              {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                
+                return null;
+              })()
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">Page not available</div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
