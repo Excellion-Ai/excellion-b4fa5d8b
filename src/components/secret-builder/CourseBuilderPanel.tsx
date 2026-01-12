@@ -44,6 +44,7 @@ interface TemplateOption {
   description: string;
   icon: LucideIcon;
   accentColor: string;
+  keywords: string[];
 }
 
 const TEMPLATE_OPTIONS: TemplateOption[] = [
@@ -54,6 +55,13 @@ const TEMPLATE_OPTIONS: TemplateOption[] = [
     description: 'Warm, personal, story-driven',
     icon: User,
     accentColor: '#f59e0b',
+    keywords: [
+      'coach', 'coaching', 'personal brand', 'influencer', 'creator', 'content',
+      'social media', 'youtube', 'podcast', 'speaking', 'motivation', 'mindset',
+      'life', 'wellness', 'self-help', 'productivity', 'habits', 'leadership',
+      'business', 'entrepreneur', 'marketing', 'sales', 'communication',
+      'relationship', 'parenting', 'fitness trainer', 'health coach'
+    ],
   },
   {
     id: 'technical',
@@ -62,6 +70,13 @@ const TEMPLATE_OPTIONS: TemplateOption[] = [
     description: 'Structured, precise, code-friendly',
     icon: Code,
     accentColor: '#6366f1',
+    keywords: [
+      'programming', 'coding', 'developer', 'software', 'web', 'app', 'python',
+      'javascript', 'react', 'data', 'machine learning', 'ai', 'artificial intelligence',
+      'database', 'cloud', 'devops', 'cybersecurity', 'blockchain', 'crypto',
+      'api', 'backend', 'frontend', 'fullstack', 'engineering', 'it', 'tech',
+      'automation', 'excel', 'spreadsheet', 'sql', 'analytics'
+    ],
   },
   {
     id: 'academic',
@@ -70,6 +85,13 @@ const TEMPLATE_OPTIONS: TemplateOption[] = [
     description: 'Formal, scholarly, credential-focused',
     icon: GraduationCap,
     accentColor: '#1e40af',
+    keywords: [
+      'certification', 'certificate', 'degree', 'accredited', 'professional',
+      'medical', 'legal', 'law', 'healthcare', 'nursing', 'psychology',
+      'research', 'science', 'biology', 'chemistry', 'physics', 'mathematics',
+      'economics', 'finance', 'accounting', 'mba', 'management', 'hr',
+      'compliance', 'regulatory', 'exam prep', 'cpa', 'pmp', 'six sigma'
+    ],
   },
   {
     id: 'visual',
@@ -78,8 +100,47 @@ const TEMPLATE_OPTIONS: TemplateOption[] = [
     description: 'Vibrant, image-rich, portfolio-driven',
     icon: Palette,
     accentColor: '#f43f5e',
+    keywords: [
+      'design', 'photography', 'video', 'editing', 'photoshop', 'illustrator',
+      'figma', 'ui', 'ux', 'graphic', 'art', 'drawing', 'painting', 'illustration',
+      'animation', 'motion', '3d', 'cinema', 'film', 'creative', 'portfolio',
+      'fashion', 'interior', 'architecture', 'branding', 'logo', 'visual'
+    ],
   },
 ];
+
+// Auto-detect template based on niche keywords in the prompt
+function detectTemplate(prompt: string): CourseTemplate {
+  const lowerPrompt = prompt.toLowerCase();
+  
+  const scores: Record<CourseTemplate, number> = {
+    creator: 0,
+    technical: 0,
+    academic: 0,
+    visual: 0,
+  };
+  
+  for (const template of TEMPLATE_OPTIONS) {
+    for (const keyword of template.keywords) {
+      if (lowerPrompt.includes(keyword)) {
+        scores[template.id] += keyword.split(' ').length; // Weight multi-word matches higher
+      }
+    }
+  }
+  
+  // Find highest scoring template
+  let maxScore = 0;
+  let selectedTemplate: CourseTemplate = 'creator'; // Default
+  
+  for (const [template, score] of Object.entries(scores)) {
+    if (score > maxScore) {
+      maxScore = score;
+      selectedTemplate = template as CourseTemplate;
+    }
+  }
+  
+  return selectedTemplate;
+}
 
 interface GenerationStep {
   id: number;
@@ -135,7 +196,8 @@ export function CourseBuilderPanel({
   previewRef,
 }: CourseBuilderPanelProps) {
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<CourseTemplate>('creator');
+  // Auto-detect template based on idea
+  const detectedTemplate = detectTemplate(idea);
   const [options, setOptions] = useState<CourseOptions>({
     difficulty: 'beginner',
     duration_weeks: 6,
@@ -146,15 +208,10 @@ export function CourseBuilderPanel({
 
   const handleGenerate = () => {
     if (idea.trim()) {
-      onGenerate({ ...options, template: selectedTemplate });
+      // Use auto-detected template
+      onGenerate({ ...options, template: detectedTemplate });
     }
   };
-
-  const handleTemplateSelect = (template: CourseTemplate) => {
-    setSelectedTemplate(template);
-    setOptions((prev) => ({ ...prev, template }));
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -268,50 +325,43 @@ Example: Create a comprehensive photography course for beginners that covers cam
           disabled={isGenerating}
         />
 
-        {/* Template Selection */}
+        {/* Auto-Detected Template Display */}
         {idea.trim() && !isGenerating && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-foreground">Choose Your Course Style</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {TEMPLATE_OPTIONS.map((template) => {
-                const Icon = template.icon;
-                const isSelected = selectedTemplate === template.id;
-                return (
-                  <button
-                    key={template.id}
-                    onClick={() => handleTemplateSelect(template.id)}
-                    className={`relative flex flex-col items-start p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 text-left touch-manipulation ${
-                      isSelected
-                        ? 'border-primary bg-primary/5 shadow-lg'
-                        : 'border-border/50 bg-card/30 hover:border-border hover:bg-card/50 hover:shadow-md hover:-translate-y-0.5'
-                    }`}
-                    style={{
-                      borderColor: isSelected ? template.accentColor : undefined,
-                    }}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <div
-                        className="p-1.5 rounded-md"
-                        style={{ backgroundColor: `${template.accentColor}20` }}
-                      >
-                        <Icon
-                          className="h-4 w-4"
-                          style={{ color: template.accentColor }}
-                        />
-                      </div>
-                      <span className="font-semibold text-foreground text-sm">{template.title}</span>
-                      {isSelected && (
-                        <Check className="h-4 w-4 text-primary ml-auto" style={{ color: template.accentColor }} />
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-0.5">{template.subtitle}</p>
-                    <p className="text-xs font-medium" style={{ color: template.accentColor }}>
-                      {template.description}
-                    </p>
-                  </button>
-                );
-              })}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Sparkles className="h-3 w-3" />
+              <span>Auto-detected course style:</span>
             </div>
+            {(() => {
+              const detected = TEMPLATE_OPTIONS.find(t => t.id === detectedTemplate);
+              if (!detected) return null;
+              const Icon = detected.icon;
+              return (
+                <div
+                  className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card/50"
+                  style={{ borderColor: detected.accentColor }}
+                >
+                  <div
+                    className="p-2 rounded-md"
+                    style={{ backgroundColor: `${detected.accentColor}20` }}
+                  >
+                    <Icon
+                      className="h-5 w-5"
+                      style={{ color: detected.accentColor }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-foreground text-sm">{detected.title}</span>
+                      <Badge variant="outline" className="text-[10px]" style={{ borderColor: detected.accentColor, color: detected.accentColor }}>
+                        Auto-detected
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{detected.description}</p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 

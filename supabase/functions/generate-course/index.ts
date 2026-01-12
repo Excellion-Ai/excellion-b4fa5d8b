@@ -5,6 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+type CourseTemplate = 'creator' | 'technical' | 'academic' | 'visual';
+
 interface CourseRequest {
   prompt: string;
   options?: {
@@ -12,6 +14,7 @@ interface CourseRequest {
     duration_weeks?: number;
     includeQuizzes?: boolean;
     includeAssignments?: boolean;
+    template?: CourseTemplate;
   };
 }
 
@@ -60,6 +63,7 @@ interface Curriculum {
   difficulty?: string;
   duration_weeks?: number;
   brand_color?: string;
+  template?: CourseTemplate;
 }
 
 interface GeneratedCourse {
@@ -71,6 +75,117 @@ interface GeneratedCourse {
   curriculum: Curriculum;
   status: string;
   thumbnail_url?: string;
+}
+
+// Template-specific configurations
+const TEMPLATE_CONFIG: Record<CourseTemplate, {
+  brandColor: string;
+  tone: string;
+  contentStyle: string;
+  lessonFormat: string;
+  copyStyle: string;
+  featureIcons: string[];
+  pricingFeatures: string[];
+}> = {
+  creator: {
+    brandColor: '#f59e0b',
+    tone: 'warm, personal, and encouraging',
+    contentStyle: 'story-driven with personal anecdotes and real-world examples',
+    lessonFormat: 'conversational video lessons with personal stories and actionable takeaways',
+    copyStyle: 'Use first-person, be authentic, share personal journey and transformation stories',
+    featureIcons: ['Heart', 'Users', 'Sparkles', 'MessageCircle', 'Star'],
+    pricingFeatures: ['Personal coaching support', 'Private community access', 'Lifetime updates', 'Bonus materials'],
+  },
+  technical: {
+    brandColor: '#6366f1',
+    tone: 'precise, structured, and professional',
+    contentStyle: 'systematic with code examples, diagrams, and step-by-step tutorials',
+    lessonFormat: 'hands-on coding tutorials with exercises and real project examples',
+    copyStyle: 'Use technical terminology accurately, focus on practical skills and measurable outcomes',
+    featureIcons: ['Code', 'Terminal', 'Laptop', 'Zap', 'Database'],
+    pricingFeatures: ['Source code included', 'Certificate of completion', 'Project files', 'Code review sessions'],
+  },
+  academic: {
+    brandColor: '#1e40af',
+    tone: 'formal, scholarly, and authoritative',
+    contentStyle: 'research-backed with citations, case studies, and theoretical frameworks',
+    lessonFormat: 'structured lectures with readings, assessments, and academic rigor',
+    copyStyle: 'Use formal language, cite research, emphasize credentials and methodology',
+    featureIcons: ['GraduationCap', 'BookOpen', 'Award', 'FileText', 'Shield'],
+    pricingFeatures: ['Accredited certificate', 'Academic support', 'Research materials', 'Professional credential'],
+  },
+  visual: {
+    brandColor: '#f43f5e',
+    tone: 'creative, inspiring, and visually-oriented',
+    contentStyle: 'portfolio-focused with visual examples, before/after showcases, and creative exercises',
+    lessonFormat: 'visual demonstrations with portfolio-building projects and creative challenges',
+    copyStyle: 'Use evocative language, focus on creativity, inspiration, and visual transformation',
+    featureIcons: ['Palette', 'Image', 'Brush', 'Eye', 'Sparkles'],
+    pricingFeatures: ['Portfolio review', 'Creative feedback', 'Asset library', 'Gallery showcase'],
+  },
+};
+
+// Niche detection for auto-selecting template
+const NICHE_KEYWORDS: Record<CourseTemplate, string[]> = {
+  creator: [
+    'coach', 'coaching', 'personal brand', 'influencer', 'creator', 'content',
+    'social media', 'youtube', 'podcast', 'speaking', 'motivation', 'mindset',
+    'life', 'wellness', 'self-help', 'productivity', 'habits', 'leadership',
+    'business', 'entrepreneur', 'marketing', 'sales', 'communication',
+    'relationship', 'parenting', 'fitness trainer', 'health coach'
+  ],
+  technical: [
+    'programming', 'coding', 'developer', 'software', 'web', 'app', 'python',
+    'javascript', 'react', 'data', 'machine learning', 'ai', 'artificial intelligence',
+    'database', 'cloud', 'devops', 'cybersecurity', 'blockchain', 'crypto',
+    'api', 'backend', 'frontend', 'fullstack', 'engineering', 'it', 'tech',
+    'automation', 'excel', 'spreadsheet', 'sql', 'analytics'
+  ],
+  academic: [
+    'certification', 'certificate', 'degree', 'accredited', 'professional',
+    'medical', 'legal', 'law', 'healthcare', 'nursing', 'psychology',
+    'research', 'science', 'biology', 'chemistry', 'physics', 'mathematics',
+    'economics', 'finance', 'accounting', 'mba', 'management', 'hr',
+    'compliance', 'regulatory', 'exam prep', 'cpa', 'pmp', 'six sigma'
+  ],
+  visual: [
+    'design', 'photography', 'video', 'editing', 'photoshop', 'illustrator',
+    'figma', 'ui', 'ux', 'graphic', 'art', 'drawing', 'painting', 'illustration',
+    'animation', 'motion', '3d', 'cinema', 'film', 'creative', 'portfolio',
+    'fashion', 'interior', 'architecture', 'branding', 'logo', 'visual'
+  ],
+};
+
+function detectTemplate(prompt: string): CourseTemplate {
+  const lowerPrompt = prompt.toLowerCase();
+  
+  const scores: Record<CourseTemplate, number> = {
+    creator: 0,
+    technical: 0,
+    academic: 0,
+    visual: 0,
+  };
+  
+  for (const [template, keywords] of Object.entries(NICHE_KEYWORDS)) {
+    for (const keyword of keywords) {
+      if (lowerPrompt.includes(keyword)) {
+        scores[template as CourseTemplate] += keyword.split(' ').length; // Weight multi-word matches higher
+      }
+    }
+  }
+  
+  // Find highest scoring template
+  let maxScore = 0;
+  let selectedTemplate: CourseTemplate = 'creator'; // Default
+  
+  for (const [template, score] of Object.entries(scores)) {
+    if (score > maxScore) {
+      maxScore = score;
+      selectedTemplate = template as CourseTemplate;
+    }
+  }
+  
+  return selectedTemplate;
 }
 
 function generateUUID(): string {
@@ -89,18 +204,41 @@ function slugify(text: string): string {
     .substring(0, 50);
 }
 
-const OPTIONAL_SECTIONS = [
-  'who-is-this-for',
-  'money-back-guarantee',
-  'meet-your-instructor',
-  'success-stories',
-  'bonus-content',
-  'community-access',
-];
+const OPTIONAL_SECTIONS: Record<CourseTemplate, string[]> = {
+  creator: [
+    'who-is-this-for',
+    'meet-your-instructor',
+    'success-stories',
+    'community-access',
+    'transformation-journey',
+  ],
+  technical: [
+    'who-is-this-for',
+    'prerequisites',
+    'tech-stack',
+    'projects-portfolio',
+    'career-outcomes',
+  ],
+  academic: [
+    'who-is-this-for',
+    'credentials',
+    'research-methodology',
+    'assessment-structure',
+    'professional-outcomes',
+  ],
+  visual: [
+    'who-is-this-for',
+    'portfolio-showcase',
+    'before-after-gallery',
+    'creative-community',
+    'tools-resources',
+  ],
+};
 
-function selectRandomSections(): string[] {
+function selectRandomSections(template: CourseTemplate): string[] {
+  const sections = OPTIONAL_SECTIONS[template];
   const count = 2 + Math.floor(Math.random() * 2); // 2-3 sections
-  const shuffled = [...OPTIONAL_SECTIONS].sort(() => Math.random() - 0.5);
+  const shuffled = [...sections].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
 
@@ -132,14 +270,26 @@ serve(async (req) => {
     const duration_weeks = options?.duration_weeks || 6;
     const includeQuizzes = options?.includeQuizzes ?? true;
     const includeAssignments = options?.includeAssignments ?? false;
+    
+    // Auto-detect template from prompt if not provided
+    const template: CourseTemplate = options?.template || detectTemplate(prompt);
+    const templateConfig = TEMPLATE_CONFIG[template];
 
-    const systemPrompt = `You are an expert course curriculum designer. Create comprehensive, engaging online courses.
+    console.log(`Detected/selected template: ${template}`);
+
+    const systemPrompt = `You are an expert course curriculum designer specializing in ${template.toUpperCase()} style courses.
+
+TEMPLATE STYLE: ${template.toUpperCase()}
+- Tone: ${templateConfig.tone}
+- Content Style: ${templateConfig.contentStyle}
+- Lesson Format: ${templateConfig.lessonFormat}
+- Copy Guidelines: ${templateConfig.copyStyle}
 
 OUTPUT FORMAT: Return ONLY valid JSON with this exact structure (no markdown, no code blocks):
 
 {
   "title": "Course Title",
-  "description": "2-3 sentence course description",
+  "description": "2-3 sentence course description in ${templateConfig.tone} tone",
   "tagline": "Short compelling tagline",
   "learningOutcomes": ["Outcome 1", "Outcome 2", "Outcome 3", "Outcome 4"],
   "modules": [
@@ -163,9 +313,9 @@ OUTPUT FORMAT: Return ONLY valid JSON with this exact structure (no markdown, no
     "hero_headline": "Transform Your Skills with This Course",
     "hero_subheadline": "Learn everything you need to know",
     "features": [
-      {"title": "Feature 1", "description": "Description", "icon": "Star"},
-      {"title": "Feature 2", "description": "Description", "icon": "Trophy"},
-      {"title": "Feature 3", "description": "Description", "icon": "Target"}
+      {"title": "Feature 1", "description": "Description", "icon": "${templateConfig.featureIcons[0]}"},
+      {"title": "Feature 2", "description": "Description", "icon": "${templateConfig.featureIcons[1]}"},
+      {"title": "Feature 3", "description": "Description", "icon": "${templateConfig.featureIcons[2]}"}
     ],
     "faqs": [
       {"question": "Question 1?", "answer": "Answer 1"},
@@ -178,13 +328,39 @@ OUTPUT FORMAT: Return ONLY valid JSON with this exact structure (no markdown, no
     "pricing": {
       "amount": 199,
       "currency": "USD",
-      "features": ["Lifetime access", "Certificate", "Community access"]
+      "features": ${JSON.stringify(templateConfig.pricingFeatures)}
     }
   },
-  "brand_color": "#6366f1"
+  "brand_color": "${templateConfig.brandColor}"
 }
 
-RULES:
+STYLE-SPECIFIC RULES FOR ${template.toUpperCase()}:
+${template === 'creator' ? `
+- Use warm, conversational language that connects emotionally
+- Include personal transformation stories in module descriptions
+- Focus on journey and personal growth outcomes
+- Use relatable, everyday examples
+- Emphasize community and support aspects` : ''}
+${template === 'technical' ? `
+- Use precise, technical terminology
+- Structure content in logical, progressive steps
+- Include hands-on exercises and coding challenges
+- Reference tools, frameworks, and technologies
+- Focus on practical, job-ready skills` : ''}
+${template === 'academic' ? `
+- Use formal, scholarly language
+- Include references to research and methodology
+- Structure content with clear learning objectives
+- Emphasize assessments and certification value
+- Focus on professional credentials and career advancement` : ''}
+${template === 'visual' ? `
+- Use evocative, creative language
+- Focus on visual outcomes and portfolio pieces
+- Include before/after transformation descriptions
+- Reference creative tools and artistic techniques
+- Emphasize inspiration and creative growth` : ''}
+
+GENERAL RULES:
 1. Create ${Math.max(3, Math.ceil(duration_weeks / 2))} modules with 4-6 lessons each
 2. Difficulty level: ${difficulty}
 3. Course duration: ${duration_weeks} weeks
@@ -193,12 +369,12 @@ RULES:
 6. Make the first lesson of the first module a preview (is_preview: true)
 7. Lesson durations: 10-30 minutes
 8. Content types: "video", "text", "quiz", "assignment"
-9. Create 4-6 learning outcomes
-10. Create 3-5 features for landing page
-11. Create 4-6 FAQs
+9. Create 4-6 learning outcomes that match the ${template} style
+10. Create 3-5 features for landing page using icons: ${templateConfig.featureIcons.join(', ')}
+11. Create 4-6 FAQs relevant to ${template} style courses
 12. Return ONLY the JSON object, no additional text`;
 
-    const userPrompt = `Create a complete course curriculum for: ${prompt}`;
+    const userPrompt = `Create a complete ${template} style course curriculum for: ${prompt}`;
 
     console.log('Calling Claude API with prompt:', userPrompt.substring(0, 100));
 
@@ -221,7 +397,6 @@ RULES:
       const errorText = await response.text();
       console.error('Claude API error:', response.status, errorText);
       
-      // Parse Anthropic error for better messaging
       let errorMessage = 'Failed to generate course. Please try again.';
       try {
         const errorJson = JSON.parse(errorText);
@@ -317,7 +492,7 @@ RULES:
     // Build the complete course object
     const courseId = generateUUID();
     const courseSlug = slugify(courseData.title);
-    const selectedSections = selectRandomSections();
+    const selectedSections = selectRandomSections(template);
 
     const course: GeneratedCourse = {
       id: courseId,
@@ -339,17 +514,19 @@ RULES:
         learningOutcomes: courseData.learningOutcomes || [],
         difficulty: difficulty,
         duration_weeks: duration_weeks,
-        brand_color: courseData.brand_color || '#6366f1',
+        brand_color: courseData.brand_color || templateConfig.brandColor,
+        template: template,
       },
       status: 'draft',
     };
 
-    console.log('Course generated successfully:', course.title);
+    console.log('Course generated successfully:', course.title, 'Template:', template);
 
     return new Response(
       JSON.stringify({
         success: true,
         course: course,
+        template: template,
         message: 'Course created successfully!',
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
