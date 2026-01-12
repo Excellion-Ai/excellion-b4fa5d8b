@@ -66,6 +66,7 @@ export interface ModuleWithContent {
 }
 
 export interface ExtendedCourse {
+  id?: string;
   title: string;
   description: string;
   tagline?: string;
