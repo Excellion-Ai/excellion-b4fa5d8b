@@ -28,8 +28,58 @@ import {
   DollarSign,
   Check,
   Settings2,
+  User,
+  GraduationCap,
+  Palette,
+  LucideIcon,
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
+
+export type CourseTemplate = 'creator' | 'technical' | 'academic' | 'visual';
+
+interface TemplateOption {
+  id: CourseTemplate;
+  title: string;
+  subtitle: string;
+  description: string;
+  icon: LucideIcon;
+  accentColor: string;
+}
+
+const TEMPLATE_OPTIONS: TemplateOption[] = [
+  {
+    id: 'creator',
+    title: 'Creator',
+    subtitle: 'Perfect for coaches & personal brands',
+    description: 'Warm, personal, story-driven',
+    icon: User,
+    accentColor: '#f59e0b',
+  },
+  {
+    id: 'technical',
+    title: 'Technical',
+    subtitle: 'Perfect for developers & technical skills',
+    description: 'Structured, precise, code-friendly',
+    icon: Code,
+    accentColor: '#6366f1',
+  },
+  {
+    id: 'academic',
+    title: 'Academic',
+    subtitle: 'Perfect for professional certification',
+    description: 'Formal, scholarly, credential-focused',
+    icon: GraduationCap,
+    accentColor: '#1e40af',
+  },
+  {
+    id: 'visual',
+    title: 'Visual',
+    subtitle: 'Perfect for creative & design skills',
+    description: 'Vibrant, image-rich, portfolio-driven',
+    icon: Palette,
+    accentColor: '#f43f5e',
+  },
+];
 
 interface GenerationStep {
   id: number;
@@ -42,6 +92,7 @@ interface CourseOptions {
   duration_weeks: number;
   includeQuizzes: boolean;
   includeAssignments: boolean;
+  template: CourseTemplate;
 }
 
 interface CourseBuilderPanelProps {
@@ -84,17 +135,24 @@ export function CourseBuilderPanel({
   previewRef,
 }: CourseBuilderPanelProps) {
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<CourseTemplate>('creator');
   const [options, setOptions] = useState<CourseOptions>({
     difficulty: 'beginner',
     duration_weeks: 6,
     includeQuizzes: true,
     includeAssignments: false,
+    template: 'creator',
   });
 
   const handleGenerate = () => {
     if (idea.trim()) {
-      onGenerate(options);
+      onGenerate({ ...options, template: selectedTemplate });
     }
+  };
+
+  const handleTemplateSelect = (template: CourseTemplate) => {
+    setSelectedTemplate(template);
+    setOptions((prev) => ({ ...prev, template }));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -206,9 +264,56 @@ export function CourseBuilderPanel({
           placeholder="Describe your course idea in detail...
 
 Example: Create a comprehensive photography course for beginners that covers camera basics, composition, lighting, and post-processing techniques."
-          className="min-h-[120px] resize-none bg-card/50 border-border focus-visible:ring-primary"
+          className="min-h-[100px] resize-none bg-card/50 border-border focus-visible:ring-primary"
           disabled={isGenerating}
         />
+
+        {/* Template Selection */}
+        {idea.trim() && !isGenerating && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-foreground">Choose Your Course Style</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {TEMPLATE_OPTIONS.map((template) => {
+                const Icon = template.icon;
+                const isSelected = selectedTemplate === template.id;
+                return (
+                  <button
+                    key={template.id}
+                    onClick={() => handleTemplateSelect(template.id)}
+                    className={`relative flex flex-col items-start p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 text-left touch-manipulation ${
+                      isSelected
+                        ? 'border-primary bg-primary/5 shadow-lg'
+                        : 'border-border/50 bg-card/30 hover:border-border hover:bg-card/50 hover:shadow-md hover:-translate-y-0.5'
+                    }`}
+                    style={{
+                      borderColor: isSelected ? template.accentColor : undefined,
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <div
+                        className="p-1.5 rounded-md"
+                        style={{ backgroundColor: `${template.accentColor}20` }}
+                      >
+                        <Icon
+                          className="h-4 w-4"
+                          style={{ color: template.accentColor }}
+                        />
+                      </div>
+                      <span className="font-semibold text-foreground text-sm">{template.title}</span>
+                      {isSelected && (
+                        <Check className="h-4 w-4 text-primary ml-auto" style={{ color: template.accentColor }} />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-0.5">{template.subtitle}</p>
+                    <p className="text-xs font-medium" style={{ color: template.accentColor }}>
+                      {template.description}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Course Options */}
         <Collapsible open={optionsOpen} onOpenChange={setOptionsOpen}>
