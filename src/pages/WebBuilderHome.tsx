@@ -260,7 +260,7 @@ const WebBuilderHome = () => {
       {/* Hero Section */}
       <main>
         <section 
-          className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-24 pb-16"
+          className="relative min-h-[100svh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden pt-20 sm:pt-24 pb-8 sm:pb-16"
           aria-label="Hero section"
         >
           {/* Video Background - No dark overlay */}
@@ -291,24 +291,24 @@ const WebBuilderHome = () => {
           </div>
 
           {/* Transparent Glass Box Container */}
-          <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6">
-            <div className="bg-background/70 backdrop-blur-xl rounded-3xl border border-white/10 p-8 sm:p-12 shadow-2xl">
+          <div className="relative z-10 w-full max-w-4xl mx-auto px-3 sm:px-6">
+            <div className="bg-background/70 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-8 lg:p-12 shadow-2xl">
               {/* Badge */}
-              <div className="flex justify-center mb-6">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-sm text-primary">
-                  <Sparkles className="w-4 h-4" />
+              <div className="flex justify-center mb-4 sm:mb-6">
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/20 border border-primary/30 text-xs sm:text-sm text-primary">
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>AI Course Builder</span>
                 </div>
               </div>
 
               {/* H1 - Main SEO Target */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight text-center">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 leading-tight text-center">
                 Turn knowledge into a course site your audience can buy from.{" "}
                 <span className="text-primary">Fast.</span>
               </h1>
 
               {/* H2 Subheadline */}
-              <h2 className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 font-normal leading-relaxed text-center">
+              <h2 className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 font-normal leading-relaxed text-center px-1">
                 Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
               </h2>
 
@@ -320,31 +320,31 @@ const WebBuilderHome = () => {
                     onChange={(e) => setPrompt(e.target.value)}
                     onKeyDown={handleKeyDown}
                     aria-label="Describe your course idea"
-                    className="w-full border border-white/10 bg-background/50 text-base min-h-[120px] p-4 pr-14 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
-                    rows={4}
+                    className="w-full border border-white/10 bg-background/50 text-sm sm:text-base min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 pr-12 sm:pr-14 focus-visible:ring-1 focus-visible:ring-primary resize-none rounded-xl"
+                    rows={3}
                   />
                   {!prompt && (
-                    <div className="absolute top-4 left-4 pointer-events-none text-muted-foreground">
+                    <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-12 pointer-events-none text-muted-foreground text-sm sm:text-base">
                       {animatedPlaceholder}
-                      <span className="inline-block w-0.5 h-5 bg-primary ml-0.5 animate-pulse align-middle" />
+                      <span className="inline-block w-0.5 h-4 sm:h-5 bg-primary ml-0.5 animate-pulse align-middle" />
                     </div>
                   )}
                   {/* Microphone button */}
                   <button
                     type="button"
-                    className="absolute bottom-4 right-4 p-2.5 rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary transition-all hover:scale-105 z-10"
+                    className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 p-2 sm:p-2.5 rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary transition-all hover:scale-105 z-10 touch-manipulation"
                     aria-label="Voice input (coming soon)"
                     title="Voice input coming soon"
                   >
-                    <Mic className="w-5 h-5" />
+                    <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
-                <div className="flex gap-3 mt-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
                   <Button 
                     onClick={() => setInterviewOpen(true)}
                     size="lg"
                     variant="outline"
-                    className="flex-1 h-12 text-base gap-2 border-primary/30 hover:bg-primary/10"
+                    className="flex-1 h-11 sm:h-12 text-sm sm:text-base gap-2 border-primary/30 hover:bg-primary/10 touch-manipulation"
                   >
                     <Zap className="w-4 h-4" />
                     Build Assist
@@ -352,7 +352,7 @@ const WebBuilderHome = () => {
                   <Button 
                     onClick={handleStart} 
                     size="lg"
-                    className="flex-1 h-12 text-base gap-2"
+                    className="flex-1 h-11 sm:h-12 text-sm sm:text-base gap-2 touch-manipulation"
                   >
                     Generate Course
                     <ArrowRight className="w-4 h-4" />
@@ -361,12 +361,12 @@ const WebBuilderHome = () => {
               </div>
 
               {/* Example Chips */}
-              <div className="flex flex-wrap justify-center gap-2 mt-6">
+              <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mt-4 sm:mt-6">
                 {suggestionChips.map((chip, index) => (
                   <button
                     key={index}
                     onClick={() => handleChipClick(chip)}
-                    className="px-4 py-2 rounded-full text-sm bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all"
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all touch-manipulation"
                   >
                     {chip}
                   </button>
@@ -377,23 +377,23 @@ const WebBuilderHome = () => {
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="py-24 px-4 border-t border-border/30">
+        <section id="how-it-works" className="py-12 sm:py-16 lg:py-24 px-4 border-t border-border/30">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
               How Excellion Works
             </h2>
-            <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base text-muted-foreground text-center mb-10 sm:mb-16 max-w-xl mx-auto">
               Three steps from idea to published course
             </p>
 
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
               {/* Step 1 */}
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">
-                  <MessageSquare className="w-7 h-7" />
+                <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-primary/10 text-primary mb-4 sm:mb-6">
+                  <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
-                <div className="text-sm font-medium text-primary mb-2">Step 1</div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">
+                <div className="text-xs sm:text-sm font-medium text-primary mb-1.5 sm:mb-2">Step 1</div>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
                   Describe your course
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
@@ -403,11 +403,11 @@ const WebBuilderHome = () => {
 
               {/* Step 2 */}
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">
-                  <Zap className="w-7 h-7" />
+                <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-primary/10 text-primary mb-4 sm:mb-6">
+                  <Zap className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
-                <div className="text-sm font-medium text-primary mb-2">Step 2</div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">
+                <div className="text-xs sm:text-sm font-medium text-primary mb-1.5 sm:mb-2">Step 2</div>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
                   AI generates everything
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
@@ -417,11 +417,11 @@ const WebBuilderHome = () => {
 
               {/* Step 3 */}
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">
-                  <Globe className="w-7 h-7" />
+                <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-primary/10 text-primary mb-4 sm:mb-6">
+                  <Globe className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
-                <div className="text-sm font-medium text-primary mb-2">Step 3</div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">
+                <div className="text-xs sm:text-sm font-medium text-primary mb-1.5 sm:mb-2">Step 3</div>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
                   Customize and publish
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
@@ -433,27 +433,27 @@ const WebBuilderHome = () => {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-24 px-4 bg-muted/30 border-t border-border/30">
+        <section id="features" className="py-12 sm:py-16 lg:py-24 px-4 bg-muted/30 border-t border-border/30">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
               Built for Course Creators
             </h2>
-            <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base text-muted-foreground text-center mb-10 sm:mb-16 max-w-xl mx-auto">
               Everything you need to create, launch, and sell online courses
             </p>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {features.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
                   <div 
                     key={index}
-                    className="p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors"
+                    className="p-4 sm:p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors"
                   >
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary mb-4">
-                      <Icon className="w-6 h-6" />
+                    <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/10 text-primary mb-3 sm:mb-4">
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1.5 sm:mb-2">
                       {feature.title}
                     </h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
@@ -467,42 +467,42 @@ const WebBuilderHome = () => {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-24 px-4 border-t border-border/30">
+        <section id="pricing" className="py-12 sm:py-16 lg:py-24 px-4 border-t border-border/30">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
               Pricing Plans
             </h2>
-            <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base text-muted-foreground text-center mb-8 sm:mb-12 max-w-xl mx-auto">
               Start free. Upgrade when you're ready to publish.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               {/* Free Plan */}
-              <div className="p-8 rounded-2xl bg-card border border-border">
+              <div className="p-5 sm:p-8 rounded-2xl bg-card border border-border">
                 <div className="text-sm font-medium text-muted-foreground mb-2">Free</div>
-                <div className="text-4xl font-bold text-foreground mb-1">$0</div>
-                <div className="text-muted-foreground text-sm mb-6">Forever free</div>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="text-3xl sm:text-4xl font-bold text-foreground mb-1">$0</div>
+                <div className="text-muted-foreground text-sm mb-4 sm:mb-6">Forever free</div>
+                <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     Generate unlimited course drafts
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     AI curriculum generation
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     Preview before publishing
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <X className="w-4 h-4 text-muted-foreground/50 shrink-0" />
                     Publishing not included
                   </li>
                 </ul>
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  className="w-full h-11 sm:h-10 touch-manipulation"
                   onClick={() => navigate("/secret-builder-hub")}
                 >
                   Get Started
@@ -510,37 +510,37 @@ const WebBuilderHome = () => {
               </div>
 
               {/* Sprint Pass */}
-              <div className="p-8 rounded-2xl bg-card border-2 border-primary relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+              <div className="p-5 sm:p-8 rounded-2xl bg-card border-2 border-primary relative mt-4 md:mt-0">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium whitespace-nowrap">
                   Best Value
                 </div>
                 <div className="text-sm font-medium text-primary mb-2">Sprint Pass</div>
-                <div className="text-4xl font-bold text-foreground mb-1">$9</div>
-                <div className="text-muted-foreground text-sm mb-6">one-time</div>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="text-3xl sm:text-4xl font-bold text-foreground mb-1">$9</div>
+                <div className="text-muted-foreground text-sm mb-4 sm:mb-6">one-time</div>
+                <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     150 generation credits
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     Publish your course site
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     Custom domain support
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     No subscription required
                   </li>
-                  <li className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-primary shrink-0" />
                     Renews to Pro if you want more
                   </li>
                 </ul>
                 <Button 
-                  className="w-full"
+                  className="w-full h-11 sm:h-10 touch-manipulation"
                   onClick={() => navigate("/pricing")}
                 >
                   View Pricing
@@ -548,8 +548,8 @@ const WebBuilderHome = () => {
               </div>
             </div>
 
-            <p className="text-center mt-8 text-sm text-muted-foreground">
-              <Link to="/pricing" className="text-primary hover:underline">
+            <p className="text-center mt-6 sm:mt-8 text-sm text-muted-foreground">
+              <Link to="/pricing" className="text-primary hover:underline touch-manipulation">
                 See full pricing details →
               </Link>
             </p>
@@ -557,26 +557,26 @@ const WebBuilderHome = () => {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-24 px-4 bg-muted/30 border-t border-border/30">
+        <section id="faq" className="py-12 sm:py-16 lg:py-24 px-4 bg-muted/30 border-t border-border/30">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-center mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
               Frequently Asked Questions
             </h2>
-            <p className="text-muted-foreground text-center mb-12">
+            <p className="text-sm sm:text-base text-muted-foreground text-center mb-8 sm:mb-12">
               Everything you need to know about Excellion
             </p>
 
-            <Accordion type="single" collapsible className="space-y-4">
+            <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
               {faqItems.map((item, index) => (
                 <AccordionItem 
                   key={index} 
                   value={`item-${index}`}
-                  className="bg-card border border-border rounded-xl px-6"
+                  className="bg-card border border-border rounded-xl px-4 sm:px-6"
                 >
-                  <AccordionTrigger className="text-left text-foreground hover:no-underline py-5">
+                  <AccordionTrigger className="text-left text-foreground hover:no-underline py-4 sm:py-5 text-sm sm:text-base">
                     {item.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-5">
+                  <AccordionContent className="text-muted-foreground pb-4 sm:pb-5 text-sm">
                     {item.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -586,18 +586,18 @@ const WebBuilderHome = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-24 px-4 border-t border-border/30">
+        <section className="py-12 sm:py-16 lg:py-24 px-4 border-t border-border/30">
           <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4">
               Ready to create your course?
             </h2>
-            <p className="text-muted-foreground mb-8">
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
               Join thousands of creators who use Excellion to build and sell online courses.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
               <Button 
                 size="lg"
-                className="h-12 px-8 gap-2"
+                className="w-full sm:w-auto h-12 px-8 gap-2 touch-manipulation"
                 onClick={() => navigate("/secret-builder-hub")}
               >
                 Get Started Free
@@ -606,7 +606,7 @@ const WebBuilderHome = () => {
               <Button 
                 variant="outline"
                 size="lg"
-                className="h-12 px-8"
+                className="w-full sm:w-auto h-12 px-8 touch-manipulation"
                 onClick={() => user ? navigate("/auth") : navigate("/auth")}
               >
                 Login
@@ -620,9 +620,9 @@ const WebBuilderHome = () => {
 
       {/* Build Assist Dialog */}
       <Dialog open={interviewOpen} onOpenChange={setInterviewOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-lg mx-auto rounded-2xl sm:rounded-xl">
           <DialogHeader>
-            <DialogTitle>Build Assist</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Build Assist</DialogTitle>
           </DialogHeader>
           <InterviewStepper
             step={interview.step}

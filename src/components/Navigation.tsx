@@ -88,20 +88,20 @@ const Navigation = () => {
   
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
-      <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-3 transition-transform duration-300 hover:scale-105" aria-label="Excellion Home">
+      <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-6">
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 transition-transform duration-300 hover:scale-105" aria-label="Excellion Home">
           <img 
             src={excellionLogo} 
             alt="Excellion company logo" 
-            className="h-8 w-8 sm:h-10 sm:w-10" 
+            className="h-7 w-7 sm:h-10 sm:w-10" 
             width="40" 
             height="40"
             loading="eager"
           />
-          <span className="text-lg sm:text-xl font-bold text-foreground">Excellion</span>
+          <span className="text-base sm:text-xl font-bold text-foreground">Excellion</span>
         </Link>
           
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
           <a href="/#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             How it Works
           </a>
@@ -113,7 +113,7 @@ const Navigation = () => {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden md:flex items-center gap-3">
             {isAdmin && (
               <Link to="/admin">
@@ -145,34 +145,47 @@ const Navigation = () => {
 
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="sm" aria-label="Open navigation menu">
+              <Button variant="ghost" size="sm" className="h-9 w-9 p-0 touch-manipulation" aria-label="Open navigation menu">
                 <Menu className="h-5 w-5" aria-hidden="true" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px]">
-              <div className="flex flex-col gap-6 mt-8">
-                <a 
-                  href="/#how-it-works" 
-                  className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                >
-                  How it Works
-                </a>
-                <Link 
-                  to="/pricing" 
-                  className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                >
-                  Pricing
-                </Link>
-                <Link 
-                  to="/builder-faq" 
-                  className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                >
-                  FAQ
-                </Link>
-                <div className="pt-6 border-t border-border flex flex-col gap-3">
+            <SheetContent side="right" className="w-[85vw] max-w-[320px] p-0">
+              <div className="flex flex-col h-full">
+                {/* Header */}
+                <div className="p-4 border-b border-border/50">
+                  <div className="flex items-center gap-2">
+                    <img src={excellionLogo} alt="Excellion" className="h-6 w-6" />
+                    <span className="font-semibold text-foreground">Excellion</span>
+                  </div>
+                </div>
+                
+                {/* Navigation Links */}
+                <div className="flex flex-col p-4 gap-1">
+                  <a 
+                    href="/#how-it-works" 
+                    className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
+                  >
+                    How it Works
+                  </a>
+                  <Link 
+                    to="/pricing" 
+                    className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
+                  >
+                    Pricing
+                  </Link>
+                  <Link 
+                    to="/builder-faq" 
+                    className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
+                  >
+                    FAQ
+                  </Link>
+                </div>
+                
+                {/* User Section */}
+                <div className="mt-auto p-4 border-t border-border/50 space-y-3">
                   {isAdmin && (
                     <Link to="/admin">
-                      <Button variant="ghost" size="sm" className="w-full gap-2">
+                      <Button variant="ghost" size="lg" className="w-full justify-start gap-2 h-12 touch-manipulation">
                         <Shield className="h-4 w-4" />
                         Admin
                       </Button>
@@ -181,19 +194,19 @@ const Navigation = () => {
                   {!loading && (
                     user ? (
                       <>
-                        <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground rounded-lg bg-secondary/30">
                           <User className="h-4 w-4" />
                           <span className="truncate">{user.email}</span>
                         </div>
                         <Link to="/billing">
-                          <Button variant="ghost" size="sm" className="w-full">
+                          <Button variant="ghost" size="lg" className="w-full justify-start h-12 touch-manipulation">
                             Billing
                           </Button>
                         </Link>
                         <Button 
                           variant="ghost" 
-                          size="sm" 
-                          className="w-full text-destructive" 
+                          size="lg" 
+                          className="w-full justify-start text-destructive h-12 touch-manipulation" 
                           onClick={handleSignOut}
                         >
                           <LogOut className="h-4 w-4 mr-2" />
@@ -202,15 +215,15 @@ const Navigation = () => {
                       </>
                     ) : (
                       <Link to="/auth">
-                        <Button variant="ghost" size="sm" className="w-full">
+                        <Button variant="ghost" size="lg" className="w-full justify-start h-12 touch-manipulation">
                           Sign In
                         </Button>
                       </Link>
                     )
                   )}
                   <Button 
-                    size="sm" 
-                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                    size="lg" 
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-12 touch-manipulation"
                     onClick={handleStartBuilding}
                   >
                     Start Building

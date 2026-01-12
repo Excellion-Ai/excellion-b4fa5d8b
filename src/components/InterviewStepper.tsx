@@ -64,13 +64,13 @@ function ChipGroup<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5 sm:gap-2">
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+          className={`px-3 sm:px-4 py-2 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all border touch-manipulation ${
             value === option.value
               ? 'bg-primary text-primary-foreground border-primary'
               : 'bg-background/50 text-foreground/80 border-border/50 hover:border-primary/50 hover:bg-background/70'
@@ -243,7 +243,7 @@ export function InterviewStepper({
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground h-10 touch-manipulation"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Back
@@ -251,12 +251,12 @@ export function InterviewStepper({
           )}
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {step === 5 && (
             <button
               type="button"
               onClick={onSkip}
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="text-sm text-muted-foreground hover:text-foreground px-2 py-2 touch-manipulation"
             >
               Skip
             </button>
@@ -266,7 +266,7 @@ export function InterviewStepper({
             <Button
               onClick={onSubmit}
               disabled={!canSubmit || isGenerating}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 h-10 sm:h-9 px-4 touch-manipulation"
             >
               {isGenerating ? (
                 <>
@@ -284,7 +284,7 @@ export function InterviewStepper({
             <Button
               onClick={onNext}
               disabled={!canProceed}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 h-10 sm:h-9 px-4 touch-manipulation"
             >
               Next
               <ChevronRight className="w-4 h-4 ml-1" />
