@@ -41,8 +41,17 @@ import {
   Download,
   MessageCircle,
   Star,
+  Code,
+  Palette,
 } from 'lucide-react';
-import { ExtendedCourse, ModuleWithContent, LessonContent, calculateModuleDuration, CoursePage } from '@/types/course-pages';
+import { 
+  ExtendedCourse, 
+  ModuleWithContent, 
+  LessonContent, 
+  getLayoutStyleConfig,
+  formatSectionNumber,
+  CourseLayoutStyle,
+} from '@/types/course-pages';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
 
@@ -74,6 +83,38 @@ const PAGE_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType 
   testimonials: { label: 'Testimonials', icon: Star },
 };
 
+// Accent color classes for each template style
+const ACCENT_CLASSES = {
+  amber: { 
+    bg: 'bg-amber-500', 
+    text: 'text-amber-500', 
+    border: 'border-amber-500',
+    bgLight: 'bg-amber-500/20',
+    borderLight: 'border-amber-500/30',
+  },
+  emerald: { 
+    bg: 'bg-emerald-500', 
+    text: 'text-emerald-500', 
+    border: 'border-emerald-500',
+    bgLight: 'bg-emerald-500/20',
+    borderLight: 'border-emerald-500/30',
+  },
+  blue: { 
+    bg: 'bg-blue-500', 
+    text: 'text-blue-500', 
+    border: 'border-blue-500',
+    bgLight: 'bg-blue-500/20',
+    borderLight: 'border-blue-500/30',
+  },
+  violet: { 
+    bg: 'bg-violet-500', 
+    text: 'text-violet-500', 
+    border: 'border-violet-500',
+    bgLight: 'bg-violet-500/20',
+    borderLight: 'border-violet-500/30',
+  },
+} as const;
+
 const LessonTypeIcon = ({ type, size = 'sm' }: { type: string; size?: 'sm' | 'lg' }) => {
   const sizeClass = size === 'lg' ? 'w-5 h-5' : 'w-4 h-4';
   const icons: Record<string, React.ReactNode> = {
@@ -102,16 +143,21 @@ export function CoursePreviewTabs({
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const isMobile = useIsMobile();
 
+  // Get template-specific layout configuration
+  const layoutStyle = (course.layout_style || 'creator') as CourseLayoutStyle;
+  const config = getLayoutStyleConfig(layoutStyle);
+  const accent = ACCENT_CLASSES[config.accentColor as keyof typeof ACCENT_CLASSES] || ACCENT_CLASSES.amber;
+
   // Build dynamic tabs based on course configuration
   const TABS = [...BASE_TABS];
   if (course.separatePages && course.isMultiPage) {
     for (const page of course.separatePages) {
       if (page.isEnabled && PAGE_TYPE_CONFIG[page.type]) {
-        const config = PAGE_TYPE_CONFIG[page.type];
+        const pageConfig = PAGE_TYPE_CONFIG[page.type];
         TABS.push({
           id: page.type as TabType,
-          label: page.title || config.label,
-          icon: config.icon,
+          label: page.title || pageConfig.label,
+          icon: pageConfig.icon,
         });
       }
     }
@@ -208,16 +254,276 @@ export function CoursePreviewTabs({
     selectedLessonIdx === (currentModule?.lessons.length || 1) - 1;
   const currentLessonComplete = currentLesson ? isLessonComplete(currentLesson.id) : false;
 
-  // Landing Page Content
-  const renderLandingPage = () => (
+  // ===================
+  // MODULE RENDERERS - Template-specific layouts
+  // ===================
+
+  // Timeline Layout (Creator Template) - Vertical line with dots
+  const renderTimelineModules = () => (
+    <div className="relative space-y-0">
+      {/* Timeline vertical line */}
+      <div className={`absolute left-4 top-6 bottom-6 w-0.5 ${accent.bgLight}`} />
+      
+      {course.modules.map((module, moduleIdx) => {
+        const modProgress = moduleProgress.find(p => p.moduleId === module.id);
+        return (
+          <div key={module.id} className="relative pl-10 pb-6 last:pb-0">
+            {/* Timeline dot */}
+            <div className={`absolute left-2.5 top-2 w-3 h-3 rounded-full ${
+              modProgress?.isComplete ? 'bg-green-500' : accent.bg
+            }`} />
+            
+            <Card className={`${config.cardClass} border-border`}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <CardTitle className={`text-base ${config.headingClass}`}>{module.title}</CardTitle>
+                  {modProgress && modProgress.completedLessons > 0 && (
+                    <Badge className={`${accent.bgLight} ${accent.text} text-xs`}>
+                      {modProgress.completedLessons}/{modProgress.totalLessons}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {module.lessons.map((lesson, lessonIdx) => {
+                    const isComplete = isLessonComplete(lesson.id);
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                        className={`flex items-center justify-between w-full p-3 rounded-lg border transition-colors text-left touch-manipulation ${
+                          isComplete
+                            ? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
+                            : `bg-muted/30 border-border/50 hover:${accent.borderLight} hover:bg-muted/50`
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {isComplete ? (
+                            <CheckCircle2 className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <LessonTypeIcon type={lesson.type} />
+                          )}
+                          <span className={`text-sm font-medium ${isComplete ? 'text-green-400' : 'text-foreground'}`}>
+                            {lesson.title}
+                          </span>
+                          {lesson.is_preview && (
+                            <Badge className={`${accent.bgLight} ${accent.text} border-${accent.border}/30 text-xs`}>
+                              Free Preview
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {lesson.duration}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  // Accordion Layout (Technical Template) - Collapsible sections
+  const renderAccordionModules = () => (
+    <Accordion type="multiple" className="space-y-3">
+      {course.modules.map((module, moduleIdx) => {
+        const modProgress = moduleProgress.find(p => p.moduleId === module.id);
+        return (
+          <AccordionItem 
+            key={module.id} 
+            value={module.id}
+            className={`${config.cardClass} border rounded-lg px-4`}
+          >
+            <AccordionTrigger className="hover:no-underline py-4">
+              <div className="flex items-center gap-3 text-left">
+                <span className={`flex items-center justify-center w-8 h-8 rounded font-mono text-sm shrink-0 ${
+                  modProgress?.isComplete 
+                    ? 'bg-green-500/20 text-green-400' 
+                    : `${accent.bgLight} ${accent.text}`
+                }`}>
+                  {modProgress?.isComplete ? <Check className="w-4 h-4" /> : `0${moduleIdx + 1}`}
+                </span>
+                <div>
+                  <p className={`font-medium ${config.headingClass}`}>{module.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {module.lessons.length} lessons • {modProgress?.completedLessons || 0} completed
+                  </p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <div className="space-y-1 ml-11">
+                {module.lessons.map((lesson, lessonIdx) => {
+                  const isComplete = isLessonComplete(lesson.id);
+                  return (
+                    <button
+                      key={lesson.id}
+                      onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                      className={`flex items-center justify-between w-full p-2 rounded text-left text-sm font-mono transition-colors touch-manipulation ${
+                        isComplete
+                          ? 'text-green-400 hover:bg-green-500/10'
+                          : `text-foreground/80 hover:${accent.bgLight}`
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Code className="w-3 h-3 opacity-50" />
+                        <span>{lesson.title}</span>
+                      </div>
+                      <span className="text-xs opacity-60">{lesson.duration}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        );
+      })}
+    </Accordion>
+  );
+
+  // Numbered Layout (Academic Template) - Formal section numbers
+  const renderNumberedModules = () => (
     <div className="space-y-6">
+      {course.modules.map((module, moduleIdx) => {
+        const modProgress = moduleProgress.find(p => p.moduleId === module.id);
+        return (
+          <Card key={module.id} className={`${config.cardClass} border-border`}>
+            <CardHeader className="pb-3">
+              <div className="flex items-start gap-4">
+                <span className={`text-2xl font-serif font-bold ${accent.text}`}>
+                  {formatSectionNumber(moduleIdx)}
+                </span>
+                <div className="flex-1">
+                  <CardTitle className={`text-lg ${config.headingClass}`}>{module.title}</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
+                  {modProgress && (
+                    <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                      <Progress value={(modProgress.completedLessons / modProgress.totalLessons) * 100} className="w-24 h-1" />
+                      <span>{modProgress.completedLessons}/{modProgress.totalLessons} complete</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="border-l-2 border-border ml-4 pl-6 space-y-3">
+                {module.lessons.map((lesson, lessonIdx) => {
+                  const isComplete = isLessonComplete(lesson.id);
+                  return (
+                    <button
+                      key={lesson.id}
+                      onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                      className={`flex items-start gap-3 w-full text-left transition-colors touch-manipulation group ${
+                        isComplete ? 'opacity-70' : ''
+                      }`}
+                    >
+                      <span className={`text-sm font-serif ${accent.text}`}>
+                        {formatSectionNumber(moduleIdx, lessonIdx)}
+                      </span>
+                      <div className="flex-1">
+                        <p className={`text-sm font-medium group-hover:${accent.text} transition-colors ${
+                          isComplete ? 'line-through text-muted-foreground' : 'text-foreground'
+                        }`}>
+                          {lesson.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{lesson.duration}</p>
+                      </div>
+                      {isComplete && <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+      
+      {/* Certificate badge for academic style */}
+      {config.showCertificate && (
+        <Card className={`${config.cardClass} border-${accent.border}/30`}>
+          <CardContent className="py-6 text-center">
+            <Award className={`w-12 h-12 mx-auto mb-3 ${accent.text}`} />
+            <h3 className={`text-lg font-serif font-semibold ${config.headingClass}`}>Certificate of Completion</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Complete all modules to earn your certificate
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+
+  // Grid Layout (Visual Template) - Card-based grid
+  const renderGridModules = () => (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {course.modules.map((module, moduleIdx) => {
+        const modProgress = moduleProgress.find(p => p.moduleId === module.id);
+        return (
+          <Card 
+            key={module.id} 
+            className={`${config.cardClass} border-border overflow-hidden group hover:border-${accent.border}/50 transition-all cursor-pointer`}
+            onClick={() => handleLessonClick(moduleIdx, 0)}
+          >
+            {/* Visual gradient header */}
+            <div className={`h-24 bg-gradient-to-br from-${config.accentColor}-500/30 to-${config.accentColor}-600/10 flex items-center justify-center`}>
+              <div className={`w-16 h-16 rounded-full ${accent.bgLight} flex items-center justify-center`}>
+                <Palette className={`w-8 h-8 ${accent.text}`} />
+              </div>
+            </div>
+            
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className={`font-bold ${config.headingClass}`}>{module.title}</h3>
+                {modProgress?.isComplete && (
+                  <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{module.description}</p>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  {module.lessons.length} lessons
+                </span>
+                {modProgress && modProgress.completedLessons > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Progress 
+                      value={(modProgress.completedLessons / modProgress.totalLessons) * 100} 
+                      className="w-16 h-1.5"
+                    />
+                    <span className={`text-xs ${accent.text}`}>
+                      {Math.round((modProgress.completedLessons / modProgress.totalLessons) * 100)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+
+  // ===================
+  // TAB CONTENT RENDERERS
+  // ===================
+
+  // Landing Page Content - Template-aware
+  const renderLandingPage = () => (
+    <div className={`space-y-6 ${config.containerClass}`}>
       {/* Hero Section */}
       <div 
-        className="relative rounded-xl overflow-hidden p-6 sm:p-8 md:p-12"
+        className={`relative rounded-xl overflow-hidden p-6 sm:p-8 md:p-12 ${config.cardClass}`}
         style={{ 
           background: course.brand_color 
             ? `linear-gradient(135deg, ${course.brand_color}30 0%, hsl(var(--background)) 100%)`
-            : 'linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, hsl(var(--background)) 100%)'
+            : `linear-gradient(135deg, hsl(var(--${config.accentColor === 'amber' ? 'primary' : config.accentColor}-500) / 0.2) 0%, hsl(var(--background)) 100%)`
         }}
       >
         {course.thumbnail && (
@@ -226,14 +532,14 @@ export function CoursePreviewTabs({
           </div>
         )}
         <div className="relative z-10 max-w-2xl">
-          <Badge className="bg-primary/20 text-primary border-primary/30 mb-4">
+          <Badge className={`${accent.bgLight} ${accent.text} ${accent.borderLight} mb-4`}>
             {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)} Level
           </Badge>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3">
+          <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-3 ${config.headingClass}`}>
             {course.title}
           </h1>
           {course.tagline && (
-            <p className="text-lg sm:text-xl font-medium text-primary mb-4">{course.tagline}</p>
+            <p className={`text-lg sm:text-xl font-medium ${accent.text} mb-4`}>{course.tagline}</p>
           )}
           <p className="text-muted-foreground mb-6">{course.description}</p>
           <div className="flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground">
@@ -252,7 +558,7 @@ export function CoursePreviewTabs({
           </div>
           <Button 
             size="lg" 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+            className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
             onClick={() => setActiveTab('curriculum')}
           >
             Enroll Now
@@ -263,10 +569,10 @@ export function CoursePreviewTabs({
 
       {/* What You'll Learn */}
       {course.learningOutcomes && course.learningOutcomes.length > 0 && (
-        <Card className="bg-card border-border">
+        <Card className={`${config.cardClass} border-border`}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-primary" />
+            <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
+              <Target className={`w-5 h-5 ${accent.text}`} />
               What You'll Learn
             </CardTitle>
           </CardHeader>
@@ -274,7 +580,7 @@ export function CoursePreviewTabs({
             <ul className="grid gap-3 sm:grid-cols-2">
               {course.learningOutcomes.map((outcome, idx) => (
                 <li key={idx} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-400 mt-0.5 shrink-0" />
+                  <Check className={`w-5 h-5 ${accent.text} mt-0.5 shrink-0`} />
                   <span className="text-foreground/90 text-sm">{outcome}</span>
                 </li>
               ))}
@@ -283,11 +589,11 @@ export function CoursePreviewTabs({
         </Card>
       )}
 
-      {/* Curriculum Overview */}
-      <Card className="bg-card border-border">
+      {/* Curriculum Overview - Template-specific */}
+      <Card className={`${config.cardClass} border-border`}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-primary" />
+          <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
+            <BookOpen className={`w-5 h-5 ${accent.text}`} />
             Course Curriculum
           </CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -299,14 +605,22 @@ export function CoursePreviewTabs({
             {course.modules.map((module, idx) => (
               <div 
                 key={module.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50"
+                className={`flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 hover:${accent.borderLight} transition-colors cursor-pointer`}
+                onClick={() => {
+                  setSelectedModuleIdx(idx);
+                  setActiveTab('curriculum');
+                }}
               >
                 <div className="flex items-center gap-3">
-                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-medium">
-                    {idx + 1}
+                  <span className={`flex items-center justify-center w-7 h-7 rounded-full ${accent.bgLight} ${accent.text} text-sm font-medium ${
+                    layoutStyle === 'technical' ? 'font-mono' : ''
+                  }`}>
+                    {layoutStyle === 'academic' ? formatSectionNumber(idx).replace('.0', '') : idx + 1}
                   </span>
                   <div>
-                    <p className="font-medium text-foreground text-sm">{module.title}</p>
+                    <p className={`font-medium text-foreground text-sm ${
+                      layoutStyle === 'technical' ? 'font-mono' : ''
+                    }`}>{module.title}</p>
                     <p className="text-xs text-muted-foreground">{module.lessons.length} lessons</p>
                   </div>
                 </div>
@@ -319,10 +633,10 @@ export function CoursePreviewTabs({
 
       {/* FAQ Section */}
       {course.pages?.faq && course.pages.faq.length > 0 && (
-        <Card className="bg-card border-border">
+        <Card className={`${config.cardClass} border-border`}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-primary" />
+            <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
+              <HelpCircle className={`w-5 h-5 ${accent.text}`} />
               Frequently Asked Questions
             </CardTitle>
           </CardHeader>
@@ -332,7 +646,7 @@ export function CoursePreviewTabs({
                 <AccordionItem 
                   key={idx} 
                   value={`faq-${idx}`}
-                  className="bg-muted/20 border border-border/50 rounded-lg px-4"
+                  className={`bg-muted/20 border ${accent.borderLight} rounded-lg px-4`}
                 >
                   <AccordionTrigger className="hover:no-underline py-3 text-sm font-medium">
                     {faq.question}
@@ -348,13 +662,13 @@ export function CoursePreviewTabs({
       )}
 
       {/* Final CTA */}
-      <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
+      <Card className={`bg-gradient-to-r from-${config.accentColor}-500/10 to-${config.accentColor}-600/5 ${accent.borderLight}`}>
         <CardContent className="py-8 text-center">
-          <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">Ready to Start?</h3>
+          <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${config.headingClass}`}>Ready to Start?</h3>
           <p className="text-muted-foreground mb-6">Join thousands of students already learning</p>
           <Button 
             size="lg" 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+            className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
             onClick={() => setActiveTab('curriculum')}
           >
             <Sparkles className="w-5 h-5 mr-2" />
@@ -365,12 +679,12 @@ export function CoursePreviewTabs({
     </div>
   );
 
-  // Curriculum Content
+  // Curriculum Content - Uses template-specific module renderer
   const renderCurriculum = () => (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${config.containerClass}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground">{course.title}</h2>
+          <h2 className={`text-xl sm:text-2xl font-bold ${config.headingClass}`}>{course.title}</h2>
           <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
@@ -389,139 +703,81 @@ export function CoursePreviewTabs({
         {progressPercent > 0 && (
           <div className="flex items-center gap-3">
             <Progress value={progressPercent} className="w-32 h-2" />
-            <span className="text-sm font-medium text-primary">{progressPercent}%</span>
+            <span className={`text-sm font-medium ${accent.text}`}>{progressPercent}%</span>
           </div>
         )}
       </div>
 
-      <div className="space-y-4">
-        {course.modules.map((module, moduleIdx) => {
-          const modProgress = moduleProgress.find(p => p.moduleId === module.id);
-          return (
-            <Card key={module.id} className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <div className="flex items-start gap-3">
-                  <span className={`flex items-center justify-center w-8 h-8 rounded-full font-semibold shrink-0 ${
-                    modProgress?.isComplete 
-                      ? 'bg-green-500/20 text-green-400' 
-                      : 'bg-primary/20 text-primary'
-                  }`}>
-                    {modProgress?.isComplete ? <Check className="w-4 h-4" /> : moduleIdx + 1}
-                  </span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-base">{module.title}</CardTitle>
-                      {modProgress && modProgress.completedLessons > 0 && (
-                        <Badge className="bg-muted text-muted-foreground text-xs">
-                          {modProgress.completedLessons}/{modProgress.totalLessons}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{module.description}</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2 ml-11">
-                  {module.lessons.map((lesson, lessonIdx) => {
-                    const isComplete = isLessonComplete(lesson.id);
-                    return (
-                      <button
-                        key={lesson.id}
-                        onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
-                        className={`flex items-center justify-between w-full p-3 rounded-lg border transition-colors text-left touch-manipulation ${
-                          isComplete
-                            ? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
-                            : 'bg-muted/30 border-border/50 hover:border-primary/50 hover:bg-muted/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {isComplete ? (
-                            <CheckCircle2 className="w-4 h-4 text-green-400" />
-                          ) : (
-                            <LessonTypeIcon type={lesson.type} />
-                          )}
-                          <span className={`text-sm font-medium ${isComplete ? 'text-green-400' : 'text-foreground'}`}>
-                            {lesson.title}
-                          </span>
-                          {lesson.is_preview && (
-                            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
-                              Free Preview
-                            </Badge>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {lesson.duration}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Template-specific module layout */}
+      {config.moduleLayout === 'timeline' && renderTimelineModules()}
+      {config.moduleLayout === 'accordion' && renderAccordionModules()}
+      {config.moduleLayout === 'numbered' && renderNumberedModules()}
+      {config.moduleLayout === 'grid' && renderGridModules()}
     </div>
   );
 
   // Lesson Preview Content
   const renderLessonPreview = () => (
-    <div className="flex flex-col lg:flex-row gap-6 h-full">
+    <div className={`flex flex-col lg:flex-row gap-4 ${config.containerClass}`}>
       {/* Sidebar - 30% on desktop */}
       <div className="lg:w-[30%] shrink-0">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
+        <Card className={`${config.cardClass} border-border`}>
+          <CardHeader className="py-3 px-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm">Course Content</CardTitle>
-              <Badge className="text-xs bg-primary/20 text-primary">
-                {completedLessonCount}/{totalLessons}
-              </Badge>
+              <CardTitle className={`text-sm ${config.headingClass}`}>Course Content</CardTitle>
+              {progressPercent > 0 && (
+                <span className={`text-xs font-medium ${accent.text}`}>{progressPercent}%</span>
+              )}
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[300px] lg:h-[500px]">
-              <div className="p-3 space-y-2">
+            <ScrollArea className="h-[300px] lg:h-[calc(100vh-400px)]">
+              <div className="p-2 space-y-2">
                 {course.modules.map((module, moduleIdx) => {
                   const modProgress = moduleProgress.find(p => p.moduleId === module.id);
                   return (
                     <div key={module.id} className="space-y-1">
-                      <p className={`text-xs font-medium px-2 py-1 flex items-center gap-2 ${
-                        modProgress?.isComplete ? 'text-green-400' : 'text-muted-foreground'
-                      }`}>
-                        {modProgress?.isComplete && <CheckCircle2 className="w-3 h-3" />}
-                        Module {moduleIdx + 1}: {module.title}
-                      </p>
-                      {module.lessons.map((lesson, lessonIdx) => {
-                        const isActive = moduleIdx === selectedModuleIdx && lessonIdx === selectedLessonIdx;
-                        const isComplete = isLessonComplete(lesson.id);
-                        return (
-                          <button
-                            key={lesson.id}
-                            onClick={() => {
-                              setSelectedModuleIdx(moduleIdx);
-                              setSelectedLessonIdx(lessonIdx);
-                            }}
-                            className={`flex items-center gap-2 w-full p-2 rounded text-left text-xs transition-colors touch-manipulation ${
-                              isActive
-                                ? 'bg-primary/20 text-primary border border-primary/30'
-                                : isComplete
-                                  ? 'text-green-400 hover:bg-green-500/10'
-                                  : 'hover:bg-muted/50 text-muted-foreground'
-                            }`}
-                          >
-                            {isComplete ? (
-                              <CheckCircle2 className="w-3 h-3 shrink-0 text-green-400" />
-                            ) : isActive ? (
-                              <Play className="w-3 h-3 shrink-0" />
-                            ) : (
-                              <Circle className="w-3 h-3 shrink-0" />
-                            )}
-                            <span className="truncate">{lesson.title}</span>
-                          </button>
-                        );
-                      })}
+                      <div className="flex items-center gap-2 p-2">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                          modProgress?.isComplete 
+                            ? 'bg-green-500/20 text-green-400' 
+                            : `${accent.bgLight} ${accent.text}`
+                        }`}>
+                          {modProgress?.isComplete ? <Check className="w-3 h-3" /> : moduleIdx + 1}
+                        </span>
+                        <span className={`text-xs font-medium truncate ${config.headingClass}`}>{module.title}</span>
+                      </div>
+                      <div className="ml-5 space-y-0.5">
+                        {module.lessons.map((lesson, lessonIdx) => {
+                          const isActive = selectedModuleIdx === moduleIdx && selectedLessonIdx === lessonIdx;
+                          const isComplete = isLessonComplete(lesson.id);
+                          return (
+                            <button
+                              key={lesson.id}
+                              onClick={() => {
+                                setSelectedModuleIdx(moduleIdx);
+                                setSelectedLessonIdx(lessonIdx);
+                              }}
+                              className={`flex items-center gap-2 w-full p-2 rounded text-left text-xs transition-colors touch-manipulation ${
+                                isActive
+                                  ? `${accent.bgLight} ${accent.text} border ${accent.borderLight}`
+                                  : isComplete
+                                    ? 'text-green-400 hover:bg-green-500/10'
+                                    : 'hover:bg-muted/50 text-muted-foreground'
+                              }`}
+                            >
+                              {isComplete ? (
+                                <CheckCircle2 className="w-3 h-3 shrink-0 text-green-400" />
+                              ) : isActive ? (
+                                <Play className="w-3 h-3 shrink-0" />
+                              ) : (
+                                <Circle className="w-3 h-3 shrink-0" />
+                              )}
+                              <span className="truncate">{lesson.title}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 })}
@@ -541,7 +797,7 @@ export function CoursePreviewTabs({
                 <p className="text-xs text-muted-foreground mb-1">
                   Module {selectedModuleIdx + 1} • Lesson {selectedLessonIdx + 1}
                 </p>
-                <h2 className="text-xl font-bold text-foreground">{currentLesson.title}</h2>
+                <h2 className={`text-xl font-bold ${config.headingClass}`}>{currentLesson.title}</h2>
                 <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
                   <LessonTypeIcon type={currentLesson.type} />
                   <span className="capitalize">{currentLesson.type}</span>
@@ -559,31 +815,33 @@ export function CoursePreviewTabs({
             </div>
 
             {/* Content Area */}
-            <Card className="bg-card border-border">
+            <Card className={`${config.cardClass} border-border`}>
               <CardContent className="py-6">
                 {currentLesson.type === 'video' ? (
                   <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center">
                     <div className="text-center">
-                      <Play className="w-12 h-12 text-primary mx-auto mb-2" />
+                      <Play className={`w-12 h-12 ${accent.text} mx-auto mb-2`} />
                       <p className="text-muted-foreground text-sm">Video Player</p>
                     </div>
                   </div>
                 ) : currentLesson.type === 'quiz' ? (
                   <div className="text-center py-8">
-                    <HelpCircle className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Quiz: {currentLesson.title}</h3>
+                    <HelpCircle className={`w-12 h-12 ${accent.text} mx-auto mb-4`} />
+                    <h3 className={`text-lg font-semibold mb-2 ${config.headingClass}`}>Quiz: {currentLesson.title}</h3>
                     <p className="text-muted-foreground text-sm mb-4">Test your knowledge</p>
-                    <Button className="bg-blue-500 hover:bg-blue-600">Start Quiz</Button>
+                    <Button className={`${accent.bg} hover:opacity-90`}>Start Quiz</Button>
                   </div>
                 ) : currentLesson.type === 'assignment' ? (
                   <div className="text-center py-8">
-                    <ClipboardCheck className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Assignment: {currentLesson.title}</h3>
+                    <ClipboardCheck className={`w-12 h-12 ${accent.text} mx-auto mb-4`} />
+                    <h3 className={`text-lg font-semibold mb-2 ${config.headingClass}`}>Assignment: {currentLesson.title}</h3>
                     <p className="text-muted-foreground text-sm mb-4">Complete this hands-on exercise</p>
-                    <Button className="bg-purple-500 hover:bg-purple-600">View Assignment</Button>
+                    <Button className={`${accent.bg} hover:opacity-90`}>View Assignment</Button>
                   </div>
                 ) : (
-                  <div className="prose prose-invert prose-sm max-w-none">
+                  <div className={`prose prose-invert prose-sm max-w-none ${
+                    layoutStyle === 'technical' ? 'font-mono' : ''
+                  }`}>
                     {currentLesson.content_markdown ? (
                       <div className="whitespace-pre-wrap text-foreground/90">
                         {currentLesson.content_markdown}
@@ -661,14 +919,14 @@ export function CoursePreviewTabs({
     const isComplete = progressPercent === 100;
     
     return (
-      <div className="space-y-6">
+      <div className={`space-y-6 ${config.containerClass}`}>
         {/* Welcome Message */}
         <div className={`rounded-xl p-6 border ${
           isComplete 
             ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20'
-            : 'bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20'
+            : `bg-gradient-to-r from-${config.accentColor}-500/10 to-${config.accentColor}-600/5 ${accent.borderLight}`
         }`}>
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+          <h2 className={`text-xl sm:text-2xl font-bold mb-2 ${config.headingClass}`}>
             {isComplete ? '🎉 Congratulations!' : `Welcome to ${course.title}!`}
           </h2>
           <p className="text-muted-foreground">
@@ -680,10 +938,10 @@ export function CoursePreviewTabs({
         </div>
 
         {/* Progress Bar */}
-        <Card className="bg-card border-border">
+        <Card className={`${config.cardClass} border-border`}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Award className={`w-5 h-5 ${isComplete ? 'text-green-400' : 'text-primary'}`} />
+            <CardTitle className={`text-base flex items-center gap-2 ${config.headingClass}`}>
+              <Award className={`w-5 h-5 ${isComplete ? 'text-green-400' : accent.text}`} />
               Your Progress
             </CardTitle>
           </CardHeader>
@@ -691,7 +949,7 @@ export function CoursePreviewTabs({
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Course completion</span>
-                <span className={`font-medium ${isComplete ? 'text-green-400' : 'text-foreground'}`}>
+                <span className={`font-medium ${isComplete ? 'text-green-400' : accent.text}`}>
                   {progressPercent}%
                 </span>
               </div>
@@ -711,19 +969,19 @@ export function CoursePreviewTabs({
 
         {/* Continue Learning Card */}
         {lessonToShow && !isComplete && (
-          <Card className="bg-card border-border">
+          <Card className={`${config.cardClass} border-border`}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">
+              <CardTitle className={`text-base ${config.headingClass}`}>
                 {completedLessonCount > 0 ? 'Continue Learning' : 'Start Learning'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <button
                 onClick={handleContinueLearning}
-                className="w-full flex items-center gap-4 p-4 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors text-left touch-manipulation"
+                className={`w-full flex items-center gap-4 p-4 rounded-lg ${accent.bgLight} border ${accent.borderLight} hover:opacity-80 transition-colors text-left touch-manipulation`}
               >
-                <div className="w-16 h-12 rounded bg-primary/20 flex items-center justify-center shrink-0">
-                  <Play className="w-6 h-6 text-primary" />
+                <div className={`w-16 h-12 rounded ${accent.bgLight} flex items-center justify-center shrink-0`}>
+                  <Play className={`w-6 h-6 ${accent.text}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground mb-1">
@@ -746,7 +1004,7 @@ export function CoursePreviewTabs({
           <Card className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20">
             <CardContent className="py-6 text-center">
               <Award className="w-12 h-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-foreground mb-2">Course Complete!</h3>
+              <h3 className={`text-lg font-bold mb-2 ${config.headingClass}`}>Course Complete!</h3>
               <p className="text-muted-foreground text-sm mb-4">
                 You've mastered all the content in this course
               </p>
@@ -763,7 +1021,7 @@ export function CoursePreviewTabs({
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Card className="bg-card border-border">
+          <Card className={`${config.cardClass} border-border`}>
             <CardContent className="py-4 text-center">
               <p className={`text-2xl font-bold ${completedLessonCount > 0 ? 'text-green-400' : 'text-foreground'}`}>
                 {completedLessonCount}
@@ -771,19 +1029,19 @@ export function CoursePreviewTabs({
               <p className="text-xs text-muted-foreground">Lessons Complete</p>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border">
+          <Card className={`${config.cardClass} border-border`}>
             <CardContent className="py-4 text-center">
               <p className="text-2xl font-bold text-foreground">{totalLessons}</p>
               <p className="text-xs text-muted-foreground">Total Lessons</p>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border">
+          <Card className={`${config.cardClass} border-border`}>
             <CardContent className="py-4 text-center">
               <p className="text-2xl font-bold text-foreground">{course.modules.length}</p>
               <p className="text-xs text-muted-foreground">Modules</p>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border">
+          <Card className={`${config.cardClass} border-border`}>
             <CardContent className="py-4 text-center">
               <p className="text-2xl font-bold text-foreground">{totalHours}h</p>
               <p className="text-xs text-muted-foreground">Total Content</p>
@@ -792,10 +1050,10 @@ export function CoursePreviewTabs({
         </div>
 
         {/* Module Progress */}
-        <Card className="bg-card border-border">
+        <Card className={`${config.cardClass} border-border`}>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-primary" />
+            <CardTitle className={`text-base flex items-center gap-2 ${config.headingClass}`}>
+              <BookOpen className={`w-5 h-5 ${accent.text}`} />
               Module Progress
             </CardTitle>
           </CardHeader>
@@ -809,7 +1067,7 @@ export function CoursePreviewTabs({
                     <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium shrink-0 ${
                       isModuleComplete 
                         ? 'bg-green-500/20 text-green-400' 
-                        : 'bg-muted text-muted-foreground'
+                        : `${accent.bgLight} ${accent.text}`
                     }`}>
                       {isModuleComplete ? <Check className="w-3 h-3" /> : idx + 1}
                     </span>
@@ -843,10 +1101,117 @@ export function CoursePreviewTabs({
     );
   };
 
+  // Render separate page content (bonuses, resources, community, testimonials)
+  const renderSeparatePage = (pageType: TabType) => {
+    const page = course.separatePages?.find(p => p.type === pageType);
+    if (!page) return <div className="text-center py-8 text-muted-foreground">Page not available</div>;
+    
+    const content = page.content as Record<string, unknown>;
+    
+    switch (pageType) {
+      case 'bonuses': {
+        const bonuses = (content.bonuses as Array<{ title: string; description: string; value?: string }>) || [];
+        return (
+          <div className={`space-y-6 ${config.containerClass}`}>
+            <h2 className={`text-2xl font-bold ${config.headingClass}`}>{page.title}</h2>
+            <div className="grid gap-4">
+              {bonuses.map((bonus, idx) => (
+                <Card key={idx} className={`${config.cardClass} ${accent.borderLight}`}>
+                  <CardContent className="p-4 flex items-start gap-4">
+                    <Gift className={`w-8 h-8 ${accent.text} shrink-0`} />
+                    <div className="flex-1">
+                      <h3 className={`font-semibold ${config.headingClass}`}>{bonus.title}</h3>
+                      <p className="text-sm text-muted-foreground">{bonus.description}</p>
+                      {bonus.value && <Badge className={`mt-2 ${accent.bgLight} ${accent.text}`}>{bonus.value} value</Badge>}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'resources': {
+        const resources = (content.resources as Array<{ title: string; description: string; type: string }>) || [];
+        return (
+          <div className={`space-y-6 ${config.containerClass}`}>
+            <h2 className={`text-2xl font-bold ${config.headingClass}`}>{page.title}</h2>
+            <div className="grid gap-3">
+              {resources.map((res, idx) => (
+                <Card key={idx} className={`${config.cardClass}`}>
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <Download className={`w-5 h-5 ${accent.text}`} />
+                    <div className="flex-1">
+                      <p className="font-medium">{res.title}</p>
+                      <p className="text-xs text-muted-foreground">{res.description}</p>
+                    </div>
+                    <Badge variant="outline">{res.type}</Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'community': {
+        return (
+          <div className={`space-y-6 ${config.containerClass}`}>
+            <h2 className={`text-2xl font-bold ${config.headingClass}`}>{page.title}</h2>
+            <Card className={`${config.cardClass}`}>
+              <CardContent className="p-6 text-center">
+                <MessageCircle className={`w-12 h-12 mx-auto ${accent.text} mb-4`} />
+                <p className="text-muted-foreground">{(content.communityDescription as string) || 'Join our community!'}</p>
+                {content.communityFeatures && (
+                  <ul className="mt-4 space-y-2">
+                    {(content.communityFeatures as string[]).map((f, i) => (
+                      <li key={i} className="flex items-center gap-2 justify-center text-sm">
+                        <Check className={`w-4 h-4 ${accent.text}`} /> {f}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
+      }
+      
+      case 'testimonials': {
+        const testimonials = (content.testimonials as Array<{ name: string; role?: string; quote: string; rating?: number }>) || [];
+        return (
+          <div className={`space-y-6 ${config.containerClass}`}>
+            <h2 className={`text-2xl font-bold ${config.headingClass}`}>{page.title}</h2>
+            <div className="grid gap-4">
+              {testimonials.map((t, idx) => (
+                <Card key={idx} className={`${config.cardClass}`}>
+                  <CardContent className="p-4">
+                    <div className="flex gap-1 mb-2">
+                      {Array.from({ length: t.rating || 5 }).map((_, i) => (
+                        <Star key={i} className={`w-4 h-4 fill-current ${accent.text}`} />
+                      ))}
+                    </div>
+                    <p className="text-sm italic mb-3">"{t.quote}"</p>
+                    <p className={`text-sm font-medium ${config.headingClass}`}>{t.name}</p>
+                    {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Tab Navigation Bar */}
-      <div className="flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm px-4 py-2">
+      <div className={`flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm px-4 py-2`}>
         {isMobile ? (
           // Mobile: Dropdown Select
           <Select value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)}>
@@ -880,7 +1245,7 @@ export function CoursePreviewTabs({
             </SelectContent>
           </Select>
         ) : (
-          // Desktop: Horizontal Tabs
+          // Desktop: Horizontal Tabs with template accent
           <div className="flex items-center gap-1">
             {TABS.map((tab) => {
               const Icon = tab.icon;
@@ -891,14 +1256,14 @@ export function CoursePreviewTabs({
                   onClick={() => setActiveTab(tab.id)}
                   className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-t-lg touch-manipulation ${
                     isActive
-                      ? 'text-primary bg-primary/5'
+                      ? `${accent.text} ${accent.bgLight}`
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="hidden lg:inline">{tab.label}</span>
                   {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                    <span className={`absolute bottom-0 left-0 right-0 h-0.5 ${accent.bg} rounded-full`} />
                   )}
                 </button>
               );
@@ -907,121 +1272,13 @@ export function CoursePreviewTabs({
         )}
       </div>
 
-      {/* Tab Content */}
+      {/* Tab Content - Conditional Rendering */}
       <div className="flex-1 overflow-auto p-4">
         {activeTab === 'landing' && renderLandingPage()}
         {activeTab === 'curriculum' && renderCurriculum()}
         {activeTab === 'lesson' && renderLessonPreview()}
         {activeTab === 'dashboard' && renderDashboard()}
-        {['bonuses', 'resources', 'community', 'testimonials'].includes(activeTab) && (
-          <div className="space-y-6">
-            {course.separatePages?.find(p => p.type === activeTab) ? (
-              (() => {
-                const page = course.separatePages?.find(p => p.type === activeTab);
-                if (!page) return null;
-                const content = page.content as Record<string, unknown>;
-                
-                if (activeTab === 'bonuses') {
-                  const bonuses = (content.bonuses as Array<{ title: string; description: string; value?: string }>) || [];
-                  return (
-                    <div className="space-y-6">
-                      <h2 className="text-2xl font-bold">{page.title}</h2>
-                      <div className="grid gap-4">
-                        {bonuses.map((bonus, idx) => (
-                          <Card key={idx} className="bg-card/50 border-primary/20">
-                            <CardContent className="p-4 flex items-start gap-4">
-                              <Gift className="w-8 h-8 text-primary shrink-0" />
-                              <div className="flex-1">
-                                <h3 className="font-semibold">{bonus.title}</h3>
-                                <p className="text-sm text-muted-foreground">{bonus.description}</p>
-                                {bonus.value && <Badge className="mt-2 bg-primary/20">{bonus.value} value</Badge>}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-                
-                if (activeTab === 'resources') {
-                  const resources = (content.resources as Array<{ title: string; description: string; type: string }>) || [];
-                  return (
-                    <div className="space-y-6">
-                      <h2 className="text-2xl font-bold">{page.title}</h2>
-                      <div className="grid gap-3">
-                        {resources.map((res, idx) => (
-                          <Card key={idx} className="bg-card/50">
-                            <CardContent className="p-4 flex items-center gap-4">
-                              <Download className="w-5 h-5 text-primary" />
-                              <div className="flex-1">
-                                <p className="font-medium">{res.title}</p>
-                                <p className="text-xs text-muted-foreground">{res.description}</p>
-                              </div>
-                              <Badge variant="outline">{res.type}</Badge>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-                
-                if (activeTab === 'community') {
-                  return (
-                    <div className="space-y-6">
-                      <h2 className="text-2xl font-bold">{page.title}</h2>
-                      <Card className="bg-card/50">
-                        <CardContent className="p-6 text-center">
-                          <MessageCircle className="w-12 h-12 mx-auto text-primary mb-4" />
-                          <p className="text-muted-foreground">{(content.communityDescription as string) || 'Join our community!'}</p>
-                          {content.communityFeatures && (
-                            <ul className="mt-4 space-y-2">
-                              {(content.communityFeatures as string[]).map((f, i) => (
-                                <li key={i} className="flex items-center gap-2 justify-center text-sm">
-                                  <Check className="w-4 h-4 text-green-500" /> {f}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </div>
-                  );
-                }
-                
-                if (activeTab === 'testimonials') {
-                  const testimonials = (content.testimonials as Array<{ name: string; role?: string; quote: string; rating?: number }>) || [];
-                  return (
-                    <div className="space-y-6">
-                      <h2 className="text-2xl font-bold">{page.title}</h2>
-                      <div className="grid gap-4">
-                        {testimonials.map((t, idx) => (
-                          <Card key={idx} className="bg-card/50">
-                            <CardContent className="p-4">
-                              <div className="flex gap-1 mb-2">
-                                {Array.from({ length: t.rating || 5 }).map((_, i) => (
-                                  <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-                                ))}
-                              </div>
-                              <p className="text-sm italic mb-3">"{t.quote}"</p>
-                              <p className="text-sm font-medium">{t.name}</p>
-                              {t.role && <p className="text-xs text-muted-foreground">{t.role}</p>}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-                
-                return null;
-              })()
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">Page not available</div>
-            )}
-          </div>
-        )}
+        {['bonuses', 'resources', 'community', 'testimonials'].includes(activeTab) && renderSeparatePage(activeTab)}
       </div>
     </div>
   );
