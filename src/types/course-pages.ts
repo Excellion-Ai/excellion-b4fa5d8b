@@ -157,11 +157,26 @@ export interface ExtendedCourse {
 
 // Style configuration for each layout type
 export interface LayoutStyleConfig {
+  // Core styling
   containerClass: string;
   cardClass: string;
   headingClass: string;
-  accentColor: string;
+  accentColor: 'amber' | 'emerald' | 'blue' | 'violet';
+  primaryHex: string;
+  
+  // Layout
   moduleLayout: 'timeline' | 'accordion' | 'numbered' | 'grid';
+  cardRadius: string;
+  
+  // Gradients
+  bgGradient: string;
+  heroGradient: string;
+  
+  // Typography
+  fontStyle: string;
+  headingFont: string;
+  
+  // Feature flags
   showInstructorLarge: boolean;
   showCertificate: boolean;
   showTestimonials: boolean;
@@ -170,6 +185,29 @@ export interface LayoutStyleConfig {
   imageHeavy: boolean;
 }
 
+/**
+ * Template Styling Configuration
+ * 
+ * CREATOR: Warm, personal, coaching-focused
+ * - Primary: #f59e0b (amber), Gradient: amber to orange
+ * - Timeline module layout with vertical connecting line
+ * - Rounded cards (12px), friendly filled icons
+ * 
+ * TECHNICAL: Dark, structured, developer-focused
+ * - Primary: #6366f1 (indigo), Background: dark (#0f0f1a)
+ * - Accordion module layout (collapsible sections)
+ * - Sharp corners (4px), monospace typography, outlined icons
+ * 
+ * ACADEMIC: Formal, professional, credential-focused
+ * - Primary: #1e40af (navy), Accents: gold (#b8860b)
+ * - Numbered module layout (1.0, 1.1, 1.2)
+ * - Serif typography, minimal styling, classic icons
+ * 
+ * VISUAL: Vibrant, image-heavy, portfolio-focused
+ * - Primary: #f43f5e (rose), Gradient: rose to violet
+ * - Grid module layout (2-column cards)
+ * - Large rounded corners (16px), bold typography, colorful icons
+ */
 export function getLayoutStyleConfig(style: CourseLayoutStyle = 'creator'): LayoutStyleConfig {
   const configs: Record<CourseLayoutStyle, LayoutStyleConfig> = {
     creator: {
@@ -177,7 +215,13 @@ export function getLayoutStyleConfig(style: CourseLayoutStyle = 'creator'): Layo
       cardClass: 'bg-card/80 border-amber-500/20',
       headingClass: 'text-amber-100',
       accentColor: 'amber',
+      primaryHex: '#f59e0b',
       moduleLayout: 'timeline',
+      cardRadius: 'rounded-xl',
+      bgGradient: 'from-amber-500 to-orange-500',
+      heroGradient: 'from-amber-600/20 via-background to-orange-600/10',
+      fontStyle: 'font-sans',
+      headingFont: 'font-sans font-semibold',
       showInstructorLarge: true,
       showCertificate: false,
       showTestimonials: true,
@@ -190,7 +234,13 @@ export function getLayoutStyleConfig(style: CourseLayoutStyle = 'creator'): Layo
       cardClass: 'bg-slate-900/80 border-slate-700',
       headingClass: 'text-slate-100 font-mono',
       accentColor: 'emerald',
+      primaryHex: '#6366f1',
       moduleLayout: 'accordion',
+      cardRadius: 'rounded',
+      bgGradient: 'from-indigo-600 to-slate-900',
+      heroGradient: 'from-indigo-900/40 via-slate-950 to-slate-900',
+      fontStyle: 'font-mono',
+      headingFont: 'font-mono font-bold',
       showInstructorLarge: false,
       showCertificate: false,
       showTestimonials: false,
@@ -203,7 +253,13 @@ export function getLayoutStyleConfig(style: CourseLayoutStyle = 'creator'): Layo
       cardClass: 'bg-white dark:bg-stone-900 border-stone-300 dark:border-stone-700',
       headingClass: 'text-stone-900 dark:text-stone-100 font-serif',
       accentColor: 'blue',
+      primaryHex: '#1e40af',
       moduleLayout: 'numbered',
+      cardRadius: 'rounded-sm',
+      bgGradient: 'from-blue-900 to-blue-800',
+      heroGradient: 'from-blue-950/30 via-background to-stone-900/20',
+      fontStyle: 'font-serif',
+      headingFont: 'font-serif font-semibold',
       showInstructorLarge: false,
       showCertificate: true,
       showTestimonials: false,
@@ -216,7 +272,13 @@ export function getLayoutStyleConfig(style: CourseLayoutStyle = 'creator'): Layo
       cardClass: 'bg-card/60 backdrop-blur border-violet-500/30',
       headingClass: 'text-violet-100 font-bold',
       accentColor: 'violet',
+      primaryHex: '#f43f5e',
       moduleLayout: 'grid',
+      cardRadius: 'rounded-2xl',
+      bgGradient: 'from-rose-500 to-violet-600',
+      heroGradient: 'from-rose-600/20 via-background to-violet-600/20',
+      fontStyle: 'font-sans',
+      headingFont: 'font-sans font-extrabold',
       showInstructorLarge: false,
       showCertificate: false,
       showTestimonials: true,
