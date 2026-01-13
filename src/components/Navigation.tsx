@@ -111,6 +111,11 @@ const Navigation = () => {
           <Link to="/builder-faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             FAQ
           </Link>
+          {user && (
+            <Link to="/my-courses" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              My Courses
+            </Link>
+          )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -179,6 +184,14 @@ const Navigation = () => {
                   >
                     FAQ
                   </Link>
+                  {user && (
+                    <Link 
+                      to="/my-courses" 
+                      className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
+                    >
+                      My Courses
+                    </Link>
+                  )}
                 </div>
                 
                 {/* User Section */}

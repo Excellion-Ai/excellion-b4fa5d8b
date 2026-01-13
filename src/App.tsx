@@ -23,6 +23,8 @@ const Checkout = lazyWithRetry(() => import("./pages/Checkout"), "Checkout");
 const CheckoutSuccess = lazyWithRetry(() => import("./pages/CheckoutSuccess"), "CheckoutSuccess");
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "NotFound");
 const CoursePage = lazyWithRetry(() => import("./pages/CoursePage"), "CoursePage");
+const LearnPage = lazyWithRetry(() => import("./pages/LearnPage"), "LearnPage");
+const MyCourses = lazyWithRetry(() => import("./pages/MyCourses"), "MyCourses");
 
 // Settings pages
 const Settings = lazyWithRetry(() => import("./pages/Settings"), "Settings");
@@ -77,8 +79,10 @@ const App = () => (
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         
-        {/* LMS Course Engine - Dynamic Route */}
+        {/* LMS Course Engine - Dynamic Routes */}
         <Route path="/course/:subdomain" element={<CoursePage />} />
+        <Route path="/learn/:slug" element={<LearnPage />} />
+        <Route path="/my-courses" element={<MyCourses />} />
         
         {/* Settings routes */}
         <Route path="/settings" element={<Settings />}>
