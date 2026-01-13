@@ -611,7 +611,7 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 8000,
+        max_tokens: 16000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
