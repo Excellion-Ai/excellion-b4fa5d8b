@@ -1,12 +1,18 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Check, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { Loader2, Check, ChevronLeft, ChevronRight, BookOpen, Circle, Trophy, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useLessonProgress } from '@/hooks/useLessonProgress';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface Lesson {
   id: string;
@@ -34,12 +40,42 @@ export default function LearnPage() {
   const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEnrolled, setIsEnrolled] = useState(false);
   const [selectedModuleIndex, setSelectedModuleIndex] = useState(0);
   const [selectedLessonIndex, setSelectedLessonIndex] = useState(0);
+  
+  // Progress tracking state
+  const [enrollmentId, setEnrollmentId] = useState<string | null>(null);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
+  // Calculate total lessons
+  const totalLessons = useMemo(() => {
+    if (!course) return 0;
+    return course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
+  }, [course]);
+
+  // Calculate progress percent
+  const progressPercent = useMemo(() => {
+    if (totalLessons === 0) return 0;
+    return Math.round((completedLessons.length / totalLessons) * 100);
+  }, [completedLessons.length, totalLessons]);
+
+  // Flat lesson list for navigation
+  const flatLessons = useMemo(() => {
+    if (!course) return [];
+    return course.modules.flatMap((m, mi) => 
+      m.lessons.map((l, li) => ({ moduleIndex: mi, lessonIndex: li, lesson: l, moduleId: m.id }))
+    );
+  }, [course]);
+
+  const currentFlatIndex = flatLessons.findIndex(
+    f => f.moduleIndex === selectedModuleIndex && f.lessonIndex === selectedLessonIndex
+  );
+
+  // Fetch course, enrollment, and progress
   useEffect(() => {
-    const fetchCourseAndEnrollment = async () => {
+    const fetchData = async () => {
       if (!slug) {
         navigate('/');
         return;
@@ -74,47 +110,150 @@ export default function LearnPage() {
         return;
       }
 
-      // Check enrollment
+      const parsedCourse = {
+        ...courseData,
+        modules: Array.isArray(courseData.modules) ? (courseData.modules as unknown as CourseModule[]) : [],
+      };
+
+      // Fetch enrollment with progress data
       const { data: enrollment } = await supabase
         .from('enrollments')
-        .select('id')
+        .select('id, progress_percent, last_lesson_id')
         .eq('course_id', courseData.id)
         .eq('user_id', user.id)
-        .maybeSingle();
+        .single();
 
       if (!enrollment) {
         navigate(`/course/${slug}`);
         return;
       }
 
-      setIsEnrolled(true);
-      setCourse({
-        ...courseData,
-        modules: Array.isArray(courseData.modules) ? (courseData.modules as unknown as CourseModule[]) : [],
-      });
+      setEnrollmentId(enrollment.id);
+
+      // Fetch completed lessons
+      const { data: progressData } = await supabase
+        .from('lesson_progress')
+        .select('lesson_id')
+        .eq('enrollment_id', enrollment.id);
+
+      if (progressData) {
+        setCompletedLessons(progressData.map(p => p.lesson_id));
+      }
+
+      // Set initial lesson based on last_lesson_id
+      if (enrollment.last_lesson_id) {
+        const flatList = parsedCourse.modules.flatMap((m, mi) => 
+          m.lessons.map((l, li) => ({ moduleIndex: mi, lessonIndex: li, lessonId: l.id }))
+        );
+        const lastLessonPos = flatList.find(f => f.lessonId === enrollment.last_lesson_id);
+        if (lastLessonPos) {
+          setSelectedModuleIndex(lastLessonPos.moduleIndex);
+          setSelectedLessonIndex(lastLessonPos.lessonIndex);
+        }
+      }
+
+      setCourse(parsedCourse);
       setIsLoading(false);
     };
 
-    fetchCourseAndEnrollment();
+    fetchData();
   }, [slug, navigate]);
 
-  const modulesForProgress = useMemo(() => {
-    if (!course) return [];
-    return course.modules.map(m => ({
-      id: m.id,
-      lessons: m.lessons.map(l => ({ id: l.id })),
-    }));
-  }, [course]);
+  // Update last accessed lesson
+  const updateLastLesson = useCallback(async (lessonId: string) => {
+    if (!enrollmentId) return;
+    
+    await supabase
+      .from('enrollments')
+      .update({
+        last_lesson_id: lessonId,
+        last_accessed_at: new Date().toISOString(),
+      })
+      .eq('id', enrollmentId);
+  }, [enrollmentId]);
 
-  const {
-    progressPercent,
-    isLessonComplete,
-    markLessonComplete,
-    getNextIncompleteLesson,
-  } = useLessonProgress({
-    courseId: course?.id || '',
-    modules: modulesForProgress,
-  });
+  // Update overall progress
+  const updateOverallProgress = useCallback(async (completedArray: string[]) => {
+    if (!enrollmentId || totalLessons === 0) return;
+    
+    const percent = Math.round((completedArray.length / totalLessons) * 100);
+    
+    await supabase
+      .from('enrollments')
+      .update({
+        progress_percent: percent,
+        last_accessed_at: new Date().toISOString(),
+        completed_at: percent === 100 ? new Date().toISOString() : null,
+      })
+      .eq('id', enrollmentId);
+
+    // Show completion modal when reaching 100%
+    if (percent === 100 && progressPercent < 100) {
+      setShowCompletionModal(true);
+    }
+  }, [enrollmentId, totalLessons, progressPercent]);
+
+  // Mark lesson complete
+  const markLessonComplete = useCallback(async (lessonId: string) => {
+    if (!enrollmentId || completedLessons.includes(lessonId)) return;
+
+    setIsMarkingComplete(true);
+
+    const { error } = await supabase
+      .from('lesson_progress')
+      .insert({
+        enrollment_id: enrollmentId,
+        lesson_id: lessonId,
+        completed_at: new Date().toISOString(),
+      });
+
+    setIsMarkingComplete(false);
+
+    if (error) {
+      // Check if it's a duplicate - lesson already completed
+      if (error.code === '23505') {
+        return;
+      }
+      toast.error('Failed to save progress');
+      return;
+    }
+
+    const newCompletedLessons = [...completedLessons, lessonId];
+    setCompletedLessons(newCompletedLessons);
+    await updateOverallProgress(newCompletedLessons);
+    
+    toast.success('Lesson completed! 🎉');
+  }, [enrollmentId, completedLessons, updateOverallProgress]);
+
+  // Check if lesson is complete
+  const isLessonComplete = useCallback((lessonId: string) => {
+    return completedLessons.includes(lessonId);
+  }, [completedLessons]);
+
+  // Navigation handlers
+  const handlePrevious = () => {
+    if (currentFlatIndex > 0) {
+      const prev = flatLessons[currentFlatIndex - 1];
+      setSelectedModuleIndex(prev.moduleIndex);
+      setSelectedLessonIndex(prev.lessonIndex);
+      updateLastLesson(prev.lesson.id);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentFlatIndex < flatLessons.length - 1) {
+      const next = flatLessons[currentFlatIndex + 1];
+      setSelectedModuleIndex(next.moduleIndex);
+      setSelectedLessonIndex(next.lessonIndex);
+      updateLastLesson(next.lesson.id);
+    }
+  };
+
+  const handleSelectLesson = (moduleIndex: number, lessonIndex: number, lessonId: string) => {
+    setSelectedModuleIndex(moduleIndex);
+    setSelectedLessonIndex(lessonIndex);
+    updateLastLesson(lessonId);
+  };
 
   if (isLoading || !course) {
     return (
@@ -127,50 +266,28 @@ export default function LearnPage() {
   const currentModule = course.modules[selectedModuleIndex];
   const currentLesson = currentModule?.lessons[selectedLessonIndex];
   const lessonContent = currentLesson?.content_markdown || currentLesson?.content || 'No content available.';
-
-  const flatLessons = course.modules.flatMap((m, mi) => 
-    m.lessons.map((l, li) => ({ moduleIndex: mi, lessonIndex: li, lesson: l, moduleId: m.id }))
-  );
-  const currentFlatIndex = flatLessons.findIndex(
-    f => f.moduleIndex === selectedModuleIndex && f.lessonIndex === selectedLessonIndex
-  );
-
-  const handlePrevious = () => {
-    if (currentFlatIndex > 0) {
-      const prev = flatLessons[currentFlatIndex - 1];
-      setSelectedModuleIndex(prev.moduleIndex);
-      setSelectedLessonIndex(prev.lessonIndex);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentFlatIndex < flatLessons.length - 1) {
-      const next = flatLessons[currentFlatIndex + 1];
-      setSelectedModuleIndex(next.moduleIndex);
-      setSelectedLessonIndex(next.lessonIndex);
-    }
-  };
-
-  const handleMarkComplete = () => {
-    if (currentLesson && currentModule) {
-      markLessonComplete(currentLesson.id, currentModule.id);
-    }
-  };
+  const isCurrentLessonComplete = currentLesson ? isLessonComplete(currentLesson.id) : false;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="h-14 border-b border-border bg-card flex items-center px-4 gap-4 shrink-0">
+      {/* Header with Progress */}
+      <header className="h-16 border-b border-border bg-card flex items-center px-4 gap-4 shrink-0">
         <Button variant="ghost" size="sm" onClick={() => navigate('/my-courses')}>
           <ChevronLeft className="h-4 w-4 mr-1" />
           My Courses
         </Button>
         <div className="flex-1 min-w-0">
           <h1 className="text-sm font-semibold truncate">{course.title}</h1>
+          <p className="text-xs text-muted-foreground">
+            {completedLessons.length} of {totalLessons} lessons complete
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{progressPercent}%</span>
-          <Progress value={progressPercent} className="w-24 h-2" />
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-primary">{progressPercent}%</span>
+          <Progress value={progressPercent} className="w-32 h-2" />
+          {progressPercent === 100 && (
+            <Trophy className="h-5 w-5 text-primary" />
+          )}
         </div>
       </header>
 
@@ -179,42 +296,52 @@ export default function LearnPage() {
         <aside className="w-72 border-r border-border bg-card shrink-0 hidden md:block">
           <ScrollArea className="h-full">
             <div className="p-4 space-y-4">
-              {course.modules.map((module, mi) => (
-                <div key={module.id}>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                    Module {mi + 1}: {module.title}
-                  </h3>
-                  <div className="space-y-1">
-                    {module.lessons.map((lesson, li) => {
-                      const isActive = mi === selectedModuleIndex && li === selectedLessonIndex;
-                      const isComplete = isLessonComplete(lesson.id);
-                      
-                      return (
-                        <button
-                          key={lesson.id}
-                          onClick={() => {
-                            setSelectedModuleIndex(mi);
-                            setSelectedLessonIndex(li);
-                          }}
-                          className={cn(
-                            "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors",
-                            isActive 
-                              ? "bg-primary/20 text-primary border border-primary/30" 
-                              : "hover:bg-secondary/50 text-foreground"
-                          )}
-                        >
-                          {isComplete ? (
-                            <Check className="h-4 w-4 text-green-500 shrink-0" />
-                          ) : (
-                            <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
-                          )}
-                          <span className="truncate">{lesson.title}</span>
-                        </button>
-                      );
-                    })}
+              {course.modules.map((module, mi) => {
+                const moduleLessonIds = module.lessons.map(l => l.id);
+                const completedInModule = moduleLessonIds.filter(id => completedLessons.includes(id)).length;
+                
+                return (
+                  <div key={module.id}>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        Module {mi + 1}
+                      </h3>
+                      <span className="text-xs text-muted-foreground">
+                        {completedInModule}/{module.lessons.length}
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-foreground mb-2">{module.title}</p>
+                    <div className="space-y-1">
+                      {module.lessons.map((lesson, li) => {
+                        const isActive = mi === selectedModuleIndex && li === selectedLessonIndex;
+                        const isComplete = isLessonComplete(lesson.id);
+                        
+                        return (
+                          <button
+                            key={lesson.id}
+                            onClick={() => handleSelectLesson(mi, li, lesson.id)}
+                            className={cn(
+                              "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors",
+                              isActive 
+                                ? "bg-primary/20 text-primary border border-primary/30" 
+                                : "hover:bg-secondary/50 text-foreground"
+                            )}
+                          >
+                            {isComplete ? (
+                              <Check className="h-4 w-4 text-green-500 shrink-0" />
+                            ) : (
+                              <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
+                            )}
+                            <span className={cn("truncate", isComplete && "text-muted-foreground")}>
+                              {lesson.title}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
         </aside>
@@ -222,6 +349,14 @@ export default function LearnPage() {
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
           <div className="max-w-3xl mx-auto p-6 md:p-8">
+            <div className="flex items-center gap-2 mb-2">
+              {isCurrentLessonComplete && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs">
+                  <Check className="h-3 w-3" />
+                  Completed
+                </span>
+              )}
+            </div>
             <h2 className="text-2xl font-bold mb-6">{currentLesson?.title}</h2>
             
             <div className="prose prose-invert max-w-none mb-8">
@@ -240,16 +375,28 @@ export default function LearnPage() {
                 Previous
               </Button>
 
-              {!isLessonComplete(currentLesson?.id || '') ? (
-                <Button onClick={handleMarkComplete} className="bg-primary hover:bg-primary/90">
-                  <Check className="h-4 w-4 mr-1" />
+              {!isCurrentLessonComplete ? (
+                <Button 
+                  onClick={() => currentLesson && markLessonComplete(currentLesson.id)} 
+                  className="bg-primary hover:bg-primary/90"
+                  disabled={isMarkingComplete}
+                >
+                  {isMarkingComplete ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4 mr-1" />
+                  )}
                   Mark Complete
                 </Button>
               ) : (
-                <span className="text-sm text-green-500 flex items-center gap-1">
-                  <Check className="h-4 w-4" />
+                <Button 
+                  variant="outline" 
+                  className="border-green-500/30 text-green-500 cursor-default"
+                  disabled
+                >
+                  <Check className="h-4 w-4 mr-1" />
                   Completed
-                </span>
+                </Button>
               )}
 
               <Button
@@ -264,6 +411,46 @@ export default function LearnPage() {
           </div>
         </main>
       </div>
+
+      {/* Course Completion Modal */}
+      <Dialog open={showCompletionModal} onOpenChange={setShowCompletionModal}>
+        <DialogContent className="sm:max-w-md text-center">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="relative">
+                  <Trophy className="h-16 w-16 text-primary" />
+                  <Star className="h-6 w-6 text-primary absolute -top-1 -right-1 animate-pulse" />
+                </div>
+              </div>
+              🎉 Course Completed!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-muted-foreground">
+              Congratulations! You've completed all lessons in <strong>{course.title}</strong>.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-primary">
+              <Check className="h-5 w-5" />
+              <span className="font-semibold">{totalLessons} lessons completed</span>
+            </div>
+            <div className="pt-4 flex flex-col gap-2">
+              <Button 
+                onClick={() => setShowCompletionModal(false)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Continue Reviewing
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/my-courses')}
+              >
+                Back to My Courses
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
