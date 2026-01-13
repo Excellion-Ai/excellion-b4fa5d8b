@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,17 +86,25 @@ const formatPrice = (cents: number | null, currency: string | null) => {
 
 export default function CoursePage() {
   const { subdomain } = useParams<{ subdomain: string }>();
+  const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchCourseAndEnrollment = async () => {
       if (!subdomain) {
         setError('No course subdomain provided');
         setIsLoading(false);
         return;
       }
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
 
       // Fetch published courses by subdomain with new fields
       let { data, error: fetchError } = await supabase
@@ -120,7 +129,11 @@ export default function CoursePage() {
 
       if (fetchError) {
         setError('Course not found');
-      } else if (data) {
+        setIsLoading(false);
+        return;
+      }
+      
+      if (data) {
         const modules = Array.isArray(data.modules) ? (data.modules as unknown as CourseModule[]) : [];
         const learningOutcomes = (data as any).learningOutcomes || (data as any).learning_outcomes || [];
         setCourse({
@@ -128,13 +141,67 @@ export default function CoursePage() {
           modules,
           learningOutcomes: Array.isArray(learningOutcomes) ? learningOutcomes : [],
         } as Course);
+
+        // Check if user is enrolled
+        if (user) {
+          const { data: enrollment } = await supabase
+            .from('enrollments')
+            .select('id')
+            .eq('course_id', data.id)
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          setIsEnrolled(!!enrollment);
+        }
       }
 
       setIsLoading(false);
     };
 
-    fetchCourse();
+    fetchCourseAndEnrollment();
   }, [subdomain]);
+
+  const enrollInCourse = async () => {
+    if (!course) return;
+
+    if (!currentUser) {
+      navigate(`/auth?redirect=/course/${subdomain}`);
+      return;
+    }
+
+    // Check if already enrolled
+    const { data: existingEnrollment } = await supabase
+      .from('enrollments')
+      .select('id')
+      .eq('user_id', currentUser.id)
+      .eq('course_id', course.id)
+      .maybeSingle();
+
+    if (existingEnrollment) {
+      navigate(`/learn/${course.subdomain || course.id}`);
+      return;
+    }
+
+    setIsEnrolling(true);
+
+    const { error: insertError } = await supabase
+      .from('enrollments')
+      .insert({
+        user_id: currentUser.id,
+        course_id: course.id,
+        progress_percent: 0,
+      });
+
+    setIsEnrolling(false);
+
+    if (insertError) {
+      toast.error('Failed to enroll. Please try again.');
+      return;
+    }
+
+    toast.success('Successfully enrolled!');
+    navigate(`/learn/${course.subdomain || course.id}`);
+  };
 
   if (isLoading) {
     return (
@@ -328,16 +395,46 @@ export default function CoursePage() {
         {/* Enroll CTA */}
         <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30">
           <CardContent className="py-8 text-center">
-            <h3 className="text-2xl font-bold mb-2">Ready to get started?</h3>
-            <p className="text-muted-foreground mb-2">
-              Join {course.total_students || 0} students who have already enrolled.
-            </p>
-            <p className="text-3xl font-bold text-primary mb-6">
-              {priceText}
-            </p>
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
-              {course.price_cents && course.price_cents > 0 ? `Enroll for ${priceText}` : 'Enroll for Free'}
-            </Button>
+            {isEnrolled ? (
+              <>
+                <h3 className="text-2xl font-bold mb-2">Welcome back!</h3>
+                <p className="text-muted-foreground mb-6">
+                  You're enrolled in this course. Continue where you left off.
+                </p>
+                <Button 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => navigate(`/learn/${course.subdomain || course.id}`)}
+                >
+                  Continue Learning
+                </Button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-2xl font-bold mb-2">Ready to get started?</h3>
+                <p className="text-muted-foreground mb-2">
+                  Join {course.total_students || 0} students who have already enrolled.
+                </p>
+                <p className="text-3xl font-bold text-primary mb-6">
+                  {priceText}
+                </p>
+                <Button 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={enrollInCourse}
+                  disabled={isEnrolling}
+                >
+                  {isEnrolling ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Enrolling...
+                    </>
+                  ) : (
+                    course.price_cents && course.price_cents > 0 ? `Enroll for ${priceText}` : 'Enroll for Free'
+                  )}
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
