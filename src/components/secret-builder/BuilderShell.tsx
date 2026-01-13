@@ -925,6 +925,8 @@ export function BuilderShell() {
             pricing: curriculum.landing_page.pricing,
             faq: curriculum.landing_page.faqs,
           } : undefined,
+          separatePages: course.separatePages || data.separatePages,
+          isMultiPage: course.isMultiPage || data.isMultiPage || false,
         };
         
         setCourseSpec(courseSpec);
