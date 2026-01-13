@@ -504,9 +504,15 @@ OUTPUT FORMAT: Return ONLY valid JSON with this exact structure (no markdown, no
       "features": ${JSON.stringify(templateConfig.pricingFeatures)}
     }
   }${separatePages ? `,
-  "separate_pages": []` : ''},
+  "separate_pages": [
+    ${includeBonusPage ? '{"id": "page-bonuses", "type": "bonuses", "title": "Exclusive Bonuses", "slug": "bonuses", "content": {"bonusItems": [{"title": "Bonus 1", "description": "...", "value": "$X"}]}, "isEnabled": true, "order": 1}' : ''}${includeBonusPage && (includeResourcesPage || includeCommunityPage || includeTestimonialsPage) ? ',' : ''}
+    ${includeResourcesPage ? '{"id": "page-resources", "type": "resources", "title": "Course Resources", "slug": "resources", "content": {"resources": [{"title": "Resource 1", "description": "...", "type": "pdf"}]}, "isEnabled": true, "order": 2}' : ''}${includeResourcesPage && (includeCommunityPage || includeTestimonialsPage) ? ',' : ''}
+    ${includeCommunityPage ? '{"id": "page-community", "type": "community", "title": "Join Our Community", "slug": "community", "content": {"communityDescription": "...", "communityFeatures": ["Feature 1"], "communityPlatform": "Discord"}, "isEnabled": true, "order": 3}' : ''}${includeCommunityPage && includeTestimonialsPage ? ',' : ''}
+    ${includeTestimonialsPage ? '{"id": "page-testimonials", "type": "testimonials", "title": "Student Success Stories", "slug": "testimonials", "content": {"testimonials": [{"name": "Student", "role": "Role", "quote": "...", "rating": 5}]}, "isEnabled": true, "order": 4}' : ''}
+  ]` : ''},
   "brand_color": "${templateConfig.brandColor}"
 }
+
 ${separatePagesInstructions}
 
 STYLE-SPECIFIC RULES FOR ${template.toUpperCase()}:
@@ -547,7 +553,8 @@ GENERAL RULES:
 9. Create 4-6 learning outcomes that match the ${template} style
 10. Create 3-5 features for landing page using icons: ${templateConfig.featureIcons.join(', ')}
 11. Create 4-6 FAQs relevant to ${template} style courses
-12. Return ONLY the JSON object, no additional text`;
+${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array with complete page objects as specified in the SEPARATE PAGES section. Never leave it as an empty array.` : ''}
+13. Return ONLY the JSON object, no additional text`;
 
     const userPrompt = `Create a complete ${template} style course curriculum for: ${prompt}`;
 
