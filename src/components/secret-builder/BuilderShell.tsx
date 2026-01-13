@@ -12,10 +12,11 @@ import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
+import { ExtendedCourse } from '@/types/course-pages';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { specFromChat } from '@/lib/specFromChat';
 import { SiteRenderer } from './SiteRenderer';
-import { CoursePreview } from './CoursePreview';
+import { CoursePreviewTabs } from './CoursePreviewTabs';
 import { CourseBuilderPanel } from './CourseBuilderPanel';
 import { RefineChat } from './RefineChat';
 import { CourseSettingsDialog } from './CourseSettingsDialog';
@@ -403,26 +404,7 @@ export function BuilderShell() {
     canRedo,
     reset: resetSiteSpec 
   } = useHistory<SiteSpec | null>(null);
-  const [courseSpec, setCourseSpec] = useState<{
-    title: string;
-    description: string;
-    difficulty: string;
-    duration_weeks: number;
-    modules: Array<{
-      id: string;
-      title: string;
-      description: string;
-      lessons: Array<{
-        id: string;
-        title: string;
-        duration: string;
-        type: 'video' | 'text' | 'quiz' | 'assignment';
-        description?: string;
-        is_preview?: boolean;
-      }>;
-    }>;
-    learningOutcomes?: string[];
-  } | null>(null);
+  const [courseSpec, setCourseSpec] = useState<ExtendedCourse | null>(null);
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -568,12 +550,17 @@ export function BuilderShell() {
         setCoursePublishedUrl(courseData.published_url);
       }
       if (courseData.modules) {
+        const modules = courseData.modules as unknown as ExtendedCourse['modules'];
         setCourseSpec({
+          id: courseData.id,
           title: courseData.title,
           description: courseData.description || '',
           difficulty: courseData.difficulty || 'beginner',
           duration_weeks: courseData.duration_weeks || 6,
-          modules: courseData.modules as any,
+          modules: modules,
+          learningOutcomes: [],
+          thumbnail: courseData.thumbnail_url || undefined,
+          layout_style: 'creator',
         });
       }
       // Load course settings
@@ -909,7 +896,8 @@ export function BuilderShell() {
         const curriculum = course.curriculum;
         
         // Build the courseSpec with modules from curriculum
-        const courseSpec = {
+        const courseSpec: ExtendedCourse = {
+          id: course.id || `course-${Date.now()}`,
           title: course.title,
           description: course.description,
           tagline: course.tagline,
@@ -919,11 +907,13 @@ export function BuilderShell() {
           learningOutcomes: curriculum?.learningOutcomes || [],
           thumbnail: course.thumbnail_url,
           brand_color: curriculum?.brand_color,
+          layout_style: curriculum?.layout_style || course.layout_style || 'creator',
           pages: curriculum?.landing_page ? {
-            landing_sections: curriculum.landing_page.sections || ['hero', 'curriculum', 'pricing'],
+            landing_sections: curriculum.landing_page.sections || ['hero', 'outcomes', 'curriculum', 'pricing', 'faq'],
             instructor: curriculum.landing_page.instructor,
             pricing: curriculum.landing_page.pricing,
             faq: curriculum.landing_page.faqs,
+            target_audience: curriculum.landing_page.target_audience,
           } : undefined,
           separatePages: course.separatePages || data.separatePages,
           isMultiPage: course.isMultiPage || data.isMultiPage || false,
@@ -2130,12 +2120,11 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                   sandbox="allow-scripts"
                 />
               ) : courseSpec ? (
-                <div className="h-full overflow-auto p-6">
-                  <CoursePreview
+                <div className="h-full overflow-hidden">
+                  <CoursePreviewTabs
                     course={courseSpec}
                     onUpdate={(updated) => setCourseSpec(updated)}
                     onPublish={handlePublishCourse}
-                    onUnpublish={handleUnpublishCourse}
                     onRefine={() => setShowRefineChat(true)}
                     onOpenSettings={() => setShowCourseSettings(true)}
                     onPreviewAsStudent={() => {
@@ -2148,7 +2137,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     onDuplicate={() => toast.info('Course duplicated!')}
                     onUploadThumbnail={() => toast.info('Thumbnail upload coming soon!')}
                     isPublishing={isPublishing}
-                    isPublished={!!coursePublishedUrl}
                   />
                   <RefineChat
                     open={showRefineChat}
