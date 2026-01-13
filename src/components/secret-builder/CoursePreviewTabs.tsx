@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   FileText,
   BookOpen,
   Play,
@@ -27,6 +33,8 @@ import {
   Clock,
   ChevronRight,
   ChevronLeft,
+  ChevronUp,
+  ChevronDown,
   GraduationCap,
   Users,
   Target,
@@ -47,6 +55,8 @@ import {
   Pencil,
   Save,
   X,
+  Plus,
+  Settings,
 } from 'lucide-react';
 import { 
   ExtendedCourse, 
@@ -59,9 +69,9 @@ import {
 import { EditableText } from './EditableText';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import {
-  PageSectionEditor,
-  usePageSections,
   InstructorSection,
   TestimonialsSection,
   GuaranteeSection,
@@ -159,6 +169,14 @@ export function CoursePreviewTabs({
   const [isEditingLesson, setIsEditingLesson] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const isMobile = useIsMobile();
+
+  // Edit mode state for landing page sections
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [landingSections, setLandingSections] = useState<string[]>(
+    (course as { page_sections?: { landing?: string[] } }).page_sections?.landing || 
+    DEFAULT_PAGE_SECTIONS.landing
+  );
+  const [isSavingLayout, setIsSavingLayout] = useState(false);
 
   // Lesson content editing handlers
   const handleStartEditLesson = useCallback(() => {
@@ -332,6 +350,79 @@ export function CoursePreviewTabs({
   const isLastLesson = selectedModuleIdx === course.modules.length - 1 && 
     selectedLessonIdx === (currentModule?.lessons.length || 1) - 1;
   const currentLessonComplete = currentLesson ? isLessonComplete(currentLesson.id) : false;
+
+  // Section editing helpers
+  const SECTION_LABELS: Record<string, string> = {
+    hero: 'Hero Section',
+    outcomes: "What You'll Learn",
+    curriculum: 'Curriculum Overview',
+    instructor: 'Meet Your Instructor',
+    testimonials: 'Student Testimonials',
+    features: 'Course Features',
+    faq: 'Frequently Asked Questions',
+    guarantee: 'Money-Back Guarantee',
+    bonus: 'Bonus Materials',
+    cta: 'Enroll CTA',
+  };
+
+  const ALL_SECTIONS = ['hero', 'outcomes', 'curriculum', 'instructor', 'testimonials', 'features', 'faq', 'guarantee', 'bonus', 'cta'];
+  const REQUIRED_SECTIONS = ['hero', 'cta'];
+
+  const handleMoveUp = (index: number) => {
+    if (index <= 0) return;
+    const newSections = [...landingSections];
+    [newSections[index - 1], newSections[index]] = [newSections[index], newSections[index - 1]];
+    setLandingSections(newSections);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index >= landingSections.length - 1) return;
+    const newSections = [...landingSections];
+    [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
+    setLandingSections(newSections);
+  };
+
+  const handleRemoveSection = (sectionId: string) => {
+    if (REQUIRED_SECTIONS.includes(sectionId)) return;
+    setLandingSections(landingSections.filter(s => s !== sectionId));
+  };
+
+  const handleAddSection = (sectionId: string) => {
+    if (!landingSections.includes(sectionId)) {
+      setLandingSections([...landingSections, sectionId]);
+    }
+  };
+
+  const handleSaveLayout = async () => {
+    if (!course.id) {
+      toast.success('Layout saved locally');
+      setIsEditMode(false);
+      return;
+    }
+
+    setIsSavingLayout(true);
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .update({
+          page_sections: {
+            landing: landingSections,
+          },
+        })
+        .eq('id', course.id);
+
+      if (error) throw error;
+      toast.success('Layout saved successfully');
+      setIsEditMode(false);
+    } catch (error) {
+      console.error('Failed to save layout:', error);
+      toast.error('Failed to save layout');
+    } finally {
+      setIsSavingLayout(false);
+    }
+  };
+
+  const availableSections = ALL_SECTIONS.filter(s => !landingSections.includes(s));
 
   // ===================
   // MODULE RENDERERS - Template-specific layouts
@@ -627,170 +718,311 @@ export function CoursePreviewTabs({
   // TAB CONTENT RENDERERS
   // ===================
 
-  // Landing Page Content - Template-aware
-  const renderLandingPage = () => (
-    <div className={`space-y-6 ${config.containerClass}`}>
-      {/* Hero Section */}
-      <div 
-        className={`relative rounded-xl overflow-hidden p-6 sm:p-8 md:p-12 ${config.cardClass}`}
-        style={{ 
-          background: course.brand_color 
-            ? `linear-gradient(135deg, ${course.brand_color}30 0%, hsl(var(--background)) 100%)`
-            : `linear-gradient(135deg, hsl(var(--${config.accentColor === 'amber' ? 'primary' : config.accentColor}-500) / 0.2) 0%, hsl(var(--background)) 100%)`
-        }}
-      >
-        {course.thumbnail && (
-          <div className="absolute inset-0 opacity-20">
-            <img src={course.thumbnail} alt="" className="w-full h-full object-cover" />
+  // Landing Page Content - Template-aware with Edit Mode
+  const renderLandingPage = () => {
+    // Edit Mode UI - Section Cards
+    if (isEditMode) {
+      return (
+        <div className={`space-y-6 ${config.containerClass}`}>
+          <div className="text-center mb-4">
+            <h2 className={`text-xl font-bold ${config.headingClass}`}>Edit Landing Page Layout</h2>
+            <p className="text-sm text-muted-foreground">Drag sections to reorder, add or remove sections</p>
           </div>
-        )}
-        <div className="relative z-10 max-w-2xl">
-          <Badge className={`${accent.bgLight} ${accent.text} ${accent.borderLight} mb-4`}>
-            {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)} Level
-          </Badge>
-          <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-3 ${config.headingClass}`}>
-            {course.title}
-          </h1>
-          {course.tagline && (
-            <p className={`text-lg sm:text-xl font-medium ${accent.text} mb-4`}>{course.tagline}</p>
-          )}
-          <p className="text-muted-foreground mb-6">{course.description}</p>
-          <div className="flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              {course.modules.length} modules
-            </div>
-            <div className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4" />
-              {totalLessons} lessons
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              {totalHours}+ hours
-            </div>
-          </div>
-          <Button 
-            size="lg" 
-            className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
-            onClick={() => setActiveTab('curriculum')}
-          >
-            Enroll Now
-            <ChevronRight className="w-5 h-5 ml-1" />
-          </Button>
-        </div>
-      </div>
 
-      {/* What You'll Learn */}
-      {course.learningOutcomes && course.learningOutcomes.length > 0 && (
-        <Card className={`${config.cardClass} border-border`}>
-          <CardHeader>
-            <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
-              <Target className={`w-5 h-5 ${accent.text}`} />
-              What You'll Learn
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {course.learningOutcomes.map((outcome, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <Check className={`w-5 h-5 ${accent.text} mt-0.5 shrink-0`} />
-                  <span className="text-foreground/90 text-sm">{outcome}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Curriculum Overview - Template-specific */}
-      <Card className={`${config.cardClass} border-border`}>
-        <CardHeader>
-          <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
-            <BookOpen className={`w-5 h-5 ${accent.text}`} />
-            Course Curriculum
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {course.modules.length} modules • {totalLessons} lessons
-          </p>
-        </CardHeader>
-        <CardContent>
           <div className="space-y-2">
-            {course.modules.map((module, idx) => (
-              <div 
-                key={module.id}
-                className={`flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 hover:${accent.borderLight} transition-colors cursor-pointer`}
-                onClick={() => {
-                  setSelectedModuleIdx(idx);
-                  setActiveTab('curriculum');
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`flex items-center justify-center w-7 h-7 rounded-full ${accent.bgLight} ${accent.text} text-sm font-medium ${
-                    layoutStyle === 'technical' ? 'font-mono' : ''
-                  }`}>
-                    {layoutStyle === 'academic' ? formatSectionNumber(idx).replace('.0', '') : idx + 1}
+            {landingSections.map((sectionId, index) => {
+              const isRequired = REQUIRED_SECTIONS.includes(sectionId);
+              return (
+                <div
+                  key={sectionId}
+                  className="flex items-center justify-between p-3 rounded-lg bg-card border border-amber-500/30"
+                >
+                  <span className="text-sm font-medium text-foreground">
+                    {SECTION_LABELS[sectionId] || sectionId}
                   </span>
-                  <div>
-                    <p className={`font-medium text-foreground text-sm ${
-                      layoutStyle === 'technical' ? 'font-mono' : ''
-                    }`}>{module.title}</p>
-                    <p className="text-xs text-muted-foreground">{module.lessons.length} lessons</p>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      onClick={() => handleMoveUp(index)}
+                      disabled={index === 0}
+                    >
+                      <ChevronUp className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      onClick={() => handleMoveDown(index)}
+                      disabled={index === landingSections.length - 1}
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                    {!isRequired && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleRemoveSection(sectionId)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </div>
-            ))}
+              );
+            })}
           </div>
-        </CardContent>
-      </Card>
 
-      {/* FAQ Section */}
-      {course.pages?.faq && course.pages.faq.length > 0 && (
-        <Card className={`${config.cardClass} border-border`}>
-          <CardHeader>
-            <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
-              <HelpCircle className={`w-5 h-5 ${accent.text}`} />
-              Frequently Asked Questions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Accordion type="single" collapsible className="space-y-2">
-              {course.pages.faq.map((faq, idx) => (
-                <AccordionItem 
-                  key={idx} 
-                  value={`faq-${idx}`}
-                  className={`bg-muted/20 border ${accent.borderLight} rounded-lg px-4`}
-                >
-                  <AccordionTrigger className="hover:no-underline py-3 text-sm font-medium">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-sm text-muted-foreground pb-3">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </CardContent>
-        </Card>
-      )}
+          {availableSections.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full border-amber-500/30 text-amber-400">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Section
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                {availableSections.map((sectionId) => (
+                  <DropdownMenuItem
+                    key={sectionId}
+                    onClick={() => handleAddSection(sectionId)}
+                  >
+                    {SECTION_LABELS[sectionId] || sectionId}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
-      {/* Final CTA */}
-      <Card className={`bg-gradient-to-r from-${config.accentColor}-500/10 to-${config.accentColor}-600/5 ${accent.borderLight}`}>
-        <CardContent className="py-8 text-center">
-          <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${config.headingClass}`}>Ready to Start?</h3>
-          <p className="text-muted-foreground mb-6">Join thousands of students already learning</p>
-          <Button 
-            size="lg" 
-            className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
-            onClick={() => setActiveTab('curriculum')}
+          <Button
+            onClick={handleSaveLayout}
+            disabled={isSavingLayout}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-black"
           >
-            <Sparkles className="w-5 h-5 mr-2" />
-            Enroll Now
+            {isSavingLayout ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            Save Layout
           </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
+        </div>
+      );
+    }
+
+    // Dynamic Section Renderer
+    const renderSection = (sectionId: string) => {
+      switch (sectionId) {
+        case 'hero':
+          return (
+            <div 
+              key="hero"
+              className={`relative rounded-xl overflow-hidden p-6 sm:p-8 md:p-12 ${config.cardClass}`}
+              style={{ 
+                background: course.brand_color 
+                  ? `linear-gradient(135deg, ${course.brand_color}30 0%, hsl(var(--background)) 100%)`
+                  : `linear-gradient(135deg, hsl(var(--${config.accentColor === 'amber' ? 'primary' : config.accentColor}-500) / 0.2) 0%, hsl(var(--background)) 100%)`
+              }}
+            >
+              {course.thumbnail && (
+                <div className="absolute inset-0 opacity-20">
+                  <img src={course.thumbnail} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="relative z-10 max-w-2xl">
+                <Badge className={`${accent.bgLight} ${accent.text} ${accent.borderLight} mb-4`}>
+                  {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)} Level
+                </Badge>
+                <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-3 ${config.headingClass}`}>
+                  {course.title}
+                </h1>
+                {course.tagline && (
+                  <p className={`text-lg sm:text-xl font-medium ${accent.text} mb-4`}>{course.tagline}</p>
+                )}
+                <p className="text-muted-foreground mb-6">{course.description}</p>
+                <div className="flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    {course.modules.length} modules
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4" />
+                    {totalLessons} lessons
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    {totalHours}+ hours
+                  </div>
+                </div>
+                <Button 
+                  size="lg" 
+                  className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
+                  onClick={() => setActiveTab('curriculum')}
+                >
+                  Enroll Now
+                  <ChevronRight className="w-5 h-5 ml-1" />
+                </Button>
+              </div>
+            </div>
+          );
+
+        case 'outcomes':
+          if (!course.learningOutcomes || course.learningOutcomes.length === 0) return null;
+          return (
+            <Card key="outcomes" className={`${config.cardClass} border-border`}>
+              <CardHeader>
+                <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
+                  <Target className={`w-5 h-5 ${accent.text}`} />
+                  What You'll Learn
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {course.learningOutcomes.map((outcome, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <Check className={`w-5 h-5 ${accent.text} mt-0.5 shrink-0`} />
+                      <span className="text-foreground/90 text-sm">{outcome}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          );
+
+        case 'curriculum':
+          return (
+            <Card key="curriculum" className={`${config.cardClass} border-border`}>
+              <CardHeader>
+                <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
+                  <BookOpen className={`w-5 h-5 ${accent.text}`} />
+                  Course Curriculum
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {course.modules.length} modules • {totalLessons} lessons
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {course.modules.map((module, idx) => (
+                    <div 
+                      key={module.id}
+                      className={`flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 hover:${accent.borderLight} transition-colors cursor-pointer`}
+                      onClick={() => {
+                        setSelectedModuleIdx(idx);
+                        setActiveTab('curriculum');
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`flex items-center justify-center w-7 h-7 rounded-full ${accent.bgLight} ${accent.text} text-sm font-medium ${
+                          layoutStyle === 'technical' ? 'font-mono' : ''
+                        }`}>
+                          {layoutStyle === 'academic' ? formatSectionNumber(idx).replace('.0', '') : idx + 1}
+                        </span>
+                        <div>
+                          <p className={`font-medium text-foreground text-sm ${
+                            layoutStyle === 'technical' ? 'font-mono' : ''
+                          }`}>{module.title}</p>
+                          <p className="text-xs text-muted-foreground">{module.lessons.length} lessons</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+
+        case 'instructor':
+          return (
+            <InstructorSection 
+              key="instructor"
+              name={(course as { instructor_name?: string }).instructor_name}
+              bio={(course as { instructor_bio?: string }).instructor_bio}
+            />
+          );
+
+        case 'testimonials':
+          return <TestimonialsSection key="testimonials" />;
+
+        case 'features':
+          return (
+            <FeaturesSection 
+              key="features"
+              durationWeeks={course.duration_weeks}
+              lessonCount={totalLessons}
+              difficulty={course.difficulty}
+            />
+          );
+
+        case 'faq':
+          if (!course.pages?.faq || course.pages.faq.length === 0) return null;
+          return (
+            <Card key="faq" className={`${config.cardClass} border-border`}>
+              <CardHeader>
+                <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
+                  <HelpCircle className={`w-5 h-5 ${accent.text}`} />
+                  Frequently Asked Questions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible className="space-y-2">
+                  {course.pages.faq.map((faq, idx) => (
+                    <AccordionItem 
+                      key={idx} 
+                      value={`faq-${idx}`}
+                      className={`bg-muted/20 border ${accent.borderLight} rounded-lg px-4`}
+                    >
+                      <AccordionTrigger className="hover:no-underline py-3 text-sm font-medium">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground pb-3">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+          );
+
+        case 'guarantee':
+          return <GuaranteeSection key="guarantee" />;
+
+        case 'bonus':
+          return <BonusSection key="bonus" />;
+
+        case 'cta':
+          return (
+            <Card key="cta" className={`bg-gradient-to-r from-${config.accentColor}-500/10 to-${config.accentColor}-600/5 ${accent.borderLight}`}>
+              <CardContent className="py-8 text-center">
+                <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${config.headingClass}`}>Ready to Start?</h3>
+                <p className="text-muted-foreground mb-6">Join thousands of students already learning</p>
+                <Button 
+                  size="lg" 
+                  className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
+                  onClick={() => setActiveTab('curriculum')}
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Enroll Now
+                </Button>
+              </CardContent>
+            </Card>
+          );
+
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <div className={`space-y-6 ${config.containerClass}`}>
+        {landingSections.map(renderSection)}
+      </div>
+    );
+  };
 
   // Curriculum Content - Uses template-specific module renderer
   const renderCurriculum = () => (
@@ -1452,12 +1684,19 @@ export function CoursePreviewTabs({
             </div>
             
             {/* Edit Layout Button */}
-            {['landing', 'curriculum', 'lesson', 'dashboard'].includes(activeTab) && (
-              <PageSectionEditor
-                courseId={course.id}
-                initialSections={(course as { page_sections?: Record<string, string[]> }).page_sections}
-                activeTab={activeTab as 'landing' | 'curriculum' | 'lesson' | 'dashboard'}
-              />
+            {activeTab === 'landing' && (
+              <Button
+                variant={isEditMode ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setIsEditMode(!isEditMode)}
+                className={isEditMode 
+                  ? 'bg-amber-500 hover:bg-amber-600 text-black' 
+                  : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                }
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Edit Layout
+              </Button>
             )}
           </div>
         )}
