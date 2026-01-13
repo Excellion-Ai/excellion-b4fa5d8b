@@ -59,6 +59,16 @@ import {
 import { EditableText } from './EditableText';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
+import {
+  PageSectionEditor,
+  usePageSections,
+  InstructorSection,
+  TestimonialsSection,
+  GuaranteeSection,
+  BonusSection,
+  FeaturesSection,
+  DEFAULT_PAGE_SECTIONS,
+} from './course-sections';
 
 type TabType = 'landing' | 'curriculum' | 'lesson' | 'dashboard' | 'bonuses' | 'resources' | 'community' | 'testimonials';
 
@@ -1415,28 +1425,39 @@ export function CoursePreviewTabs({
           </Select>
         ) : (
           // Desktop: Horizontal Tabs with template accent
-          <div className="flex items-center gap-1">
-            {TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-t-lg touch-manipulation ${
-                    isActive
-                      ? `${accent.text} ${accent.bgLight}`
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden lg:inline">{tab.label}</span>
-                  {isActive && (
-                    <span className={`absolute bottom-0 left-0 right-0 h-0.5 ${accent.bg} rounded-full`} />
-                  )}
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              {TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors rounded-t-lg touch-manipulation ${
+                      isActive
+                        ? `${accent.text} ${accent.bgLight}`
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden lg:inline">{tab.label}</span>
+                    {isActive && (
+                      <span className={`absolute bottom-0 left-0 right-0 h-0.5 ${accent.bg} rounded-full`} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Edit Layout Button */}
+            {['landing', 'curriculum', 'lesson', 'dashboard'].includes(activeTab) && (
+              <PageSectionEditor
+                courseId={course.id}
+                initialSections={(course as { page_sections?: Record<string, string[]> }).page_sections}
+                activeTab={activeTab as 'landing' | 'curriculum' | 'lesson' | 'dashboard'}
+              />
+            )}
           </div>
         )}
       </div>
