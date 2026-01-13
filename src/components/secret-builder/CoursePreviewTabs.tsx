@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -43,6 +44,9 @@ import {
   Star,
   Code,
   Palette,
+  Pencil,
+  Save,
+  X,
 } from 'lucide-react';
 import { 
   ExtendedCourse, 
@@ -141,7 +145,46 @@ export function CoursePreviewTabs({
   const [selectedModuleIdx, setSelectedModuleIdx] = useState(0);
   const [selectedLessonIdx, setSelectedLessonIdx] = useState(0);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+  const [isEditingLesson, setIsEditingLesson] = useState(false);
+  const [editedContent, setEditedContent] = useState('');
   const isMobile = useIsMobile();
+
+  // Lesson content editing handlers
+  const handleStartEditLesson = useCallback(() => {
+    const module = course.modules[selectedModuleIdx];
+    const lesson = module?.lessons[selectedLessonIdx];
+    setEditedContent(lesson?.content_markdown || '');
+    setIsEditingLesson(true);
+  }, [course.modules, selectedModuleIdx, selectedLessonIdx]);
+
+  const handleSaveLessonContent = useCallback(() => {
+    if (!onUpdate) return;
+    
+    const updatedModules = course.modules.map((module, mIdx) => {
+      if (mIdx !== selectedModuleIdx) return module;
+      return {
+        ...module,
+        lessons: module.lessons.map((lesson, lIdx) => {
+          if (lIdx !== selectedLessonIdx) return lesson;
+          return {
+            ...lesson,
+            content_markdown: editedContent,
+          };
+        }),
+      };
+    });
+
+    onUpdate({
+      ...course,
+      modules: updatedModules,
+    });
+    setIsEditingLesson(false);
+  }, [course, selectedModuleIdx, selectedLessonIdx, editedContent, onUpdate]);
+
+  const handleCancelEditLesson = useCallback(() => {
+    setIsEditingLesson(false);
+    setEditedContent('');
+  }, []);
 
   // Get template-specific layout configuration
   const layoutStyle = (course.layout_style || 'creator') as CourseLayoutStyle;
@@ -817,6 +860,44 @@ export function CoursePreviewTabs({
             {/* Content Area */}
             <Card className={`${config.cardClass} border-border`}>
               <CardContent className="py-6">
+                {/* Edit button for text lessons */}
+                {currentLesson.type === 'text' && !isEditingLesson && (
+                  <div className="flex justify-end mb-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleStartEditLesson}
+                      className="gap-2"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      Edit Content
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Editing mode buttons */}
+                {isEditingLesson && (
+                  <div className="flex justify-end gap-2 mb-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelEditLesson}
+                      className="gap-2"
+                    >
+                      <X className="w-3 h-3" />
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveLessonContent}
+                      className={`gap-2 ${accent.bg} hover:opacity-90`}
+                    >
+                      <Save className="w-3 h-3" />
+                      Save
+                    </Button>
+                  </div>
+                )}
+
                 {currentLesson.type === 'video' ? (
                   <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center">
                     <div className="text-center">
@@ -838,18 +919,42 @@ export function CoursePreviewTabs({
                     <p className="text-muted-foreground text-sm mb-4">Complete this hands-on exercise</p>
                     <Button className={`${accent.bg} hover:opacity-90`}>View Assignment</Button>
                   </div>
+                ) : isEditingLesson ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Pencil className="w-4 h-4" />
+                      <span>Editing lesson content (Markdown supported)</span>
+                    </div>
+                    <Textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      placeholder="Enter lesson content here... (Markdown supported)&#10;&#10;## Heading&#10;**Bold text**, *italic text*&#10;&#10;- Bullet points&#10;- More points&#10;&#10;```code blocks```"
+                      className="min-h-[300px] font-mono text-sm bg-muted/50 border-border resize-y"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Tip: Use Markdown for formatting. Press Cmd/Ctrl + Enter in the future for quick save.
+                    </p>
+                  </div>
                 ) : (
                   <div className={`prose prose-invert prose-sm max-w-none ${
                     layoutStyle === 'technical' ? 'font-mono' : ''
                   }`}>
                     {currentLesson.content_markdown ? (
-                      <div className="whitespace-pre-wrap text-foreground/90">
+                      <div 
+                        className="whitespace-pre-wrap text-foreground/90 cursor-pointer hover:bg-muted/20 rounded-lg p-4 -m-4 transition-colors"
+                        onClick={handleStartEditLesson}
+                        title="Click to edit content"
+                      >
                         {currentLesson.content_markdown}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-muted-foreground">
+                      <div 
+                        className="text-center py-8 text-muted-foreground cursor-pointer hover:bg-muted/20 rounded-lg transition-colors"
+                        onClick={handleStartEditLesson}
+                        title="Click to add content"
+                      >
                         <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>Lesson content will appear here...</p>
+                        <p>Click to add lesson content...</p>
                       </div>
                     )}
                   </div>
