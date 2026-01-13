@@ -257,12 +257,13 @@ export function CoursePreviewTabs({
     modules: course.modules,
   });
 
-  const totalMinutes = course.modules.reduce((acc, m) => {
-    return acc + m.lessons.reduce((a, l) => {
-      const match = l.duration.match(/(\d+)/);
+  const totalMinutes = course.modules?.reduce((acc, m) => {
+    return acc + (m.lessons?.reduce((a, l) => {
+      const duration = l.duration || '0';
+      const match = duration.match(/(\d+)/);
       return a + (match ? parseInt(match[1]) : 0);
-    }, 0);
-  }, 0);
+    }, 0) || 0);
+  }, 0) || 0;
   const totalHours = Math.round(totalMinutes / 60);
 
   const currentModule = course.modules[selectedModuleIdx];
