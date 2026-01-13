@@ -8,6 +8,7 @@ export { BonusSection } from './BonusSection';
 export { FeaturesSection } from './FeaturesSection';
 export { PageSectionEditor, usePageSections } from './PageSectionEditor';
 export type { PageSections } from './PageSectionEditor';
+export { LandingSectionEditor } from './LandingSectionEditor';
 export {
   LANDING_SECTIONS,
   CURRICULUM_SECTIONS,
