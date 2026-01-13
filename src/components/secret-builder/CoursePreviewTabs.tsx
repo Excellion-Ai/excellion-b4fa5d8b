@@ -56,6 +56,7 @@ import {
   formatSectionNumber,
   CourseLayoutStyle,
 } from '@/types/course-pages';
+import { EditableText } from './EditableText';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
 
@@ -185,6 +186,30 @@ export function CoursePreviewTabs({
     setIsEditingLesson(false);
     setEditedContent('');
   }, []);
+
+  // Inline lesson title editing handler
+  const handleSaveLessonTitle = useCallback((moduleIdx: number, lessonIdx: number, newTitle: string) => {
+    if (!onUpdate) return;
+    
+    const updatedModules = course.modules.map((module, mIdx) => {
+      if (mIdx !== moduleIdx) return module;
+      return {
+        ...module,
+        lessons: module.lessons.map((lesson, lIdx) => {
+          if (lIdx !== lessonIdx) return lesson;
+          return {
+            ...lesson,
+            title: newTitle,
+          };
+        }),
+      };
+    });
+
+    onUpdate({
+      ...course,
+      modules: updatedModules,
+    });
+  }, [course, onUpdate]);
 
   // Get template-specific layout configuration
   const layoutStyle = (course.layout_style || 'creator') as CourseLayoutStyle;
@@ -333,35 +358,45 @@ export function CoursePreviewTabs({
                   {module.lessons.map((lesson, lessonIdx) => {
                     const isComplete = isLessonComplete(lesson.id);
                     return (
-                      <button
+                      <div
                         key={lesson.id}
-                        onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
-                        className={`flex items-center justify-between w-full p-3 rounded-lg border transition-colors text-left touch-manipulation ${
+                        className={`flex items-center justify-between w-full p-3 rounded-lg border transition-colors text-left ${
                           isComplete
                             ? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
                             : `bg-muted/30 border-border/50 hover:${accent.borderLight} hover:bg-muted/50`
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          {isComplete ? (
-                            <CheckCircle2 className="w-4 h-4 text-green-400" />
-                          ) : (
-                            <LessonTypeIcon type={lesson.type} />
-                          )}
-                          <span className={`text-sm font-medium ${isComplete ? 'text-green-400' : 'text-foreground'}`}>
-                            {lesson.title}
-                          </span>
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <button
+                            onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                            className="shrink-0 touch-manipulation"
+                          >
+                            {isComplete ? (
+                              <CheckCircle2 className="w-4 h-4 text-green-400" />
+                            ) : (
+                              <LessonTypeIcon type={lesson.type} />
+                            )}
+                          </button>
+                          <EditableText
+                            value={lesson.title}
+                            onSave={(newTitle) => handleSaveLessonTitle(moduleIdx, lessonIdx, newTitle)}
+                            className={`text-sm font-medium ${isComplete ? 'text-green-400' : 'text-foreground'}`}
+                            as="span"
+                          />
                           {lesson.is_preview && (
-                            <Badge className={`${accent.bgLight} ${accent.text} border-${accent.border}/30 text-xs`}>
+                            <Badge className={`${accent.bgLight} ${accent.text} border-${accent.border}/30 text-xs shrink-0`}>
                               Free Preview
                             </Badge>
                           )}
                         </div>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <button
+                          onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                          className="text-xs text-muted-foreground flex items-center gap-1 shrink-0 ml-2 touch-manipulation hover:text-foreground transition-colors"
+                        >
                           <Clock className="w-3 h-3" />
                           {lesson.duration}
-                        </span>
-                      </button>
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -406,21 +441,35 @@ export function CoursePreviewTabs({
                 {module.lessons.map((lesson, lessonIdx) => {
                   const isComplete = isLessonComplete(lesson.id);
                   return (
-                    <button
+                    <div
                       key={lesson.id}
-                      onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
-                      className={`flex items-center justify-between w-full p-2 rounded text-left text-sm font-mono transition-colors touch-manipulation ${
+                      className={`flex items-center justify-between w-full p-2 rounded text-left text-sm font-mono transition-colors ${
                         isComplete
                           ? 'text-green-400 hover:bg-green-500/10'
                           : `text-foreground/80 hover:${accent.bgLight}`
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <Code className="w-3 h-3 opacity-50" />
-                        <span>{lesson.title}</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <button
+                          onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                          className="touch-manipulation shrink-0"
+                        >
+                          <Code className="w-3 h-3 opacity-50" />
+                        </button>
+                        <EditableText
+                          value={lesson.title}
+                          onSave={(newTitle) => handleSaveLessonTitle(moduleIdx, lessonIdx, newTitle)}
+                          className="text-sm font-mono"
+                          as="span"
+                        />
                       </div>
-                      <span className="text-xs opacity-60">{lesson.duration}</span>
-                    </button>
+                      <button
+                        onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                        className="text-xs opacity-60 hover:opacity-100 transition-opacity touch-manipulation shrink-0 ml-2"
+                      >
+                        {lesson.duration}
+                      </button>
+                    </div>
                   );
                 })}
               </div>
@@ -460,26 +509,36 @@ export function CoursePreviewTabs({
                 {module.lessons.map((lesson, lessonIdx) => {
                   const isComplete = isLessonComplete(lesson.id);
                   return (
-                    <button
+                    <div
                       key={lesson.id}
-                      onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
-                      className={`flex items-start gap-3 w-full text-left transition-colors touch-manipulation group ${
+                      className={`flex items-start gap-3 w-full text-left transition-colors group ${
                         isComplete ? 'opacity-70' : ''
                       }`}
                     >
-                      <span className={`text-sm font-serif ${accent.text}`}>
+                      <button
+                        onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                        className={`text-sm font-serif ${accent.text} touch-manipulation shrink-0`}
+                      >
                         {formatSectionNumber(moduleIdx, lessonIdx)}
-                      </span>
+                      </button>
                       <div className="flex-1">
-                        <p className={`text-sm font-medium group-hover:${accent.text} transition-colors ${
-                          isComplete ? 'line-through text-muted-foreground' : 'text-foreground'
-                        }`}>
-                          {lesson.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{lesson.duration}</p>
+                        <EditableText
+                          value={lesson.title}
+                          onSave={(newTitle) => handleSaveLessonTitle(moduleIdx, lessonIdx, newTitle)}
+                          className={`text-sm font-medium transition-colors ${
+                            isComplete ? 'line-through text-muted-foreground' : 'text-foreground'
+                          }`}
+                          as="p"
+                        />
+                        <button
+                          onClick={() => handleLessonClick(moduleIdx, lessonIdx)}
+                          className="text-xs text-muted-foreground mt-0.5 hover:text-foreground transition-colors touch-manipulation"
+                        >
+                          {lesson.duration}
+                        </button>
                       </div>
                       {isComplete && <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -840,7 +899,12 @@ export function CoursePreviewTabs({
                 <p className="text-xs text-muted-foreground mb-1">
                   Module {selectedModuleIdx + 1} • Lesson {selectedLessonIdx + 1}
                 </p>
-                <h2 className={`text-xl font-bold ${config.headingClass}`}>{currentLesson.title}</h2>
+                <EditableText
+                  value={currentLesson.title}
+                  onSave={(newTitle) => handleSaveLessonTitle(selectedModuleIdx, selectedLessonIdx, newTitle)}
+                  className={`text-xl font-bold ${config.headingClass}`}
+                  as="h2"
+                />
                 <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
                   <LessonTypeIcon type={currentLesson.type} />
                   <span className="capitalize">{currentLesson.type}</span>
