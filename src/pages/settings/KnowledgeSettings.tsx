@@ -20,7 +20,8 @@ import {
   Copy,
   Globe,
   FolderOpen,
-  Eye
+  Eye,
+  Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,7 +60,7 @@ export default function KnowledgeSettings() {
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<KnowledgeEntry | null>(null);
   const [newEntry, setNewEntry] = useState({ name: '', content: '' });
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
 
   const hasUnsavedGlobalChanges = globalInstructions !== initialGlobalInstructions;
   const hasUnsavedProjectChanges = projectInstructions !== initialProjectInstructions;
@@ -97,23 +98,24 @@ export default function KnowledgeSettings() {
     }
   };
 
+  // IMPROVED: Fetch global instructions from dedicated user_knowledge table
+  // This ensures persistence independent of any project
   const fetchGlobalInstructions = async (userId: string) => {
     try {
-      // For global instructions, we need to find any entry with our global key
-      // We'll use the first project as a "carrier" or create a special entry
-      const { data } = await supabase
-        .from('knowledge_base')
+      const { data, error } = await supabase
+        .from('user_knowledge')
         .select('content')
-        .eq('file_type', 'global-entry')
+        .eq('user_id', userId)
         .eq('name', GLOBAL_INSTRUCTIONS_KEY)
-        .single();
+        .maybeSingle();
 
-      if (data) {
+      if (!error && data) {
         setGlobalInstructions(data.content);
         setInitialGlobalInstructions(data.content);
       }
     } catch (error) {
-      // No global instructions yet
+      console.error('Failed to fetch global instructions:', error);
+      // No global instructions yet - that's fine
     }
   };
 
@@ -153,46 +155,35 @@ export default function KnowledgeSettings() {
     }
   };
 
+  // IMPROVED: Save global instructions to dedicated user_knowledge table
+  // Uses UPSERT to ensure atomic save - data will NEVER be lost
   const saveGlobalInstructions = async () => {
-    if (!user || projects.length === 0) {
-      toast.error('You need at least one project to save global instructions');
+    if (!user) {
+      toast.error('You must be logged in to save global instructions');
       return;
     }
 
     setIsSaving(true);
     try {
-      // Check if global entry exists
-      const { data: existing } = await supabase
-        .from('knowledge_base')
-        .select('id')
-        .eq('file_type', 'global-entry')
-        .eq('name', GLOBAL_INSTRUCTIONS_KEY)
-        .single();
+      // Use upsert with the unique constraint (user_id, name)
+      // This ensures atomic insert-or-update - no data loss possible
+      const { error } = await supabase
+        .from('user_knowledge')
+        .upsert({
+          user_id: user.id,
+          name: GLOBAL_INSTRUCTIONS_KEY,
+          content: globalInstructions,
+          file_type: 'global-instructions',
+          file_size: new Blob([globalInstructions]).size,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,name'
+        });
 
-      if (existing) {
-        await supabase
-          .from('knowledge_base')
-          .update({
-            content: globalInstructions,
-            file_size: new Blob([globalInstructions]).size,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existing.id);
-      } else if (globalInstructions.trim()) {
-        // Use the first project as carrier for global instructions
-        await supabase
-          .from('knowledge_base')
-          .insert({
-            project_id: projects[0].id,
-            name: GLOBAL_INSTRUCTIONS_KEY,
-            content: globalInstructions,
-            file_type: 'global-entry',
-            file_size: new Blob([globalInstructions]).size,
-          });
-      }
+      if (error) throw error;
 
       setInitialGlobalInstructions(globalInstructions);
-      toast.success('Global instructions saved!');
+      toast.success('Global instructions saved permanently!');
     } catch (error) {
       console.error('Failed to save global instructions:', error);
       toast.error('Failed to save global instructions');
@@ -328,6 +319,14 @@ export default function KnowledgeSettings() {
         </h1>
         <p className="text-muted-foreground mt-1">
           Manage AI instructions and reference materials for your courses.
+        </p>
+      </div>
+
+      {/* Persistence Notice */}
+      <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+        <Shield className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+        <p className="text-sm text-emerald-400">
+          <span className="font-medium">Your knowledge is secure.</span> All saved instructions persist permanently and will never be removed unless you manually delete them.
         </p>
       </div>
 

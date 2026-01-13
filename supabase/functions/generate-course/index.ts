@@ -371,6 +371,46 @@ serve(async (req) => {
 
     console.log(`Detected template: ${template}, multiPage: ${separatePages}, bonus: ${includeBonusPage}, resources: ${includeResourcesPage}, community: ${includeCommunityPage}, testimonials: ${includeTestimonialsPage}`);
 
+    // Fetch global knowledge (user_knowledge table) to inject into course generation
+    let globalKnowledgeContext = '';
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        console.log('Fetching global knowledge for course generation...');
+        const globalResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/user_knowledge?name=eq.__global_instructions__&select=content`,
+          {
+            headers: {
+              'apikey': SUPABASE_SERVICE_ROLE_KEY,
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+          }
+        );
+        
+        if (globalResponse.ok) {
+          const globalEntries = await globalResponse.json();
+          if (globalEntries && globalEntries.length > 0 && globalEntries[0].content) {
+            globalKnowledgeContext = `
+====================================
+GLOBAL USER INSTRUCTIONS (APPLY TO ALL COURSES)
+====================================
+
+${globalEntries[0].content}
+
+====================================
+
+`;
+            console.log('Global knowledge loaded for course generation');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching global knowledge:', error);
+        // Continue without global knowledge
+      }
+    }
+
     // Build separate pages instructions if needed
     let separatePagesInstructions = '';
     if (separatePages) {
@@ -451,6 +491,8 @@ Make the content relevant to the course topic and ${template} style.`;
     }
 
     const systemPrompt = `You are an expert course curriculum designer specializing in ${template.toUpperCase()} style courses.
+
+${globalKnowledgeContext}
 
 TEMPLATE STYLE: ${template.toUpperCase()}
 - Tone: ${templateConfig.tone}
