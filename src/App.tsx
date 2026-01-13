@@ -25,6 +25,7 @@ const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "NotFound");
 const CoursePage = lazyWithRetry(() => import("./pages/CoursePage"), "CoursePage");
 const LearnPage = lazyWithRetry(() => import("./pages/LearnPage"), "LearnPage");
 const MyCourses = lazyWithRetry(() => import("./pages/MyCourses"), "MyCourses");
+const CertificatePage = lazyWithRetry(() => import("./pages/CertificatePage"), "CertificatePage");
 
 // Settings pages
 const Settings = lazyWithRetry(() => import("./pages/Settings"), "Settings");
@@ -83,6 +84,7 @@ const App = () => (
         <Route path="/course/:subdomain" element={<CoursePage />} />
         <Route path="/learn/:slug" element={<LearnPage />} />
         <Route path="/my-courses" element={<MyCourses />} />
+        <Route path="/certificate/:id" element={<CertificatePage />} />
         
         {/* Settings routes */}
         <Route path="/settings" element={<Settings />}>

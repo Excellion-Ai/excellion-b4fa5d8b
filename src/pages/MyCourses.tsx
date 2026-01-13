@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, BookOpen, Check } from 'lucide-react';
+import { Loader2, BookOpen, Check, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import Navigation from '@/components/Navigation';
 
+interface Certificate {
+  id: string;
+}
+
 interface EnrolledCourse {
   id: string;
   progress_percent: number;
+  certificate?: Certificate | null;
   course: {
     id: string;
     title: string;
@@ -52,6 +57,20 @@ export default function MyCourses() {
         .eq('user_id', user.id)
         .order('enrolled_at', { ascending: false });
 
+      // Fetch certificates for completed courses
+      const { data: certificates } = await supabase
+        .from('certificates')
+        .select('id, enrollment_id')
+        .eq('user_id', user.id);
+
+      // Create a map of enrollment_id to certificate
+      const certMap = new Map<string, Certificate>();
+      if (certificates) {
+        certificates.forEach((cert: any) => {
+          certMap.set(cert.enrollment_id, { id: cert.id });
+        });
+      }
+
       if (error) {
         console.error('Error fetching enrollments:', error);
       } else if (data) {
@@ -60,6 +79,7 @@ export default function MyCourses() {
           .map((e: any) => ({
             id: e.id,
             progress_percent: e.progress_percent || 0,
+            certificate: certMap.get(e.id) || null,
             course: {
               id: e.courses.id,
               title: e.courses.title,
@@ -153,12 +173,24 @@ export default function MyCourses() {
                         </div>
                         <Progress value={enrollment.progress_percent} className="h-2" />
                       </div>
-                      <Button 
-                        className="w-full"
-                        onClick={() => navigate(`/learn/${courseSlug}`)}
-                      >
-                        {isComplete ? 'Review Course' : 'Continue Learning'}
-                      </Button>
+                      <div className="flex flex-col gap-2">
+                        <Button 
+                          className="w-full"
+                          onClick={() => navigate(`/learn/${courseSlug}`)}
+                        >
+                          {isComplete ? 'Review Course' : 'Continue Learning'}
+                        </Button>
+                        {isComplete && enrollment.certificate && (
+                          <Button 
+                            variant="outline"
+                            className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10"
+                            onClick={() => navigate(`/certificate/${enrollment.certificate!.id}`)}
+                          >
+                            <Award className="h-4 w-4" />
+                            View Certificate
+                          </Button>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 );
