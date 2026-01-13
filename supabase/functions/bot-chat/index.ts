@@ -1070,11 +1070,15 @@ serve(async (req) => {
 
     // Fetch knowledge base entries for this project
     let knowledgeContext = "";
-    if (projectId && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+    let globalInstructions = "";
+    
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      // First, fetch global instructions from user_knowledge table
+      // These are user-level instructions that apply to ALL courses
       try {
-        console.log(`[BOT-CHAT:${requestId}] Fetching knowledge base for project: ${projectId}`);
-        const kbResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/knowledge_base?project_id=eq.${projectId}&select=name,content`,
+        console.log(`[BOT-CHAT:${requestId}] Fetching global instructions`);
+        const globalResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/user_knowledge?name=eq.__global_instructions__&select=content`,
           {
             headers: {
               "apikey": SUPABASE_SERVICE_ROLE_KEY,
@@ -1083,13 +1087,46 @@ serve(async (req) => {
           }
         );
         
-        if (kbResponse.ok) {
-          const kbEntries = await kbResponse.json();
-          console.log(`[BOT-CHAT:${requestId}] Knowledge base entries found: ${kbEntries?.length || 0}`);
-          if (kbEntries && kbEntries.length > 0) {
-            knowledgeContext = `
+        if (globalResponse.ok) {
+          const globalEntries = await globalResponse.json();
+          if (globalEntries && globalEntries.length > 0 && globalEntries[0].content) {
+            globalInstructions = `
 ====================================
-## PROJECT KNOWLEDGE BASE
+## GLOBAL USER INSTRUCTIONS (APPLY TO ALL COURSES)
+====================================
+
+${globalEntries[0].content}
+
+====================================
+`;
+            console.log(`[BOT-CHAT:${requestId}] Global instructions loaded`);
+          }
+        }
+      } catch (globalError) {
+        console.error(`[BOT-CHAT:${requestId}] Error fetching global instructions:`, globalError);
+      }
+
+      // Then fetch project-specific knowledge
+      if (projectId) {
+        try {
+          console.log(`[BOT-CHAT:${requestId}] Fetching knowledge base for project: ${projectId}`);
+          const kbResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/knowledge_base?project_id=eq.${projectId}&select=name,content`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              },
+            }
+          );
+          
+          if (kbResponse.ok) {
+            const kbEntries = await kbResponse.json();
+            console.log(`[BOT-CHAT:${requestId}] Knowledge base entries found: ${kbEntries?.length || 0}`);
+            if (kbEntries && kbEntries.length > 0) {
+              knowledgeContext = `
+====================================
+## PROJECT-SPECIFIC KNOWLEDGE BASE
 ====================================
 
 The user has provided the following brand guidelines, documentation, and reference materials. 
@@ -1101,20 +1138,26 @@ ${entry.content}
 `).join('\n---\n')}
 
 ====================================
-END OF KNOWLEDGE BASE
+END OF PROJECT KNOWLEDGE BASE
 ====================================
 `;
+            }
+          } else {
+            console.log(`[BOT-CHAT:${requestId}] Knowledge base fetch failed: ${kbResponse.status}`);
           }
-        } else {
-          console.log(`[BOT-CHAT:${requestId}] Knowledge base fetch failed: ${kbResponse.status}`);
+        } catch (kbError) {
+          console.error(`[BOT-CHAT:${requestId}] Error fetching knowledge base:`, kbError);
+          // Continue without knowledge base
         }
-      } catch (kbError) {
-        console.error(`[BOT-CHAT:${requestId}] Error fetching knowledge base:`, kbError);
-        // Continue without knowledge base
+      } else {
+        console.log(`[BOT-CHAT:${requestId}] No projectId, skipping project knowledge fetch`);
       }
     } else {
-      console.log(`[BOT-CHAT:${requestId}] Skipping knowledge base fetch (no projectId or missing env vars)`);
+      console.log(`[BOT-CHAT:${requestId}] Missing env vars for knowledge fetch`);
     }
+    
+    // Combine global and project knowledge
+    const fullKnowledgeContext = globalInstructions + knowledgeContext;
 
     // Check for URLs in the most recent user message - use deep extraction
     const lastUserMessage = [...messages].reverse().find((m: any) => m.role === "user");
@@ -1144,8 +1187,8 @@ END OF KNOWLEDGE BASE
     let enhancedPrompt = SYSTEM_PROMPT;
     
     // Add knowledge base context first (higher priority)
-    if (knowledgeContext) {
-      enhancedPrompt += `\n${knowledgeContext}`;
+    if (fullKnowledgeContext) {
+      enhancedPrompt += `\n${fullKnowledgeContext}`;
       console.log(`[BOT-CHAT:${requestId}] Added knowledge base context to prompt`);
     }
     
