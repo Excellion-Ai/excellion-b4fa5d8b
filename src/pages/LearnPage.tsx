@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Check, ChevronLeft, ChevronRight, BookOpen, Circle, Trophy, Star } from 'lucide-react';
+import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -48,6 +48,8 @@ export default function LearnPage() {
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [certificateId, setCertificateId] = useState<string | null>(null);
+  const [isGeneratingCert, setIsGeneratingCert] = useState(false);
 
   // Calculate total lessons
   const totalLessons = useMemo(() => {
@@ -118,7 +120,7 @@ export default function LearnPage() {
       // Fetch enrollment with progress data
       const { data: enrollment } = await supabase
         .from('enrollments')
-        .select('id, progress_percent, last_lesson_id')
+        .select('id, progress_percent')
         .eq('course_id', courseData.id)
         .eq('user_id', user.id)
         .single();
@@ -140,16 +142,15 @@ export default function LearnPage() {
         setCompletedLessons(progressData.map(p => p.lesson_id));
       }
 
-      // Set initial lesson based on last_lesson_id
-      if (enrollment.last_lesson_id) {
-        const flatList = parsedCourse.modules.flatMap((m, mi) => 
-          m.lessons.map((l, li) => ({ moduleIndex: mi, lessonIndex: li, lessonId: l.id }))
-        );
-        const lastLessonPos = flatList.find(f => f.lessonId === enrollment.last_lesson_id);
-        if (lastLessonPos) {
-          setSelectedModuleIndex(lastLessonPos.moduleIndex);
-          setSelectedLessonIndex(lastLessonPos.lessonIndex);
-        }
+      // Check for existing certificate
+      const { data: existingCert } = await supabase
+        .from('certificates')
+        .select('id')
+        .eq('enrollment_id', enrollment.id)
+        .maybeSingle();
+
+      if (existingCert) {
+        setCertificateId(existingCert.id);
       }
 
       setCourse(parsedCourse);
@@ -158,19 +159,6 @@ export default function LearnPage() {
 
     fetchData();
   }, [slug, navigate]);
-
-  // Update last accessed lesson
-  const updateLastLesson = useCallback(async (lessonId: string) => {
-    if (!enrollmentId) return;
-    
-    await supabase
-      .from('enrollments')
-      .update({
-        last_lesson_id: lessonId,
-        last_accessed_at: new Date().toISOString(),
-      })
-      .eq('id', enrollmentId);
-  }, [enrollmentId]);
 
   // Update overall progress
   const updateOverallProgress = useCallback(async (completedArray: string[]) => {
@@ -182,16 +170,73 @@ export default function LearnPage() {
       .from('enrollments')
       .update({
         progress_percent: percent,
-        last_accessed_at: new Date().toISOString(),
         completed_at: percent === 100 ? new Date().toISOString() : null,
       })
       .eq('id', enrollmentId);
 
-    // Show completion modal when reaching 100%
+    // Show completion modal and generate certificate when reaching 100%
     if (percent === 100 && progressPercent < 100) {
       setShowCompletionModal(true);
+      generateCertificate();
     }
   }, [enrollmentId, totalLessons, progressPercent]);
+
+  // Generate certificate
+  const generateCertificate = useCallback(async () => {
+    if (!enrollmentId || !course) return;
+
+    setIsGeneratingCert(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Check for existing certificate
+    const { data: existing } = await supabase
+      .from('certificates')
+      .select('id')
+      .eq('enrollment_id', enrollmentId)
+      .maybeSingle();
+
+    if (existing) {
+      setCertificateId(existing.id);
+      setIsGeneratingCert(false);
+      return;
+    }
+
+    // Generate certificate number
+    const certNumber = 'CERT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    const studentName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student';
+
+    const { data: newCert, error } = await supabase
+      .from('certificates')
+      .insert({
+        enrollment_id: enrollmentId,
+        user_id: user.id,
+        course_id: course.id,
+        student_name: studentName,
+        course_title: course.title,
+        certificate_number: certNumber,
+      })
+      .select('id')
+      .single();
+
+    if (!error && newCert) {
+      setCertificateId(newCert.id);
+    }
+
+    setIsGeneratingCert(false);
+  }, [enrollmentId, course]);
+
+  // Get module id for a lesson
+  const getModuleIdForLesson = useCallback((lessonId: string): string => {
+    if (!course) return 'unknown';
+    for (const module of course.modules) {
+      if (module.lessons.some(l => l.id === lessonId)) {
+        return module.id;
+      }
+    }
+    return 'unknown';
+  }, [course]);
 
   // Mark lesson complete
   const markLessonComplete = useCallback(async (lessonId: string) => {
@@ -199,11 +244,14 @@ export default function LearnPage() {
 
     setIsMarkingComplete(true);
 
+    const moduleId = getModuleIdForLesson(lessonId);
+
     const { error } = await supabase
       .from('lesson_progress')
       .insert({
         enrollment_id: enrollmentId,
         lesson_id: lessonId,
+        module_id: moduleId,
         completed_at: new Date().toISOString(),
       });
 
@@ -236,7 +284,6 @@ export default function LearnPage() {
       const prev = flatLessons[currentFlatIndex - 1];
       setSelectedModuleIndex(prev.moduleIndex);
       setSelectedLessonIndex(prev.lessonIndex);
-      updateLastLesson(prev.lesson.id);
     }
   };
 
@@ -245,14 +292,12 @@ export default function LearnPage() {
       const next = flatLessons[currentFlatIndex + 1];
       setSelectedModuleIndex(next.moduleIndex);
       setSelectedLessonIndex(next.lessonIndex);
-      updateLastLesson(next.lesson.id);
     }
   };
 
-  const handleSelectLesson = (moduleIndex: number, lessonIndex: number, lessonId: string) => {
+  const handleSelectLesson = (moduleIndex: number, lessonIndex: number) => {
     setSelectedModuleIndex(moduleIndex);
     setSelectedLessonIndex(lessonIndex);
-    updateLastLesson(lessonId);
   };
 
   if (isLoading || !course) {
@@ -270,6 +315,24 @@ export default function LearnPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Certificate Banner */}
+      {progressPercent === 100 && certificateId && (
+        <div className="bg-primary/20 border-b border-primary/30 px-4 py-3 flex items-center justify-center gap-3">
+          <Award className="h-5 w-5 text-primary" />
+          <span className="text-sm font-medium">
+            🎉 Congratulations! You completed this course.
+          </span>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => navigate(`/certificate/${certificateId}`)}
+          >
+            View Certificate
+          </Button>
+        </div>
+      )}
+
       {/* Header with Progress */}
       <header className="h-16 border-b border-border bg-card flex items-center px-4 gap-4 shrink-0">
         <Button variant="ghost" size="sm" onClick={() => navigate('/my-courses')}>
@@ -319,7 +382,7 @@ export default function LearnPage() {
                         return (
                           <button
                             key={lesson.id}
-                            onClick={() => handleSelectLesson(mi, li, lesson.id)}
+                            onClick={() => handleSelectLesson(mi, li)}
                             className={cn(
                               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm transition-colors",
                               isActive 
@@ -435,14 +498,29 @@ export default function LearnPage() {
               <span className="font-semibold">{totalLessons} lessons completed</span>
             </div>
             <div className="pt-4 flex flex-col gap-2">
+              {certificateId && (
+                <Button 
+                  onClick={() => navigate(`/certificate/${certificateId}`)}
+                  className="bg-primary hover:bg-primary/90 gap-2"
+                >
+                  <Award className="h-4 w-4" />
+                  View Certificate
+                </Button>
+              )}
+              {isGeneratingCert && (
+                <Button disabled className="bg-primary/50 gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating Certificate...
+                </Button>
+              )}
               <Button 
+                variant="outline"
                 onClick={() => setShowCompletionModal(false)}
-                className="bg-primary hover:bg-primary/90"
               >
                 Continue Reviewing
               </Button>
               <Button 
-                variant="outline"
+                variant="ghost"
                 onClick={() => navigate('/my-courses')}
               >
                 Back to My Courses
