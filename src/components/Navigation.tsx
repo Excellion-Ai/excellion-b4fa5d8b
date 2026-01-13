@@ -112,9 +112,14 @@ const Navigation = () => {
             FAQ
           </Link>
           {user && (
-            <Link to="/my-courses" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              My Courses
-            </Link>
+            <>
+              <Link to="/dashboard/student" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                My Dashboard
+              </Link>
+              <Link to="/my-courses" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                My Courses
+              </Link>
+            </>
           )}
         </div>
 
@@ -185,12 +190,20 @@ const Navigation = () => {
                     FAQ
                   </Link>
                   {user && (
-                    <Link 
-                      to="/my-courses" 
-                      className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
-                    >
-                      My Courses
-                    </Link>
+                    <>
+                      <Link 
+                        to="/dashboard/student" 
+                        className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
+                      >
+                        My Dashboard
+                      </Link>
+                      <Link 
+                        to="/my-courses" 
+                        className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
+                      >
+                        My Courses
+                      </Link>
+                    </>
                   )}
                 </div>
                 
