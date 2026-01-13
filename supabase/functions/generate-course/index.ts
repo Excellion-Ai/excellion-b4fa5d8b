@@ -173,6 +173,76 @@ const NICHE_KEYWORDS: Record<CourseTemplate, string[]> = {
   ],
 };
 
+// Keywords that indicate user wants multiple pages
+const MULTI_PAGE_KEYWORDS = [
+  'multiple pages', 'separate pages', 'multi-page', 'multipage',
+  'with pages', 'different pages', 'extra pages', 'additional pages',
+  'full course', 'complete course', 'comprehensive course', 'full site',
+];
+
+const BONUS_PAGE_KEYWORDS = [
+  'bonus', 'bonuses', 'bonus page', 'bonus content', 'extra content',
+  'free bonus', 'include bonuses', 'with bonuses',
+];
+
+const RESOURCES_PAGE_KEYWORDS = [
+  'resource', 'resources', 'downloads', 'downloadable', 'templates',
+  'worksheets', 'checklists', 'resource page', 'materials',
+];
+
+const COMMUNITY_PAGE_KEYWORDS = [
+  'community', 'forum', 'discord', 'slack', 'group', 'membership',
+  'community page', 'student community', 'private group',
+];
+
+const TESTIMONIALS_PAGE_KEYWORDS = [
+  'testimonial', 'testimonials', 'reviews', 'success stories',
+  'student reviews', 'social proof', 'testimonials page',
+];
+
+interface MultiPageDetection {
+  isMultiPage: boolean;
+  includeBonusPage: boolean;
+  includeResourcesPage: boolean;
+  includeCommunityPage: boolean;
+  includeTestimonialsPage: boolean;
+}
+
+function detectMultiPageIntent(prompt: string): MultiPageDetection {
+  const lowerPrompt = prompt.toLowerCase();
+  
+  // Check for general multi-page intent
+  const hasMultiPageIntent = MULTI_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
+  
+  // Check for specific page types
+  const includeBonusPage = BONUS_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
+  const includeResourcesPage = RESOURCES_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
+  const includeCommunityPage = COMMUNITY_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
+  const includeTestimonialsPage = TESTIMONIALS_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
+  
+  // If any specific page is requested, or general multi-page intent, enable multi-page
+  const isMultiPage = hasMultiPageIntent || includeBonusPage || includeResourcesPage || includeCommunityPage || includeTestimonialsPage;
+  
+  // If general multi-page intent without specifics, include common pages
+  if (hasMultiPageIntent && !includeBonusPage && !includeResourcesPage && !includeCommunityPage && !includeTestimonialsPage) {
+    return {
+      isMultiPage: true,
+      includeBonusPage: true,
+      includeResourcesPage: true,
+      includeCommunityPage: false,
+      includeTestimonialsPage: true,
+    };
+  }
+  
+  return {
+    isMultiPage,
+    includeBonusPage,
+    includeResourcesPage,
+    includeCommunityPage,
+    includeTestimonialsPage,
+  };
+}
+
 function detectTemplate(prompt: string): CourseTemplate {
   const lowerPrompt = prompt.toLowerCase();
   
@@ -186,14 +256,13 @@ function detectTemplate(prompt: string): CourseTemplate {
   for (const [template, keywords] of Object.entries(NICHE_KEYWORDS)) {
     for (const keyword of keywords) {
       if (lowerPrompt.includes(keyword)) {
-        scores[template as CourseTemplate] += keyword.split(' ').length; // Weight multi-word matches higher
+        scores[template as CourseTemplate] += keyword.split(' ').length;
       }
     }
   }
   
-  // Find highest scoring template
   let maxScore = 0;
-  let selectedTemplate: CourseTemplate = 'creator'; // Default
+  let selectedTemplate: CourseTemplate = 'creator';
   
   for (const [template, score] of Object.entries(scores)) {
     if (score > maxScore) {
@@ -287,17 +356,20 @@ serve(async (req) => {
     const duration_weeks = options?.duration_weeks || 6;
     const includeQuizzes = options?.includeQuizzes ?? true;
     const includeAssignments = options?.includeAssignments ?? false;
-    const separatePages = options?.separatePages ?? false;
-    const includeBonusPage = options?.includeBonusPage ?? false;
-    const includeResourcesPage = options?.includeResourcesPage ?? false;
-    const includeCommunityPage = options?.includeCommunityPage ?? false;
-    const includeTestimonialsPage = options?.includeTestimonialsPage ?? false;
+    
+    // Auto-detect multi-page intent from prompt
+    const multiPageDetection = detectMultiPageIntent(prompt);
+    const separatePages = options?.separatePages ?? multiPageDetection.isMultiPage;
+    const includeBonusPage = options?.includeBonusPage ?? multiPageDetection.includeBonusPage;
+    const includeResourcesPage = options?.includeResourcesPage ?? multiPageDetection.includeResourcesPage;
+    const includeCommunityPage = options?.includeCommunityPage ?? multiPageDetection.includeCommunityPage;
+    const includeTestimonialsPage = options?.includeTestimonialsPage ?? multiPageDetection.includeTestimonialsPage;
     
     // Auto-detect template from prompt if not provided
     const template: CourseTemplate = options?.template || detectTemplate(prompt);
     const templateConfig = TEMPLATE_CONFIG[template];
 
-    console.log(`Detected/selected template: ${template}, separatePages: ${separatePages}`);
+    console.log(`Detected template: ${template}, multiPage: ${separatePages}, bonus: ${includeBonusPage}, resources: ${includeResourcesPage}, community: ${includeCommunityPage}, testimonials: ${includeTestimonialsPage}`);
 
     // Build separate pages instructions if needed
     let separatePagesInstructions = '';

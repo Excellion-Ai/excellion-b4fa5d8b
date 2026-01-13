@@ -154,11 +154,6 @@ interface CourseOptions {
   includeQuizzes: boolean;
   includeAssignments: boolean;
   template: CourseTemplate;
-  separatePages: boolean;
-  includeBonusPage: boolean;
-  includeResourcesPage: boolean;
-  includeCommunityPage: boolean;
-  includeTestimonialsPage: boolean;
 }
 
 interface CourseBuilderPanelProps {
@@ -209,11 +204,6 @@ export function CourseBuilderPanel({
     includeQuizzes: true,
     includeAssignments: false,
     template: 'creator',
-    separatePages: false,
-    includeBonusPage: false,
-    includeResourcesPage: false,
-    includeCommunityPage: false,
-    includeTestimonialsPage: false,
   });
 
   const handleGenerate = () => {
@@ -463,83 +453,15 @@ Example: Create a comprehensive photography course for beginners that covers cam
               </div>
             </div>
 
-            {/* Separate Pages Section */}
+            {/* Multi-page hint */}
             <div className="border-t border-border pt-4 mt-2">
-              <div className="flex items-center gap-2 mb-3">
-                <Switch
-                  id="separatePages"
-                  checked={options.separatePages}
-                  onCheckedChange={(checked) =>
-                    setOptions((prev) => ({ ...prev, separatePages: checked }))
-                  }
-                  disabled={isGenerating}
-                />
-                <Label htmlFor="separatePages" className="text-sm cursor-pointer font-medium">
-                  Create separate pages
-                </Label>
-              </div>
-              
-              {options.separatePages && (
-                <div className="ml-6 space-y-2">
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Select which pages to generate:
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="bonusPage"
-                        checked={options.includeBonusPage}
-                        onCheckedChange={(checked) =>
-                          setOptions((prev) => ({ ...prev, includeBonusPage: checked }))
-                        }
-                        disabled={isGenerating}
-                      />
-                      <Label htmlFor="bonusPage" className="text-xs cursor-pointer">
-                        Bonuses page
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="resourcesPage"
-                        checked={options.includeResourcesPage}
-                        onCheckedChange={(checked) =>
-                          setOptions((prev) => ({ ...prev, includeResourcesPage: checked }))
-                        }
-                        disabled={isGenerating}
-                      />
-                      <Label htmlFor="resourcesPage" className="text-xs cursor-pointer">
-                        Resources page
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="communityPage"
-                        checked={options.includeCommunityPage}
-                        onCheckedChange={(checked) =>
-                          setOptions((prev) => ({ ...prev, includeCommunityPage: checked }))
-                        }
-                        disabled={isGenerating}
-                      />
-                      <Label htmlFor="communityPage" className="text-xs cursor-pointer">
-                        Community page
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="testimonialsPage"
-                        checked={options.includeTestimonialsPage}
-                        onCheckedChange={(checked) =>
-                          setOptions((prev) => ({ ...prev, includeTestimonialsPage: checked }))
-                        }
-                        disabled={isGenerating}
-                      />
-                      <Label htmlFor="testimonialsPage" className="text-xs cursor-pointer">
-                        Testimonials page
-                      </Label>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">💡 Tip:</span> Want multiple pages? Just say it in your prompt!
+                <br />
+                <span className="text-muted-foreground/80 italic">
+                  e.g., "Create a photography course with bonuses and testimonials pages"
+                </span>
+              </p>
             </div>
           </CollapsibleContent>
         </Collapsible>
