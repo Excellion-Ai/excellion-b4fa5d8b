@@ -988,24 +988,24 @@ export default function SecretBuilderHub() {
                     <div className="flex items-center justify-center py-4">
                       <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                     </div>
-                  ) : projects.length === 0 ? (
+                  ) : courses.length === 0 ? (
                     <p className="text-xs text-muted-foreground py-2 px-2">
-                      No projects yet
+                      No courses yet
                     </p>
                   ) : (
-                    projects.slice(0, 8).map((project) => (
+                    courses.slice(0, 8).map((course) => (
                       <div
-                        key={project.id}
-                        onClick={() => handleOpenProject(project.id)}
+                        key={course.id}
+                        onClick={() => navigate('/secret-builder', { state: { projectId: course.builder_project_id || course.id, courseId: course.id, courseMode: true } })}
                         className="group flex items-start gap-2 p-2 rounded-md hover:bg-secondary/50 cursor-pointer transition-colors"
                       >
                         <div className="w-1.5 h-1.5 rounded-full bg-primary/60 mt-1.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-foreground line-clamp-2 leading-tight">
-                            {project.name}
+                            {course.title}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            {project.published_url ? (
+                            {course.status === 'published' ? (
                               <Badge className="text-[10px] px-1 py-0 h-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
                                 Published
                               </Badge>
@@ -1015,7 +1015,7 @@ export default function SecretBuilderHub() {
                               </Badge>
                             )}
                             <span className="text-[10px] text-muted-foreground">
-                              {formatTimeAgo(project.updated_at)}
+                              {formatTimeAgo(course.updated_at)}
                             </span>
                           </div>
                         </div>
@@ -1031,31 +1031,44 @@ export default function SecretBuilderHub() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleOpenProject(project.id)}>
-                              <ExternalLink className="w-3.5 h-3.5 mr-2" /> Open
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate('/secret-builder', { state: { projectId: course.builder_project_id || course.id, courseId: course.id, courseMode: true } });
+                              }}
+                            >
+                              <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Course
                             </DropdownMenuItem>
-                            {project.published_url && (
+                            {course.published_url && (
                               <DropdownMenuItem 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  window.open(project.published_url!, '_blank');
+                                  navigator.clipboard.writeText(course.published_url || '');
+                                  toast({ title: 'Link copied!' });
                                 }}
                               >
-                                <Globe className="w-3.5 h-3.5 mr-2" /> View Live Site
+                                <Copy className="w-3.5 h-3.5 mr-2" /> Copy Link
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem onClick={(e) => openRenameDialog(project, e as unknown as React.MouseEvent)}>
-                              <Pencil className="w-3.5 h-3.5 mr-2" /> Rename
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => handleDuplicateProject(project, e as unknown as React.MouseEvent)}>
-                              <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
-                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
+                            {course.published_url && (
+                              <DropdownMenuItem 
+                                onClick={(e) => handleUnpublishCourse(course, e)}
+                                disabled={isUnpublishingCourse === course.id}
+                              >
+                                {isUnpublishingCourse === course.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                                ) : (
+                                  <EyeOff className="w-3.5 h-3.5 mr-2" />
+                                )}
+                                Unpublish Course
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem 
-                              className="text-destructive"
-                              onClick={(e) => handleDeleteClick(project, e as unknown as React.MouseEvent)}
+                              onClick={(e) => handleDeleteCourseClick(course, e)}
+                              className="text-destructive focus:text-destructive"
                             >
-                              <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+                              <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete Course
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
