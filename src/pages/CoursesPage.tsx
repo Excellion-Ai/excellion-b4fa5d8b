@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, Clock, BookOpen, X } from 'lucide-react';
+import { Search, Clock, BookOpen, X, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,8 @@ interface CourseData {
   status: string | null;
   published_at: string | null;
   thumbnail_url: string | null;
+  average_rating: number | null;
+  review_count: number | null;
 }
 
 interface Curriculum {
@@ -99,7 +101,7 @@ export default function CoursesPage() {
   async function fetchCourses() {
     const { data, error } = await supabase
       .from('courses')
-      .select('id, title, subdomain, description, difficulty, duration_weeks, modules, status, published_at, thumbnail_url')
+      .select('id, title, subdomain, description, difficulty, duration_weeks, modules, status, published_at, thumbnail_url, average_rating, review_count')
       .eq('status', 'published')
       .order('published_at', { ascending: false });
 
@@ -221,6 +223,12 @@ export default function CoursesPage() {
               <BookOpen className="w-3 h-3" />
               {totalLessons} lessons
             </div>
+            {course.average_rating && (course.review_count ?? 0) > 0 && (
+              <div className="flex items-center gap-1 text-xs text-accent">
+                <Star className="w-3 h-3 fill-accent" />
+                {course.average_rating.toFixed(1)} ({course.review_count})
+              </div>
+            )}
           </div>
 
           {/* CTA */}

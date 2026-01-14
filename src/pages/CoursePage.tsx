@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User } from 'lucide-react';
+import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { CourseReviews } from '@/components/course';
 
 interface Lesson {
   id: string;
@@ -52,6 +53,8 @@ interface Course {
   instructor_name: string | null;
   instructor_bio: string | null;
   total_students: number | null;
+  average_rating: number | null;
+  review_count: number;
 }
 
 const LessonTypeIcon = ({ type, contentType }: { type: string; contentType?: string }) => {
@@ -275,6 +278,12 @@ export default function CoursePage() {
                   {course.total_students} students
                 </Badge>
               )}
+              {course.average_rating && course.review_count > 0 && (
+                <Badge variant="outline" className="gap-1.5 text-primary border-primary/30">
+                  <Star className="w-3.5 h-3.5 fill-primary" />
+                  {course.average_rating.toFixed(1)} ({course.review_count} reviews)
+                </Badge>
+              )}
             </div>
           </CardHeader>
         </Card>
@@ -391,6 +400,13 @@ export default function CoursePage() {
             </Accordion>
           </CardContent>
         </Card>
+
+        {/* Course Reviews */}
+        <CourseReviews 
+          courseId={course.id} 
+          averageRating={course.average_rating} 
+          reviewCount={course.review_count} 
+        />
 
         {/* Enroll CTA */}
         <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30">

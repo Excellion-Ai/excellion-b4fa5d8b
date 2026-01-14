@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award } from 'lucide-react';
+import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { CourseReviewForm } from '@/components/course';
 
 interface Lesson {
   id: string;
@@ -50,6 +51,8 @@ export default function LearnPage() {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [certificateId, setCertificateId] = useState<string | null>(null);
   const [isGeneratingCert, setIsGeneratingCert] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // Calculate total lessons
   const totalLessons = useMemo(() => {
@@ -88,6 +91,7 @@ export default function LearnPage() {
         navigate(`/auth?redirect=/learn/${slug}`);
         return;
       }
+      setCurrentUserId(user.id);
 
       // Fetch course by subdomain
       let { data: courseData, error } = await supabase
@@ -471,6 +475,37 @@ export default function LearnPage() {
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
+
+            {/* Review Form - Show when course is 50%+ complete */}
+            {progressPercent >= 50 && enrollmentId && currentUserId && (
+              <div className="mt-8 pt-6 border-t border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold text-foreground">Share Your Feedback</h3>
+                  </div>
+                  {!showReviewForm && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowReviewForm(true)}
+                    >
+                      <Star className="h-4 w-4 mr-1" />
+                      Leave a Review
+                    </Button>
+                  )}
+                </div>
+                {showReviewForm && (
+                  <CourseReviewForm
+                    courseId={course.id}
+                    enrollmentId={enrollmentId}
+                    userId={currentUserId}
+                    hasCompletedCourse={progressPercent === 100}
+                    onReviewSubmitted={() => setShowReviewForm(false)}
+                  />
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>
