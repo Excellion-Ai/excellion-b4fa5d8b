@@ -22,6 +22,7 @@ import { RefineChat } from './RefineChat';
 import { CourseSettingsDialog } from './CourseSettingsDialog';
 import { CourseActionBar } from './CourseActionBar';
 import { CoursePublishDialog } from './CoursePublishDialog';
+import { CoursePublishSettingsDialog } from './CoursePublishSettingsDialog';
 import { ThemeEditor } from './ThemeEditor';
 import { LogoUpload } from './LogoUpload';
 import { HelpChat } from './HelpChat';
@@ -446,6 +447,7 @@ export function BuilderShell() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [showRefineChat, setShowRefineChat] = useState(false);
   const [showCourseSettings, setShowCourseSettings] = useState(false);
+  const [showPublishSettings, setShowPublishSettings] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [courseSettings, setCourseSettings] = useState({
@@ -2127,6 +2129,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     onPublish={handlePublishCourse}
                     onRefine={() => setShowRefineChat(true)}
                     onOpenSettings={() => setShowCourseSettings(true)}
+                    onOpenPublishSettings={() => setShowPublishSettings(true)}
                     onPreviewAsStudent={() => {
                       if (coursePublishedUrl) {
                         window.open(coursePublishedUrl, '_blank');
@@ -2161,6 +2164,29 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     onOpenChange={setShowCoursePublishDialog}
                     courseUrl={coursePublishedUrl || ''}
                     courseTitle={courseSpec.title}
+                  />
+                  <CoursePublishSettingsDialog
+                    open={showPublishSettings}
+                    onOpenChange={setShowPublishSettings}
+                    courseId={courseId}
+                    courseTitle={courseSpec.title}
+                    courseSubdomain={courseSpec.title
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, '-')
+                      .replace(/^-|-$/g, '')
+                      .slice(0, 50)}
+                    onStatusChange={(status) => {
+                      if (status === 'published') {
+                        const subdomain = courseSpec.title
+                          .toLowerCase()
+                          .replace(/[^a-z0-9]+/g, '-')
+                          .replace(/^-|-$/g, '')
+                          .slice(0, 50) + '-' + Date.now().toString(36);
+                        setCoursePublishedUrl(`${window.location.origin}/course/${subdomain}`);
+                      } else {
+                        setCoursePublishedUrl(null);
+                      }
+                    }}
                   />
                 </div>
               ) : siteSpec ? (

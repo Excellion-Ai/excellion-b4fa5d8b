@@ -266,6 +266,7 @@ export type Database = {
           builder_project_id: string | null
           created_at: string
           currency: string | null
+          custom_domain: string | null
           description: string | null
           difficulty: string | null
           duration_weeks: number | null
@@ -277,6 +278,9 @@ export type Database = {
           price_cents: number | null
           published_at: string | null
           published_url: string | null
+          seo_description: string | null
+          seo_title: string | null
+          social_image_url: string | null
           status: string | null
           subdomain: string | null
           thumbnail_url: string | null
@@ -289,6 +293,7 @@ export type Database = {
           builder_project_id?: string | null
           created_at?: string
           currency?: string | null
+          custom_domain?: string | null
           description?: string | null
           difficulty?: string | null
           duration_weeks?: number | null
@@ -300,6 +305,9 @@ export type Database = {
           price_cents?: number | null
           published_at?: string | null
           published_url?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          social_image_url?: string | null
           status?: string | null
           subdomain?: string | null
           thumbnail_url?: string | null
@@ -312,6 +320,7 @@ export type Database = {
           builder_project_id?: string | null
           created_at?: string
           currency?: string | null
+          custom_domain?: string | null
           description?: string | null
           difficulty?: string | null
           duration_weeks?: number | null
@@ -323,6 +332,9 @@ export type Database = {
           price_cents?: number | null
           published_at?: string | null
           published_url?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          social_image_url?: string | null
           status?: string | null
           subdomain?: string | null
           thumbnail_url?: string | null

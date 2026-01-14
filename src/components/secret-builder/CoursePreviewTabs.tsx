@@ -57,6 +57,8 @@ import {
   X,
   Plus,
   Settings,
+  Globe,
+  Upload,
 } from 'lucide-react';
 import { 
   ExtendedCourse, 
@@ -88,6 +90,7 @@ interface CoursePreviewTabsProps {
   onPublish?: () => void;
   onRefine?: () => void;
   onOpenSettings?: () => void;
+  onOpenPublishSettings?: () => void;
   onPreviewAsStudent?: () => void;
   onDuplicate?: () => void;
   onUploadThumbnail?: () => void;
@@ -157,6 +160,7 @@ export function CoursePreviewTabs({
   onPublish,
   onRefine,
   onOpenSettings,
+  onOpenPublishSettings,
   onPreviewAsStudent,
   onDuplicate,
   onUploadThumbnail,
@@ -1625,37 +1629,67 @@ export function CoursePreviewTabs({
       {/* Tab Navigation Bar */}
       <div className={`flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm px-4 py-2`}>
         {isMobile ? (
-          // Mobile: Dropdown Select
-          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)}>
-            <SelectTrigger className="w-full bg-card border-border">
-              <SelectValue>
-                {(() => {
-                  const tab = TABS.find(t => t.id === activeTab);
-                  if (!tab) return null;
+          // Mobile: Dropdown Select with action buttons
+          <div className="space-y-2">
+            <Select value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)}>
+              <SelectTrigger className="w-full bg-card border-border">
+                <SelectValue>
+                  {(() => {
+                    const tab = TABS.find(t => t.id === activeTab);
+                    if (!tab) return null;
+                    const Icon = tab.icon;
+                    return (
+                      <span className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        {tab.label}
+                      </span>
+                    );
+                  })()}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {TABS.map((tab) => {
                   const Icon = tab.icon;
                   return (
-                    <span className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" />
-                      {tab.label}
-                    </span>
+                    <SelectItem key={tab.id} value={tab.id}>
+                      <span className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        {tab.label}
+                      </span>
+                    </SelectItem>
                   );
-                })()}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {TABS.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <SelectItem key={tab.id} value={tab.id}>
-                    <span className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" />
-                      {tab.label}
-                    </span>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
+                })}
+              </SelectContent>
+            </Select>
+            {/* Mobile Action Buttons */}
+            <div className="flex items-center gap-2">
+              {activeTab === 'landing' && (
+                <Button
+                  variant={isEditMode ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setIsEditMode(!isEditMode)}
+                  className={`flex-1 ${isEditMode 
+                    ? 'bg-amber-500 hover:bg-amber-600 text-black' 
+                    : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                  }`}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Edit Layout
+                </Button>
+              )}
+              {onOpenPublishSettings && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onOpenPublishSettings}
+                  className={`${activeTab === 'landing' ? '' : 'flex-1'} border-primary/30 text-primary hover:bg-primary/10`}
+                >
+                  <Globe className="w-4 h-4 mr-2" />
+                  Publish
+                </Button>
+              )}
+            </div>
+          </div>
         ) : (
           // Desktop: Horizontal Tabs with template accent
           <div className="flex items-center justify-between">
@@ -1683,21 +1717,37 @@ export function CoursePreviewTabs({
               })}
             </div>
             
-            {/* Edit Layout Button */}
-            {activeTab === 'landing' && (
-              <Button
-                variant={isEditMode ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setIsEditMode(!isEditMode)}
-                className={isEditMode 
-                  ? 'bg-amber-500 hover:bg-amber-600 text-black' 
-                  : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
-                }
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Edit Layout
-              </Button>
-            )}
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {/* Edit Layout Button - only on landing tab */}
+              {activeTab === 'landing' && (
+                <Button
+                  variant={isEditMode ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setIsEditMode(!isEditMode)}
+                  className={isEditMode 
+                    ? 'bg-amber-500 hover:bg-amber-600 text-black' 
+                    : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                  }
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Edit Layout
+                </Button>
+              )}
+              
+              {/* Publish Settings Button */}
+              {onOpenPublishSettings && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onOpenPublishSettings}
+                  className="border-primary/30 text-primary hover:bg-primary/10"
+                >
+                  <Globe className="w-4 h-4 mr-2" />
+                  <span className="hidden lg:inline">Publish Settings</span>
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </div>
