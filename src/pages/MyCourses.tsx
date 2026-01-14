@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, BookOpen, Check, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -106,7 +107,13 @@ export default function MyCourses() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <title>My Courses | Excellion</title>
+        <meta name="description" content="View your enrolled courses and continue learning" />
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <div className="min-h-screen bg-background">
       <Navigation />
       
       <div className="pt-20 pb-12 px-4">
@@ -199,6 +206,7 @@ export default function MyCourses() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

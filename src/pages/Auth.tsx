@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -260,7 +261,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <>
+      <Helmet>
+        <title>{isLogin ? "Login" : "Sign Up"} | Excellion</title>
+        <meta name="description" content={isLogin ? "Sign in to your Excellion account" : "Create your Excellion account and start learning"} />
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <div className="min-h-screen bg-background relative">
       {/* Video Background */}
       <div className="fixed inset-0 z-0">
         <video
@@ -476,7 +483,8 @@ const Auth = () => {
 
         <Footer />
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
