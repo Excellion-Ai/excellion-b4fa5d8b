@@ -2127,6 +2127,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     course={courseSpec}
                     onUpdate={(updated) => setCourseSpec(updated)}
                     onPublish={handlePublishCourse}
+                    onUnpublish={handleUnpublishCourse}
                     onRefine={() => setShowRefineChat(true)}
                     onOpenSettings={() => setShowCourseSettings(true)}
                     onOpenPublishSettings={() => setShowPublishSettings(true)}
@@ -2140,6 +2141,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     onDuplicate={() => toast.info('Course duplicated!')}
                     onUploadThumbnail={() => toast.info('Thumbnail upload coming soon!')}
                     isPublishing={isPublishing}
+                    isPublished={!!coursePublishedUrl}
                   />
                   <RefineChat
                     open={showRefineChat}
