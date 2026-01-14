@@ -199,6 +199,7 @@ export default function SecretBuilderHub() {
   const [courseToDelete, setCourseToDelete] = useState<CourseItem | null>(null);
   const [courseDeleteDialogOpen, setCourseDeleteDialogOpen] = useState(false);
   const [isUnpublishingCourse, setIsUnpublishingCourse] = useState<string | null>(null);
+  const [courseDeleteConfirmText, setCourseDeleteConfirmText] = useState('');
   
   // Interview intake hook
   const interview = useInterviewIntake(idea);
@@ -350,6 +351,7 @@ export default function SecretBuilderHub() {
   const handleDeleteCourseClick = (course: CourseItem, e: React.MouseEvent) => {
     e.stopPropagation();
     setCourseToDelete(course);
+    setCourseDeleteConfirmText('');
     setCourseDeleteDialogOpen(true);
   };
 
@@ -385,6 +387,7 @@ export default function SecretBuilderHub() {
     setIsDeleting(false);
     setCourseDeleteDialogOpen(false);
     setCourseToDelete(null);
+    setCourseDeleteConfirmText('');
   };
 
   const handleRenameProject = async (newName: string) => {
@@ -1493,26 +1496,44 @@ export default function SecretBuilderHub() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Course Delete Confirmation Dialog */}
-      <AlertDialog open={courseDeleteDialogOpen} onOpenChange={setCourseDeleteDialogOpen}>
+      {/* Course Delete Confirmation Dialog - Requires typing course name */}
+      <AlertDialog open={courseDeleteDialogOpen} onOpenChange={(open) => {
+        setCourseDeleteDialogOpen(open);
+        if (!open) setCourseDeleteConfirmText('');
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this course?</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                This will permanently delete <strong>"{courseToDelete?.title}"</strong> and all associated data.
-              </p>
-              <p className="text-destructive font-medium">
-                This action cannot be undone. All enrollments, student progress, and reviews will also be deleted.
-              </p>
+            <AlertDialogTitle>Are you sure you want to delete this course?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p>
+                  This will permanently delete <strong>"{courseToDelete?.title}"</strong> and all associated data.
+                </p>
+                <p className="text-destructive font-medium">
+                  This action cannot be undone. All enrollments, student progress, certificates, and reviews will also be deleted.
+                </p>
+                <div className="pt-2">
+                  <label className="text-sm text-muted-foreground block mb-2">
+                    Type <strong className="text-foreground">{courseToDelete?.title}</strong> to confirm:
+                  </label>
+                  <input
+                    type="text"
+                    value={courseDeleteConfirmText}
+                    onChange={(e) => setCourseDeleteConfirmText(e.target.value)}
+                    placeholder="Enter course name to confirm"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-destructive"
+                    disabled={isDeleting}
+                  />
+                </div>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDeleteCourse}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting || courseDeleteConfirmText !== courseToDelete?.title}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDeleting ? (
                 <>
@@ -1520,7 +1541,7 @@ export default function SecretBuilderHub() {
                   Deleting...
                 </>
               ) : (
-                'Yes, delete course'
+                'Delete Course Permanently'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
