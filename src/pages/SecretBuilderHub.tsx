@@ -46,7 +46,8 @@ import {
   LogOut,
   User,
   Zap,
-  Headphones
+  Headphones,
+  EyeOff
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import {
@@ -195,6 +196,9 @@ export default function SecretBuilderHub() {
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [interviewOpen, setInterviewOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<CourseItem | null>(null);
+  const [courseDeleteDialogOpen, setCourseDeleteDialogOpen] = useState(false);
+  const [isUnpublishingCourse, setIsUnpublishingCourse] = useState<string | null>(null);
   
   // Interview intake hook
   const interview = useInterviewIntake(idea);
@@ -303,6 +307,84 @@ export default function SecretBuilderHub() {
     setIsDeleting(false);
     setDeleteDialogOpen(false);
     setProjectToDelete(null);
+  };
+
+  const handleUnpublishCourse = async (course: CourseItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsUnpublishingCourse(course.id);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (course.builder_project_id) {
+        const { error: fnError } = await supabase.functions.invoke('unpublish-site', {
+          body: { projectId: course.builder_project_id },
+        });
+        if (fnError) throw fnError;
+      }
+      
+      const { error } = await supabase
+        .from('courses')
+        .update({ 
+          status: 'draft', 
+          published_url: null, 
+          published_at: null,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', course.id);
+      
+      if (error) throw error;
+      
+      setCourses((prev) =>
+        prev.map((c) => c.id === course.id ? { ...c, status: 'draft', published_url: null } : c)
+      );
+      toast({ title: 'Course unpublished' });
+    } catch (error) {
+      console.error('Unpublish error:', error);
+      toast({ title: 'Error', description: 'Failed to unpublish course', variant: 'destructive' });
+    } finally {
+      setIsUnpublishingCourse(null);
+    }
+  };
+
+  const handleDeleteCourseClick = (course: CourseItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCourseToDelete(course);
+    setCourseDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDeleteCourse = async () => {
+    if (!courseToDelete) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      // Delete the course
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', courseToDelete.id);
+
+      if (error) throw error;
+      
+      // Also delete associated builder project if exists
+      if (courseToDelete.builder_project_id) {
+        await supabase
+          .from('builder_projects')
+          .delete()
+          .eq('id', courseToDelete.builder_project_id);
+      }
+      
+      setCourses((prev) => prev.filter((c) => c.id !== courseToDelete.id));
+      toast({ title: 'Course deleted' });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({ title: 'Error', description: 'Failed to delete course', variant: 'destructive' });
+    }
+    
+    setIsDeleting(false);
+    setCourseDeleteDialogOpen(false);
+    setCourseToDelete(null);
   };
 
   const handleRenameProject = async (newName: string) => {
@@ -1245,20 +1327,32 @@ export default function SecretBuilderHub() {
                                 <DropdownMenuItem 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    window.open(course.published_url!, '_blank');
+                                    navigator.clipboard.writeText(course.published_url || '');
+                                    toast({ title: 'Link copied!' });
                                   }}
                                 >
-                                  <Globe className="w-3.5 h-3.5 mr-2" /> View Live Course
+                                  <Copy className="w-3.5 h-3.5 mr-2" /> Copy Link
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              {course.published_url && (
+                                <DropdownMenuItem 
+                                  onClick={(e) => handleUnpublishCourse(course, e)}
+                                  disabled={isUnpublishingCourse === course.id}
+                                >
+                                  {isUnpublishingCourse === course.id ? (
+                                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                                  ) : (
+                                    <EyeOff className="w-3.5 h-3.5 mr-2" />
+                                  )}
+                                  Unpublish Course
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigator.clipboard.writeText(course.published_url || '');
-                                  toast({ title: 'Link copied!' });
-                                }}
+                                onClick={(e) => handleDeleteCourseClick(course, e)}
+                                className="text-destructive focus:text-destructive"
                               >
-                                <Copy className="w-3.5 h-3.5 mr-2" /> Copy Link
+                                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete Course
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1380,6 +1474,40 @@ export default function SecretBuilderHub() {
                 </>
               ) : (
                 'Yes, delete project'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Course Delete Confirmation Dialog */}
+      <AlertDialog open={courseDeleteDialogOpen} onOpenChange={setCourseDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this course?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                This will permanently delete <strong>"{courseToDelete?.title}"</strong> and all associated data.
+              </p>
+              <p className="text-destructive font-medium">
+                This action cannot be undone. All enrollments, student progress, and reviews will also be deleted.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteCourse}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Yes, delete course'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
