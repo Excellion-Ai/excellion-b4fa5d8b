@@ -102,6 +102,9 @@ const Navigation = () => {
         </Link>
           
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
+          <Link to="/courses" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Courses
+          </Link>
           <a href="/#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             How it Works
           </a>
@@ -171,6 +174,12 @@ const Navigation = () => {
                 
                 {/* Navigation Links */}
                 <div className="flex flex-col p-4 gap-1">
+                  <Link 
+                    to="/courses" 
+                    className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
+                  >
+                    Courses
+                  </Link>
                   <a 
                     href="/#how-it-works" 
                     className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
