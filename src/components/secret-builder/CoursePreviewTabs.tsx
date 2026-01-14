@@ -59,6 +59,7 @@ import {
   Settings,
   Globe,
   Upload,
+  EyeOff,
 } from 'lucide-react';
 import { 
   ExtendedCourse, 
@@ -88,6 +89,7 @@ interface CoursePreviewTabsProps {
   course: ExtendedCourse;
   onUpdate?: (course: ExtendedCourse) => void;
   onPublish?: () => void;
+  onUnpublish?: () => void;
   onRefine?: () => void;
   onOpenSettings?: () => void;
   onOpenPublishSettings?: () => void;
@@ -95,6 +97,7 @@ interface CoursePreviewTabsProps {
   onDuplicate?: () => void;
   onUploadThumbnail?: () => void;
   isPublishing?: boolean;
+  isPublished?: boolean;
 }
 
 const BASE_TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
@@ -158,6 +161,7 @@ export function CoursePreviewTabs({
   course,
   onUpdate,
   onPublish,
+  onUnpublish,
   onRefine,
   onOpenSettings,
   onOpenPublishSettings,
@@ -165,6 +169,7 @@ export function CoursePreviewTabs({
   onDuplicate,
   onUploadThumbnail,
   isPublishing = false,
+  isPublished = false,
 }: CoursePreviewTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('landing');
   const [selectedModuleIdx, setSelectedModuleIdx] = useState(0);
@@ -1677,6 +1682,18 @@ export function CoursePreviewTabs({
                   Edit Layout
                 </Button>
               )}
+              {isPublished && onUnpublish && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onUnpublish}
+                  disabled={isPublishing}
+                  className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                >
+                  <EyeOff className="w-4 h-4 mr-2" />
+                  Unpublish
+                </Button>
+              )}
               {onOpenPublishSettings && (
                 <Button
                   variant="outline"
@@ -1685,7 +1702,7 @@ export function CoursePreviewTabs({
                   className={`${activeTab === 'landing' ? '' : 'flex-1'} border-primary/30 text-primary hover:bg-primary/10`}
                 >
                   <Globe className="w-4 h-4 mr-2" />
-                  Publish
+                  {isPublished ? 'Settings' : 'Publish'}
                 </Button>
               )}
             </div>
@@ -1735,6 +1752,20 @@ export function CoursePreviewTabs({
                 </Button>
               )}
               
+              {/* Unpublish Button - only if published */}
+              {isPublished && onUnpublish && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onUnpublish}
+                  disabled={isPublishing}
+                  className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                >
+                  <EyeOff className="w-4 h-4 mr-2" />
+                  <span className="hidden lg:inline">Unpublish</span>
+                </Button>
+              )}
+              
               {/* Publish Settings Button */}
               {onOpenPublishSettings && (
                 <Button
@@ -1744,7 +1775,7 @@ export function CoursePreviewTabs({
                   className="border-primary/30 text-primary hover:bg-primary/10"
                 >
                   <Globe className="w-4 h-4 mr-2" />
-                  <span className="hidden lg:inline">Publish Settings</span>
+                  <span className="hidden lg:inline">{isPublished ? 'Publish Settings' : 'Publish'}</span>
                 </Button>
               )}
             </div>
