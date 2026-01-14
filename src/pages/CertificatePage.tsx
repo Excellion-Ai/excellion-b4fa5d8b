@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Award, ArrowLeft, Share2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -81,7 +82,15 @@ export default function CertificatePage() {
   const issuedDate = format(new Date(certificate.issued_at), 'MMMM d, yyyy');
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <>
+      <Helmet>
+        <title>Certificate of Completion | Excellion</title>
+        <meta name="description" content={`${certificate.student_name} completed ${certificate.course_title} on Excellion`} />
+        <meta property="og:title" content={`Certificate: ${certificate.course_title}`} />
+        <meta property="og:description" content={`${certificate.student_name} successfully completed this course`} />
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <Link 
           to="/my-courses" 
@@ -181,6 +190,7 @@ export default function CertificatePage() {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

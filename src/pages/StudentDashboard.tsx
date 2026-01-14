@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Loader2, BookOpen, Check, Award, Trophy, CheckCircle, 
@@ -183,7 +184,13 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <title>Dashboard | Excellion</title>
+        <meta name="description" content="Your learning dashboard - track progress and continue learning" />
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <div className="min-h-screen bg-background">
       <Navigation />
       
       <div className="pt-20 pb-12 px-4">
@@ -494,6 +501,7 @@ export default function StudentDashboard() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

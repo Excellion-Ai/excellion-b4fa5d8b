@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, Clock, BookOpen, X, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -259,7 +260,17 @@ export default function CoursesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <title>Explore Courses | Excellion</title>
+        <meta name="description" content="Browse expert-created online courses. Learn new skills at your own pace." />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Explore Courses | Excellion" />
+        <meta property="og:description" content="Browse expert-created online courses. Learn new skills at your own pace." />
+        <meta property="og:url" content="https://excellion.lovable.app/courses" />
+        <link rel="canonical" href="https://excellion.lovable.app/courses" />
+      </Helmet>
+      <div className="min-h-screen bg-background">
       <Navigation />
       
       <main className="pt-24 pb-16">
@@ -384,6 +395,7 @@ export default function CoursesPage() {
       </main>
 
       <LazyFooter />
-    </div>
+      </div>
+    </>
   );
 }

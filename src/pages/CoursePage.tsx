@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User, Star } from 'lucide-react';
@@ -233,8 +234,38 @@ export default function CoursePage() {
   const totalLessons = course.modules.reduce((acc, mod) => acc + mod.lessons.length, 0);
   const priceText = formatPrice(course.price_cents, course.currency);
 
+  const defaultImage = "https://excellion.lovable.app/og-image.png";
+  const courseUrl = `https://excellion.lovable.app/course/${course.subdomain || course.id}`;
+
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <title>{course.title} | Excellion</title>
+        <meta name="description" content={course.description || `Learn ${course.title} with our comprehensive course`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={course.title} />
+        <meta property="og:description" content={course.description || `Learn ${course.title} with our comprehensive course`} />
+        <meta property="og:image" content={course.thumbnail_url || defaultImage} />
+        <meta property="og:url" content={courseUrl} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={course.title} />
+        <meta name="twitter:description" content={course.description || `Learn ${course.title}`} />
+        <meta name="twitter:image" content={course.thumbnail_url || defaultImage} />
+        <link rel="canonical" href={courseUrl} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Course",
+            "name": course.title,
+            "description": course.description,
+            "provider": {
+              "@type": "Organization",
+              "name": "Excellion"
+            }
+          })}
+        </script>
+      </Helmet>
+      <div className="min-h-screen bg-background">
       {/* Hero Section with Thumbnail */}
       {course.thumbnail_url && (
         <div className="relative w-full h-64 md:h-80 overflow-hidden">
@@ -454,6 +485,7 @@ export default function CoursePage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
