@@ -322,6 +322,7 @@ export type Database = {
           created_at: string
           currency: string | null
           custom_domain: string | null
+          deleted_at: string | null
           description: string | null
           difficulty: string | null
           duration_weeks: number | null
@@ -351,6 +352,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           custom_domain?: string | null
+          deleted_at?: string | null
           description?: string | null
           difficulty?: string | null
           duration_weeks?: number | null
@@ -380,6 +382,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           custom_domain?: string | null
+          deleted_at?: string | null
           description?: string | null
           difficulty?: string | null
           duration_weeks?: number | null

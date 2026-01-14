@@ -125,6 +125,7 @@ interface CourseItem {
   modules: any;
   difficulty: string | null;
   duration_weeks: number | null;
+  deleted_at: string | null;
 }
 
 // Format price helper
@@ -200,6 +201,12 @@ export default function SecretBuilderHub() {
   const [courseDeleteDialogOpen, setCourseDeleteDialogOpen] = useState(false);
   const [isUnpublishingCourse, setIsUnpublishingCourse] = useState<string | null>(null);
   const [courseDeleteConfirmText, setCourseDeleteConfirmText] = useState('');
+  const [trashedCourses, setTrashedCourses] = useState<CourseItem[]>([]);
+  const [trashFolderOpen, setTrashFolderOpen] = useState(false);
+  const [courseToRestore, setCourseToRestore] = useState<CourseItem | null>(null);
+  const [courseToPermanentlyDelete, setCourseToPermanentlyDelete] = useState<CourseItem | null>(null);
+  const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false);
+  const [permanentDeleteConfirmText, setPermanentDeleteConfirmText] = useState('');
   
   // Interview intake hook
   const interview = useInterviewIntake(idea);
@@ -261,17 +268,31 @@ export default function SecretBuilderHub() {
         setProjects(projectData);
       }
 
-      // Fetch ALL courses for the current user (both drafts and published)
+      // Fetch active courses (not deleted)
       if (user) {
-        const { data: courseData, error: courseError } = await supabase
+        const { data: activeCourseData, error: activeError } = await supabase
           .from('courses')
-          .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url, builder_project_id, modules, difficulty, duration_weeks')
+          .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url, builder_project_id, modules, difficulty, duration_weeks, deleted_at')
           .eq('user_id', user.id)
+          .is('deleted_at', null)
           .order('updated_at', { ascending: false })
           .limit(50);
 
-        if (!courseError && courseData) {
-          setCourses(courseData);
+        if (!activeError && activeCourseData) {
+          setCourses(activeCourseData);
+        }
+
+        // Fetch trashed courses (soft-deleted)
+        const { data: trashedData, error: trashedError } = await supabase
+          .from('courses')
+          .select('id, title, subdomain, status, thumbnail_url, price_cents, currency, total_students, created_at, updated_at, published_url, builder_project_id, modules, difficulty, duration_weeks, deleted_at')
+          .eq('user_id', user.id)
+          .not('deleted_at', 'is', null)
+          .order('deleted_at', { ascending: false })
+          .limit(50);
+
+        if (!trashedError && trashedData) {
+          setTrashedCourses(trashedData);
         }
       }
 
@@ -361,33 +382,110 @@ export default function SecretBuilderHub() {
     setIsDeleting(true);
     
     try {
-      // Delete the course
+      // Soft-delete: set deleted_at timestamp instead of actually deleting
       const { error } = await supabase
         .from('courses')
-        .delete()
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          status: 'draft', // Also unpublish when moving to trash
+          published_url: null,
+          published_at: null
+        })
         .eq('id', courseToDelete.id);
 
       if (error) throw error;
       
-      // Also delete associated builder project if exists
-      if (courseToDelete.builder_project_id) {
-        await supabase
-          .from('builder_projects')
-          .delete()
-          .eq('id', courseToDelete.builder_project_id);
-      }
-      
+      // Move from active courses to trash
+      const deletedCourse = { ...courseToDelete, deleted_at: new Date().toISOString(), status: 'draft', published_url: null };
       setCourses((prev) => prev.filter((c) => c.id !== courseToDelete.id));
-      toast({ title: 'Course deleted' });
+      setTrashedCourses((prev) => [deletedCourse, ...prev]);
+      toast({ 
+        title: 'Course moved to trash', 
+        description: 'You can restore it within 30 days.' 
+      });
     } catch (error) {
       console.error('Delete error:', error);
-      toast({ title: 'Error', description: 'Failed to delete course', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Failed to move course to trash', variant: 'destructive' });
     }
     
     setIsDeleting(false);
     setCourseDeleteDialogOpen(false);
     setCourseToDelete(null);
     setCourseDeleteConfirmText('');
+  };
+
+  // Restore course from trash
+  const handleRestoreCourse = async (course: CourseItem) => {
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .update({ deleted_at: null })
+        .eq('id', course.id);
+
+      if (error) throw error;
+      
+      // Move from trash back to active courses
+      const restoredCourse = { ...course, deleted_at: null };
+      setTrashedCourses((prev) => prev.filter((c) => c.id !== course.id));
+      setCourses((prev) => [restoredCourse, ...prev]);
+      toast({ title: 'Course restored!' });
+    } catch (error) {
+      console.error('Restore error:', error);
+      toast({ title: 'Error', description: 'Failed to restore course', variant: 'destructive' });
+    }
+  };
+
+  // Permanently delete from trash
+  const handlePermanentDeleteClick = (course: CourseItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCourseToPermanentlyDelete(course);
+    setPermanentDeleteConfirmText('');
+    setPermanentDeleteDialogOpen(true);
+  };
+
+  const handleConfirmPermanentDelete = async () => {
+    if (!courseToPermanentlyDelete) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      // Permanently delete the course
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', courseToPermanentlyDelete.id);
+
+      if (error) throw error;
+      
+      // Also delete associated builder project if exists
+      if (courseToPermanentlyDelete.builder_project_id) {
+        await supabase
+          .from('builder_projects')
+          .delete()
+          .eq('id', courseToPermanentlyDelete.builder_project_id);
+      }
+      
+      setTrashedCourses((prev) => prev.filter((c) => c.id !== courseToPermanentlyDelete.id));
+      toast({ title: 'Course permanently deleted' });
+    } catch (error) {
+      console.error('Permanent delete error:', error);
+      toast({ title: 'Error', description: 'Failed to permanently delete course', variant: 'destructive' });
+    }
+    
+    setIsDeleting(false);
+    setPermanentDeleteDialogOpen(false);
+    setCourseToPermanentlyDelete(null);
+    setPermanentDeleteConfirmText('');
+  };
+
+  // Helper to calculate days until permanent deletion
+  const getDaysUntilPermanentDelete = (deletedAt: string | null) => {
+    if (!deletedAt) return 30;
+    const deleted = new Date(deletedAt);
+    const now = new Date();
+    const diffMs = now.getTime() - deleted.getTime();
+    const diffDays = Math.floor(diffMs / 86400000);
+    return Math.max(0, 30 - diffDays);
   };
 
   const handleRenameProject = async (newName: string) => {
@@ -1071,7 +1169,85 @@ export default function SecretBuilderHub() {
                               onClick={(e) => handleDeleteCourseClick(course, e)}
                               className="text-destructive focus:text-destructive"
                             >
-                              <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete Course
+                              <Trash2 className="w-3.5 h-3.5 mr-2" /> Move to Trash
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Trash Folder Collapsible */}
+          <Collapsible open={trashFolderOpen} onOpenChange={setTrashFolderOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="text-sm flex-1 text-left">Trash</span>
+                {trashedCourses.length > 0 && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 mr-1">
+                    {trashedCourses.length}
+                  </Badge>
+                )}
+                <ChevronDown className={`w-4 h-4 transition-transform ${trashFolderOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-2 mt-1">
+              <ScrollArea className="h-48 pr-2">
+                <div className="space-y-0.5 pl-2">
+                  {trashedCourses.length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-2 px-2">
+                      Trash is empty
+                    </p>
+                  ) : (
+                    trashedCourses.map((course) => (
+                      <div
+                        key={course.id}
+                        className="group flex items-start gap-2 p-2 rounded-md hover:bg-secondary/50 transition-colors"
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-destructive/60 mt-1.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-muted-foreground line-clamp-2 leading-tight">
+                            {course.title}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] text-destructive">
+                              {getDaysUntilPermanentDelete(course.deleted_at)} days left
+                            </span>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRestoreCourse(course);
+                              }}
+                            >
+                              <ArrowRight className="w-3.5 h-3.5 mr-2 rotate-180" /> Restore Course
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={(e) => handlePermanentDeleteClick(course, e)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete Permanently
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -1368,7 +1544,7 @@ export default function SecretBuilderHub() {
                                 onClick={(e) => handleDeleteCourseClick(course, e)}
                                 className="text-destructive focus:text-destructive"
                               >
-                                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete Course
+                                <Trash2 className="w-3.5 h-3.5 mr-2" /> Move to Trash
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1496,21 +1672,21 @@ export default function SecretBuilderHub() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Course Delete Confirmation Dialog - Requires typing course name */}
+      {/* Course Delete (Soft-Delete) Confirmation Dialog */}
       <AlertDialog open={courseDeleteDialogOpen} onOpenChange={(open) => {
         setCourseDeleteDialogOpen(open);
         if (!open) setCourseDeleteConfirmText('');
       }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this course?</AlertDialogTitle>
+            <AlertDialogTitle>Move this course to trash?</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-4">
                 <p>
-                  This will permanently delete <strong>"{courseToDelete?.title}"</strong> and all associated data.
+                  <strong>"{courseToDelete?.title}"</strong> will be moved to trash.
                 </p>
-                <p className="text-destructive font-medium">
-                  This action cannot be undone. All enrollments, student progress, certificates, and reviews will also be deleted.
+                <p className="text-muted-foreground">
+                  You can restore it within 30 days. After that, it will be permanently deleted along with all enrollments, progress, and certificates.
                 </p>
                 <div className="pt-2">
                   <label className="text-sm text-muted-foreground block mb-2">
@@ -1538,10 +1714,62 @@ export default function SecretBuilderHub() {
               {isDeleting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Moving...
+                </>
+              ) : (
+                'Move to Trash'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Permanent Delete from Trash Confirmation Dialog */}
+      <AlertDialog open={permanentDeleteDialogOpen} onOpenChange={(open) => {
+        setPermanentDeleteDialogOpen(open);
+        if (!open) setPermanentDeleteConfirmText('');
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Permanently delete this course?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p>
+                  This will permanently delete <strong>"{courseToPermanentlyDelete?.title}"</strong> and all associated data.
+                </p>
+                <p className="text-destructive font-medium">
+                  This action cannot be undone. All enrollments, student progress, certificates, and reviews will be permanently deleted.
+                </p>
+                <div className="pt-2">
+                  <label className="text-sm text-muted-foreground block mb-2">
+                    Type <strong className="text-foreground">{courseToPermanentlyDelete?.title}</strong> to confirm:
+                  </label>
+                  <input
+                    type="text"
+                    value={permanentDeleteConfirmText}
+                    onChange={(e) => setPermanentDeleteConfirmText(e.target.value)}
+                    placeholder="Enter course name to confirm"
+                    className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-destructive"
+                    disabled={isDeleting}
+                  />
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmPermanentDelete}
+              disabled={isDeleting || permanentDeleteConfirmText !== courseToPermanentlyDelete?.title}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Deleting...
                 </>
               ) : (
-                'Delete Course Permanently'
+                'Delete Permanently'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
