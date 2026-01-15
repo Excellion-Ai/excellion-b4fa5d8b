@@ -28,6 +28,9 @@ const MyCourses = lazyWithRetry(() => import("./pages/MyCourses"), "MyCourses");
 const CertificatePage = lazyWithRetry(() => import("./pages/CertificatePage"), "CertificatePage");
 const StudentDashboard = lazyWithRetry(() => import("./pages/StudentDashboard"), "StudentDashboard");
 const CoursesPage = lazyWithRetry(() => import("./pages/CoursesPage"), "CoursesPage");
+const Privacy = lazyWithRetry(() => import("./pages/Privacy"), "Privacy");
+const Terms = lazyWithRetry(() => import("./pages/Terms"), "Terms");
+const About = lazyWithRetry(() => import("./pages/About"), "About");
 
 // Settings pages
 const Settings = lazyWithRetry(() => import("./pages/Settings"), "Settings");
@@ -71,6 +74,9 @@ const App = () => (
         <Route path="/builder-faq" element={<BuilderFAQ />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/legal" element={<Legal />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/about" element={<About />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/thank-you" element={<ThankYou />} />
