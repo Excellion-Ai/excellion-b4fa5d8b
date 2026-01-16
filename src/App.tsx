@@ -29,6 +29,7 @@ const CertificatePage = lazyWithRetry(() => import("./pages/CertificatePage"), "
 const StudentDashboard = lazyWithRetry(() => import("./pages/StudentDashboard"), "StudentDashboard");
 const CoursesPage = lazyWithRetry(() => import("./pages/CoursesPage"), "CoursesPage");
 const CreatorAnalytics = lazyWithRetry(() => import("./pages/CreatorAnalytics"), "CreatorAnalytics");
+const CourseDetailAnalytics = lazyWithRetry(() => import("./pages/CourseDetailAnalytics"), "CourseDetailAnalytics");
 const Privacy = lazyWithRetry(() => import("./pages/Privacy"), "Privacy");
 const Terms = lazyWithRetry(() => import("./pages/Terms"), "Terms");
 const About = lazyWithRetry(() => import("./pages/About"), "About");
@@ -97,6 +98,7 @@ const App = () => (
         <Route path="/certificate/:id" element={<CertificatePage />} />
         <Route path="/dashboard/student" element={<StudentDashboard />} />
         <Route path="/dashboard/analytics" element={<CreatorAnalytics />} />
+        <Route path="/dashboard/analytics/:courseId" element={<CourseDetailAnalytics />} />
         
         {/* Settings routes */}
         <Route path="/settings" element={<Settings />}>

@@ -560,7 +560,7 @@ export default function CreatorAnalytics() {
                       <TableRow 
                         key={course.id} 
                         className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => navigate(`/course/${course.subdomain || course.id}`)}
+                        onClick={() => navigate(`/dashboard/analytics/${course.id}`)}
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
