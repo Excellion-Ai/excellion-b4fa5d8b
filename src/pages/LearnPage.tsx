@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/dialog';
 import { CourseReviewForm } from '@/components/course';
 import { VideoPlayer } from '@/components/video';
+import { QuizPlayer } from '@/components/quiz';
+import type { QuizQuestion } from '@/types/course-pages';
 
 interface Lesson {
   id: string;
@@ -24,6 +26,8 @@ interface Lesson {
   duration?: string;
   type?: 'text' | 'video' | 'text_video' | 'quiz' | 'assignment';
   video_url?: string;
+  quiz_questions?: QuizQuestion[];
+  passing_score?: number;
 }
 
 interface CourseModule {
@@ -493,20 +497,37 @@ export default function LearnPage() {
             </div>
             <h2 className="text-2xl font-bold mb-6">{currentLesson?.title}</h2>
             
-            {/* Video content */}
-            {(currentLesson?.type === 'video' || currentLesson?.type === 'text_video') && currentLesson?.video_url && (
-              <div className="mb-6">
-                <VideoPlayer url={currentLesson.video_url} />
-              </div>
-            )}
+            {/* Quiz content */}
+            {currentLesson?.type === 'quiz' && currentLesson?.quiz_questions && currentLesson.quiz_questions.length > 0 ? (
+              <QuizPlayer
+                lessonTitle={currentLesson.title}
+                questions={currentLesson.quiz_questions}
+                passingScore={currentLesson.passing_score || 70}
+                onComplete={async (score, passed) => {
+                  if (passed && currentLesson) {
+                    await markLessonComplete(currentLesson.id);
+                  }
+                }}
+                onContinue={handleNext}
+              />
+            ) : (
+              <>
+                {/* Video content */}
+                {(currentLesson?.type === 'video' || currentLesson?.type === 'text_video') && currentLesson?.video_url && (
+                  <div className="mb-6">
+                    <VideoPlayer url={currentLesson.video_url} />
+                  </div>
+                )}
 
-            {/* Text content */}
-            {currentLesson?.type !== 'video' && (
-              <div className="prose prose-invert max-w-none mb-8">
-                <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
-                  {lessonContent}
-                </div>
-              </div>
+                {/* Text content */}
+                {currentLesson?.type !== 'video' && currentLesson?.type !== 'quiz' && (
+                  <div className="prose prose-invert max-w-none mb-8">
+                    <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                      {lessonContent}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex items-center justify-between pt-6 border-t border-border">

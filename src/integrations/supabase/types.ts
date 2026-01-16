@@ -866,6 +866,54 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_attempts: {
+        Row: {
+          answers: Json
+          course_id: string
+          created_at: string
+          enrollment_id: string
+          id: string
+          lesson_id: string
+          passed: boolean
+          score_percent: number
+        }
+        Insert: {
+          answers?: Json
+          course_id: string
+          created_at?: string
+          enrollment_id: string
+          id?: string
+          lesson_id: string
+          passed?: boolean
+          score_percent?: number
+        }
+        Update: {
+          answers?: Json
+          course_id?: string
+          created_at?: string
+          enrollment_id?: string
+          id?: string
+          lesson_id?: string
+          passed?: boolean
+          score_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_requests: {
         Row: {
           additional_notes: string | null

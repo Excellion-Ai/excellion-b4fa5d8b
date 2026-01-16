@@ -349,7 +349,7 @@ function LessonView({
                 <HelpCircle className="w-16 h-16 text-blue-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-foreground mb-2">{lesson.title}</h3>
                 <p className="text-muted-foreground mb-4">
-                  {lesson.quiz_questions || 5} questions • {lesson.duration}
+                  {Array.isArray(lesson.quiz_questions) ? lesson.quiz_questions.length : 5} questions • {lesson.duration}
                 </p>
                 <Badge className="mb-6">Pass score: 80%</Badge>
                 <div>
