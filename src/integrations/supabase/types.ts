@@ -315,6 +315,41 @@ export type Database = {
           },
         ]
       }
+      course_views: {
+        Row: {
+          course_id: string
+          created_at: string
+          device_type: string | null
+          id: string
+          referrer: string | null
+          viewer_id: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          referrer?: string | null
+          viewer_id?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          referrer?: string | null
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_views_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           average_rating: number | null
@@ -755,6 +790,51 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "lesson_progress_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_views: {
+        Row: {
+          course_id: string
+          created_at: string
+          enrollment_id: string | null
+          id: string
+          lesson_id: string
+          time_spent_seconds: number | null
+          viewer_id: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          enrollment_id?: string | null
+          id?: string
+          lesson_id: string
+          time_spent_seconds?: number | null
+          viewer_id?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          enrollment_id?: string | null
+          id?: string
+          lesson_id?: string
+          time_spent_seconds?: number | null
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_views_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_views_enrollment_id_fkey"
             columns: ["enrollment_id"]
             isOneToOne: false
             referencedRelation: "enrollments"
