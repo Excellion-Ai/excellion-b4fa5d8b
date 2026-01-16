@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare, FileText, PlayCircle, Film } from 'lucide-react';
+import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare, FileText, PlayCircle, Film, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,6 +16,7 @@ import {
 import { CourseReviewForm } from '@/components/course';
 import { VideoPlayer } from '@/components/video';
 import { QuizPlayer } from '@/components/quiz';
+import { ResourceManager } from '@/components/resources';
 import type { QuizQuestion } from '@/types/course-pages';
 
 interface Lesson {
@@ -64,6 +65,7 @@ export default function LearnPage() {
   // Lesson view tracking state
   const lessonStartTimeRef = useRef<number | null>(null);
   const currentLessonViewIdRef = useRef<string | null>(null);
+  const [lessonResourceCounts, setLessonResourceCounts] = useState<Record<string, number>>({});
 
   // Calculate total lessons
   const totalLessons = useMemo(() => {
@@ -470,9 +472,14 @@ export default function LearnPage() {
                             ) : (
                               <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
                             )}
-                            <span className={cn("truncate", isComplete && "text-muted-foreground")}>
+                            <span className={cn("truncate flex-1", isComplete && "text-muted-foreground")}>
                               {lesson.title}
                             </span>
+                            {lessonResourceCounts[lesson.id] > 0 && (
+                              <span title="Has downloadable resources">
+                                <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -526,6 +533,21 @@ export default function LearnPage() {
                       {lessonContent}
                     </div>
                   </div>
+                )}
+
+                {/* Lesson Resources */}
+                {course && currentLesson && currentLesson.type !== 'quiz' && (
+                  <ResourceManager
+                    courseId={course.id}
+                    lessonId={currentLesson.id}
+                    isEditing={false}
+                    onResourcesChange={(count) => {
+                      setLessonResourceCounts(prev => ({
+                        ...prev,
+                        [currentLesson.id]: count,
+                      }));
+                    }}
+                  />
                 )}
               </>
             )}

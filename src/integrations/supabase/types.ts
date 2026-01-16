@@ -797,6 +797,47 @@ export type Database = {
           },
         ]
       }
+      lesson_resources: {
+        Row: {
+          course_id: string
+          created_at: string
+          file_size_bytes: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          lesson_id: string
+          title: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          file_size_bytes?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          lesson_id: string
+          title: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          file_size_bytes?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          lesson_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_resources_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_views: {
         Row: {
           course_id: string
