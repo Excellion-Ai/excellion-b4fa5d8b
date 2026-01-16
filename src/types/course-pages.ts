@@ -110,6 +110,15 @@ export interface CoursePages {
   isMultiPage?: boolean;
 }
 
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  type: 'multiple_choice' | 'true_false';
+  options: string[];
+  correct_index: number;
+  explanation: string;
+}
+
 export interface LessonContent {
   id: string;
   title: string;
@@ -119,7 +128,8 @@ export interface LessonContent {
   is_preview?: boolean;
   content_markdown?: string;
   video_url?: string;
-  quiz_questions?: number;
+  quiz_questions?: QuizQuestion[];
+  passing_score?: number;
   assignment_brief?: string;
   resources?: Array<{ title: string; url: string }>;
 }

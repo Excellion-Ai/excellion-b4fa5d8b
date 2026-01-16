@@ -79,6 +79,7 @@ import { useLessonProgress } from '@/hooks/useLessonProgress';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { VideoPlayer } from '@/components/video';
+import { QuizBuilder, type QuizQuestion } from '@/components/quiz';
 import {
   InstructorSection,
   TestimonialsSection,
@@ -185,7 +186,16 @@ export function CoursePreviewTabs({
   const [isEditingLesson, setIsEditingLesson] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const [editedVideoUrl, setEditedVideoUrl] = useState('');
-  const [editedLessonType, setEditedLessonType] = useState<'text' | 'video' | 'text_video'>('text');
+  const [editedLessonType, setEditedLessonType] = useState<'text' | 'video' | 'text_video' | 'quiz'>('text');
+  const [editedQuizQuestions, setEditedQuizQuestions] = useState<Array<{
+    id: string;
+    question: string;
+    type: 'multiple_choice' | 'true_false';
+    options: string[];
+    correct_index: number;
+    explanation: string;
+  }>>([]);
+  const [editedPassingScore, setEditedPassingScore] = useState(70);
   const isMobile = useIsMobile();
 
   // Edit mode state for landing page sections
@@ -202,7 +212,9 @@ export function CoursePreviewTabs({
     const lesson = module?.lessons[selectedLessonIdx];
     setEditedContent(lesson?.content_markdown || '');
     setEditedVideoUrl(lesson?.video_url || '');
-    setEditedLessonType((lesson?.type as 'text' | 'video' | 'text_video') || 'text');
+    setEditedLessonType((lesson?.type as 'text' | 'video' | 'text_video' | 'quiz') || 'text');
+    setEditedQuizQuestions(lesson?.quiz_questions || []);
+    setEditedPassingScore(lesson?.passing_score || 70);
     setIsEditingLesson(true);
   }, [course.modules, selectedModuleIdx, selectedLessonIdx]);
 
@@ -215,6 +227,16 @@ export function CoursePreviewTabs({
         ...module,
         lessons: module.lessons.map((lesson, lIdx) => {
           if (lIdx !== selectedLessonIdx) return lesson;
+          
+          if (editedLessonType === 'quiz') {
+            return {
+              ...lesson,
+              type: editedLessonType,
+              quiz_questions: editedQuizQuestions,
+              passing_score: editedPassingScore,
+            };
+          }
+          
           return {
             ...lesson,
             type: editedLessonType,
@@ -231,12 +253,14 @@ export function CoursePreviewTabs({
     });
     setIsEditingLesson(false);
     toast.success('Lesson saved');
-  }, [course, selectedModuleIdx, selectedLessonIdx, editedContent, editedVideoUrl, editedLessonType, onUpdate]);
+  }, [course, selectedModuleIdx, selectedLessonIdx, editedContent, editedVideoUrl, editedLessonType, editedQuizQuestions, editedPassingScore, onUpdate]);
 
   const handleCancelEditLesson = useCallback(() => {
     setIsEditingLesson(false);
     setEditedContent('');
     setEditedVideoUrl('');
+    setEditedQuizQuestions([]);
+    setEditedPassingScore(70);
   }, []);
 
   // Inline lesson title editing handler
@@ -1192,7 +1216,7 @@ export function CoursePreviewTabs({
             <Card className={`${config.cardClass} border-border`}>
               <CardContent className="py-6">
                 {/* Edit button for all editable lessons */}
-                {!isEditingLesson && ['text', 'video', 'text_video'].includes(currentLesson.type) && (
+                {!isEditingLesson && ['text', 'video', 'text_video', 'quiz'].includes(currentLesson.type) && (
                   <div className="flex justify-end mb-4">
                     <Button
                       variant="outline"
@@ -1214,7 +1238,7 @@ export function CoursePreviewTabs({
                       <Label className="text-sm font-medium">Lesson Type</Label>
                       <Select
                         value={editedLessonType}
-                        onValueChange={(value: 'text' | 'video' | 'text_video') => setEditedLessonType(value)}
+                        onValueChange={(value: 'text' | 'video' | 'text_video' | 'quiz') => setEditedLessonType(value)}
                       >
                         <SelectTrigger className="w-full bg-muted/50">
                           <SelectValue placeholder="Select lesson type" />
@@ -1238,9 +1262,27 @@ export function CoursePreviewTabs({
                               <span>Text + Video</span>
                             </div>
                           </SelectItem>
+                          <SelectItem value="quiz">
+                            <div className="flex items-center gap-2">
+                              <HelpCircle className="w-4 h-4" />
+                              <span>Quiz</span>
+                            </div>
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {/* Quiz Builder */}
+                    {editedLessonType === 'quiz' && (
+                      <div className="space-y-2">
+                        <QuizBuilder
+                          questions={editedQuizQuestions}
+                          passingScore={editedPassingScore}
+                          onQuestionsChange={setEditedQuizQuestions}
+                          onPassingScoreChange={setEditedPassingScore}
+                        />
+                      </div>
+                    )}
 
                     {/* Video URL Field */}
                     {(editedLessonType === 'video' || editedLessonType === 'text_video') && (
@@ -1367,8 +1409,13 @@ export function CoursePreviewTabs({
                   <div className="text-center py-8">
                     <HelpCircle className={`w-12 h-12 ${accent.text} mx-auto mb-4`} />
                     <h3 className={`text-lg font-semibold mb-2 ${config.headingClass}`}>Quiz: {currentLesson.title}</h3>
-                    <p className="text-muted-foreground text-sm mb-4">Test your knowledge</p>
-                    <Button className={`${accent.bg} hover:opacity-90`}>Start Quiz</Button>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      {currentLesson.quiz_questions?.length || 0} questions • Pass score: {currentLesson.passing_score || 70}%
+                    </p>
+                    <Button onClick={handleStartEditLesson} className={`${accent.bg} hover:opacity-90`}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit Quiz
+                    </Button>
                   </div>
                 ) : currentLesson.type === 'assignment' ? (
                   <div className="text-center py-8">
