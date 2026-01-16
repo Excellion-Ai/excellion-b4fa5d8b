@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare } from 'lucide-react';
+import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare, FileText, PlayCircle, Film } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { CourseReviewForm } from '@/components/course';
+import { VideoPlayer } from '@/components/video';
 
 interface Lesson {
   id: string;
@@ -21,6 +22,8 @@ interface Lesson {
   content_markdown?: string;
   content?: string;
   duration?: string;
+  type?: 'text' | 'video' | 'text_video' | 'quiz' | 'assignment';
+  video_url?: string;
 }
 
 interface CourseModule {
@@ -490,11 +493,21 @@ export default function LearnPage() {
             </div>
             <h2 className="text-2xl font-bold mb-6">{currentLesson?.title}</h2>
             
-            <div className="prose prose-invert max-w-none mb-8">
-              <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
-                {lessonContent}
+            {/* Video content */}
+            {(currentLesson?.type === 'video' || currentLesson?.type === 'text_video') && currentLesson?.video_url && (
+              <div className="mb-6">
+                <VideoPlayer url={currentLesson.video_url} />
               </div>
-            </div>
+            )}
+
+            {/* Text content */}
+            {currentLesson?.type !== 'video' && (
+              <div className="prose prose-invert max-w-none mb-8">
+                <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                  {lessonContent}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-between pt-6 border-t border-border">
               <Button

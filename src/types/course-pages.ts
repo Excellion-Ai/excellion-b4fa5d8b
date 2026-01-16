@@ -114,7 +114,7 @@ export interface LessonContent {
   id: string;
   title: string;
   duration: string;
-  type: 'video' | 'text' | 'quiz' | 'assignment';
+  type: 'video' | 'text' | 'text_video' | 'quiz' | 'assignment';
   description?: string;
   is_preview?: boolean;
   content_markdown?: string;

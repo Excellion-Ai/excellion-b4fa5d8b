@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -60,6 +62,8 @@ import {
   Globe,
   Upload,
   EyeOff,
+  Film,
+  PlayCircle,
 } from 'lucide-react';
 import { 
   ExtendedCourse, 
@@ -74,6 +78,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { VideoPlayer } from '@/components/video';
 import {
   InstructorSection,
   TestimonialsSection,
@@ -146,11 +151,13 @@ const ACCENT_CLASSES = {
   },
 } as const;
 
-const LessonTypeIcon = ({ type, size = 'sm' }: { type: string; size?: 'sm' | 'lg' }) => {
+const LessonTypeIcon = ({ type, size = 'sm', accentClass }: { type: string; size?: 'sm' | 'lg'; accentClass?: string }) => {
   const sizeClass = size === 'lg' ? 'w-5 h-5' : 'w-4 h-4';
+  const colorClass = type === 'video' || type === 'text_video' ? accentClass || 'text-primary' : '';
   const icons: Record<string, React.ReactNode> = {
-    video: <Video className={sizeClass} />,
+    video: <PlayCircle className={`${sizeClass} ${colorClass}`} />,
     text: <FileText className={sizeClass} />,
+    text_video: <Film className={`${sizeClass} ${colorClass}`} />,
     quiz: <HelpCircle className={sizeClass} />,
     assignment: <ClipboardCheck className={sizeClass} />,
   };
@@ -177,6 +184,8 @@ export function CoursePreviewTabs({
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [isEditingLesson, setIsEditingLesson] = useState(false);
   const [editedContent, setEditedContent] = useState('');
+  const [editedVideoUrl, setEditedVideoUrl] = useState('');
+  const [editedLessonType, setEditedLessonType] = useState<'text' | 'video' | 'text_video'>('text');
   const isMobile = useIsMobile();
 
   // Edit mode state for landing page sections
@@ -192,6 +201,8 @@ export function CoursePreviewTabs({
     const module = course.modules[selectedModuleIdx];
     const lesson = module?.lessons[selectedLessonIdx];
     setEditedContent(lesson?.content_markdown || '');
+    setEditedVideoUrl(lesson?.video_url || '');
+    setEditedLessonType((lesson?.type as 'text' | 'video' | 'text_video') || 'text');
     setIsEditingLesson(true);
   }, [course.modules, selectedModuleIdx, selectedLessonIdx]);
 
@@ -206,7 +217,9 @@ export function CoursePreviewTabs({
           if (lIdx !== selectedLessonIdx) return lesson;
           return {
             ...lesson,
+            type: editedLessonType,
             content_markdown: editedContent,
+            video_url: editedVideoUrl || undefined,
           };
         }),
       };
@@ -217,11 +230,13 @@ export function CoursePreviewTabs({
       modules: updatedModules,
     });
     setIsEditingLesson(false);
-  }, [course, selectedModuleIdx, selectedLessonIdx, editedContent, onUpdate]);
+    toast.success('Lesson saved');
+  }, [course, selectedModuleIdx, selectedLessonIdx, editedContent, editedVideoUrl, editedLessonType, onUpdate]);
 
   const handleCancelEditLesson = useCallback(() => {
     setIsEditingLesson(false);
     setEditedContent('');
+    setEditedVideoUrl('');
   }, []);
 
   // Inline lesson title editing handler
@@ -1176,8 +1191,8 @@ export function CoursePreviewTabs({
             {/* Content Area */}
             <Card className={`${config.cardClass} border-border`}>
               <CardContent className="py-6">
-                {/* Edit button for text lessons */}
-                {currentLesson.type === 'text' && !isEditingLesson && (
+                {/* Edit button for all editable lessons */}
+                {!isEditingLesson && ['text', 'video', 'text_video'].includes(currentLesson.type) && (
                   <div className="flex justify-end mb-4">
                     <Button
                       variant="outline"
@@ -1186,39 +1201,166 @@ export function CoursePreviewTabs({
                       className="gap-2"
                     >
                       <Pencil className="w-3 h-3" />
-                      Edit Content
+                      Edit Lesson
                     </Button>
                   </div>
                 )}
                 
-                {/* Editing mode buttons */}
-                {isEditingLesson && (
-                  <div className="flex justify-end gap-2 mb-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCancelEditLesson}
-                      className="gap-2"
-                    >
-                      <X className="w-3 h-3" />
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveLessonContent}
-                      className={`gap-2 ${accent.bg} hover:opacity-90`}
-                    >
-                      <Save className="w-3 h-3" />
-                      Save
-                    </Button>
-                  </div>
-                )}
+                {/* Editing mode */}
+                {isEditingLesson ? (
+                  <div className="space-y-6">
+                    {/* Lesson Type Selector */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Lesson Type</Label>
+                      <Select
+                        value={editedLessonType}
+                        onValueChange={(value: 'text' | 'video' | 'text_video') => setEditedLessonType(value)}
+                      >
+                        <SelectTrigger className="w-full bg-muted/50">
+                          <SelectValue placeholder="Select lesson type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="text">
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4" />
+                              <span>Text</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="video">
+                            <div className="flex items-center gap-2">
+                              <PlayCircle className="w-4 h-4" />
+                              <span>Video</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="text_video">
+                            <div className="flex items-center gap-2">
+                              <Film className="w-4 h-4" />
+                              <span>Text + Video</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {currentLesson.type === 'video' ? (
-                  <div className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center">
-                    <div className="text-center">
-                      <Play className={`w-12 h-12 ${accent.text} mx-auto mb-2`} />
-                      <p className="text-muted-foreground text-sm">Video Player</p>
+                    {/* Video URL Field */}
+                    {(editedLessonType === 'video' || editedLessonType === 'text_video') && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Video URL</Label>
+                        <Input
+                          value={editedVideoUrl}
+                          onChange={(e) => setEditedVideoUrl(e.target.value)}
+                          placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+                          className="bg-muted/50"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Paste YouTube, Vimeo, or direct .mp4 video URL
+                        </p>
+                        
+                        {/* Video Preview */}
+                        {editedVideoUrl && (
+                          <div className="mt-4">
+                            <p className="text-sm font-medium mb-2">Preview:</p>
+                            <VideoPlayer url={editedVideoUrl} />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Text Content Field */}
+                    {(editedLessonType === 'text' || editedLessonType === 'text_video') && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {editedLessonType === 'text_video' ? 'Text Content (shown below video)' : 'Lesson Content'}
+                        </Label>
+                        <Textarea
+                          value={editedContent}
+                          onChange={(e) => setEditedContent(e.target.value)}
+                          placeholder="Enter lesson content here... (Markdown supported)&#10;&#10;## Heading&#10;**Bold text**, *italic text*&#10;&#10;- Bullet points&#10;- More points"
+                          className="min-h-[200px] font-mono text-sm bg-muted/50 border-border resize-y"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Tip: Use Markdown for formatting
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Save/Cancel buttons */}
+                    <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCancelEditLesson}
+                        className="gap-2"
+                      >
+                        <X className="w-3 h-3" />
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSaveLessonContent}
+                        className={`gap-2 ${accent.bg} hover:opacity-90`}
+                      >
+                        <Save className="w-3 h-3" />
+                        Save Lesson
+                      </Button>
+                    </div>
+                  </div>
+                ) : currentLesson.type === 'video' ? (
+                  // Video only lesson
+                  <div className="space-y-4">
+                    {currentLesson.video_url ? (
+                      <VideoPlayer url={currentLesson.video_url} className="mb-6" />
+                    ) : (
+                      <div 
+                        className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center cursor-pointer hover:bg-muted/40 transition-colors"
+                        onClick={handleStartEditLesson}
+                      >
+                        <div className="text-center">
+                          <Play className={`w-12 h-12 ${accent.text} mx-auto mb-2`} />
+                          <p className="text-muted-foreground text-sm">Click to add video URL</p>
+                        </div>
+                      </div>
+                    )}
+                    {currentLesson.description && (
+                      <p className="text-muted-foreground">{currentLesson.description}</p>
+                    )}
+                  </div>
+                ) : currentLesson.type === 'text_video' ? (
+                  // Text + Video lesson
+                  <div className="space-y-6">
+                    {currentLesson.video_url ? (
+                      <VideoPlayer url={currentLesson.video_url} className="mb-4" />
+                    ) : (
+                      <div 
+                        className="aspect-video rounded-lg bg-muted/50 flex items-center justify-center cursor-pointer hover:bg-muted/40 transition-colors"
+                        onClick={handleStartEditLesson}
+                      >
+                        <div className="text-center">
+                          <Film className={`w-12 h-12 ${accent.text} mx-auto mb-2`} />
+                          <p className="text-muted-foreground text-sm">Click to add video URL</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className={`prose prose-invert prose-sm max-w-none ${
+                      layoutStyle === 'technical' ? 'font-mono' : ''
+                    }`}>
+                      {currentLesson.content_markdown ? (
+                        <div 
+                          className="whitespace-pre-wrap text-foreground/90 cursor-pointer hover:bg-muted/20 rounded-lg p-4 -m-4 transition-colors"
+                          onClick={handleStartEditLesson}
+                          title="Click to edit content"
+                        >
+                          {currentLesson.content_markdown}
+                        </div>
+                      ) : (
+                        <div 
+                          className="text-center py-4 text-muted-foreground cursor-pointer hover:bg-muted/20 rounded-lg transition-colors"
+                          onClick={handleStartEditLesson}
+                          title="Click to add content"
+                        >
+                          <p>Click to add text content...</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : currentLesson.type === 'quiz' ? (
@@ -1235,23 +1377,8 @@ export function CoursePreviewTabs({
                     <p className="text-muted-foreground text-sm mb-4">Complete this hands-on exercise</p>
                     <Button className={`${accent.bg} hover:opacity-90`}>View Assignment</Button>
                   </div>
-                ) : isEditingLesson ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Pencil className="w-4 h-4" />
-                      <span>Editing lesson content (Markdown supported)</span>
-                    </div>
-                    <Textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      placeholder="Enter lesson content here... (Markdown supported)&#10;&#10;## Heading&#10;**Bold text**, *italic text*&#10;&#10;- Bullet points&#10;- More points&#10;&#10;```code blocks```"
-                      className="min-h-[300px] font-mono text-sm bg-muted/50 border-border resize-y"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Tip: Use Markdown for formatting. Press Cmd/Ctrl + Enter in the future for quick save.
-                    </p>
-                  </div>
                 ) : (
+                  // Default text lesson view
                   <div className={`prose prose-invert prose-sm max-w-none ${
                     layoutStyle === 'technical' ? 'font-mono' : ''
                   }`}>
