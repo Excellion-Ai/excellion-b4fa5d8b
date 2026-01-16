@@ -47,7 +47,8 @@ import {
   User,
   Zap,
   Headphones,
-  EyeOff
+  EyeOff,
+  BarChart3
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import {
@@ -838,6 +839,16 @@ export default function SecretBuilderHub() {
                     <Headphones className="w-4 h-4" />
                     <span className="text-sm">Expert Support</span>
                   </Button>
+
+                  {/* Analytics */}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    onClick={() => { navigate('/dashboard/analytics'); setMobileMenuOpen(false); }}
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    <span className="text-sm">Analytics</span>
+                  </Button>
                   
                   {NAV_ITEMS.map((item) => (
                       <Button
@@ -1054,6 +1065,16 @@ export default function SecretBuilderHub() {
           >
             <Headphones className="w-4 h-4" />
             <span className="text-sm">Expert Support</span>
+          </Button>
+
+          {/* Analytics */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            onClick={() => navigate('/dashboard/analytics')}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span className="text-sm">Analytics</span>
           </Button>
           
           {NAV_ITEMS.map((item) => (
