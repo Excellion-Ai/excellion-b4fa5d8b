@@ -64,6 +64,7 @@ import {
   EyeOff,
   Film,
   PlayCircle,
+  Paperclip,
 } from 'lucide-react';
 import { 
   ExtendedCourse, 
@@ -88,6 +89,7 @@ import {
   FeaturesSection,
   DEFAULT_PAGE_SECTIONS,
 } from './course-sections';
+import { ResourceManager } from '@/components/resources';
 
 type TabType = 'landing' | 'curriculum' | 'lesson' | 'dashboard' | 'bonuses' | 'resources' | 'community' | 'testimonials';
 
@@ -196,6 +198,7 @@ export function CoursePreviewTabs({
     explanation: string;
   }>>([]);
   const [editedPassingScore, setEditedPassingScore] = useState(70);
+  const [lessonResourceCounts, setLessonResourceCounts] = useState<Record<string, number>>({});
   const isMobile = useIsMobile();
 
   // Edit mode state for landing page sections
@@ -1324,6 +1327,21 @@ export function CoursePreviewTabs({
                           Tip: Use Markdown for formatting
                         </p>
                       </div>
+                    )}
+
+                    {/* Resources Section */}
+                    {course.id && currentLesson && editedLessonType !== 'quiz' && (
+                      <ResourceManager
+                        courseId={course.id}
+                        lessonId={currentLesson.id}
+                        isEditing={true}
+                        onResourcesChange={(count) => {
+                          setLessonResourceCounts(prev => ({
+                            ...prev,
+                            [currentLesson.id]: count,
+                          }));
+                        }}
+                      />
                     )}
 
                     {/* Save/Cancel buttons */}
