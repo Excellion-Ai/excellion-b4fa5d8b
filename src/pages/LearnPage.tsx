@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare } from 'lucide-react';
@@ -53,6 +53,10 @@ export default function LearnPage() {
   const [isGeneratingCert, setIsGeneratingCert] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
+  // Lesson view tracking state
+  const lessonStartTimeRef = useRef<number | null>(null);
+  const currentLessonViewIdRef = useRef<string | null>(null);
 
   // Calculate total lessons
   const totalLessons = useMemo(() => {
@@ -163,6 +167,66 @@ export default function LearnPage() {
 
     fetchData();
   }, [slug, navigate]);
+
+  // Track lesson view and time spent
+  const trackLessonView = useCallback(async (courseId: string, lessonId: string, enrId: string | null, userId: string | null) => {
+    const { data } = await supabase.from('lesson_views').insert({
+      course_id: courseId,
+      lesson_id: lessonId,
+      viewer_id: userId,
+      enrollment_id: enrId,
+      time_spent_seconds: 0,
+    }).select('id').single();
+    
+    return data?.id || null;
+  }, []);
+
+  const updateTimeSpent = useCallback(async (viewId: string | null, seconds: number) => {
+    if (!viewId || seconds < 1) return;
+    await supabase.from('lesson_views').update({ time_spent_seconds: Math.round(seconds) }).eq('id', viewId);
+  }, []);
+
+  // Track lesson changes and time spent
+  useEffect(() => {
+    if (!course || !currentUserId) return;
+
+    const currentLesson = course.modules[selectedModuleIndex]?.lessons[selectedLessonIndex];
+    if (!currentLesson) return;
+
+    // Save time from previous lesson
+    const prevViewId = currentLessonViewIdRef.current;
+    const prevStartTime = lessonStartTimeRef.current;
+    if (prevViewId && prevStartTime) {
+      const seconds = (Date.now() - prevStartTime) / 1000;
+      updateTimeSpent(prevViewId, seconds);
+    }
+
+    // Track new lesson view
+    lessonStartTimeRef.current = Date.now();
+    trackLessonView(course.id, currentLesson.id, enrollmentId, currentUserId).then(viewId => {
+      currentLessonViewIdRef.current = viewId;
+    });
+  }, [course, selectedModuleIndex, selectedLessonIndex, currentUserId, enrollmentId, trackLessonView, updateTimeSpent]);
+
+  // Handle page unload to save time
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const viewId = currentLessonViewIdRef.current;
+      const startTime = lessonStartTimeRef.current;
+      if (viewId && startTime) {
+        const seconds = (Date.now() - startTime) / 1000;
+        if (seconds > 0) {
+          // Use sendBeacon for reliable unload tracking (limited but works)
+          const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/lesson_views?id=eq.${viewId}`;
+          const body = JSON.stringify({ time_spent_seconds: Math.round(seconds) });
+          navigator.sendBeacon?.(url, new Blob([body], { type: 'application/json' }));
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   // Update overall progress
   const updateOverallProgress = useCallback(async (completedArray: string[]) => {

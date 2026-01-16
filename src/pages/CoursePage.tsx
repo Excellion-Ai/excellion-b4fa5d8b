@@ -98,6 +98,24 @@ export default function CoursePage() {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // Track course view (once per session)
+  const trackCourseView = async (courseId: string) => {
+    const key = `viewed_course_${courseId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, 'true');
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const deviceType = window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop';
+    const referrer = document.referrer || null;
+
+    await supabase.from('course_views').insert({
+      course_id: courseId,
+      viewer_id: user?.id || null,
+      referrer,
+      device_type: deviceType,
+    });
+  };
+
   useEffect(() => {
     const fetchCourseAndEnrollment = async () => {
       if (!subdomain) {
@@ -145,6 +163,9 @@ export default function CoursePage() {
           modules,
           learningOutcomes: Array.isArray(learningOutcomes) ? learningOutcomes : [],
         } as Course);
+
+        // Track course view
+        trackCourseView(data.id);
 
         // Check if user is enrolled
         if (user) {
