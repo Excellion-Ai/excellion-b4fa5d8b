@@ -48,33 +48,33 @@ const suggestionChips = [
 const features = [
   {
     icon: Zap,
-    title: "AI-Generated Curriculum",
-    description: "Get a complete course outline with modules, lessons, and learning objectives in seconds."
-  },
-  {
-    icon: PenTool,
-    title: "Sales Copy That Converts",
-    description: "Compelling headlines, benefit-driven copy, and clear calls-to-action written for you."
-  },
-  {
-    icon: Globe,
-    title: "Publish Instantly",
-    description: "One-click publishing with custom domains. Your course is live in minutes, not weeks."
-  },
-  {
-    icon: GraduationCap,
-    title: "Student-Ready Pages",
-    description: "Professional landing pages, curriculum views, and checkout flows out of the box."
+    title: "Offer Page in Minutes",
+    description: "A ready-to-edit program page that clearly explains who it's for, the outcome, what's included, and how to join."
   },
   {
     icon: Users,
-    title: "Built for Creators",
-    description: "Coaches, educators, and experts use Excellion to launch courses without technical skills."
+    title: "Client Experience Included",
+    description: "Give clients a clean place to access what they need, follow the plan, and stay consistent."
+  },
+  {
+    icon: Globe,
+    title: "Publish Fast",
+    description: "Go live on your link or your own domain when you're ready."
+  },
+  {
+    icon: PenTool,
+    title: "Intake and Check-Ins",
+    description: "Collect goals, starting point, preferences, and ongoing updates without chasing messages."
+  },
+  {
+    icon: GraduationCap,
+    title: "Built for Real Fitness Niches",
+    description: "Great for fat loss, strength, muscle gain, postpartum, runners, busy professionals, and beginners."
   },
   {
     icon: BarChart3,
-    title: "Analytics Included",
-    description: "Track enrollments, page views, and conversions to optimize your course business."
+    title: "Track What Matters",
+    description: "See visits, clicks, and signups so you know what's working and what to improve."
   }
 ];
 
@@ -436,10 +436,10 @@ const WebBuilderHome = () => {
         <section id="features" className="py-12 sm:py-16 lg:py-24 px-4 bg-muted/30 border-t border-border/30">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
-              Built for Course Creators
+              Built for Fitness Coaches
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground text-center mb-10 sm:mb-16 max-w-xl mx-auto">
-              Everything you need to create, launch, and sell online courses
+              Everything you need to package your coaching offer, share it, and run clients in one place
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
