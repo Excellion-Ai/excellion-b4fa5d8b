@@ -96,8 +96,8 @@ const faqItems = [
     answer: "Yes. Connect any custom domain you own. Your course will be accessible at yourdomain.com with SSL included."
   },
   {
-    question: "Is there a free plan?",
-    answer: "Yes. Start for free and generate your first course draft at no cost. Upgrade when you're ready to publish and sell."
+    question: "How much does it cost?",
+    answer: "$79/month or $790/year. One plan, everything included. Up to 3 active offers at once. Cancel anytime."
   }
 ];
 
@@ -234,11 +234,11 @@ const WebBuilderHome = () => {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Excellion",
-    "applicationCategory": "Course Builder",
-    "description": "AI-powered course creation platform that generates curriculum, landing pages, and sales copy.",
+    "applicationCategory": "Fitness Coaching Platform",
+    "description": "AI-powered platform for fitness coaches to create offer pages, run clients, and grow their coaching business.",
     "offers": {
       "@type": "Offer",
-      "price": "0",
+      "price": "79",
       "priceCurrency": "USD"
     }
   };
@@ -468,90 +468,65 @@ const WebBuilderHome = () => {
 
         {/* Pricing Section */}
         <section id="pricing" className="py-12 sm:py-16 lg:py-24 px-4 border-t border-border/30">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-2xl mx-auto">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
-              Pricing Plans
+              Pricing
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground text-center mb-8 sm:mb-12 max-w-xl mx-auto">
-              Start free. Upgrade when you're ready to publish.
+              One plan. Works for any fitness coach.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-              {/* Free Plan */}
-              <div className="p-5 sm:p-8 rounded-2xl bg-card border border-border">
-                <div className="text-sm font-medium text-muted-foreground mb-2">Free</div>
-                <div className="text-3xl sm:text-4xl font-bold text-foreground mb-1">$0</div>
-                <div className="text-muted-foreground text-sm mb-4 sm:mb-6">Forever free</div>
-                <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
-                    Generate unlimited course drafts
-                  </li>
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
-                    AI curriculum generation
-                  </li>
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
-                    Preview before publishing
-                  </li>
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <X className="w-4 h-4 text-muted-foreground/50 shrink-0" />
-                    Publishing not included
-                  </li>
-                </ul>
-                <Button 
-                  variant="outline" 
-                  className="w-full h-11 sm:h-10 touch-manipulation"
-                  onClick={() => navigate("/secret-builder-hub")}
-                >
-                  Get Started
-                </Button>
+            {/* Single Plan Card */}
+            <div className="p-6 sm:p-8 rounded-2xl bg-card border-2 border-primary relative">
+              <div className="text-center mb-6">
+                <div className="text-4xl sm:text-5xl font-bold text-foreground mb-2">
+                  $79<span className="text-lg text-muted-foreground font-normal">/month</span>
+                </div>
+                <div className="text-muted-foreground text-sm">
+                  or $790/year <span className="text-primary">(save $158)</span>
+                </div>
+                <p className="text-muted-foreground mt-3">
+                  Everything included. Cancel anytime.
+                </p>
               </div>
 
-              {/* Sprint Pass */}
-              <div className="p-5 sm:p-8 rounded-2xl bg-card border-2 border-primary relative mt-4 md:mt-0">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium whitespace-nowrap">
-                  Best Value
-                </div>
-                <div className="text-sm font-medium text-primary mb-2">Sprint Pass</div>
-                <div className="text-3xl sm:text-4xl font-bold text-foreground mb-1">$9</div>
-                <div className="text-muted-foreground text-sm mb-4 sm:mb-6">one-time</div>
-                <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
-                    150 generation credits
-                  </li>
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
-                    Publish your course site
-                  </li>
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
-                    Custom domain support
-                  </li>
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
-                    No subscription required
-                  </li>
-                  <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
-                    Renews to Pro if you want more
-                  </li>
-                </ul>
-                <Button 
-                  className="w-full h-11 sm:h-10 touch-manipulation"
-                  onClick={() => navigate("/pricing")}
-                >
-                  View Pricing
-                </Button>
-              </div>
+              <ul className="grid sm:grid-cols-2 gap-2.5 sm:gap-3 mb-6 sm:mb-8">
+                <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                  Up to 3 active offers
+                </li>
+                <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                  Unlimited page views
+                </li>
+                <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                  Custom domain
+                </li>
+                <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                  Intake & check-ins
+                </li>
+                <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                  Client portal
+                </li>
+                <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                  Built-in analytics
+                </li>
+              </ul>
+
+              <Button 
+                className="w-full h-11 sm:h-12 touch-manipulation"
+                onClick={() => navigate("/pricing")}
+              >
+                Get Started
+              </Button>
             </div>
 
-            <p className="text-center mt-6 sm:mt-8 text-sm text-muted-foreground">
-              <Link to="/pricing" className="text-primary hover:underline touch-manipulation">
-                See full pricing details →
-              </Link>
+            <p className="text-center mt-6 text-sm text-muted-foreground">
+              No hidden fees. No credit limits. Just build your coaching offer.
             </p>
           </div>
         </section>
@@ -589,10 +564,10 @@ const WebBuilderHome = () => {
         <section className="py-12 sm:py-16 lg:py-24 px-4 border-t border-border/30">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4">
-              Ready to create your course?
+              Ready to launch your coaching offer?
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
-              Join thousands of creators who use Excellion to build and sell online courses.
+              Build your program page in minutes. Start taking clients today.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
               <Button 
