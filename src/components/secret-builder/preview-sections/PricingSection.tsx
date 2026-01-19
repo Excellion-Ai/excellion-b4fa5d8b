@@ -9,25 +9,11 @@ interface PricingSectionProps {
 
 const defaultPlans: PricingTier[] = [
   { 
-    name: 'Starter', 
-    price: '$9', 
+    name: 'Coach Plan', 
+    price: '$79', 
     period: '/month',
-    features: ['Basic features', 'Email support', '1 user'],
-    highlighted: false
-  },
-  { 
-    name: 'Pro', 
-    price: '$29', 
-    period: '/month',
-    features: ['All Starter features', 'Priority support', '5 users', 'Advanced analytics'],
+    features: ['Up to 3 active offers', 'Unlimited page views', 'Custom domain', 'Intake & check-ins', 'Client portal', 'Built-in analytics', 'Cancel anytime'],
     highlighted: true
-  },
-  { 
-    name: 'Enterprise', 
-    price: '$99', 
-    period: '/month',
-    features: ['All Pro features', 'Dedicated support', 'Unlimited users', 'Custom integrations'],
-    highlighted: false
   },
 ];
 
