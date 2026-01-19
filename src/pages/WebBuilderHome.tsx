@@ -383,7 +383,7 @@ const WebBuilderHome = () => {
               How Excellion Works
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground text-center mb-10 sm:mb-16 max-w-xl mx-auto">
-              Three steps from idea to published course
+              Three steps to launch your coaching offer
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
@@ -394,10 +394,10 @@ const WebBuilderHome = () => {
                 </div>
                 <div className="text-xs sm:text-sm font-medium text-primary mb-1.5 sm:mb-2">Step 1</div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
-                  Describe your course
+                  Describe who you help
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Tell us what you teach, who it's for, and the outcome students will achieve.
+                  For example: busy dads, beginners, runners, powerlifters, or clients focused on fat loss.
                 </p>
               </div>
 
@@ -408,10 +408,10 @@ const WebBuilderHome = () => {
                 </div>
                 <div className="text-xs sm:text-sm font-medium text-primary mb-1.5 sm:mb-2">Step 2</div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
-                  AI generates everything
+                  Excellion builds your program page
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Get a complete curriculum, landing page, and sales copy in seconds.
+                  Get a ready to edit page with your offer details, what clients get, and what to do next.
                 </p>
               </div>
 
