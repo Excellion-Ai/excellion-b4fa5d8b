@@ -48,7 +48,8 @@ import {
   Zap,
   Headphones,
   EyeOff,
-  BarChart3
+  BarChart3,
+  Check
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import {
@@ -208,6 +209,7 @@ export default function SecretBuilderHub() {
   const [courseToPermanentlyDelete, setCourseToPermanentlyDelete] = useState<CourseItem | null>(null);
   const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false);
   const [permanentDeleteConfirmText, setPermanentDeleteConfirmText] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('standard');
   
   // Interview intake hook
   const interview = useInterviewIntake(idea);
@@ -1608,51 +1610,97 @@ export default function SecretBuilderHub() {
               Start from a Template
             </h2>
             
-            <div className="flex flex-wrap justify-center gap-6">
-              {TEMPLATES.map((template) => (
-                <button
-                  key={template.id}
-                  onClick={() => handleGenerateFromTemplate(template)}
-                  disabled={isGenerating}
-                  className="group text-left w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] bg-card border border-border rounded-xl overflow-hidden hover:border-muted-foreground/30 hover:-translate-y-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {/* Live Preview using ProjectPreview */}
-                  <div className="h-36 bg-gradient-to-br from-muted/50 to-muted/20 p-3 relative overflow-hidden">
-                    <ProjectPreview 
-                      spec={template.spec} 
-                      themeColor={template.spec.theme.primaryColor}
-                    />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {TEMPLATES.map((template) => {
+                const isSelected = selectedTemplate === template.id;
+                const IconComponent = template.icon;
+                
+                return (
+                  <button
+                    key={template.id}
+                    onClick={() => setSelectedTemplate(template.id)}
+                    onDoubleClick={() => handleGenerateFromTemplate(template)}
+                    disabled={isGenerating}
+                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 ${
+                      isSelected 
+                        ? 'border-amber-500 shadow-lg shadow-amber-500/20' 
+                        : 'border-border hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    {/* Selected checkmark badge */}
+                    {isSelected && (
+                      <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">
+                        <Check className="w-4 h-4 text-black" />
+                      </div>
+                    )}
                     
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        <ArrowRight className="w-4 h-4" />
-                        Use Template
+                    {/* Colored gradient thumbnail with icon */}
+                    <div 
+                      className="h-28 relative overflow-hidden flex items-center justify-center"
+                      style={{
+                        background: `linear-gradient(135deg, ${template.color}40 0%, ${template.color}20 100%)`
+                      }}
+                    >
+                      <IconComponent 
+                        className="w-12 h-12 transition-transform group-hover:scale-110"
+                        style={{ color: template.color }}
+                      />
+                      
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                          <ArrowRight className="w-4 h-4" />
+                          {isSelected ? 'Double-click to Start' : 'Select Template'}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Card Content */}
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      {template.tags.map((tag) => (
-                        <span 
-                          key={tag} 
-                          className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                    
+                    {/* Card Content */}
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        {template.tags.map((tag) => (
+                          <span 
+                            key={tag} 
+                            className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground mb-1">
+                        {template.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {template.subtitle}
+                      </p>
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-1">
-                      {template.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {template.bestFor}
-                    </p>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Use Template Button */}
+            <div className="mt-6 flex justify-center">
+              <Button
+                onClick={() => {
+                  const template = TEMPLATES.find(t => t.id === selectedTemplate);
+                  if (template) handleGenerateFromTemplate(template);
+                }}
+                disabled={isGenerating || !selectedTemplate}
+                className="bg-amber-500 hover:bg-amber-600 text-black font-medium px-8"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                    Use {TEMPLATES.find(t => t.id === selectedTemplate)?.title || 'Template'}
+                  </>
+                )}
+              </Button>
             </div>
           </section>
 

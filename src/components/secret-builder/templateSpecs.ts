@@ -1,5 +1,5 @@
 import { SiteSpec } from '@/types/site-spec';
-import { Layout, Briefcase, BookOpen, Users, GraduationCap, Dumbbell, Palette, Video, DollarSign, Heart, FileText } from 'lucide-react';
+import { Layout, Briefcase, BookOpen, Users, GraduationCap, Dumbbell, Palette, Video, DollarSign, Heart, FileText, Trophy, Gift } from 'lucide-react';
 
 // Full SiteSpec definitions for each template
 // Note: Hero and CTA use ctaText/secondaryCtaText format for preview component compatibility
@@ -544,50 +544,55 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
   },
 };
 
-// Template metadata with icons
+// Template metadata with icons and colors
 export const TEMPLATES = [
   {
-    id: 'standard-course',
+    id: 'standard',
     title: 'Standard Course',
+    subtitle: 'Video courses, tutorials, skill training',
     tags: ['Education', 'Self-paced'],
-    bestFor: 'Video courses, tutorials, skill training',
-    icon: GraduationCap,
+    color: '#6366f1', // indigo
+    icon: BookOpen,
     prompt: 'A self-paced online course with video modules, quizzes, and certification',
     spec: TEMPLATE_SPECS.saas,
   },
   {
     id: 'challenge',
     title: 'Challenge',
+    subtitle: 'Time-limited challenges, bootcamps',
     tags: ['Live', 'Community'],
-    bestFor: 'Time-limited challenges, bootcamps, transformations',
-    icon: Dumbbell,
+    color: '#10b981', // emerald
+    icon: Trophy,
     prompt: 'A fitness challenge with daily workouts, accountability, and community support',
     spec: TEMPLATE_SPECS.service,
   },
   {
-    id: 'lead-magnet',
+    id: 'leadmagnet',
     title: 'Lead Magnet',
+    subtitle: 'Free guides, checklists, opt-ins',
     tags: ['Free', 'Marketing'],
-    bestFor: 'Free guides, checklists, email opt-ins',
-    icon: FileText,
+    color: '#f59e0b', // amber
+    icon: Gift,
     prompt: 'A lead magnet offering a free downloadable resource in exchange for email signup',
     spec: TEMPLATE_SPECS.blog,
   },
   {
     id: 'webinar',
     title: 'Webinar',
+    subtitle: 'Live workshops, masterclasses',
     tags: ['Live', 'Presentation'],
-    bestFor: 'Live workshops, masterclasses, demos',
+    color: '#8b5cf6', // violet
     icon: Video,
     prompt: 'A webinar registration page with countdown, replay access, and call-to-action',
     spec: TEMPLATE_SPECS.saas,
   },
   {
-    id: 'coach-portfolio',
+    id: 'coach',
     title: 'Coach',
+    subtitle: 'Personal coaching, mentorship',
     tags: ['1-on-1', 'Mentorship'],
-    bestFor: 'Personal coaches, mentors, consultants',
-    icon: Users,
+    color: '#ec4899', // pink
+    icon: Heart,
     prompt: 'A coaching portfolio with services, testimonials, and booking capabilities',
     spec: TEMPLATE_SPECS.portfolio,
   },
