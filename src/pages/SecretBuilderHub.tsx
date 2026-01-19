@@ -834,7 +834,7 @@ export default function SecretBuilderHub() {
                   <Button
                     variant="ghost"
                     className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                    onClick={() => { navigate('/settings/support'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/contact'); setMobileMenuOpen(false); }}
                   >
                     <Headphones className="w-4 h-4" />
                     <span className="text-sm">Expert Support</span>
@@ -1016,7 +1016,7 @@ export default function SecretBuilderHub() {
                 <HelpCircle className="w-4 h-4" />
                 <span>Help & Documentation</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/settings/support')}>
+              <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => navigate('/contact')}>
                 <MessageSquare className="w-4 h-4" />
                 <span>Contact Support</span>
               </DropdownMenuItem>
@@ -1061,7 +1061,7 @@ export default function SecretBuilderHub() {
           <Button
             variant="ghost"
             className="w-full justify-start gap-2 h-9 text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            onClick={() => navigate('/settings/support')}
+            onClick={() => navigate('/contact')}
           >
             <Headphones className="w-4 h-4" />
             <span className="text-sm">Expert Support</span>
