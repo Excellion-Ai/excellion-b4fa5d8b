@@ -40,9 +40,9 @@ import { InterviewStepper } from "@/components/InterviewStepper";
 import { useInterviewIntake } from "@/hooks/useInterviewIntake";
 
 const suggestionChips = [
-  "Beginner photography course",
-  "Freelance business bootcamp", 
-  "Learn Notion in 30 days"
+  "6-week fat loss challenge",
+  "Online personal training program", 
+  "Home workout fundamentals"
 ];
 
 const features = [
