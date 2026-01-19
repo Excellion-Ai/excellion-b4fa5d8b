@@ -303,13 +303,13 @@ const WebBuilderHome = () => {
 
               {/* H1 - Main SEO Target */}
               <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 leading-tight text-center">
-                Turn knowledge into a course site your audience can buy from.{" "}
-                <span className="text-primary">Fast.</span>
+                Launch a fitness offer, challenge, or course in{" "}
+                <span className="text-primary">minutes.</span>
               </h1>
 
               {/* H2 Subheadline */}
               <h2 className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 font-normal leading-relaxed text-center px-1">
-                Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
+                Excellion drafts the page, structure, and sales copy for your coaching offer or course in minutes. You set the price, customize, and publish.
               </h2>
 
               {/* Prompt Input */}
