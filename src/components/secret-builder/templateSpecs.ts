@@ -1,5 +1,5 @@
 import { SiteSpec } from '@/types/site-spec';
-import { Layout, Briefcase, BookOpen, Users, GraduationCap, Dumbbell, Palette, Video, DollarSign, Heart } from 'lucide-react';
+import { Layout, Briefcase, BookOpen, Users, GraduationCap, Dumbbell, Palette, Video, DollarSign, Heart, FileText } from 'lucide-react';
 
 // Full SiteSpec definitions for each template
 // Note: Hero and CTA use ctaText/secondaryCtaText format for preview component compatibility
@@ -547,8 +547,8 @@ export const TEMPLATE_SPECS: Record<string, SiteSpec> = {
 // Template metadata with icons
 export const TEMPLATES = [
   {
-    id: 'online-course',
-    title: 'Online Course',
+    id: 'standard-course',
+    title: 'Standard Course',
     tags: ['Education', 'Self-paced'],
     bestFor: 'Video courses, tutorials, skill training',
     icon: GraduationCap,
@@ -556,48 +556,39 @@ export const TEMPLATES = [
     spec: TEMPLATE_SPECS.saas,
   },
   {
-    id: 'coaching-program',
-    title: 'Coaching Program',
-    tags: ['1-on-1', 'Mentorship'],
-    bestFor: 'Life coaches, business mentors, consultants',
-    icon: Users,
-    prompt: 'A coaching program with group calls, private sessions, and community access',
+    id: 'challenge',
+    title: 'Challenge',
+    tags: ['Live', 'Community'],
+    bestFor: 'Time-limited challenges, bootcamps, transformations',
+    icon: Dumbbell,
+    prompt: 'A fitness challenge with daily workouts, accountability, and community support',
     spec: TEMPLATE_SPECS.service,
   },
   {
-    id: 'cohort-course',
-    title: 'Cohort-Based Course',
-    tags: ['Live', 'Community'],
-    bestFor: 'Bootcamps, accelerators, group programs',
+    id: 'lead-magnet',
+    title: 'Lead Magnet',
+    tags: ['Free', 'Marketing'],
+    bestFor: 'Free guides, checklists, email opt-ins',
+    icon: FileText,
+    prompt: 'A lead magnet offering a free downloadable resource in exchange for email signup',
+    spec: TEMPLATE_SPECS.blog,
+  },
+  {
+    id: 'webinar',
+    title: 'Webinar',
+    tags: ['Live', 'Presentation'],
+    bestFor: 'Live workshops, masterclasses, demos',
     icon: Video,
-    prompt: 'A cohort-based course with live sessions, homework, and peer learning',
+    prompt: 'A webinar registration page with countdown, replay access, and call-to-action',
     spec: TEMPLATE_SPECS.saas,
   },
   {
-    id: 'fitness-program',
-    title: 'Fitness Program',
-    tags: ['Health', 'Wellness'],
-    bestFor: 'Personal trainers, yoga instructors, nutrition coaches',
-    icon: Dumbbell,
-    prompt: 'A fitness program with workout videos, meal plans, and progress tracking',
-    spec: TEMPLATE_SPECS.service,
-  },
-  {
-    id: 'creative-masterclass',
-    title: 'Creative Masterclass',
-    tags: ['Creative', 'Skills'],
-    bestFor: 'Artists, designers, musicians, writers',
-    icon: Palette,
-    prompt: 'A creative masterclass teaching artistic skills with project-based learning',
+    id: 'coach-portfolio',
+    title: 'Coach',
+    tags: ['1-on-1', 'Mentorship'],
+    bestFor: 'Personal coaches, mentors, consultants',
+    icon: Users,
+    prompt: 'A coaching portfolio with services, testimonials, and booking capabilities',
     spec: TEMPLATE_SPECS.portfolio,
-  },
-  {
-    id: 'membership-site',
-    title: 'Membership Site',
-    tags: ['Recurring', 'Content'],
-    bestFor: 'Content creators, newsletters, exclusive communities',
-    icon: DollarSign,
-    prompt: 'A membership site with exclusive content, community access, and monthly perks',
-    spec: TEMPLATE_SPECS.blog,
   },
 ];
