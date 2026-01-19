@@ -57,7 +57,7 @@ const NAV_SECTIONS = [
     title: 'Support',
     items: [
       { label: 'Help & Documentation', path: '/settings/help', icon: HelpCircle },
-      { label: 'Contact Support', path: '/settings/support', icon: MessageSquare },
+      { label: 'Contact Support', path: '/contact', icon: MessageSquare },
     ],
   },
 ];
