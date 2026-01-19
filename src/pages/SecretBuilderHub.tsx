@@ -1608,13 +1608,13 @@ export default function SecretBuilderHub() {
               Start from a Template
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-wrap justify-center gap-6">
               {TEMPLATES.map((template) => (
                 <button
                   key={template.id}
                   onClick={() => handleGenerateFromTemplate(template)}
                   disabled={isGenerating}
-                  className="group text-left bg-zinc-900/40 border border-white/10 rounded-xl overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group text-left w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] bg-card border border-border rounded-xl overflow-hidden hover:border-muted-foreground/30 hover:-translate-y-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {/* Live Preview using ProjectPreview */}
                   <div className="h-36 bg-gradient-to-br from-muted/50 to-muted/20 p-3 relative overflow-hidden">
@@ -1638,16 +1638,16 @@ export default function SecretBuilderHub() {
                       {template.tags.map((tag) => (
                         <span 
                           key={tag} 
-                          className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded-full"
+                          className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
-                    <h3 className="text-lg font-semibold text-white mb-1">
+                    <h3 className="text-lg font-semibold text-foreground mb-1">
                       {template.title}
                     </h3>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-muted-foreground">
                       {template.bestFor}
                     </p>
                   </div>
