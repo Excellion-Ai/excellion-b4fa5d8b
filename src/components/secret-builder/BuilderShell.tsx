@@ -405,7 +405,7 @@ export function BuilderShell() {
     canRedo,
     reset: resetSiteSpec 
   } = useHistory<SiteSpec | null>(null);
-  const [courseSpec, setCourseSpec] = useState<ExtendedCourse | null>(null);
+  const [courseSpec, setCourseSpecInternal] = useState<ExtendedCourse | null>(null);
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -421,6 +421,25 @@ export function BuilderShell() {
   const [modelMode, setModelMode] = useState<'fast' | 'quality'>('quality');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imagePrompt, setImagePrompt] = useState('');
+  
+  // Dirty state tracking to prevent race conditions and overwrites
+  const [isDirty, setIsDirty] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedSpecRef = useRef<string | null>(null);
+  
+  // Wrapper for courseSpec updates that marks as dirty
+  const setCourseSpec = useCallback((newSpec: ExtendedCourse | null | ((prev: ExtendedCourse | null) => ExtendedCourse | null)) => {
+    setCourseSpecInternal(prev => {
+      const next = typeof newSpec === 'function' ? newSpec(prev) : newSpec;
+      // Only mark dirty for actual content changes, not clearing
+      if (next !== null && prev !== null) {
+        setIsDirty(true);
+        setSaveStatus('unsaved');
+      }
+      return next;
+    });
+  }, []);
+  
   const [imageAttachment, setImageAttachment] = useState<string | null>(null);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
@@ -480,13 +499,24 @@ export function BuilderShell() {
   } = useCredits();
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
+  // Also marks dirty state for tracking unsaved changes
   const setSiteSpec = useCallback((value: React.SetStateAction<SiteSpec | null>) => {
     if (typeof value === 'function') {
       const newValue = value(siteSpec);
       if (newValue !== null) {
+        // Mark dirty for actual content changes
+        if (siteSpec !== null) {
+          setIsDirty(true);
+          setSaveStatus('unsaved');
+        }
         setSiteSpecWithHistory(newValue);
       }
     } else {
+      // Mark dirty for actual content changes
+      if (value !== null && siteSpec !== null) {
+        setIsDirty(true);
+        setSaveStatus('unsaved');
+      }
       setSiteSpecWithHistory(value);
     }
   }, [siteSpec, setSiteSpecWithHistory]);
@@ -524,6 +554,12 @@ export function BuilderShell() {
   }, []);
 
   const loadProjectAndMaybeGenerate = async (id: string) => {
+    // If we have unsaved local changes, don't overwrite with database data
+    if (isDirty && (siteSpec || courseSpec)) {
+      console.log('[LoadProject] Skipping load - local unsaved changes exist');
+      return;
+    }
+    
     // First try to load from builder_projects
     const { data, error } = await supabase
       .from('builder_projects')
@@ -736,21 +772,33 @@ export function BuilderShell() {
     }
   };
 
-  // Auto-save when siteSpec changes (from inline editing)
+  // Single debounced auto-save effect to prevent race conditions
   useEffect(() => {
-    if (siteSpec && projectId) {
-      const firstUserMessage = messages.find(m => m.role === 'user');
-      saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, courseSpec);
+    if (!projectId || (!siteSpec && !courseSpec)) return;
+    if (!isDirty) return; // Only save if there are actual changes
+    
+    // Clear any pending save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
-  }, [siteSpec]);
-
-  // Auto-save when courseSpec changes (from inline editing or generation)
-  useEffect(() => {
-    if (courseSpec && projectId) {
+    
+    // Debounce saves by 1.5 seconds to prevent rapid successive saves
+    saveTimeoutRef.current = setTimeout(async () => {
+      setSaveStatus('saving');
       const firstUserMessage = messages.find(m => m.role === 'user');
-      saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, courseSpec);
-    }
-  }, [courseSpec]);
+      await saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, courseSpec);
+      setIsDirty(false);
+      setSaveStatus('saved');
+      // Store what we saved to detect external changes
+      lastSavedSpecRef.current = JSON.stringify({ siteSpec, courseSpec });
+    }, 1500);
+    
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [siteSpec, courseSpec, isDirty, projectId]);
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
@@ -768,19 +816,22 @@ export function BuilderShell() {
     return () => window.removeEventListener('keydown', handleKeyboard);
   }, [canUndo, canRedo, undo, redo]);
 
-  // Warn users if they try to leave during generation
+  // Warn users if they try to leave during generation or with unsaved changes
   useEffect(() => {
-    if (!isGenerating) return;
+    if (!isGenerating && !isDirty) return;
     
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = 'Website generation is in progress. Are you sure you want to leave?';
-      return e.returnValue;
+      const message = isGenerating 
+        ? 'Generation is in progress. Are you sure you want to leave?'
+        : 'You have unsaved changes. Are you sure you want to leave?';
+      e.returnValue = message;
+      return message;
     };
     
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isGenerating]);
+  }, [isGenerating, isDirty]);
 
   // Helper to deduct credits via edge function with dynamic cost
   const deductCredits = async (
@@ -848,8 +899,10 @@ export function BuilderShell() {
     setSaveStatus('unsaved');
 
     setIsGenerating(true);
-    setCourseSpec(null);
-    setSiteSpec(null);
+    // DON'T clear specs here - preserve existing data until new data is ready
+    // This prevents the UI from going blank during regeneration
+    // setCourseSpec(null); // REMOVED - was causing blank UI during regeneration
+    // setSiteSpec(null);   // REMOVED - was causing blank UI during regeneration
     setGeneratedHtml(null);
     setSteps([
       { id: 1, label: 'Connecting to AI...', status: 'pending' },
@@ -922,8 +975,11 @@ export function BuilderShell() {
           isMultiPage: course.isMultiPage || data.isMultiPage || false,
         };
         
-        setCourseSpec(courseSpec);
+        // Atomically replace old data with new course data
+        setCourseSpecInternal(courseSpec);
+        setSiteSpecWithHistory(null); // Clear site spec now that we have new course
         setProjectName(course.title || 'New Course');
+        setIsDirty(true); // Mark as dirty since we have new unsaved content
         
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -2619,10 +2675,17 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       {courseSpec && (
         <CourseActionBar
           onSaveDraft={async () => {
+            // Cancel any pending auto-save
+            if (saveTimeoutRef.current) {
+              clearTimeout(saveTimeoutRef.current);
+            }
             setSaveStatus('saving');
             try {
-              await saveProject(null, messages, idea, null);
+              const firstUserMessage = messages.find(m => m.role === 'user');
+              await saveProject(generatedHtml, messages, firstUserMessage?.content || idea, siteSpec, courseSpec);
+              setIsDirty(false);
               setSaveStatus('saved');
+              lastSavedSpecRef.current = JSON.stringify({ siteSpec, courseSpec });
               toast.success('Draft saved!');
             } catch (error) {
               setSaveStatus('unsaved');
