@@ -461,6 +461,7 @@ export function BuilderShell() {
     thumbnail: null as string | null,
     instructorName: '',
     instructorBio: '',
+    offerType: 'standard' as 'standard' | 'challenge' | 'webinar' | 'lead_magnet' | 'coach_portfolio',
   });
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const fallbackForcedOnceRef = useRef<boolean>(false);

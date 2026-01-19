@@ -365,6 +365,7 @@ export type Database = {
           instructor_bio: string | null
           instructor_name: string | null
           modules: Json | null
+          offer_type: string | null
           page_sections: Json | null
           price_cents: number | null
           published_at: string | null
@@ -395,6 +396,7 @@ export type Database = {
           instructor_bio?: string | null
           instructor_name?: string | null
           modules?: Json | null
+          offer_type?: string | null
           page_sections?: Json | null
           price_cents?: number | null
           published_at?: string | null
@@ -425,6 +427,7 @@ export type Database = {
           instructor_bio?: string | null
           instructor_name?: string | null
           modules?: Json | null
+          offer_type?: string | null
           page_sections?: Json | null
           price_cents?: number | null
           published_at?: string | null
