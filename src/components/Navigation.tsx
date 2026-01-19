@@ -102,9 +102,6 @@ const Navigation = () => {
         </Link>
           
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
-          <Link to="/courses" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Courses
-          </Link>
           <a href="/#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             How it Works
           </a>
@@ -114,16 +111,6 @@ const Navigation = () => {
           <Link to="/builder-faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             FAQ
           </Link>
-          {user && (
-            <>
-              <Link to="/dashboard/student" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                My Dashboard
-              </Link>
-              <Link to="/my-courses" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                My Courses
-              </Link>
-            </>
-          )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -174,12 +161,6 @@ const Navigation = () => {
                 
                 {/* Navigation Links */}
                 <div className="flex flex-col p-4 gap-1">
-                  <Link 
-                    to="/courses" 
-                    className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
-                  >
-                    Courses
-                  </Link>
                   <a 
                     href="/#how-it-works" 
                     className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
@@ -198,22 +179,6 @@ const Navigation = () => {
                   >
                     FAQ
                   </Link>
-                  {user && (
-                    <>
-                      <Link 
-                        to="/dashboard/student" 
-                        className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
-                      >
-                        My Dashboard
-                      </Link>
-                      <Link 
-                        to="/my-courses" 
-                        className="flex items-center h-12 px-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary/50 transition-colors touch-manipulation"
-                      >
-                        My Courses
-                      </Link>
-                    </>
-                  )}
                 </div>
                 
                 {/* User Section */}
