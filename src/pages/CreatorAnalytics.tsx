@@ -2,13 +2,13 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, Users, Trophy, Clock, TrendingUp, Monitor, Smartphone, Tablet, ExternalLink, Sparkles } from 'lucide-react';
+import { Loader2, Eye, Users, Trophy, Clock, TrendingUp, Monitor, Smartphone, Tablet, ExternalLink, Sparkles, DollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { format, subDays, parseISO, startOfDay } from 'date-fns';
 
 interface Course {
@@ -43,6 +43,14 @@ interface LessonView {
   created_at: string;
 }
 
+interface Purchase {
+  id: string;
+  course_id: string;
+  amount_cents: number;
+  status: string;
+  purchased_at: string;
+}
+
 type DateRange = '7' | '30' | '90' | 'all';
 
 export default function CreatorAnalytics() {
@@ -52,6 +60,7 @@ export default function CreatorAnalytics() {
   const [views, setViews] = useState<CourseView[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [lessonViews, setLessonViews] = useState<LessonView[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [dateRange, setDateRange] = useState<DateRange>('30');
 
   useEffect(() => {
@@ -80,15 +89,17 @@ export default function CreatorAnalytics() {
       const courseIds = coursesList.map(c => c.id);
 
       // Fetch all analytics data in parallel
-      const [viewsRes, enrollmentsRes, lessonViewsRes] = await Promise.all([
+      const [viewsRes, enrollmentsRes, lessonViewsRes, purchasesRes] = await Promise.all([
         supabase.from('course_views').select('id, course_id, created_at, device_type, referrer').in('course_id', courseIds),
         supabase.from('enrollments').select('id, course_id, progress_percent, enrolled_at, completed_at').in('course_id', courseIds),
         supabase.from('lesson_views').select('id, course_id, lesson_id, time_spent_seconds, created_at').in('course_id', courseIds),
+        supabase.from('purchases').select('id, course_id, amount_cents, status, purchased_at').in('course_id', courseIds).eq('status', 'completed'),
       ]);
 
       setViews(viewsRes.data || []);
       setEnrollments(enrollmentsRes.data || []);
       setLessonViews(lessonViewsRes.data || []);
+      setPurchases(purchasesRes.data || []);
       setIsLoading(false);
     };
 
@@ -108,6 +119,11 @@ export default function CreatorAnalytics() {
   const filteredViews = useMemo(() => filterByDate(views, 'created_at'), [views, dateRange]);
   const filteredEnrollments = useMemo(() => filterByDate(enrollments, 'enrolled_at'), [enrollments, dateRange]);
   const filteredLessonViews = useMemo(() => filterByDate(lessonViews, 'created_at'), [lessonViews, dateRange]);
+  const filteredPurchases = useMemo(() => {
+    if (dateRange === 'all') return purchases;
+    const cutoff = subDays(new Date(), parseInt(dateRange));
+    return purchases.filter(p => new Date(p.purchased_at) >= cutoff);
+  }, [purchases, dateRange]);
 
   // Calculate overview stats
   const stats = useMemo(() => {
@@ -117,9 +133,10 @@ export default function CreatorAnalytics() {
     const completionRate = totalEnrollments > 0 ? Math.round((completedEnrollments / totalEnrollments) * 100) : 0;
     const totalSeconds = filteredLessonViews.reduce((sum, lv) => sum + (lv.time_spent_seconds || 0), 0);
     const totalHours = (totalSeconds / 3600).toFixed(1);
+    const totalEarnings = filteredPurchases.reduce((sum, p) => sum + p.amount_cents, 0) / 100;
 
-    return { totalViews, totalEnrollments, completionRate, totalHours };
-  }, [filteredViews, filteredEnrollments, filteredLessonViews]);
+    return { totalViews, totalEnrollments, completionRate, totalHours, totalEarnings };
+  }, [filteredViews, filteredEnrollments, filteredLessonViews, filteredPurchases]);
 
   // Views chart data (last 30 days)
   const chartData = useMemo(() => {
@@ -338,7 +355,19 @@ export default function CreatorAnalytics() {
         ) : (
           <>
             {/* Overview Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+              <Card className="bg-gradient-to-br from-primary/20 to-primary/5 border-primary/30">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Earnings</p>
+                      <p className="text-3xl font-bold text-primary">${stats.totalEarnings.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Revenue</p>
+                    </div>
+                    <DollarSign className="h-8 w-8 text-primary/50" />
+                  </div>
+                </CardContent>
+              </Card>
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
