@@ -23,6 +23,8 @@ import { Settings, DollarSign, Globe, Search, Users, Image as ImageIcon, User, L
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export type OfferType = 'standard' | 'challenge' | 'webinar' | 'lead_magnet' | 'coach_portfolio';
+
 export interface CourseSettings {
   price: number | null;
   currency: string;
@@ -34,6 +36,7 @@ export interface CourseSettings {
   thumbnail: string | null;
   instructorName: string;
   instructorBio: string;
+  offerType: OfferType;
 }
 
 interface CourseSettingsDialogProps {
@@ -125,8 +128,12 @@ export function CourseSettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="pricing" className="mt-4">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="type" className="mt-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="type" className="gap-1.5 text-xs">
+              <Settings className="h-3.5 w-3.5" />
+              Type
+            </TabsTrigger>
             <TabsTrigger value="pricing" className="gap-1.5 text-xs">
               <DollarSign className="h-3.5 w-3.5" />
               Pricing
@@ -144,6 +151,56 @@ export function CourseSettingsDialog({
               Enrollment
             </TabsTrigger>
           </TabsList>
+
+          {/* Offer Type Tab */}
+          <TabsContent value="type" className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label>Offer Type</Label>
+              <Select
+                value={localSettings.offerType || 'standard'}
+                onValueChange={(value) => updateSetting('offerType', value as OfferType)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select offer type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">
+                    <div className="flex flex-col items-start">
+                      <span>Standard Course</span>
+                      <span className="text-xs text-muted-foreground">Full curriculum with modules and lessons</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="challenge">
+                    <div className="flex flex-col items-start">
+                      <span>Fitness Challenge</span>
+                      <span className="text-xs text-muted-foreground">Day-by-day challenge with daily tasks</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="webinar">
+                    <div className="flex flex-col items-start">
+                      <span>Webinar / Workshop</span>
+                      <span className="text-xs text-muted-foreground">Single video with registration</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="lead_magnet">
+                    <div className="flex flex-col items-start">
+                      <span>Lead Magnet</span>
+                      <span className="text-xs text-muted-foreground">Free download with email capture</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="coach_portfolio">
+                    <div className="flex flex-col items-start">
+                      <span>Coach Portfolio</span>
+                      <span className="text-xs text-muted-foreground">Coach profile with services</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Choose how your offer is displayed to visitors
+              </p>
+            </div>
+          </TabsContent>
 
           {/* Pricing Tab */}
           <TabsContent value="pricing" className="space-y-4 mt-4">
