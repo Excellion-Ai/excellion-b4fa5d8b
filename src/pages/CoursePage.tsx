@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User, Star } from 'lucide-react';
+import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User, Star, ShoppingCart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -97,6 +97,8 @@ export default function CoursePage() {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Track course view (once per session)
   const trackCourseView = async (courseId: string) => {
@@ -169,14 +171,24 @@ export default function CoursePage() {
 
         // Check if user is enrolled
         if (user) {
-          const { data: enrollment } = await supabase
-            .from('enrollments')
-            .select('id')
-            .eq('course_id', data.id)
-            .eq('user_id', user.id)
-            .maybeSingle();
+          const [enrollmentResult, purchaseResult] = await Promise.all([
+            supabase
+              .from('enrollments')
+              .select('id')
+              .eq('course_id', data.id)
+              .eq('user_id', user.id)
+              .maybeSingle(),
+            supabase
+              .from('purchases')
+              .select('id')
+              .eq('course_id', data.id)
+              .eq('user_id', user.id)
+              .eq('status', 'completed')
+              .maybeSingle()
+          ]);
           
-          setIsEnrolled(!!enrollment);
+          setIsEnrolled(!!enrollmentResult.data);
+          setHasPurchased(!!purchaseResult.data);
         }
       }
 
@@ -191,6 +203,12 @@ export default function CoursePage() {
 
     if (!currentUser) {
       navigate(`/auth?redirect=/course/${subdomain}`);
+      return;
+    }
+
+    // If course is paid and not purchased, redirect to checkout
+    if (course.price_cents && course.price_cents > 0 && !hasPurchased) {
+      startCheckout();
       return;
     }
 
@@ -226,6 +244,37 @@ export default function CoursePage() {
 
     toast.success('Successfully enrolled!');
     navigate(`/learn/${course.subdomain || course.id}`);
+  };
+
+  const startCheckout = async () => {
+    if (!course) return;
+
+    if (!currentUser) {
+      navigate(`/auth?redirect=/course/${subdomain}`);
+      return;
+    }
+
+    setIsCheckingOut(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-course-checkout', {
+        body: { course_id: course.id },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      toast.error('Failed to start checkout. Please try again.');
+      setIsCheckingOut(false);
+    }
   };
 
   if (isLoading) {
@@ -483,22 +532,38 @@ export default function CoursePage() {
                 <p className="text-muted-foreground mb-2">
                   Join {course.total_students || 0} students who have already enrolled.
                 </p>
-                <p className="text-3xl font-bold text-primary mb-6">
-                  {priceText}
-                </p>
+                
+                {/* Price Display */}
+                <div className="mb-6">
+                  {course.price_cents && course.price_cents > 0 ? (
+                    <p className="text-3xl font-bold text-primary">
+                      {priceText}
+                    </p>
+                  ) : (
+                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-lg px-4 py-1">
+                      Free
+                    </Badge>
+                  )}
+                </div>
+                
                 <Button 
                   size="lg" 
                   className="bg-primary hover:bg-primary/90"
                   onClick={enrollInCourse}
-                  disabled={isEnrolling}
+                  disabled={isEnrolling || isCheckingOut}
                 >
-                  {isEnrolling ? (
+                  {isEnrolling || isCheckingOut ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Enrolling...
+                      {isCheckingOut ? 'Starting checkout...' : 'Enrolling...'}
+                    </>
+                  ) : course.price_cents && course.price_cents > 0 ? (
+                    <>
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Buy Now - {priceText}
                     </>
                   ) : (
-                    course.price_cents && course.price_cents > 0 ? `Enroll for ${priceText}` : 'Enroll for Free'
+                    'Enroll Free'
                   )}
                 </Button>
               </>

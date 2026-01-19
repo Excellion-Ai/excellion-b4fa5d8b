@@ -30,6 +30,7 @@ const StudentDashboard = lazyWithRetry(() => import("./pages/StudentDashboard"),
 const CoursesPage = lazyWithRetry(() => import("./pages/CoursesPage"), "CoursesPage");
 const CreatorAnalytics = lazyWithRetry(() => import("./pages/CreatorAnalytics"), "CreatorAnalytics");
 const CourseDetailAnalytics = lazyWithRetry(() => import("./pages/CourseDetailAnalytics"), "CourseDetailAnalytics");
+const PurchaseSuccess = lazyWithRetry(() => import("./pages/PurchaseSuccess"), "PurchaseSuccess");
 const Privacy = lazyWithRetry(() => import("./pages/Privacy"), "Privacy");
 const Terms = lazyWithRetry(() => import("./pages/Terms"), "Terms");
 const About = lazyWithRetry(() => import("./pages/About"), "About");
@@ -96,6 +97,7 @@ const App = () => (
         <Route path="/learn/:slug" element={<LearnPage />} />
         <Route path="/my-courses" element={<MyCourses />} />
         <Route path="/certificate/:id" element={<CertificatePage />} />
+        <Route path="/purchase-success" element={<PurchaseSuccess />} />
         <Route path="/dashboard/student" element={<StudentDashboard />} />
         <Route path="/dashboard/analytics" element={<CreatorAnalytics />} />
         <Route path="/dashboard/analytics/:courseId" element={<CourseDetailAnalytics />} />
