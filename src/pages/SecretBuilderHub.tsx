@@ -1610,7 +1610,7 @@ export default function SecretBuilderHub() {
               Start from a Template
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
               {TEMPLATES.map((template) => {
                 const isSelected = selectedTemplate === template.id;
                 const IconComponent = template.icon;
@@ -1621,9 +1621,9 @@ export default function SecretBuilderHub() {
                     onClick={() => setSelectedTemplate(template.id)}
                     onDoubleClick={() => handleGenerateFromTemplate(template)}
                     disabled={isGenerating}
-                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 ${
+                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] ${
                       isSelected 
-                        ? 'border-amber-500 shadow-lg shadow-amber-500/20' 
+                        ? 'border-primary shadow-lg shadow-primary/20' 
                         : 'border-border hover:border-muted-foreground/30'
                     }`}
                   >
