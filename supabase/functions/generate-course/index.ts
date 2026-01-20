@@ -355,31 +355,152 @@ serve(async (req) => {
   try {
     const { prompt, options, use_preloaded } = await req.json() as CourseRequest;
 
-    // Handle preloaded template request - instant loading
+    // Get Supabase credentials for database operations
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    // Handle preloaded template request - instant loading with database save
     if (use_preloaded && options?.template) {
       console.log(`Loading prebuilt template: ${options.template}`);
       const prebuiltCourse = getPrebuiltCourse(options.template);
       
-      if (prebuiltCourse) {
-        console.log(`Prebuilt template loaded successfully: ${prebuiltCourse.title}`);
-        return new Response(
-          JSON.stringify({
-            success: true,
-            course: prebuiltCourse,
-            template: options.template,
-            isMultiPage: false,
-            separatePages: [],
-            message: 'Template loaded successfully!',
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } else {
+      if (!prebuiltCourse) {
         console.error(`Unknown template: ${options.template}`);
         return new Response(
           JSON.stringify({ success: false, error: `Unknown template: ${options.template}` }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      // Get user ID from authorization header
+      const authHeader = req.headers.get('authorization');
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentication required' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify the user token and get user ID
+      let userId: string | null = null;
+      if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+          const userResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+            headers: {
+              'apikey': SUPABASE_SERVICE_ROLE_KEY,
+              'Authorization': authHeader,
+            },
+          });
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            userId = userData.id;
+          }
+        } catch (e) {
+          console.error('Failed to get user:', e);
+        }
+      }
+
+      if (!userId) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Could not identify user' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`Creating database records for user: ${userId}`);
+
+      // Generate new IDs for the saved records
+      const projectId = generateUUID();
+      const courseId = generateUUID();
+
+      // Create builder_projects record
+      const projectSpec = {
+        courseSpec: {
+          ...prebuiltCourse.curriculum,
+          id: courseId,
+          title: prebuiltCourse.title,
+          description: prebuiltCourse.description,
+          modules: prebuiltCourse.curriculum.modules,
+        },
+        messages: [],
+      };
+
+      const projectInsertResponse = await fetch(`${SUPABASE_URL}/rest/v1/builder_projects`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          id: projectId,
+          user_id: userId,
+          name: prebuiltCourse.title,
+          idea: `${options.template} template`,
+          spec: projectSpec,
+        }),
+      });
+
+      if (!projectInsertResponse.ok) {
+        const errText = await projectInsertResponse.text();
+        console.error('Failed to create builder_projects:', errText);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to save project' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Create courses record linked to the project
+      const courseInsertResponse = await fetch(`${SUPABASE_URL}/rest/v1/courses`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          id: courseId,
+          user_id: userId,
+          builder_project_id: projectId,
+          title: prebuiltCourse.title,
+          description: prebuiltCourse.description,
+          difficulty: prebuiltCourse.curriculum.difficulty || 'beginner',
+          duration_weeks: prebuiltCourse.curriculum.duration_weeks || 6,
+          modules: prebuiltCourse.curriculum.modules,
+          status: 'draft',
+          offer_type: options.template,
+        }),
+      });
+
+      if (!courseInsertResponse.ok) {
+        const errText = await courseInsertResponse.text();
+        console.error('Failed to create courses:', errText);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to save course' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`Prebuilt template saved successfully: project=${projectId}, course=${courseId}`);
+      
+      // Return with the project ID (for navigation to /secret-builder/:projectId)
+      return new Response(
+        JSON.stringify({
+          success: true,
+          course: {
+            ...prebuiltCourse,
+            id: projectId, // Use project ID for navigation
+            courseId: courseId,
+          },
+          template: options.template,
+          isMultiPage: false,
+          separatePages: [],
+          message: 'Template loaded successfully!',
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (!prompt || prompt.trim().length === 0) {
@@ -420,8 +541,7 @@ serve(async (req) => {
 
     // Fetch global knowledge (user_knowledge table) to inject into course generation
     let globalKnowledgeContext = '';
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY already declared above
     
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
       try {
