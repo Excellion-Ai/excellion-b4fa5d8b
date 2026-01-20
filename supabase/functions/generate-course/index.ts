@@ -345,13 +345,42 @@ function selectRandomSections(template: BaseTemplate): string[] {
   return shuffled.slice(0, count);
 }
 
+import { getPrebuiltCourse } from './prebuilt-templates.ts';
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { prompt, options } = await req.json() as CourseRequest;
+    const { prompt, options, use_preloaded } = await req.json() as CourseRequest;
+
+    // Handle preloaded template request - instant loading
+    if (use_preloaded && options?.template) {
+      console.log(`Loading prebuilt template: ${options.template}`);
+      const prebuiltCourse = getPrebuiltCourse(options.template);
+      
+      if (prebuiltCourse) {
+        console.log(`Prebuilt template loaded successfully: ${prebuiltCourse.title}`);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            course: prebuiltCourse,
+            template: options.template,
+            isMultiPage: false,
+            separatePages: [],
+            message: 'Template loaded successfully!',
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        console.error(`Unknown template: ${options.template}`);
+        return new Response(
+          JSON.stringify({ success: false, error: `Unknown template: ${options.template}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(
