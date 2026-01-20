@@ -5,10 +5,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-type CourseTemplate = 'creator' | 'technical' | 'academic' | 'visual';
+type CourseTemplate = 'creator' | 'technical' | 'academic' | 'visual' | 'standard' | 'challenge' | 'leadmagnet' | 'webinar' | 'coach';
 
 interface CourseRequest {
   prompt: string;
+  use_preloaded?: boolean;
   options?: {
     difficulty?: string;
     duration_weeks?: number;
@@ -94,8 +95,24 @@ interface GeneratedCourse {
   isMultiPage?: boolean;
 }
 
+// Base template type for config lookup
+type BaseTemplate = 'creator' | 'technical' | 'academic' | 'visual';
+
+// Map new template IDs to base template styles
+const TEMPLATE_TO_BASE: Record<CourseTemplate, BaseTemplate> = {
+  creator: 'creator',
+  technical: 'technical',
+  academic: 'academic',
+  visual: 'visual',
+  standard: 'technical',    // Standard courses use technical style
+  challenge: 'creator',     // Challenges use creator style (motivational)
+  leadmagnet: 'creator',    // Lead magnets use creator style (engaging)
+  webinar: 'academic',      // Webinars use academic style (professional)
+  coach: 'creator',         // Coaching uses creator style (personal)
+};
+
 // Template-specific configurations
-const TEMPLATE_CONFIG: Record<CourseTemplate, {
+const TEMPLATE_CONFIG: Record<BaseTemplate, {
   brandColor: string;
   tone: string;
   contentStyle: string;
@@ -143,7 +160,7 @@ const TEMPLATE_CONFIG: Record<CourseTemplate, {
 };
 
 // Niche detection for auto-selecting template
-const NICHE_KEYWORDS: Record<CourseTemplate, string[]> = {
+const NICHE_KEYWORDS: Record<BaseTemplate, string[]> = {
   creator: [
     'coach', 'coaching', 'personal brand', 'influencer', 'creator', 'content',
     'social media', 'youtube', 'podcast', 'speaking', 'motivation', 'mindset',
@@ -243,10 +260,10 @@ function detectMultiPageIntent(prompt: string): MultiPageDetection {
   };
 }
 
-function detectTemplate(prompt: string): CourseTemplate {
+function detectTemplate(prompt: string): BaseTemplate {
   const lowerPrompt = prompt.toLowerCase();
   
-  const scores: Record<CourseTemplate, number> = {
+  const scores: Record<BaseTemplate, number> = {
     creator: 0,
     technical: 0,
     academic: 0,
@@ -256,18 +273,18 @@ function detectTemplate(prompt: string): CourseTemplate {
   for (const [template, keywords] of Object.entries(NICHE_KEYWORDS)) {
     for (const keyword of keywords) {
       if (lowerPrompt.includes(keyword)) {
-        scores[template as CourseTemplate] += keyword.split(' ').length;
+        scores[template as BaseTemplate] += keyword.split(' ').length;
       }
     }
   }
   
   let maxScore = 0;
-  let selectedTemplate: CourseTemplate = 'creator';
+  let selectedTemplate: BaseTemplate = 'creator';
   
   for (const [template, score] of Object.entries(scores)) {
     if (score > maxScore) {
       maxScore = score;
-      selectedTemplate = template as CourseTemplate;
+      selectedTemplate = template as BaseTemplate;
     }
   }
   
@@ -290,7 +307,7 @@ function slugify(text: string): string {
     .substring(0, 50);
 }
 
-const OPTIONAL_SECTIONS: Record<CourseTemplate, string[]> = {
+const OPTIONAL_SECTIONS: Record<BaseTemplate, string[]> = {
   creator: [
     'who-is-this-for',
     'meet-your-instructor',
@@ -321,7 +338,7 @@ const OPTIONAL_SECTIONS: Record<CourseTemplate, string[]> = {
   ],
 };
 
-function selectRandomSections(template: CourseTemplate): string[] {
+function selectRandomSections(template: BaseTemplate): string[] {
   const sections = OPTIONAL_SECTIONS[template];
   const count = 2 + Math.floor(Math.random() * 2); // 2-3 sections
   const shuffled = [...sections].sort(() => Math.random() - 0.5);
@@ -365,9 +382,10 @@ serve(async (req) => {
     const includeCommunityPage = options?.includeCommunityPage ?? multiPageDetection.includeCommunityPage;
     const includeTestimonialsPage = options?.includeTestimonialsPage ?? multiPageDetection.includeTestimonialsPage;
     
-    // Auto-detect template from prompt if not provided
+    // Auto-detect template from prompt if not provided, or map to base template
     const template: CourseTemplate = options?.template || detectTemplate(prompt);
-    const templateConfig = TEMPLATE_CONFIG[template];
+    const baseTemplate: BaseTemplate = TEMPLATE_TO_BASE[template] || 'creator';
+    const templateConfig = TEMPLATE_CONFIG[baseTemplate];
 
     console.log(`Detected template: ${template}, multiPage: ${separatePages}, bonus: ${includeBonusPage}, resources: ${includeResourcesPage}, community: ${includeCommunityPage}, testimonials: ${includeTestimonialsPage}`);
 
@@ -716,7 +734,7 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
     // Build the complete course object
     const courseId = generateUUID();
     const courseSlug = slugify(courseData.title);
-    const selectedSections = selectRandomSections(template);
+    const selectedSections = selectRandomSections(baseTemplate);
 
     // Process separate pages if they were generated
     const generatedSeparatePages: CoursePage[] = [];
