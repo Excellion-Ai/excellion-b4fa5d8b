@@ -1610,8 +1610,9 @@ export default function SecretBuilderHub() {
               Start from a Template
             </h2>
             
-            <div className="flex flex-wrap justify-center gap-4">
-              {TEMPLATES.map((template) => {
+            {/* Top row - 3 templates */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              {TEMPLATES.slice(0, 3).map((template) => {
                 const isSelected = selectedTemplate === template.id;
                 const IconComponent = template.icon;
                 
@@ -1621,7 +1622,7 @@ export default function SecretBuilderHub() {
                     onClick={() => setSelectedTemplate(template.id)}
                     onDoubleClick={() => handleGenerateFromTemplate(template)}
                     disabled={isGenerating}
-                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] ${
+                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 ${
                       isSelected 
                         ? 'border-primary shadow-lg shadow-primary/20' 
                         : 'border-border hover:border-muted-foreground/30'
@@ -1629,8 +1630,78 @@ export default function SecretBuilderHub() {
                   >
                     {/* Selected checkmark badge */}
                     {isSelected && (
-                      <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">
-                        <Check className="w-4 h-4 text-black" />
+                      <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="w-4 h-4 text-primary-foreground" />
+                      </div>
+                    )}
+                    
+                    {/* Colored gradient thumbnail with icon */}
+                    <div 
+                      className="h-28 relative overflow-hidden flex items-center justify-center"
+                      style={{
+                        background: `linear-gradient(135deg, ${template.color}40 0%, ${template.color}20 100%)`
+                      }}
+                    >
+                      <IconComponent 
+                        className="w-12 h-12 transition-transform group-hover:scale-110"
+                        style={{ color: template.color }}
+                      />
+                      
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                          <ArrowRight className="w-4 h-4" />
+                          {isSelected ? 'Double-click to Start' : 'Select Template'}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Card Content */}
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        {template.tags.map((tag) => (
+                          <span 
+                            key={tag} 
+                            className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground mb-1">
+                        {template.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {template.subtitle}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Bottom row - 2 templates centered */}
+            <div className="flex justify-center gap-4">
+              {TEMPLATES.slice(3, 5).map((template) => {
+                const isSelected = selectedTemplate === template.id;
+                const IconComponent = template.icon;
+                
+                return (
+                  <button
+                    key={template.id}
+                    onClick={() => setSelectedTemplate(template.id)}
+                    onDoubleClick={() => handleGenerateFromTemplate(template)}
+                    disabled={isGenerating}
+                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 w-full md:w-[calc(33.333%-0.5rem)] ${
+                      isSelected 
+                        ? 'border-primary shadow-lg shadow-primary/20' 
+                        : 'border-border hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    {/* Selected checkmark badge */}
+                    {isSelected && (
+                      <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="w-4 h-4 text-primary-foreground" />
                       </div>
                     )}
                     
