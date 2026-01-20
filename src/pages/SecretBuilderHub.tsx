@@ -210,6 +210,7 @@ export default function SecretBuilderHub() {
   const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false);
   const [permanentDeleteConfirmText, setPermanentDeleteConfirmText] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('standard');
+  const [loadingTemplate, setLoadingTemplate] = useState<string | null>(null);
   
   // Interview intake hook
   const interview = useInterviewIntake(idea);
@@ -1614,15 +1615,16 @@ export default function SecretBuilderHub() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               {TEMPLATES.slice(0, 3).map((template) => {
                 const isSelected = selectedTemplate === template.id;
+                const isLoading = loadingTemplate === template.id;
+                const isDisabled = loadingTemplate !== null && loadingTemplate !== template.id;
                 const IconComponent = template.icon;
                 
                 return (
-                  <button
+                  <div
                     key={template.id}
-                    onClick={() => setSelectedTemplate(template.id)}
-                    onDoubleClick={() => handleGenerateFromTemplate(template)}
-                    disabled={isGenerating}
-                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 ${
+                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 ${
+                      isDisabled ? 'opacity-50' : 'hover:-translate-y-1'
+                    } ${
                       isSelected 
                         ? 'border-primary shadow-lg shadow-primary/20' 
                         : 'border-border hover:border-muted-foreground/30'
@@ -1635,47 +1637,98 @@ export default function SecretBuilderHub() {
                       </div>
                     )}
                     
-                    {/* Colored gradient thumbnail with icon */}
-                    <div 
-                      className="h-28 relative overflow-hidden flex items-center justify-center"
-                      style={{
-                        background: `linear-gradient(135deg, ${template.color}40 0%, ${template.color}20 100%)`
-                      }}
+                    {/* Clickable area for selection */}
+                    <button
+                      onClick={() => setSelectedTemplate(template.id)}
+                      disabled={loadingTemplate !== null}
+                      className="w-full text-left"
                     >
-                      <IconComponent 
-                        className="w-12 h-12 transition-transform group-hover:scale-110"
-                        style={{ color: template.color }}
-                      />
+                      {/* Colored gradient thumbnail with icon */}
+                      <div 
+                        className="h-28 relative overflow-hidden flex items-center justify-center"
+                        style={{
+                          background: `linear-gradient(135deg, ${template.color}40 0%, ${template.color}20 100%)`
+                        }}
+                      >
+                        <IconComponent 
+                          className="w-12 h-12 transition-transform group-hover:scale-110"
+                          style={{ color: template.color }}
+                        />
+                      </div>
                       
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                          <ArrowRight className="w-4 h-4" />
-                          {isSelected ? 'Double-click to Start' : 'Select Template'}
+                      {/* Card Content */}
+                      <div className="p-4 pb-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          {template.tags.map((tag) => (
+                            <span 
+                              key={tag} 
+                              className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
+                            >
+                              {tag}
+                            </span>
+                          ))}
                         </div>
+                        <h3 className="text-base font-semibold text-foreground mb-1">
+                          {template.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {template.subtitle}
+                        </p>
                       </div>
-                    </div>
+                    </button>
                     
-                    {/* Card Content */}
-                    <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        {template.tags.map((tag) => (
-                          <span 
-                            key={tag} 
-                            className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground mb-1">
-                        {template.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {template.subtitle}
-                      </p>
+                    {/* Use Template Button */}
+                    <div className="px-4 pb-4">
+                      <Button
+                        onClick={async () => {
+                          const { data: { user: currentUser } } = await supabase.auth.getUser();
+                          if (!currentUser) {
+                            navigate('/auth');
+                            return;
+                          }
+                          setLoadingTemplate(template.id);
+                          try {
+                            const response = await supabase.functions.invoke("generate-course", {
+                              body: {
+                                prompt: template.prompt || `Create a ${template.title.toLowerCase()} course`,
+                                use_preloaded: true,
+                                options: {
+                                  template: template.id
+                                }
+                              }
+                            });
+                            
+                            if (response.data && response.data.success && response.data.course) {
+                              navigate("/secret-builder/" + response.data.course.id);
+                            } else {
+                              toast({
+                                title: "Error",
+                                description: response.data?.error || "Failed to load template",
+                                variant: "destructive"
+                              });
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Error",
+                              description: "Failed to load template",
+                              variant: "destructive"
+                            });
+                          } finally {
+                            setLoadingTemplate(null);
+                          }
+                        }}
+                        disabled={loadingTemplate !== null}
+                        className="w-full text-white font-medium"
+                        style={{ backgroundColor: template.color }}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Use Template'
+                        )}
+                      </Button>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -1684,15 +1737,16 @@ export default function SecretBuilderHub() {
             <div className="flex justify-center gap-4">
               {TEMPLATES.slice(3, 5).map((template) => {
                 const isSelected = selectedTemplate === template.id;
+                const isLoading = loadingTemplate === template.id;
+                const isDisabled = loadingTemplate !== null && loadingTemplate !== template.id;
                 const IconComponent = template.icon;
                 
                 return (
-                  <button
+                  <div
                     key={template.id}
-                    onClick={() => setSelectedTemplate(template.id)}
-                    onDoubleClick={() => handleGenerateFromTemplate(template)}
-                    disabled={isGenerating}
-                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 w-full md:w-[calc(33.333%-0.5rem)] ${
+                    className={`group text-left relative bg-card border-2 rounded-xl overflow-hidden transition-all duration-200 w-full md:w-[calc(33.333%-0.5rem)] ${
+                      isDisabled ? 'opacity-50' : 'hover:-translate-y-1'
+                    } ${
                       isSelected 
                         ? 'border-primary shadow-lg shadow-primary/20' 
                         : 'border-border hover:border-muted-foreground/30'
@@ -1705,73 +1759,100 @@ export default function SecretBuilderHub() {
                       </div>
                     )}
                     
-                    {/* Colored gradient thumbnail with icon */}
-                    <div 
-                      className="h-28 relative overflow-hidden flex items-center justify-center"
-                      style={{
-                        background: `linear-gradient(135deg, ${template.color}40 0%, ${template.color}20 100%)`
-                      }}
+                    {/* Clickable area for selection */}
+                    <button
+                      onClick={() => setSelectedTemplate(template.id)}
+                      disabled={loadingTemplate !== null}
+                      className="w-full text-left"
                     >
-                      <IconComponent 
-                        className="w-12 h-12 transition-transform group-hover:scale-110"
-                        style={{ color: template.color }}
-                      />
+                      {/* Colored gradient thumbnail with icon */}
+                      <div 
+                        className="h-28 relative overflow-hidden flex items-center justify-center"
+                        style={{
+                          background: `linear-gradient(135deg, ${template.color}40 0%, ${template.color}20 100%)`
+                        }}
+                      >
+                        <IconComponent 
+                          className="w-12 h-12 transition-transform group-hover:scale-110"
+                          style={{ color: template.color }}
+                        />
+                      </div>
                       
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                          <ArrowRight className="w-4 h-4" />
-                          {isSelected ? 'Double-click to Start' : 'Select Template'}
+                      {/* Card Content */}
+                      <div className="p-4 pb-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          {template.tags.map((tag) => (
+                            <span 
+                              key={tag} 
+                              className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
+                            >
+                              {tag}
+                            </span>
+                          ))}
                         </div>
+                        <h3 className="text-base font-semibold text-foreground mb-1">
+                          {template.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {template.subtitle}
+                        </p>
                       </div>
-                    </div>
+                    </button>
                     
-                    {/* Card Content */}
-                    <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        {template.tags.map((tag) => (
-                          <span 
-                            key={tag} 
-                            className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground mb-1">
-                        {template.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {template.subtitle}
-                      </p>
+                    {/* Use Template Button */}
+                    <div className="px-4 pb-4">
+                      <Button
+                        onClick={async () => {
+                          const { data: { user: currentUser } } = await supabase.auth.getUser();
+                          if (!currentUser) {
+                            navigate('/auth');
+                            return;
+                          }
+                          setLoadingTemplate(template.id);
+                          try {
+                            const response = await supabase.functions.invoke("generate-course", {
+                              body: {
+                                prompt: template.prompt || `Create a ${template.title.toLowerCase()} course`,
+                                use_preloaded: true,
+                                options: {
+                                  template: template.id
+                                }
+                              }
+                            });
+                            
+                            if (response.data && response.data.success && response.data.course) {
+                              navigate("/secret-builder/" + response.data.course.id);
+                            } else {
+                              toast({
+                                title: "Error",
+                                description: response.data?.error || "Failed to load template",
+                                variant: "destructive"
+                              });
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Error",
+                              description: "Failed to load template",
+                              variant: "destructive"
+                            });
+                          } finally {
+                            setLoadingTemplate(null);
+                          }
+                        }}
+                        disabled={loadingTemplate !== null}
+                        className="w-full text-white font-medium"
+                        style={{ backgroundColor: template.color }}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Use Template'
+                        )}
+                      </Button>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
-            </div>
-            
-            {/* Use Template Button */}
-            <div className="mt-6 flex justify-center">
-              <Button
-                onClick={() => {
-                  const template = TEMPLATES.find(t => t.id === selectedTemplate);
-                  if (template) handleGenerateFromTemplate(template);
-                }}
-                disabled={isGenerating || !selectedTemplate}
-                className="bg-amber-500 hover:bg-amber-600 text-black font-medium px-8"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <ArrowRight className="w-4 h-4 mr-2" />
-                    Use {TEMPLATES.find(t => t.id === selectedTemplate)?.title || 'Template'}
-                  </>
-                )}
-              </Button>
             </div>
           </section>
 
