@@ -56,6 +56,7 @@ interface Course {
   total_students: number | null;
   average_rating: number | null;
   review_count: number;
+  _isOwnerPreview?: boolean;
 }
 
 const LessonTypeIcon = ({ type, contentType }: { type: string; contentType?: string }) => {
@@ -130,15 +131,22 @@ export default function CoursePage() {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
 
-      // Fetch published courses by subdomain with new fields
-      let { data, error: fetchError } = await supabase
+      let data: any = null;
+      let fetchError: any = null;
+      let isOwnerPreview = false;
+
+      // First try: published course by subdomain
+      const publishedQuery = await supabase
         .from('courses')
         .select('*')
         .eq('subdomain', subdomain)
         .eq('status', 'published')
         .single();
+      
+      data = publishedQuery.data;
+      fetchError = publishedQuery.error;
 
-      // Fallback to UUID lookup for published courses
+      // Fallback: published course by UUID
       if (fetchError && subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         const idQuery = await supabase
           .from('courses')
@@ -151,45 +159,77 @@ export default function CoursePage() {
         fetchError = idQuery.error;
       }
 
-      if (fetchError) {
+      // If no published course found and user is logged in, check if they own a draft course
+      if (fetchError && user) {
+        // Try subdomain first
+        const draftSubdomainQuery = await supabase
+          .from('courses')
+          .select('*')
+          .eq('subdomain', subdomain)
+          .eq('user_id', user.id)
+          .single();
+
+        if (draftSubdomainQuery.data) {
+          data = draftSubdomainQuery.data;
+          fetchError = null;
+          isOwnerPreview = true;
+        } else if (subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+          // Try UUID for draft
+          const draftIdQuery = await supabase
+            .from('courses')
+            .select('*')
+            .eq('id', subdomain)
+            .eq('user_id', user.id)
+            .single();
+
+          if (draftIdQuery.data) {
+            data = draftIdQuery.data;
+            fetchError = null;
+            isOwnerPreview = true;
+          }
+        }
+      }
+
+      if (fetchError || !data) {
         setError('Course not found');
         setIsLoading(false);
         return;
       }
       
-      if (data) {
-        const modules = Array.isArray(data.modules) ? (data.modules as unknown as CourseModule[]) : [];
-        const learningOutcomes = (data as any).learningOutcomes || (data as any).learning_outcomes || [];
-        setCourse({
-          ...data,
-          modules,
-          learningOutcomes: Array.isArray(learningOutcomes) ? learningOutcomes : [],
-        } as Course);
+      const modules = Array.isArray(data.modules) ? (data.modules as unknown as CourseModule[]) : [];
+      const learningOutcomes = (data as any).learningOutcomes || (data as any).learning_outcomes || [];
+      setCourse({
+        ...data,
+        modules,
+        learningOutcomes: Array.isArray(learningOutcomes) ? learningOutcomes : [],
+        _isOwnerPreview: isOwnerPreview, // Internal flag for UI hints
+      } as Course);
 
-        // Track course view
+      // Track course view (only for published courses, not owner previews)
+      if (!isOwnerPreview) {
         trackCourseView(data.id);
+      }
 
-        // Check if user is enrolled
-        if (user) {
-          const [enrollmentResult, purchaseResult] = await Promise.all([
-            supabase
-              .from('enrollments')
-              .select('id')
-              .eq('course_id', data.id)
-              .eq('user_id', user.id)
-              .maybeSingle(),
-            supabase
-              .from('purchases')
-              .select('id')
-              .eq('course_id', data.id)
-              .eq('user_id', user.id)
-              .eq('status', 'completed')
-              .maybeSingle()
-          ]);
-          
-          setIsEnrolled(!!enrollmentResult.data);
-          setHasPurchased(!!purchaseResult.data);
-        }
+      // Check if user is enrolled
+      if (user && !isOwnerPreview) {
+        const [enrollmentResult, purchaseResult] = await Promise.all([
+          supabase
+            .from('enrollments')
+            .select('id')
+            .eq('course_id', data.id)
+            .eq('user_id', user.id)
+            .maybeSingle(),
+          supabase
+            .from('purchases')
+            .select('id')
+            .eq('course_id', data.id)
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .maybeSingle()
+        ]);
+        
+        setIsEnrolled(!!enrollmentResult.data);
+        setHasPurchased(!!purchaseResult.data);
       }
 
       setIsLoading(false);
@@ -336,6 +376,30 @@ export default function CoursePage() {
         </script>
       </Helmet>
       <div className="min-h-screen bg-background">
+      {/* Preview Mode Banner for Draft Courses */}
+      {course._isOwnerPreview && (
+        <div className="bg-primary/10 border-b border-primary/20 py-3 px-4">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30">
+                Preview Mode
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                This is how your course will look when published
+              </span>
+            </div>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => window.close()}
+              className="text-xs"
+            >
+              Close Preview
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section with Thumbnail */}
       {course.thumbnail_url && (
         <div className="relative w-full h-64 md:h-80 overflow-hidden">
