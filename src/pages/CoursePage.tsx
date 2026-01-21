@@ -161,28 +161,28 @@ export default function CoursePage() {
 
       // If no published course found and user is logged in, check if they own a draft course
       if (fetchError && user) {
-        // Try subdomain first
+        // Try subdomain first (RLS will filter to only show their own courses)
         const draftSubdomainQuery = await supabase
           .from('courses')
           .select('*')
           .eq('subdomain', subdomain)
-          .eq('user_id', user.id)
+          .is('deleted_at', null)
           .single();
 
-        if (draftSubdomainQuery.data) {
+        if (draftSubdomainQuery.data && draftSubdomainQuery.data.user_id === user.id) {
           data = draftSubdomainQuery.data;
           fetchError = null;
           isOwnerPreview = true;
         } else if (subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-          // Try UUID for draft
+          // Try UUID for draft (RLS will filter to only show their own courses)
           const draftIdQuery = await supabase
             .from('courses')
             .select('*')
             .eq('id', subdomain)
-            .eq('user_id', user.id)
+            .is('deleted_at', null)
             .single();
 
-          if (draftIdQuery.data) {
+          if (draftIdQuery.data && draftIdQuery.data.user_id === user.id) {
             data = draftIdQuery.data;
             fetchError = null;
             isOwnerPreview = true;
