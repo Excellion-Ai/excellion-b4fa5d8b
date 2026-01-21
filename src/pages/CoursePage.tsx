@@ -127,103 +127,91 @@ export default function CoursePage() {
         return;
       }
 
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
+      console.log("Loading course with slug:", subdomain);
 
-      let data: any = null;
-      let fetchError: any = null;
-      let isOwnerPreview = false;
+      // Get current user session
+      const { data: session } = await supabase.auth.getSession();
+      const userId = session?.session?.user?.id;
+      console.log("Current user:", userId);
+      setCurrentUser(session?.session?.user || null);
 
-      // First try: published course by subdomain
-      const publishedQuery = await supabase
+      // First, try to find the course by subdomain (regardless of status)
+      let { data: courseData, error: courseError } = await supabase
         .from('courses')
         .select('*')
         .eq('subdomain', subdomain)
-        .eq('status', 'published')
+        .is('deleted_at', null)
         .single();
-      
-      data = publishedQuery.data;
-      fetchError = publishedQuery.error;
 
-      // Fallback: published course by UUID
-      if (fetchError && subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      console.log("Course data (by subdomain):", courseData);
+      console.log("Course error (by subdomain):", courseError);
+
+      // Fallback: try by UUID if subdomain lookup failed
+      if (courseError && subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         const idQuery = await supabase
           .from('courses')
           .select('*')
           .eq('id', subdomain)
-          .eq('status', 'published')
-          .single();
-        
-        data = idQuery.data;
-        fetchError = idQuery.error;
-      }
-
-      // If no published course found and user is logged in, check if they own a draft course
-      if (fetchError && user) {
-        // Try subdomain first (RLS will filter to only show their own courses)
-        const draftSubdomainQuery = await supabase
-          .from('courses')
-          .select('*')
-          .eq('subdomain', subdomain)
           .is('deleted_at', null)
           .single();
-
-        if (draftSubdomainQuery.data && draftSubdomainQuery.data.user_id === user.id) {
-          data = draftSubdomainQuery.data;
-          fetchError = null;
-          isOwnerPreview = true;
-        } else if (subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-          // Try UUID for draft (RLS will filter to only show their own courses)
-          const draftIdQuery = await supabase
-            .from('courses')
-            .select('*')
-            .eq('id', subdomain)
-            .is('deleted_at', null)
-            .single();
-
-          if (draftIdQuery.data && draftIdQuery.data.user_id === user.id) {
-            data = draftIdQuery.data;
-            fetchError = null;
-            isOwnerPreview = true;
-          }
-        }
+        
+        courseData = idQuery.data;
+        courseError = idQuery.error;
+        console.log("Course data (by UUID):", courseData);
+        console.log("Course error (by UUID):", courseError);
       }
 
-      if (fetchError || !data) {
+      // If no course found at all
+      if (courseError || !courseData) {
+        console.error("Course not found:", courseError);
         setError('Course not found');
         setIsLoading(false);
         return;
       }
-      
-      const modules = Array.isArray(data.modules) ? (data.modules as unknown as CourseModule[]) : [];
-      const learningOutcomes = (data as any).learningOutcomes || (data as any).learning_outcomes || [];
+
+      console.log("Course user_id:", courseData.user_id);
+      console.log("Course status:", courseData.status);
+
+      // Check if user can view this course
+      // Allow if: course is published OR user is the creator
+      const isOwnerPreview = courseData.user_id === userId && courseData.status !== 'published';
+      const canView = courseData.status === 'published' || courseData.user_id === userId;
+
+      if (!canView) {
+        console.log("User cannot view this course - not published and not owner");
+        setError('Course not found');
+        setIsLoading(false);
+        return;
+      }
+
+      const modules = Array.isArray(courseData.modules) ? (courseData.modules as unknown as CourseModule[]) : [];
+      const learningOutcomes = (courseData as any).learningOutcomes || (courseData as any).learning_outcomes || [];
       setCourse({
-        ...data,
+        ...courseData,
         modules,
         learningOutcomes: Array.isArray(learningOutcomes) ? learningOutcomes : [],
-        _isOwnerPreview: isOwnerPreview, // Internal flag for UI hints
+        _isOwnerPreview: isOwnerPreview,
       } as Course);
 
       // Track course view (only for published courses, not owner previews)
       if (!isOwnerPreview) {
-        trackCourseView(data.id);
+        trackCourseView(courseData.id);
       }
 
-      // Check if user is enrolled
-      if (user && !isOwnerPreview) {
+      // Check if user is enrolled (only for non-preview scenarios)
+      if (userId && !isOwnerPreview) {
         const [enrollmentResult, purchaseResult] = await Promise.all([
           supabase
             .from('enrollments')
             .select('id')
-            .eq('course_id', data.id)
-            .eq('user_id', user.id)
+            .eq('course_id', courseData.id)
+            .eq('user_id', userId)
             .maybeSingle(),
           supabase
             .from('purchases')
             .select('id')
-            .eq('course_id', data.id)
-            .eq('user_id', user.id)
+            .eq('course_id', courseData.id)
+            .eq('user_id', userId)
             .eq('status', 'completed')
             .maybeSingle()
         ]);
@@ -376,27 +364,17 @@ export default function CoursePage() {
         </script>
       </Helmet>
       <div className="min-h-screen bg-background">
-      {/* Preview Mode Banner for Draft Courses */}
-      {course._isOwnerPreview && (
-        <div className="bg-primary/10 border-b border-primary/20 py-3 px-4">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30">
-                Preview Mode
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                This is how your course will look when published
-              </span>
-            </div>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => window.close()}
-              className="text-xs"
-            >
-              Close Preview
-            </Button>
-          </div>
+      {/* Draft Preview Banner */}
+      {course.status === 'draft' && course._isOwnerPreview && (
+        <div className="bg-yellow-600 text-black px-4 py-2 text-center">
+          <span className="font-medium">This is a preview.</span> Your course is not published yet.
+          <Button 
+            variant="link" 
+            className="ml-4 text-black underline hover:text-black/80 p-0 h-auto"
+            onClick={() => navigate(`/secret-builder/${course.id}`)}
+          >
+            Back to Editor
+          </Button>
         </div>
       )}
 
