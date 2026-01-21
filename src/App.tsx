@@ -86,6 +86,7 @@ const App = () => (
         <Route path="/maintenance-request" element={<MaintenanceRequest />} />
         <Route path="/secret-builder-hub" element={<SecretBuilderHub />} />
         <Route path="/secret-builder" element={<SecretBuilder />} />
+        <Route path="/secret-builder/:projectId" element={<SecretBuilder />} />
         <Route path="/studio/:projectId" element={<SecretBuilder />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/checkout" element={<Checkout />} />
