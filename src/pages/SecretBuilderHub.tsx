@@ -49,7 +49,8 @@ import {
   Headphones,
   EyeOff,
   BarChart3,
-  Check
+  Check,
+  Eye
 } from 'lucide-react';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from '@/components/secret-builder/attachments';
 import {
@@ -1164,6 +1165,17 @@ export default function SecretBuilderHub() {
                             >
                               <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Course
                             </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const previewUrl = course.subdomain 
+                                  ? `/course/${course.subdomain}` 
+                                  : `/course/${course.id}`;
+                                window.open(previewUrl, '_blank');
+                              }}
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-2" /> Preview
+                            </DropdownMenuItem>
                             {course.published_url && (
                               <DropdownMenuItem 
                                 onClick={(e) => {
@@ -1482,10 +1494,25 @@ export default function SecretBuilderHub() {
                         )}
                         
                         {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                           <Button size="sm" variant="secondary" className="gap-1.5">
                             <Pencil className="w-3.5 h-3.5" />
-                            Edit Course
+                            Edit
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="gap-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const previewUrl = course.subdomain 
+                                ? `/course/${course.subdomain}` 
+                                : `/course/${course.id}`;
+                              window.open(previewUrl, '_blank');
+                            }}
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Preview
                           </Button>
                         </div>
                       </div>
@@ -1538,6 +1565,17 @@ export default function SecretBuilderHub() {
                                 }}
                               >
                                 <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Course
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const previewUrl = course.subdomain 
+                                    ? `/course/${course.subdomain}` 
+                                    : `/course/${course.id}`;
+                                  window.open(previewUrl, '_blank');
+                                }}
+                              >
+                                <Eye className="w-3.5 h-3.5 mr-2" /> Preview
                               </DropdownMenuItem>
                               {course.published_url && (
                                 <DropdownMenuItem 
