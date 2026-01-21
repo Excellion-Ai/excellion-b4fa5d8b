@@ -425,28 +425,57 @@ serve(async (req) => {
         messages: [],
       };
 
-      const projectInsertResponse = await fetch(`${SUPABASE_URL}/rest/v1/builder_projects`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_SERVICE_ROLE_KEY!,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation',
-        },
-        body: JSON.stringify({
-          id: projectId,
-          user_id: userId,
-          name: prebuiltCourse.title,
-          idea: `${options.template} template`,
-          spec: projectSpec,
-        }),
-      });
+      // Try to insert with unique name, appending number if duplicate exists
+      let projectName = prebuiltCourse.title;
+      let insertAttempts = 0;
+      const maxAttempts = 10;
+      let projectInsertResponse: Response | null = null;
+      
+      while (insertAttempts < maxAttempts) {
+        const nameToTry = insertAttempts === 0 ? projectName : `${projectName} (${insertAttempts})`;
+        
+        projectInsertResponse = await fetch(`${SUPABASE_URL}/rest/v1/builder_projects`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation',
+          },
+          body: JSON.stringify({
+            id: projectId,
+            user_id: userId,
+            name: nameToTry,
+            idea: `${options.template} template`,
+            spec: projectSpec,
+          }),
+        });
 
-      if (!projectInsertResponse.ok) {
+        if (projectInsertResponse.ok) {
+          console.log(`Project created with name: ${nameToTry}`);
+          break;
+        }
+        
         const errText = await projectInsertResponse.text();
+        // Check if it's a duplicate key error (code 23505)
+        if (errText.includes('23505') || errText.includes('duplicate key')) {
+          console.log(`Name "${nameToTry}" already exists, trying next...`);
+          insertAttempts++;
+          continue;
+        }
+        
+        // Some other error - fail immediately
         console.error('Failed to create builder_projects:', errText);
         return new Response(
           JSON.stringify({ success: false, error: 'Failed to save project' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (!projectInsertResponse || !projectInsertResponse.ok) {
+        console.error('Failed to create builder_projects after max attempts');
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to save project - too many duplicates' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
