@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { InterviewStepper } from "@/components/InterviewStepper";
 import { useInterviewIntake } from "@/hooks/useInterviewIntake";
-import homeBackgroundVideo from "@/assets/home-background.mp4";
+import homeBackgroundVideo from "@/assets/new-home-background.mp4";
 
 const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -88,11 +88,11 @@ const Hero = () => {
             className="w-full h-full object-cover"
             style={{ 
               backfaceVisibility: 'hidden', 
-              objectPosition: 'center 20%', 
-              transform: 'translateZ(0) scale(1.0)', 
+              objectPosition: 'center center', 
+              transform: 'translateZ(0) scale(1.25)', 
               minWidth: '100%', 
               minHeight: '100%',
-              WebkitTransform: 'translateZ(0) scale(1.0)',
+              WebkitTransform: 'translateZ(0) scale(1.25)',
               filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
               contain: 'paint',
               willChange: 'transform',
