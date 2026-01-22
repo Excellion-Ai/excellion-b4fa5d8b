@@ -19,7 +19,7 @@ import {
   X,
   Mic,
 } from "lucide-react";
-import homeBackgroundVideo from "@/assets/home-background.mp4";
+import homeBackgroundVideo from "@/assets/new-home-background.mp4";
 import Footer from "@/components/Footer";
 import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -277,10 +277,11 @@ const WebBuilderHome = () => {
               aria-hidden="true"
               style={{ 
                 backfaceVisibility: 'hidden', 
-                objectPosition: 'center 20%', 
-                transform: 'translateZ(0) scale(1.0)', 
+                objectPosition: 'center center', 
+                transform: 'translateZ(0) scale(1.25)', 
                 minWidth: '100%', 
                 minHeight: '100%',
+                WebkitTransform: 'translateZ(0) scale(1.25)',
                 filter: 'contrast(1.05) saturate(1.1) brightness(1.02)',
                 contain: 'paint',
                 willChange: 'transform',
