@@ -107,7 +107,7 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 md:px-6 py-8 md:py-24 animate-fade-in">
         <div className="max-w-4xl mx-auto text-center space-y-4 md:space-y-8">
           {/* Headline and Subheadline */}
-          <div className="bg-background/90 dark:bg-background/50 backdrop-blur-md px-4 md:px-8 py-5 md:py-8 rounded-lg border border-border max-w-4xl mx-auto text-center will-change-transform shadow-lg">
+          <div className="bg-background/70 dark:bg-background/35 backdrop-blur-md px-4 md:px-8 py-5 md:py-8 rounded-lg border border-border max-w-4xl mx-auto text-center will-change-transform shadow-lg">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent text-sm font-medium mb-4">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
