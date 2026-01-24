@@ -292,7 +292,7 @@ const WebBuilderHome = () => {
 
           {/* Transparent Glass Box Container */}
           <div className="relative z-10 w-full max-w-4xl mx-auto px-3 sm:px-6">
-            <div className="bg-background/30 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-8 lg:p-12 shadow-2xl">
+            <div className="bg-background/40 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-8 lg:p-12 shadow-2xl">
               {/* Badge */}
               <div className="flex justify-center mb-4 sm:mb-6">
                 <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/20 border border-primary/30 text-xs sm:text-sm text-primary">
