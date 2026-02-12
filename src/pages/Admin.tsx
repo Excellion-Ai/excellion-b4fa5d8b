@@ -155,7 +155,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="quotes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
             <TabsTrigger value="quotes" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Quotes
@@ -167,6 +167,10 @@ const Admin = () => {
             <TabsTrigger value="activity" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               Activity
+            </TabsTrigger>
+            <TabsTrigger value="courses" className="flex items-center gap-2" onClick={() => navigate('/admin/courses')}>
+              <FileText className="h-4 w-4" />
+              Courses
             </TabsTrigger>
           </TabsList>
 

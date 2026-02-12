@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User, Star, ShoppingCart } from 'lucide-react';
+import { Loader2, Clock, BookOpen, GraduationCap, Check, Users, User, Star, ShoppingCart, AlertTriangle } from 'lucide-react';
+import { useAdmin } from '@/hooks/useAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -92,6 +93,7 @@ const formatPrice = (cents: number | null, currency: string | null) => {
 export default function CoursePage() {
   const { subdomain } = useParams<{ subdomain: string }>();
   const navigate = useNavigate();
+  const { isAdmin } = useAdmin();
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -320,6 +322,24 @@ export default function CoursePage() {
   }
 
   if (error || !course) {
+    // Admin fallback for quickstart course
+    if (subdomain === 'excellion-quickstart' && isAdmin) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto px-4">
+            <AlertTriangle className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Quickstart Course Missing</h1>
+            <p className="text-muted-foreground mb-6">
+              The Excellion Quickstart Course record was not found. It may need to be re-seeded in the database.
+            </p>
+            <Button onClick={() => navigate('/admin/courses')}>
+              Go to Course Admin
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
