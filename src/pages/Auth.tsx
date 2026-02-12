@@ -36,8 +36,11 @@ const authSchema = z.object({
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   
@@ -57,23 +60,38 @@ const Auth = () => {
   const redirectTo = searchParams.get("redirect") || "/";
 
 
+  // Detect recovery flow from URL
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate(redirectTo);
-      }
-    });
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = searchParams.get("type") || hashParams.get("type");
+    if (type === "recovery") {
+      setIsResettingPassword(true);
+    }
+  }, [searchParams]);
 
+  useEffect(() => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (event === "PASSWORD_RECOVERY") {
+        setIsResettingPassword(true);
+        return;
+      }
+      if (session && !isResettingPassword) {
         navigate(redirectTo);
       }
     });
 
+    // Check if user is already logged in (but not if resetting password)
+    if (!isResettingPassword) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          navigate(redirectTo);
+        }
+      });
+    }
+
     return () => subscription.unsubscribe();
-  }, [navigate, redirectTo]);
+  }, [navigate, redirectTo, isResettingPassword]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,13 +174,38 @@ const Auth = () => {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+      const { data, error } = await supabase.functions.invoke("send-password-reset", {
+        body: { email: email.trim() },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       toast.success("Password reset email sent! Check your inbox.");
     } catch (error: any) {
       toast.error(error.message || "Failed to send reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSetNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Password updated successfully!");
+      setIsResettingPassword(false);
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update password");
     } finally {
       setLoading(false);
     }
@@ -186,7 +229,7 @@ const Auth = () => {
   return (
     <>
       <Helmet>
-        <title>{isForgotPassword ? "Reset Password" : isLogin ? "Login" : "Sign Up"} | Excellion</title>
+        <title>{isResettingPassword ? "Set New Password" : isForgotPassword ? "Reset Password" : isLogin ? "Login" : "Sign Up"} | Excellion</title>
         <meta name="description" content={isForgotPassword ? "Reset your Excellion password" : isLogin ? "Sign in to your Excellion account" : "Create your Excellion account and start learning"} />
         <meta name="robots" content="noindex" />
       </Helmet>
@@ -213,19 +256,67 @@ const Auth = () => {
           <Card className="w-full max-w-md bg-background border-border">
             <CardHeader className="space-y-1">
               <CardTitle className="text-3xl text-center text-foreground">
-                {isForgotPassword ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
+                {isResettingPassword ? "Set New Password" : isForgotPassword ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
               </CardTitle>
               <CardDescription className="text-center text-foreground/80">
-                {isForgotPassword
-                  ? "Enter your email and we'll send you a reset link"
-                  : isLogin
-                    ? "Sign in to your account to continue"
-                    : "Sign up to get started with Excellion"}
+                {isResettingPassword
+                  ? "Enter your new password below"
+                  : isForgotPassword
+                    ? "Enter your email and we'll send you a reset link"
+                    : isLogin
+                      ? "Sign in to your account to continue"
+                      : "Sign up to get started with Excellion"}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {isForgotPassword ? (
+              {isResettingPassword ? (
+                /* Set New Password Form */
+                <form onSubmit={handleSetNewPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword" className="text-foreground">New Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="newPassword"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        className="bg-background/20 border-white/20 text-foreground pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmNewPassword" className="text-foreground">Confirm New Password</Label>
+                    <Input
+                      id="confirmNewPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      className="bg-background/20 border-white/20 text-foreground"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                    disabled={loading}
+                  >
+                    {loading ? "Updating..." : "Update Password"}
+                  </Button>
+                </form>
+              ) : isForgotPassword ? (
                 /* Forgot Password Form */
                 <form onSubmit={handleForgotPassword} className="space-y-4">
                   <div className="space-y-2">
