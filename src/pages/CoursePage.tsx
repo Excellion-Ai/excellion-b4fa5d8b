@@ -129,12 +129,12 @@ export default function CoursePage() {
         return;
       }
 
-      console.log("Loading course with slug:", subdomain);
+      // Course loading started
 
       // Get current user session
       const { data: session } = await supabase.auth.getSession();
       const userId = session?.session?.user?.id;
-      console.log("Current user:", userId);
+      // User session checked
       setCurrentUser(session?.session?.user || null);
 
       // Protect the quickstart course — require login
@@ -151,8 +151,6 @@ export default function CoursePage() {
         .is('deleted_at', null)
         .single();
 
-      console.log("Course data (by subdomain):", courseData);
-      console.log("Course error (by subdomain):", courseError);
 
       // Fallback: try by UUID if subdomain lookup failed
       if (courseError && subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
@@ -165,20 +163,15 @@ export default function CoursePage() {
         
         courseData = idQuery.data;
         courseError = idQuery.error;
-        console.log("Course data (by UUID):", courseData);
-        console.log("Course error (by UUID):", courseError);
       }
 
       // If no course found at all
       if (courseError || !courseData) {
-        console.error("Course not found:", courseError);
         setError('Course not found');
         setIsLoading(false);
         return;
       }
 
-      console.log("Course user_id:", courseData.user_id);
-      console.log("Course status:", courseData.status);
 
       // Check if user can view this course
       // Allow if: course is published OR user is the creator
@@ -186,7 +179,6 @@ export default function CoursePage() {
       const canView = courseData.status === 'published' || courseData.user_id === userId;
 
       if (!canView) {
-        console.log("User cannot view this course - not published and not owner");
         setError('Course not found');
         setIsLoading(false);
         return;

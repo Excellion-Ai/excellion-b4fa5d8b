@@ -59,7 +59,16 @@ const SupportSettings = lazyWithRetry(() => import("./pages/settings/SupportSett
 // const BotExperiment = lazy(() => import("./pages/BotExperiment"));
 // const Hub = lazy(() => import("./pages/Hub"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Minimal loading component
 const PageLoader = () => (

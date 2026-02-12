@@ -230,10 +230,21 @@ export default function LearnPage() {
       if (viewId && startTime) {
         const seconds = (Date.now() - startTime) / 1000;
         if (seconds > 0) {
-          // Use sendBeacon for reliable unload tracking (limited but works)
+          // Use sendBeacon with proper auth headers for reliable unload tracking
           const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/lesson_views?id=eq.${viewId}`;
           const body = JSON.stringify({ time_spent_seconds: Math.round(seconds) });
-          navigator.sendBeacon?.(url, new Blob([body], { type: 'application/json' }));
+          const headers = {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Prefer': 'return=minimal',
+          };
+          // sendBeacon doesn't support custom headers, so fall back to keepalive fetch
+          fetch(url, {
+            method: 'PATCH',
+            headers,
+            body,
+            keepalive: true,
+          }).catch(() => {});
         }
       }
     };
@@ -334,6 +345,7 @@ export default function LearnPage() {
         enrollment_id: enrollmentId,
         lesson_id: lessonId,
         module_id: moduleId,
+        completed: true,
         completed_at: new Date().toISOString(),
       });
 

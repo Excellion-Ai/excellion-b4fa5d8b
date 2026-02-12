@@ -31,7 +31,6 @@ interface CourseData {
 interface Enrollment {
   id: string;
   progress_percent: number;
-  last_accessed_at: string | null;
   enrolled_at: string;
   course_id: string;
   course: CourseData;
@@ -74,7 +73,6 @@ export default function StudentDashboard() {
         .select(`
           id,
           progress_percent,
-          last_accessed_at,
           enrolled_at,
           course_id,
           courses (
@@ -87,7 +85,7 @@ export default function StudentDashboard() {
           )
         `)
         .eq('user_id', user.id)
-        .order('last_accessed_at', { ascending: false, nullsFirst: false });
+        .order('enrolled_at', { ascending: false });
 
       // Fetch certificates
       const { data: certData } = await supabase
@@ -137,7 +135,6 @@ export default function StudentDashboard() {
           .map((e: any) => ({
             id: e.id,
             progress_percent: e.progress_percent || 0,
-            last_accessed_at: e.last_accessed_at,
             enrolled_at: e.enrolled_at,
             course_id: e.course_id,
             certificate: certMap.get(e.course_id) || null,
@@ -301,9 +298,9 @@ export default function StudentDashboard() {
                                 </div>
                                 <Progress value={enrollment.progress_percent} className="h-2" />
                               </div>
-                              {enrollment.last_accessed_at && (
+                              {enrollment.enrolled_at && (
                                 <p className="text-xs text-muted-foreground">
-                                  Last accessed {formatDistanceToNow(new Date(enrollment.last_accessed_at), { addSuffix: true })}
+                                  Enrolled {formatDistanceToNow(new Date(enrollment.enrolled_at), { addSuffix: true })}
                                 </p>
                               )}
                               <Button 
