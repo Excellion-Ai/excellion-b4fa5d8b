@@ -1,30 +1,27 @@
 
 
-# Update Project Secrets
+## Add "Course Preview" Section to Landing Page
 
-Since you have your API keys ready, here's what we'll do:
+### What Changes
+A new "Course Preview" section will be inserted into `src/pages/WebBuilderHome.tsx` between the **Features section** ("Built for Fitness Coaches") and the **Pricing section**, at approximately line 468.
 
-## Secrets to Update (7 total)
+### Section Design
+- Two-column layout on desktop (md breakpoint), stacked on mobile
+- Left column: eyebrow badge, headline, subheadline, 3 bullet points, 5-item mini checklist, two buttons, and a small note
+- Right column: 16:9 aspect-ratio placeholder card with a centered play icon and "Video coming soon" text
+- Matches existing style: `bg-card` dark cards, `border-border` borders, `text-primary` gold accents, rounded corners
 
-1. **HCAPTCHA_SECRET_KEY** - From hCaptcha dashboard
-2. **GITHUB_CLIENT_ID** - From GitHub OAuth app settings
-3. **GITHUB_CLIENT_SECRET** - From GitHub OAuth app settings
-4. **TOKEN_ENCRYPTION_KEY** - Generated via `openssl rand -hex 32`
-5. **ANTHROPIC_API_KEY** - From Anthropic console
-6. **HCAPTCHA_SITE_KEY** - From hCaptcha sites dashboard
-7. **STRIPE_WEBHOOK_SECRET** - From Stripe webhooks dashboard
+### Technical Details
 
-## Skipped
+**File modified:** `src/pages/WebBuilderHome.tsx`
 
-- **RESEND_API_KEY** - No longer used; will leave as-is (can be cleaned up later)
+**New section inserted at line 468** (between Features `</section>` and Pricing `<section>`):
 
-## Process
-
-I'll prompt you for each secret value one at a time using the secure secret input tool. You'll paste each key into the secure input field that appears.
-
-## Technical Notes
-
-- The secrets are stored securely and accessible only from backend functions
-- The VITE_HCAPTCHA_SITE_KEY in `.env` is a separate client-side variable and is already set
-- No code changes are needed -- just updating the secret values
+- Uses an `id="course-preview"` anchor for the secondary button's scroll target
+- Primary "Start for $19" button scrolls to `#pricing` using `document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })`
+- Secondary "See what you'll build" button scrolls to `#course-preview` (same section)
+- Video placeholder is a standalone `<div>` with `aspect-video` (16:9), containing only a play icon (`Play` from lucide-react) and label text -- swappable later by replacing just the inner content
+- New icon import added: `Play` from lucide-react
+- No other sections are modified
+- Fully responsive using Tailwind's `md:grid-cols-2` for desktop, single column on mobile
 
