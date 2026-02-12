@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
@@ -80,6 +81,7 @@ const PageLoader = () => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <Toaster />
+    <SonnerToaster />
     <Suspense fallback={<PageLoader />}>
     <Routes>
         <Route path="/" element={<WebBuilderHome />} />
