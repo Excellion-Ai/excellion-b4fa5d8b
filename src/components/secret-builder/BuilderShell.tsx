@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, Image as ImageIcon, Pencil, Bookmark, BookOpen, Github } from 'lucide-react';
+import { Code, HelpCircle, Settings, Send, Loader2, Monitor, Tablet, Smartphone, LayoutGrid, Upload, Undo2, Redo2, Copy, Check, ExternalLink, Zap, Sparkles, ImagePlus, BarChart3, Globe, X, MousePointer2, GitCompare, Users, Database, Box, Shield, CreditCard, LogIn, CloudOff, Image as ImageIcon, Pencil, Bookmark, BookOpen, Github, Palette } from 'lucide-react';
 import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -40,6 +40,7 @@ import { SchemaVizPanel } from './SchemaVizPanel';
 import { ThreeDPanel } from './ThreeDPanel';
 import { SecurityScanPanel } from './SecurityScanPanel';
 import { RenameDialog } from './RenameDialog';
+import { CourseCommandPanel, SectionEditorModal, DesignEditorModal, DynamicCoursePreview } from './visual-editing';
 import { supabase } from '@/integrations/supabase/client';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
@@ -465,8 +466,12 @@ export function BuilderShell() {
   const [logoUploadOpen, setLogoUploadOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [showRefineChat, setShowRefineChat] = useState(false);
-  const [showCourseSettings, setShowCourseSettings] = useState(false);
-  const [showPublishSettings, setShowPublishSettings] = useState(false);
+   const [showCourseSettings, setShowCourseSettings] = useState(false);
+   const [showPublishSettings, setShowPublishSettings] = useState(false);
+   const [isVisualEditMode, setIsVisualEditMode] = useState(false);
+   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+   const [showDesignEditor, setShowDesignEditor] = useState(false);
+   const [showCommandPanel, setShowCommandPanel] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [courseSettings, setCourseSettings] = useState({
@@ -1922,21 +1927,54 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               </div>
             </div>
             
-            {/* Course Builder Panel */}
-            <CourseBuilderPanel
-              idea={idea}
-              onIdeaChange={setIdea}
-              onGenerate={(options) => {
-                handleGenerateCourse(idea, options);
-              }}
-              isGenerating={isGenerating}
-              steps={steps}
-              messages={messages}
-              attachments={attachments}
-              onAddAttachment={handleAddAttachment}
-              onRemoveAttachment={removeAttachment}
-              previewRef={previewContainerRef as React.RefObject<HTMLElement>}
-            />
+            {/* Course Builder Panel or Command Panel */}
+            {courseSpec && !isGenerating ? (
+              <CourseCommandPanel
+                course={courseSpec}
+                courseId={courseId}
+                onApplyChanges={async (changes) => {
+                  if (!changes) return;
+                  const updates: any = {};
+                  if (changes.design_config) {
+                    updates.design_config = { ...(courseSpec as any).design_config, ...changes.design_config };
+                  }
+                  if (changes.layout_template) {
+                    updates.layout_template = changes.layout_template;
+                  }
+                  if (changes.section_order) {
+                    updates.section_order = changes.section_order;
+                  }
+                  if (changes.curriculum) {
+                    const currCurriculum = (courseSpec as any).curriculum || courseSpec;
+                    updates.curriculum = { ...currCurriculum, ...changes.curriculum };
+                  }
+                  if (Object.keys(updates).length > 0 && courseId) {
+                    const { error } = await supabase.from('courses').update(updates).eq('id', courseId);
+                    if (!error) {
+                      setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
+                      toast.success('Changes applied');
+                    }
+                  } else {
+                    setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
+                  }
+                }}
+              />
+            ) : (
+              <CourseBuilderPanel
+                idea={idea}
+                onIdeaChange={setIdea}
+                onGenerate={(options) => {
+                  handleGenerateCourse(idea, options);
+                }}
+                isGenerating={isGenerating}
+                steps={steps}
+                messages={messages}
+                attachments={attachments}
+                onAddAttachment={handleAddAttachment}
+                onRemoveAttachment={removeAttachment}
+                previewRef={previewContainerRef as React.RefObject<HTMLElement>}
+              />
+            )}
           </div>
         </ResizablePanel>
 
@@ -2022,19 +2060,37 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
 
           {/* Toolbar buttons matching screenshot */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Visual */}
+            {/* Visual Edit Mode */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => {
-                setVisualEditsEnabled(!visualEditsEnabled);
-                toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
+                if (courseSpec) {
+                  setIsVisualEditMode(!isVisualEditMode);
+                  toast.success(isVisualEditMode ? 'Visual edit mode off' : 'Visual edit mode on - hover sections to edit');
+                } else {
+                  setVisualEditsEnabled(!visualEditsEnabled);
+                  toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
+                }
               }}
-              className={`gap-1.5 text-xs px-3 h-9 ${visualEditsEnabled ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`gap-1.5 text-xs px-3 h-9 ${(courseSpec ? isVisualEditMode : visualEditsEnabled) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <Pencil className="h-4 w-4" />
               <span>Visual</span>
             </Button>
+
+            {/* Design Editor - only for courses */}
+            {courseSpec && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDesignEditor(true)}
+                className="gap-1.5 text-xs px-3 h-9 text-muted-foreground hover:text-foreground"
+              >
+                <Palette className="h-4 w-4" />
+                <span>Design</span>
+              </Button>
+            )}
 
             {/* AI Image */}
             <Button
@@ -2244,6 +2300,36 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                         setCoursePublishedUrl(`${window.location.origin}/course/${subdomain}`);
                       } else {
                         setCoursePublishedUrl(null);
+                      }
+                    }}
+                  />
+                  {/* Section Editor Modal */}
+                  <SectionEditorModal
+                    section={selectedSection}
+                    course={courseSpec}
+                    onSave={async (updates) => {
+                      if (courseId) {
+                        const { error } = await supabase.from('courses').update(updates).eq('id', courseId);
+                        if (!error) setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
+                      } else {
+                        setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
+                      }
+                    }}
+                    onClose={() => setSelectedSection(null)}
+                  />
+                  {/* Design Editor Modal */}
+                  <DesignEditorModal
+                    open={showDesignEditor}
+                    onClose={() => setShowDesignEditor(false)}
+                    designConfig={(courseSpec as any).design_config || {}}
+                    layoutTemplate={(courseSpec as any).layout_template || 'suspended'}
+                    sectionOrder={(courseSpec as any).section_order || ['hero', 'outcomes', 'curriculum', 'faq', 'cta']}
+                    onSave={async (updates) => {
+                      if (courseId) {
+                        const { error } = await supabase.from('courses').update(updates).eq('id', courseId);
+                        if (!error) setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
+                      } else {
+                        setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
                       }
                     }}
                   />
