@@ -34,6 +34,8 @@ const PurchaseSuccess = lazyWithRetry(() => import("./pages/PurchaseSuccess"), "
 const Privacy = lazyWithRetry(() => import("./pages/Privacy"), "Privacy");
 const Terms = lazyWithRetry(() => import("./pages/Terms"), "Terms");
 const About = lazyWithRetry(() => import("./pages/About"), "About");
+const QuickstartTemplates = lazyWithRetry(() => import("./pages/QuickstartTemplates"), "QuickstartTemplates");
+const AdminCourses = lazyWithRetry(() => import("./pages/AdminCourses"), "AdminCourses");
 
 // Settings pages
 const Settings = lazyWithRetry(() => import("./pages/Settings"), "Settings");
@@ -94,7 +96,9 @@ const App = () => (
         
         {/* LMS Course Engine - Dynamic Routes */}
         <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/course/excellion-quickstart/templates" element={<QuickstartTemplates />} />
         <Route path="/course/:subdomain" element={<CoursePage />} />
+        <Route path="/admin/courses" element={<AdminCourses />} />
         <Route path="/learn/:slug" element={<LearnPage />} />
         <Route path="/my-courses" element={<MyCourses />} />
         <Route path="/certificate/:id" element={<CertificatePage />} />

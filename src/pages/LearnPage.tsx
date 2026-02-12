@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare, FileText, PlayCircle, Film, Paperclip } from 'lucide-react';
+import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare, FileText, PlayCircle, Film, Paperclip, Search, Download, SkipForward } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -29,6 +30,9 @@ interface Lesson {
   video_url?: string;
   quiz_questions?: QuizQuestion[];
   passing_score?: number;
+  description?: string;
+  checklist?: string[];
+  templates?: string[];
 }
 
 interface CourseModule {
@@ -66,6 +70,7 @@ export default function LearnPage() {
   const lessonStartTimeRef = useRef<number | null>(null);
   const currentLessonViewIdRef = useRef<string | null>(null);
   const [lessonResourceCounts, setLessonResourceCounts] = useState<Record<string, number>>({});
+  const [sidebarSearch, setSidebarSearch] = useState('');
 
   // Calculate total lessons
   const totalLessons = useMemo(() => {
@@ -422,7 +427,37 @@ export default function LearnPage() {
             {completedLessons.length} of {totalLessons} lessons complete
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Resume button */}
+          {progressPercent < 100 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const firstIncomplete = flatLessons.find(f => !completedLessons.includes(f.lesson.id));
+                if (firstIncomplete) {
+                  setSelectedModuleIndex(firstIncomplete.moduleIndex);
+                  setSelectedLessonIndex(firstIncomplete.lessonIndex);
+                }
+              }}
+              className="gap-1.5"
+            >
+              <SkipForward className="h-3.5 w-3.5" />
+              Resume
+            </Button>
+          )}
+          {/* Templates link for quickstart course */}
+          {course.subdomain === 'excellion-quickstart' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/course/excellion-quickstart/templates')}
+              className="gap-1.5"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Templates
+            </Button>
+          )}
           <span className="text-sm font-medium text-primary">{progressPercent}%</span>
           <Progress value={progressPercent} className="w-32 h-2" />
           {progressPercent === 100 && (
@@ -436,7 +471,21 @@ export default function LearnPage() {
         <aside className="w-72 border-r border-border bg-card shrink-0 hidden md:block">
           <ScrollArea className="h-full">
             <div className="p-4 space-y-4">
+              {/* Search input */}
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search lessons..."
+                  value={sidebarSearch}
+                  onChange={e => setSidebarSearch(e.target.value)}
+                  className="h-9 pl-8 text-sm"
+                />
+              </div>
               {course.modules.map((module, mi) => {
+                const filteredLessons = sidebarSearch
+                  ? module.lessons.filter(l => l.title.toLowerCase().includes(sidebarSearch.toLowerCase()))
+                  : module.lessons;
+                if (sidebarSearch && filteredLessons.length === 0) return null;
                 const moduleLessonIds = module.lessons.map(l => l.id);
                 const completedInModule = moduleLessonIds.filter(id => completedLessons.includes(id)).length;
                 
@@ -452,7 +501,8 @@ export default function LearnPage() {
                     </div>
                     <p className="text-sm font-medium text-foreground mb-2">{module.title}</p>
                     <div className="space-y-1">
-                      {module.lessons.map((lesson, li) => {
+                      {filteredLessons.map((lesson) => {
+                        const li = module.lessons.indexOf(lesson);
                         const isActive = mi === selectedModuleIndex && li === selectedLessonIndex;
                         const isComplete = isLessonComplete(lesson.id);
                         
@@ -532,6 +582,43 @@ export default function LearnPage() {
                     <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
                       {lessonContent}
                     </div>
+                  </div>
+                )}
+
+                {/* Lesson description (from quickstart data) */}
+                {currentLesson?.description && (
+                  <div className="mb-6 p-4 rounded-lg bg-secondary/20 border border-border">
+                    <p className="text-sm text-muted-foreground italic">{currentLesson.description}</p>
+                  </div>
+                )}
+
+                {/* Do this now checklist */}
+                {currentLesson?.checklist && currentLesson.checklist.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <Check className="h-4 w-4 text-primary" />
+                      Do This Now
+                    </h3>
+                    <ul className="space-y-2">
+                      {currentLesson.checklist.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-foreground/80">
+                          <Circle className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Template badges */}
+                {currentLesson?.templates && currentLesson.templates.length > 0 && (
+                  <div className="mb-6 flex flex-wrap gap-2">
+                    {currentLesson.templates.map((t, idx) => (
+                      <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
+                        <FileText className="h-3 w-3" />
+                        {t}
+                      </span>
+                    ))}
                   </div>
                 )}
 
