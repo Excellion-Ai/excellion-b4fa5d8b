@@ -520,17 +520,15 @@ const WebBuilderHome = () => {
                   <Button
                     size="lg"
                     className="w-full sm:w-auto"
-                    onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                    onClick={() => {
+                      if (user) {
+                        navigate('/course/excellion-quickstart');
+                      } else {
+                        navigate('/auth?redirect=/course/excellion-quickstart');
+                      }
+                    }}
                   >
-                    Start for $19
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full sm:w-auto"
-                    onClick={() => document.getElementById('course-preview')?.scrollIntoView({ behavior: 'smooth' })}
-                  >
-                    See what you'll build
+                    Access the Quickstart Course
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">Most coaches finish setup in 1 weekend.</p>

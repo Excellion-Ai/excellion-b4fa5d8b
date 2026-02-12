@@ -135,6 +135,12 @@ export default function CoursePage() {
       console.log("Current user:", userId);
       setCurrentUser(session?.session?.user || null);
 
+      // Protect the quickstart course — require login
+      if (subdomain === 'excellion-quickstart' && !userId) {
+        navigate(`/auth?redirect=/course/excellion-quickstart`);
+        return;
+      }
+
       // First, try to find the course by subdomain (regardless of status)
       let { data: courseData, error: courseError } = await supabase
         .from('courses')
