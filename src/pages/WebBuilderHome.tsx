@@ -18,6 +18,7 @@ import {
   BarChart3,
   X,
   Mic,
+  Play,
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
@@ -462,6 +463,90 @@ const WebBuilderHome = () => {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* Course Preview Section */}
+        <section id="course-preview" className="py-12 sm:py-16 lg:py-24 px-4 border-t border-border/30">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-10 sm:mb-14">
+              <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary mb-3">
+                Included with every plan
+              </span>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3">
+                Excellion Quickstart Course (Preview)
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+                A step-by-step walkthrough that helps you publish your offer page, client portal, and weekly check-ins fast.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
+              {/* Left Column – Copy */}
+              <div>
+                <ul className="space-y-3 mb-6">
+                  {[
+                    "Write and structure your offer in minutes",
+                    "Build a clean client portal that reduces support messages",
+                    "Launch weekly check-ins that keep clients consistent",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-muted-foreground">
+                      <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="p-4 rounded-xl bg-card border border-border mb-6">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-3">Course Outline</p>
+                  <ul className="space-y-2">
+                    {[
+                      "Module 1: Offer + pricing",
+                      "Module 2: Offer page + CTA",
+                      "Module 3: Client portal setup",
+                      "Module 4: Intake + check-ins",
+                      "Module 5: Publish + domain",
+                    ].map((mod, i) => (
+                      <li key={i} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                        <Check className="w-4 h-4 text-primary/60 shrink-0" />
+                        {mod}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto"
+                    onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
+                    Start for $19
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                    onClick={() => document.getElementById('course-preview')?.scrollIntoView({ behavior: 'smooth' })}
+                  >
+                    See what you'll build
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Most coaches finish setup in 1 weekend.</p>
+              </div>
+
+              {/* Right Column – Video Placeholder */}
+              <div className="rounded-xl bg-card border border-border overflow-hidden">
+                {/* ▼ Replace inner content below with a real embed later ▼ */}
+                <div className="aspect-video flex flex-col items-center justify-center bg-card text-muted-foreground gap-3">
+                  <div className="w-14 h-14 rounded-full border-2 border-primary/40 flex items-center justify-center">
+                    <Play className="w-6 h-6 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium">Video coming soon</span>
+                </div>
+                {/* ▲ Replace inner content above with a real embed later ▲ */}
+              </div>
             </div>
           </div>
         </section>
