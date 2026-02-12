@@ -359,11 +359,13 @@ export type Database = {
           custom_domain: string | null
           deleted_at: string | null
           description: string | null
+          design_config: Json | null
           difficulty: string | null
           duration_weeks: number | null
           id: string
           instructor_bio: string | null
           instructor_name: string | null
+          layout_template: string | null
           modules: Json | null
           offer_type: string | null
           page_sections: Json | null
@@ -371,6 +373,7 @@ export type Database = {
           published_at: string | null
           published_url: string | null
           review_count: number | null
+          section_order: Json | null
           seo_description: string | null
           seo_title: string | null
           social_image_url: string | null
@@ -390,11 +393,13 @@ export type Database = {
           custom_domain?: string | null
           deleted_at?: string | null
           description?: string | null
+          design_config?: Json | null
           difficulty?: string | null
           duration_weeks?: number | null
           id?: string
           instructor_bio?: string | null
           instructor_name?: string | null
+          layout_template?: string | null
           modules?: Json | null
           offer_type?: string | null
           page_sections?: Json | null
@@ -402,6 +407,7 @@ export type Database = {
           published_at?: string | null
           published_url?: string | null
           review_count?: number | null
+          section_order?: Json | null
           seo_description?: string | null
           seo_title?: string | null
           social_image_url?: string | null
@@ -421,11 +427,13 @@ export type Database = {
           custom_domain?: string | null
           deleted_at?: string | null
           description?: string | null
+          design_config?: Json | null
           difficulty?: string | null
           duration_weeks?: number | null
           id?: string
           instructor_bio?: string | null
           instructor_name?: string | null
+          layout_template?: string | null
           modules?: Json | null
           offer_type?: string | null
           page_sections?: Json | null
@@ -433,6 +441,7 @@ export type Database = {
           published_at?: string | null
           published_url?: string | null
           review_count?: number | null
+          section_order?: Json | null
           seo_description?: string | null
           seo_title?: string | null
           social_image_url?: string | null
