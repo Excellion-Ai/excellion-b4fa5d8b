@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+// send-survey-email edge function
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -326,4 +326,4 @@ You can reply directly to this email with your answers. Once I have them, I'll s
   }
 };
 
-serve(handler);
+Deno.serve(handler);
