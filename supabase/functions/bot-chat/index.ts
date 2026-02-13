@@ -1054,18 +1054,18 @@ serve(async (req) => {
       console.log(`[BOT-CHAT:${requestId}]   - First user message: "${content}${content.length >= 100 ? '...' : ''}"`);
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     console.log(`[BOT-CHAT:${requestId}] Environment check:`);
-    console.log(`[BOT-CHAT:${requestId}]   - LOVABLE_API_KEY: ${LOVABLE_API_KEY ? 'SET' : 'MISSING'}`);
+    console.log(`[BOT-CHAT:${requestId}]   - ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY ? 'SET' : 'MISSING'}`);
     console.log(`[BOT-CHAT:${requestId}]   - SUPABASE_URL: ${SUPABASE_URL ? 'SET' : 'MISSING'}`);
     console.log(`[BOT-CHAT:${requestId}]   - SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'MISSING'}`);
     
-    if (!LOVABLE_API_KEY) {
-      console.log(`[BOT-CHAT:${requestId}] ERROR: LOVABLE_API_KEY not configured`);
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!ANTHROPIC_API_KEY) {
+      console.log(`[BOT-CHAT:${requestId}] ERROR: ANTHROPIC_API_KEY not configured`);
+      throw new Error("ANTHROPIC_API_KEY is not configured");
     }
 
     // Fetch knowledge base entries for this project
@@ -1287,48 +1287,47 @@ If you cannot fulfill these requirements, explain why in your conversational res
     console.log(`[BOT-CHAT:${requestId}] System prompt length: ${enhancedPrompt.length} chars`);
     console.log(`[BOT-CHAT:${requestId}] Total messages to send: ${messages.length + 1}`);
 
-    // Select model based on mode (quality = gpt-5-mini for streaming, fast = gemini flash)
-    const selectedModel = modelMode === 'quality' ? 'openai/gpt-5-mini' : 'google/gemini-2.5-flash';
-    console.log(`[BOT-CHAT:${requestId}] Selected model: ${selectedModel}`);
-    console.log(`[BOT-CHAT:${requestId}] Calling Lovable AI Gateway...`);
+    // Use Claude Haiku for all modes
+    console.log(`[BOT-CHAT:${requestId}] Selected model: claude-haiku-4-5-20251001`);
+    console.log(`[BOT-CHAT:${requestId}] Calling Anthropic API...`);
 
     const aiStartTime = Date.now();
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: selectedModel,
-        messages: [
-          { role: "system", content: enhancedPrompt },
-          ...messages,
-        ],
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 4096,
+        system: enhancedPrompt,
+        messages: messages,
         stream: true,
       }),
     });
 
     const aiResponseTime = Date.now() - aiStartTime;
-    console.log(`[BOT-CHAT:${requestId}] AI Gateway response: ${response.status} (${aiResponseTime}ms to first byte)`);
+    console.log(`[BOT-CHAT:${requestId}] Anthropic API response: ${response.status} (${aiResponseTime}ms to first byte)`);
 
     if (!response.ok) {
       if (response.status === 429) {
-        console.log(`[BOT-CHAT:${requestId}] ERROR: AI Gateway rate limit (429)`);
+        console.log(`[BOT-CHAT:${requestId}] ERROR: Anthropic rate limit (429)`);
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
-        console.log(`[BOT-CHAT:${requestId}] ERROR: AI Gateway payment required (402)`);
+        console.log(`[BOT-CHAT:${requestId}] ERROR: Anthropic payment required (402)`);
         return new Response(JSON.stringify({ error: "Usage limit reached. Please add credits." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const errorText = await response.text();
-      console.error(`[BOT-CHAT:${requestId}] ERROR: AI gateway error ${response.status}:`, errorText);
+      console.error(`[BOT-CHAT:${requestId}] ERROR: Anthropic API error ${response.status}:`, errorText);
       return new Response(JSON.stringify({ error: "AI service error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -1340,7 +1339,56 @@ If you cannot fulfill these requirements, explain why in your conversational res
     console.log(`[BOT-CHAT:${requestId}] Total processing time: ${totalTime}ms`);
     console.log(`[BOT-CHAT:${requestId}] ========== REQUEST STREAMING ==========`);
 
-    return new Response(response.body, {
+    // Transform Anthropic SSE stream to OpenAI-compatible format for frontend compatibility
+    const reader = response.body!.getReader();
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const transformedStream = new ReadableStream({
+      async start(controller) {
+        let buffer = "";
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+              controller.close();
+              break;
+            }
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const jsonStr = line.slice(6).trim();
+                if (!jsonStr) continue;
+                try {
+                  const event = JSON.parse(jsonStr);
+                  if (event.type === "content_block_delta" && event.delta?.text) {
+                    // Convert to OpenAI-compatible format
+                    const openAIEvent = {
+                      choices: [{ delta: { content: event.delta.text } }],
+                    };
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(openAIEvent)}\n\n`));
+                  } else if (event.type === "message_stop") {
+                    controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+                    controller.close();
+                    return;
+                  }
+                } catch {
+                  // skip unparseable lines
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error(`[BOT-CHAT:${requestId}] Stream transform error:`, err);
+          controller.error(err);
+        }
+      },
+    });
+
+    return new Response(transformedStream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
