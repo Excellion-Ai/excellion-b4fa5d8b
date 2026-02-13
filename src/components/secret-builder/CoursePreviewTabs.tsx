@@ -888,18 +888,27 @@ export function CoursePreviewTabs({
     // Dynamic Section Renderer
     const renderSection = (sectionId: string) => {
       switch (sectionId) {
-        case 'hero':
+        case 'hero': {
+          const heroBg = hasDesignConfig
+            ? `linear-gradient(135deg, ${designColors.secondary || '#1a1a1a'}, ${designColors.background || '#0a0a0a'})`
+            : course.brand_color 
+              ? `linear-gradient(135deg, ${course.brand_color}30 0%, hsl(var(--background)) 100%)`
+              : undefined;
+          const heroPrimary = hasDesignConfig ? (designColors.primary || '#d4a853') : undefined;
+          const heroText = hasDesignConfig ? (designColors.text || '#ffffff') : undefined;
+          const heroMuted = hasDesignConfig ? (designColors.textMuted || '#9ca3af') : undefined;
+          const heroCardBg = hasDesignConfig ? (designColors.cardBackground || '#111111') : undefined;
+          const heroRadius = hasDesignConfig ? 'var(--course-radius)' : undefined;
+
           return (
             <div 
               key="hero"
-              className={`relative rounded-xl overflow-hidden p-6 sm:p-8 md:p-12 ${config.cardClass}`}
-              style={{ 
-                background: hasDesignConfig && designColors.primary
-                  ? `linear-gradient(135deg, ${designColors.primary}30 0%, ${designColors.background || '#0a0a0a'} 100%)`
-                  : course.brand_color 
-                    ? `linear-gradient(135deg, ${course.brand_color}30 0%, hsl(var(--background)) 100%)`
-                    : `linear-gradient(135deg, hsl(var(--${config.accentColor === 'amber' ? 'primary' : config.accentColor}-500) / 0.2) 0%, hsl(var(--background)) 100%)`,
-                ...(hasDesignConfig && designColors.background ? { backgroundColor: designColors.background } : {}),
+              className={`relative overflow-hidden ${hasDesignConfig ? '' : `rounded-xl p-6 sm:p-8 md:p-12 ${config.cardClass}`}`}
+              style={hasDesignConfig ? { 
+                background: heroBg,
+                padding: 'var(--course-spacing)',
+              } : { 
+                background: heroBg || `linear-gradient(135deg, hsl(var(--${config.accentColor === 'amber' ? 'primary' : config.accentColor}-500) / 0.2) 0%, hsl(var(--background)) 100%)`,
               }}
             >
               {course.thumbnail && (
@@ -907,44 +916,76 @@ export function CoursePreviewTabs({
                   <img src={course.thumbnail} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
-              <div className="relative z-10 max-w-2xl">
-                <Badge 
-                  className={`${accent.bgLight} ${accent.text} ${accent.borderLight} mb-4`}
-                  style={hasDesignConfig && designColors.primary ? {
-                    backgroundColor: `${designColors.primary}20`,
-                    color: designColors.primary,
-                    borderColor: `${designColors.primary}30`,
+              <div 
+                className="relative z-10"
+                style={hasDesignConfig ? {
+                  backgroundColor: heroCardBg,
+                  borderRadius: heroRadius,
+                  border: `1px solid ${heroPrimary}33`,
+                  padding: '48px',
+                  maxWidth: '800px',
+                  margin: '0 auto',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                } : { maxWidth: '42rem' }}
+              >
+                <span 
+                  className={hasDesignConfig ? '' : `${accent.bgLight} ${accent.text} ${accent.borderLight} inline-block mb-4 px-3 py-1 rounded text-xs font-medium`}
+                  style={hasDesignConfig ? {
+                    backgroundColor: heroPrimary,
+                    color: '#000',
+                    padding: '4px 12px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    display: 'inline-block',
+                    marginBottom: '16px',
                   } : undefined}
                 >
                   {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)} Level
-                </Badge>
+                </span>
                 <h1 
-                  className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-3 ${config.headingClass}`}
-                  style={{
-                    ...(hasDesignConfig && designColors.text ? { color: designColors.text } : {}),
-                    ...(hasDesignConfig && designFonts.heading ? { fontFamily: designFonts.heading } : {}),
-                  }}
+                  className={hasDesignConfig ? '' : `text-2xl sm:text-3xl md:text-4xl font-bold mb-3 ${config.headingClass}`}
+                  style={hasDesignConfig ? {
+                    color: heroText,
+                    fontSize: '2.5rem',
+                    marginTop: '16px',
+                    marginBottom: '16px',
+                    lineHeight: 1.2,
+                    fontFamily: designFonts.heading || 'Inter',
+                  } : undefined}
                 >
                   {course.title}
                 </h1>
                 {course.tagline && (
                   <p 
-                    className={`text-lg sm:text-xl font-medium ${accent.text} mb-4`}
-                    style={hasDesignConfig && designColors.primary ? { color: designColors.primary } : undefined}
+                    className={hasDesignConfig ? '' : `text-lg sm:text-xl font-medium ${accent.text} mb-4`}
+                    style={hasDesignConfig ? { color: heroPrimary, fontSize: '1.1rem', marginBottom: '12px' } : undefined}
                   >
                     {course.tagline}
                   </p>
                 )}
                 <p 
-                  className="text-muted-foreground mb-6"
-                  style={{
-                    ...(hasDesignConfig && designColors.textMuted ? { color: designColors.textMuted } : {}),
-                    ...(hasDesignConfig && designFonts.body ? { fontFamily: designFonts.body } : {}),
-                  }}
+                  className={hasDesignConfig ? '' : 'text-muted-foreground mb-6'}
+                  style={hasDesignConfig ? {
+                    color: heroMuted,
+                    marginBottom: '24px',
+                    fontSize: '1.1rem',
+                    fontFamily: designFonts.body || 'Inter',
+                  } : undefined}
                 >
                   {course.description}
                 </p>
-                <div className="flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground">
+                <div 
+                  className={hasDesignConfig ? '' : 'flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground'}
+                  style={hasDesignConfig ? {
+                    display: 'flex',
+                    flexWrap: 'wrap' as const,
+                    gap: '16px',
+                    marginBottom: '24px',
+                    fontSize: '14px',
+                    color: heroMuted,
+                  } : undefined}
+                >
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4" />
                     {course.modules.length} modules
@@ -958,39 +999,59 @@ export function CoursePreviewTabs({
                     {totalHours}+ hours
                   </div>
                 </div>
-                <Button 
-                  size="lg" 
-                  className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
-                  style={hasDesignConfig && designColors.primary ? {
-                    backgroundColor: designColors.primary,
+                <button
+                  className={hasDesignConfig ? '' : `${accent.bg} hover:opacity-90 text-white px-6 py-3 rounded-lg font-semibold`}
+                  style={hasDesignConfig ? {
+                    backgroundColor: heroPrimary,
                     color: '#000',
+                    padding: '12px 24px',
+                    borderRadius: heroRadius || '8px',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '16px',
                   } : undefined}
                   onClick={() => setActiveTab('curriculum')}
                 >
                   Enroll Now
-                  <ChevronRight className="w-5 h-5 ml-1" />
-                </Button>
+                </button>
               </div>
             </div>
           );
+        }
 
-        case 'outcomes':
+        case 'outcomes': {
           if (!course.learningOutcomes || course.learningOutcomes.length === 0) return null;
+          const outcPrimary = hasDesignConfig ? (designColors.primary || '#d4a853') : undefined;
+          const outcText = hasDesignConfig ? (designColors.text || '#ffffff') : undefined;
+          const outcBg = hasDesignConfig ? (designColors.background || '#0a0a0a') : undefined;
+          const outcCardBg = hasDesignConfig ? (designColors.cardBackground || '#111111') : undefined;
+
+          if (hasDesignConfig) {
+            return (
+              <div key="outcomes" style={{ backgroundColor: outcCardBg, padding: 'var(--course-spacing)' }}>
+                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                  <h2 style={{ color: outcText, marginBottom: '24px', textAlign: 'center', fontSize: '1.8rem', fontFamily: designFonts.heading || 'Inter' }}>
+                    What You'll Learn
+                  </h2>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    {course.learningOutcomes.map((outcome, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px', backgroundColor: outcBg, borderRadius: 'var(--course-radius)' }}>
+                        <span style={{ color: outcPrimary, fontSize: '18px' }}>✓</span>
+                        <span style={{ color: outcText, fontSize: '14px' }}>{outcome}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
           return (
-            <Card 
-              key="outcomes" 
-              className={`${config.cardClass} border-border`}
-              style={hasDesignConfig && designColors.cardBackground ? { backgroundColor: designColors.cardBackground } : undefined}
-            >
+            <Card key="outcomes" className={`${config.cardClass} border-border`}>
               <CardHeader>
-                <CardTitle 
-                  className={`flex items-center gap-2 ${config.headingClass}`}
-                  style={{
-                    ...(hasDesignConfig && designColors.text ? { color: designColors.text } : {}),
-                    ...(hasDesignConfig && designFonts.heading ? { fontFamily: designFonts.heading } : {}),
-                  }}
-                >
-                  <Target className={`w-5 h-5 ${accent.text}`} style={hasDesignConfig && designColors.primary ? { color: designColors.primary } : undefined} />
+                <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
+                  <Target className={`w-5 h-5 ${accent.text}`} />
                   What You'll Learn
                 </CardTitle>
               </CardHeader>
@@ -998,19 +1059,15 @@ export function CoursePreviewTabs({
                 <ul className="grid gap-3 sm:grid-cols-2">
                   {course.learningOutcomes.map((outcome, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <Check className={`w-5 h-5 ${accent.text} mt-0.5 shrink-0`} style={hasDesignConfig && designColors.primary ? { color: designColors.primary } : undefined} />
-                      <span 
-                        className="text-foreground/90 text-sm"
-                        style={hasDesignConfig && designColors.text ? { color: designColors.text } : undefined}
-                      >
-                        {outcome}
-                      </span>
+                      <Check className={`w-5 h-5 ${accent.text} mt-0.5 shrink-0`} />
+                      <span className="text-foreground/90 text-sm">{outcome}</span>
                     </li>
                   ))}
                 </ul>
               </CardContent>
             </Card>
           );
+        }
 
         case 'curriculum':
           return (
@@ -1078,8 +1135,33 @@ export function CoursePreviewTabs({
             />
           );
 
-        case 'faq':
+        case 'faq': {
           if (!course.pages?.faq || course.pages.faq.length === 0) return null;
+          const faqText = hasDesignConfig ? (designColors.text || '#ffffff') : undefined;
+          const faqMuted = hasDesignConfig ? (designColors.textMuted || '#9ca3af') : undefined;
+          const faqCardBg = hasDesignConfig ? (designColors.cardBackground || '#111111') : undefined;
+          const faqBg = hasDesignConfig ? (designColors.background || '#0a0a0a') : undefined;
+
+          if (hasDesignConfig) {
+            return (
+              <div key="faq" style={{ backgroundColor: faqCardBg, padding: 'var(--course-spacing)' }}>
+                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                  <h2 style={{ color: faqText, marginBottom: '24px', textAlign: 'center', fontSize: '1.8rem', fontFamily: designFonts.heading || 'Inter' }}>
+                    Frequently Asked Questions
+                  </h2>
+                  <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '12px' }}>
+                    {course.pages.faq.map((faq, idx) => (
+                      <div key={idx} style={{ backgroundColor: faqBg, padding: '20px', borderRadius: 'var(--course-radius)' }}>
+                        <div style={{ fontWeight: 600, color: faqText, marginBottom: '8px', fontSize: '15px' }}>{faq.question}</div>
+                        <div style={{ color: faqMuted, fontSize: '14px' }}>{faq.answer}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <Card key="faq" className={`${config.cardClass} border-border`}>
               <CardHeader>
@@ -1108,6 +1190,7 @@ export function CoursePreviewTabs({
               </CardContent>
             </Card>
           );
+        }
 
         case 'guarantee':
           return <GuaranteeSection key="guarantee" />;
@@ -1115,38 +1198,60 @@ export function CoursePreviewTabs({
         case 'bonus':
           return <BonusSection key="bonus" />;
 
-        case 'cta':
+        case 'cta': {
+          const ctaPrimary = hasDesignConfig ? (designColors.primary || '#d4a853') : undefined;
+          const ctaText = hasDesignConfig ? (designColors.text || '#ffffff') : undefined;
+          const ctaMuted = hasDesignConfig ? (designColors.textMuted || '#9ca3af') : undefined;
+          const ctaSecondary = hasDesignConfig ? (designColors.secondary || '#1a1a1a') : undefined;
+          const ctaBg = hasDesignConfig ? (designColors.background || '#0a0a0a') : undefined;
+
+          if (hasDesignConfig) {
+            return (
+              <div key="cta" style={{
+                background: `linear-gradient(135deg, ${ctaSecondary}, ${ctaBg})`,
+                padding: 'var(--course-spacing)',
+                textAlign: 'center' as const,
+              }}>
+                <h2 style={{ color: ctaText, marginBottom: '16px', fontSize: '2rem', fontFamily: designFonts.heading || 'Inter' }}>
+                  Ready to Get Started?
+                </h2>
+                <p style={{ color: ctaMuted, marginBottom: '24px' }}>
+                  {course.tagline || 'Begin your learning journey today'}
+                </p>
+                <button
+                  style={{
+                    backgroundColor: ctaPrimary,
+                    color: '#000',
+                    padding: '16px 32px',
+                    borderRadius: 'var(--course-radius)',
+                    fontWeight: 600,
+                    fontSize: '18px',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => setActiveTab('curriculum')}
+                >
+                  Enroll Now
+                </button>
+              </div>
+            );
+          }
+
           return (
             <Card 
               key="cta" 
               className={`bg-gradient-to-r from-${config.accentColor}-500/10 to-${config.accentColor}-600/5 ${accent.borderLight}`}
-              style={hasDesignConfig && designColors.primary ? {
-                background: `linear-gradient(135deg, ${designColors.primary}15, ${designColors.secondary || designColors.background || '#0a0a0a'})`,
-              } : undefined}
             >
               <CardContent className="py-8 text-center">
-                <h3 
-                  className={`text-xl sm:text-2xl font-bold mb-2 ${config.headingClass}`}
-                  style={{
-                    ...(hasDesignConfig && designColors.text ? { color: designColors.text } : {}),
-                    ...(hasDesignConfig && designFonts.heading ? { fontFamily: designFonts.heading } : {}),
-                  }}
-                >
+                <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${config.headingClass}`}>
                   Ready to Start?
                 </h3>
-                <p 
-                  className="text-muted-foreground mb-6"
-                  style={hasDesignConfig && designColors.textMuted ? { color: designColors.textMuted } : undefined}
-                >
+                <p className="text-muted-foreground mb-6">
                   Join thousands of students already learning
                 </p>
                 <Button 
                   size="lg" 
                   className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
-                  style={hasDesignConfig && designColors.primary ? {
-                    backgroundColor: designColors.primary,
-                    color: '#000',
-                  } : undefined}
                   onClick={() => setActiveTab('curriculum')}
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
@@ -1155,6 +1260,7 @@ export function CoursePreviewTabs({
               </CardContent>
             </Card>
           );
+        }
 
         default:
           return null;
@@ -2068,8 +2174,26 @@ export function CoursePreviewTabs({
         )}
       </div>
 
-      {/* Tab Content - Conditional Rendering */}
-      <div className="flex-1 overflow-auto p-4">
+      {/* Tab Content - Isolated Course Preview Container */}
+      <div 
+        className="flex-1 overflow-auto p-4"
+        style={{
+          // Isolate course preview from builder UI colors
+          ...(hasDesignConfig ? {
+            '--course-primary': designColors.primary || '#d4a853',
+            '--course-secondary': designColors.secondary || '#1a1a1a',
+            '--course-accent': designColors.accent || '#f59e0b',
+            '--course-background': designColors.background || '#0a0a0a',
+            '--course-card-bg': designColors.cardBackground || '#111111',
+            '--course-text': designColors.text || '#ffffff',
+            '--course-text-muted': designColors.textMuted || '#9ca3af',
+            '--course-spacing': (designConfig.spacing === 'compact' ? '24px' : designConfig.spacing === 'spacious' ? '64px' : '40px'),
+            '--course-radius': (designConfig.borderRadius === 'none' ? '0px' : designConfig.borderRadius === 'small' ? '4px' : designConfig.borderRadius === 'large' ? '16px' : '8px'),
+            backgroundColor: designColors.background || '#0a0a0a',
+            color: designColors.text || '#ffffff',
+          } as React.CSSProperties : {}),
+        }}
+      >
         {activeTab === 'landing' && renderLandingPage()}
         {activeTab === 'curriculum' && renderCurriculum()}
         {activeTab === 'lesson' && renderLessonPreview()}
