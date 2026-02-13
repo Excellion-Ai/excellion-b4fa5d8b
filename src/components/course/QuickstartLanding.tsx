@@ -56,12 +56,10 @@ interface QuickstartLandingProps {
 }
 
 const MODULE_DELIVERABLES: Record<string, { deliverable: string; minutes: number }> = {
-  m0: { deliverable: 'A finalized prompt ready to generate your draft', minutes: 10 },
-  m1: { deliverable: 'A prioritized list of sections you want to improve', minutes: 10 },
-  m2: { deliverable: 'All course content finalized', minutes: 15 },
-  m3: { deliverable: 'A sales page you are ready to publish', minutes: 10 },
-  m4: { deliverable: 'Any optional features configured (or skipped)', minutes: 10 },
-  m5: { deliverable: 'A live, shareable URL with your course and sales page', minutes: 5 },
+  m1: { deliverable: 'A finalized prompt ready to generate your draft', minutes: 10 },
+  m2: { deliverable: 'A complete draft reviewed and sections flagged for improvement', minutes: 10 },
+  m3: { deliverable: 'All course and sales page content finalized', minutes: 25 },
+  m4: { deliverable: 'A live, shareable URL with your course and sales page', minutes: 10 },
 };
 
 const VALUE_PROPS = [
@@ -216,12 +214,12 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
                   <AccordionTrigger className="hover:no-underline px-4 py-4">
                     <div className="flex items-center gap-4 text-left w-full pr-4">
                       <span className="shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center">
-                        {idx}
+                        {idx + 1}
                       </span>
 
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-foreground text-sm md:text-base truncate">
-                          Module {idx}: {mod.title}
+                          Module {idx + 1}: {mod.title}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">
                           {deliverable}
@@ -241,15 +239,6 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
 
                   <AccordionContent className="px-4 pb-4">
                     <div className="space-y-4 pt-2">
-                      {/* Module 4 optional callout */}
-                      {mod.id === 'm4' && (
-                        <div className="flex items-start gap-2 p-3 rounded-lg border border-primary/20 bg-primary/5">
-                          <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                          <p className="text-sm text-muted-foreground italic">
-                            These add-ons are optional. Skip any that do not fit your program.
-                          </p>
-                        </div>
-                      )}
 
                       {mod.lessons.map((lesson) => (
                         <div
