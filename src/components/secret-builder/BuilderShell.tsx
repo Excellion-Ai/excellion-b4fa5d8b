@@ -995,6 +995,32 @@ export function BuilderShell() {
         
         // Save with the new courseSpec
         await saveProject(null, allMessages, ideaToUse, null, courseSpec);
+
+        // Also save to courses table so it appears in "Your Courses"
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (currentUser) {
+          const courseSlug = (course.slug || course.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `course-${Date.now()}`;
+          const { error: courseInsertError } = await supabase
+            .from('courses')
+            .upsert({
+              id: courseSpec.id && courseSpec.id.length === 36 ? courseSpec.id : undefined,
+              user_id: currentUser.id,
+              title: course.title || 'Untitled Course',
+              description: course.description || '',
+              subdomain: courseSlug,
+              modules: courseSpec.modules as unknown as import('@/integrations/supabase/types').Json,
+              difficulty: courseSpec.difficulty || 'beginner',
+              duration_weeks: courseSpec.duration_weeks || 6,
+              status: 'draft',
+              builder_project_id: projectId || undefined,
+            }, { onConflict: 'id' });
+
+          if (courseInsertError) {
+            console.error('Failed to save course record:', courseInsertError);
+          } else {
+            console.log('Course saved to courses table');
+          }
+        }
       }
 
       updateStep(4, 'complete');
