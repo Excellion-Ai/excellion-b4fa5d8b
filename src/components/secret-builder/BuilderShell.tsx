@@ -1907,7 +1907,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             
             {/* Course Builder Panel or Command Panel */}
             {courseSpec && !isGenerating ? (
-              <div className="flex-1 min-h-0 flex flex-col">
+              <div className="flex-1 min-h-0 flex flex-col pb-16">
               <CourseCommandPanel
                 course={courseSpec}
                 courseId={courseId}
