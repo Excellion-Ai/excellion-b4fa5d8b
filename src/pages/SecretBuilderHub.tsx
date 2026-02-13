@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
+import { AI } from '@/services/ai';
 import { useToast } from '@/hooks/use-toast';
 import { 
   ArrowRight, 
@@ -1726,22 +1727,20 @@ export default function SecretBuilderHub() {
                           }
                           setLoadingTemplate(template.id);
                           try {
-                            const response = await supabase.functions.invoke("generate-course", {
-                              body: {
-                                prompt: template.prompt || `Create a ${template.title.toLowerCase()} course`,
+                            const response = await AI.generateCourse(
+                              template.prompt || `Create a ${template.title.toLowerCase()} course`,
+                              {
                                 use_preloaded: true,
-                                options: {
-                                  template: template.id
-                                }
+                                template: template.id
                               }
-                            });
+                            );
                             
-                            if (response.data && response.data.success && response.data.course) {
-                              navigate("/secret-builder/" + response.data.course.id);
+                            if (response && response.success && response.course) {
+                              navigate("/secret-builder/" + response.course.id);
                             } else {
                               toast({
                                 title: "Error",
-                                description: response.data?.error || "Failed to load template",
+                                description: response?.error || "Failed to load template",
                                 variant: "destructive"
                               });
                             }
@@ -1848,22 +1847,20 @@ export default function SecretBuilderHub() {
                           }
                           setLoadingTemplate(template.id);
                           try {
-                            const response = await supabase.functions.invoke("generate-course", {
-                              body: {
-                                prompt: template.prompt || `Create a ${template.title.toLowerCase()} course`,
+                            const response = await AI.generateCourse(
+                              template.prompt || `Create a ${template.title.toLowerCase()} course`,
+                              {
                                 use_preloaded: true,
-                                options: {
-                                  template: template.id
-                                }
+                                template: template.id
                               }
-                            });
+                            );
                             
-                            if (response.data && response.data.success && response.data.course) {
-                              navigate("/secret-builder/" + response.data.course.id);
+                            if (response && response.success && response.course) {
+                              navigate("/secret-builder/" + response.course.id);
                             } else {
                               toast({
                                 title: "Error",
-                                description: response.data?.error || "Failed to load template",
+                                description: response?.error || "Failed to load template",
                                 variant: "destructive"
                               });
                             }

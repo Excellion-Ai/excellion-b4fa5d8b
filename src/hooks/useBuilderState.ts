@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { AI } from '@/services/ai';
 import { AppSpec, GeneratedCode, SiteDefinition } from '@/types/app-spec';
 import { useToast } from '@/hooks/use-toast';
 
@@ -126,16 +126,14 @@ export function useBuilderState() {
     addMessage('assistant', 'Analyzing your idea and creating a build plan...');
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('builder-agent', {
-        body: {
-          idea,
-          target: 'lovable',
-          complexity: 'standard',
-          inputs,
-        },
+      const data = await AI.builderAgent({
+        idea,
+        target: 'lovable',
+        complexity: 'standard',
+        inputs,
       });
 
-      if (fnError) throw fnError;
+      // builderAgent throws on error
 
       const appSpec = data as AppSpec;
       setSpec(appSpec);
@@ -177,14 +175,12 @@ export function useBuilderState() {
     addMessage('assistant', 'Building your website...');
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('code-agent', {
-        body: {
-          spec: appSpec,
-          buildPrompt: appSpec.buildPrompt,
-        },
+      const data = await AI.generateCode({
+        spec: appSpec,
+        buildPrompt: appSpec.buildPrompt,
       });
 
-      if (fnError) throw fnError;
+      // generateCode throws on error
       if (data.error) throw new Error(data.error);
 
       setGeneratedCode(data as GeneratedCode);
@@ -215,16 +211,14 @@ export function useBuilderState() {
 
   const healCode = useCallback(async (appSpec: AppSpec, errorMessage: string) => {
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('code-agent', {
-        body: {
-          spec: appSpec,
-          buildPrompt: appSpec.buildPrompt,
-          previousCode: generatedCode?.reactCode,
-          error: errorMessage,
-        },
+      const data = await AI.generateCode({
+        spec: appSpec,
+        buildPrompt: appSpec.buildPrompt,
+        previousCode: generatedCode?.reactCode,
+        error: errorMessage,
       });
 
-      if (fnError) throw fnError;
+      // generateCode throws on error
 
       setGeneratedCode(data as GeneratedCode);
       setState('preview_ready');

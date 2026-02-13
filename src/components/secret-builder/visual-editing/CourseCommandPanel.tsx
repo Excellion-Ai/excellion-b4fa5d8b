@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Loader2, Sparkles } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { AI } from '@/services/ai';
 import { toast } from 'sonner';
 
 interface CommandMessage {
@@ -38,15 +38,13 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
     setCommandHistory((prev) => [...prev, { role: 'user', content: command }]);
 
     try {
-      const { data, error } = await supabase.functions.invoke('interpret-course-command', {
-        body: {
-          command,
-          current_course: course.curriculum || course,
-          current_design: course.design_config || {},
-        },
-      });
+      const data = await AI.interpretCommand(
+        command,
+        course.curriculum || course,
+        course.design_config || {},
+      );
 
-      if (error) throw error;
+      // interpretCommand throws on error
 
       if (data?.success && data.result?.understood) {
         await onApplyChanges(data.result.changes);
