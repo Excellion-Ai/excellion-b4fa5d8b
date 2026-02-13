@@ -1736,7 +1736,34 @@ export default function SecretBuilderHub() {
                             );
                             
                             if (response && response.success && response.course) {
-                              navigate("/secret-builder/" + response.course.id);
+                              const course = response.course;
+                              const curriculum = course.curriculum || {};
+                              // Save to builder_projects first
+                              const { data: projData, error: projErr } = await supabase
+                                .from('builder_projects')
+                                .insert({
+                                  user_id: currentUser.id,
+                                  name: course.title || template.title,
+                                  idea: template.prompt || '',
+                                  spec: { courseSpec: { ...course, modules: curriculum.modules || [] } },
+                                })
+                                .select('id')
+                                .single();
+                              if (projErr) throw projErr;
+                              // Save to courses table
+                              const courseSlug = (course.slug || course.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `course-${Date.now()}`;
+                              await supabase.from('courses').insert({
+                                user_id: currentUser.id,
+                                title: course.title || 'Untitled Course',
+                                description: course.description || '',
+                                subdomain: courseSlug,
+                                modules: (curriculum.modules || []) as unknown as import('@/integrations/supabase/types').Json,
+                                difficulty: curriculum.difficulty || 'beginner',
+                                duration_weeks: curriculum.duration_weeks || 6,
+                                status: 'draft',
+                                builder_project_id: projData.id,
+                              });
+                              navigate(`/studio/${projData.id}`, { state: { projectId: projData.id, initialIdea: template.prompt } });
                             } else {
                               toast({
                                 title: "Error",
@@ -1745,6 +1772,7 @@ export default function SecretBuilderHub() {
                               });
                             }
                           } catch (error) {
+                            console.error('Template generation error:', error);
                             toast({
                               title: "Error",
                               description: "Failed to load template",
@@ -1856,7 +1884,34 @@ export default function SecretBuilderHub() {
                             );
                             
                             if (response && response.success && response.course) {
-                              navigate("/secret-builder/" + response.course.id);
+                              const course = response.course;
+                              const curriculum = course.curriculum || {};
+                              // Save to builder_projects first
+                              const { data: projData, error: projErr } = await supabase
+                                .from('builder_projects')
+                                .insert({
+                                  user_id: currentUser.id,
+                                  name: course.title || template.title,
+                                  idea: template.prompt || '',
+                                  spec: { courseSpec: { ...course, modules: curriculum.modules || [] } },
+                                })
+                                .select('id')
+                                .single();
+                              if (projErr) throw projErr;
+                              // Save to courses table
+                              const courseSlug = (course.slug || course.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `course-${Date.now()}`;
+                              await supabase.from('courses').insert({
+                                user_id: currentUser.id,
+                                title: course.title || 'Untitled Course',
+                                description: course.description || '',
+                                subdomain: courseSlug,
+                                modules: (curriculum.modules || []) as unknown as import('@/integrations/supabase/types').Json,
+                                difficulty: curriculum.difficulty || 'beginner',
+                                duration_weeks: curriculum.duration_weeks || 6,
+                                status: 'draft',
+                                builder_project_id: projData.id,
+                              });
+                              navigate(`/studio/${projData.id}`, { state: { projectId: projData.id, initialIdea: template.prompt } });
                             } else {
                               toast({
                                 title: "Error",
@@ -1865,6 +1920,7 @@ export default function SecretBuilderHub() {
                               });
                             }
                           } catch (error) {
+                            console.error('Template generation error:', error);
                             toast({
                               title: "Error",
                               description: "Failed to load template",
