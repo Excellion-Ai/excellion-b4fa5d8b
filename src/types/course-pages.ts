@@ -147,6 +147,25 @@ export interface ModuleWithContent {
   layout_variant?: 'video_heavy' | 'text_heavy' | 'mixed' | 'project_based';
 }
 
+export interface DesignConfig {
+  colors?: {
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+    background?: string;
+    cardBackground?: string;
+    text?: string;
+    textMuted?: string;
+  };
+  fonts?: {
+    heading?: string;
+    body?: string;
+  };
+  spacing?: 'compact' | 'normal' | 'spacious';
+  borderRadius?: 'none' | 'small' | 'medium' | 'large';
+  heroStyle?: string;
+}
+
 export interface ExtendedCourse {
   id?: string;
   title: string;
@@ -160,6 +179,10 @@ export interface ExtendedCourse {
   brand_color?: string;
   pages?: CoursePages;
   layout_style?: CourseLayoutStyle;
+  // Design editor fields
+  design_config?: DesignConfig;
+  layout_template?: string;
+  section_order?: string[];
   // Multi-page navigation
   separatePages?: CoursePage[];
   isMultiPage?: boolean;

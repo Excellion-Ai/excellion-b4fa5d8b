@@ -606,6 +606,9 @@ export function BuilderShell() {
           learningOutcomes: [],
           thumbnail: courseData.thumbnail_url || undefined,
           layout_style: 'creator',
+          design_config: (courseData.design_config as any) || {},
+          layout_template: (courseData.layout_template as string) || 'suspended',
+          section_order: (courseData.section_order as string[]) || ['hero', 'outcomes', 'curriculum', 'faq', 'cta'],
         });
       }
       // Load course settings
@@ -2307,10 +2310,15 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     onSave={async (updates) => {
                       if (courseId) {
                         const { error } = await supabase.from('courses').update(updates).eq('id', courseId);
-                        if (!error) setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
-                      } else {
-                        setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
+                        if (error) {
+                          console.error('Failed to save design:', error);
+                          toast.error('Failed to save design settings');
+                          return;
+                        }
+                        toast.success('Design settings applied!');
                       }
+                      // Always update local state to trigger re-render
+                      setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
                     }}
                   />
                 </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,15 @@ export function DesignEditorModal({
   const [isSaving, setIsSaving] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
+  // Re-sync local state when modal opens with new props
+  useEffect(() => {
+    if (open) {
+      setDesign(designConfig || {});
+      setLayout(layoutTemplate || 'suspended');
+      setSectionOrder(initialSectionOrder || ['hero', 'outcomes', 'curriculum', 'faq', 'cta']);
+    }
+  }, [open, designConfig, layoutTemplate, initialSectionOrder]);
+
   const updateColor = (key: string, value: string) => {
     setDesign({
       ...design,
@@ -57,6 +66,9 @@ export function DesignEditorModal({
     { key: 'secondary', label: 'Secondary', default: '#1a1a1a' },
     { key: 'accent', label: 'Accent', default: '#f59e0b' },
     { key: 'background', label: 'Background', default: '#0a0a0a' },
+    { key: 'cardBackground', label: 'Card Background', default: '#111111' },
+    { key: 'text', label: 'Text', default: '#ffffff' },
+    { key: 'textMuted', label: 'Muted Text', default: '#9ca3af' },
   ];
 
   return (
