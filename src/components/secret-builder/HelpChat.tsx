@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, X, Send, Loader2, Sparkles, History, Plus, GripVertical, Trash2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { AI } from '@/services/ai';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 type Message = {
@@ -216,17 +216,13 @@ export function HelpChat({ externalOpen, onExternalOpenChange }: HelpChatProps =
         .filter(m => m.id !== 'welcome')
         .map(m => ({ role: m.role, content: m.content }));
 
-      const { data, error } = await supabase.functions.invoke('help-chat', {
-        body: {
-          messages: [
-            ...conversationHistory,
-            { role: 'user', content: userMessage.content }
-          ],
-          systemPrompt: SYSTEM_PROMPT
-        }
-      });
-
-      if (error) throw error;
+      const data = await AI.help(
+        [
+          ...conversationHistory,
+          { role: 'user', content: userMessage.content }
+        ],
+        SYSTEM_PROMPT
+      );
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

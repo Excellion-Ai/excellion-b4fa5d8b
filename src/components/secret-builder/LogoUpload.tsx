@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AI } from '@/services/ai';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -93,26 +94,12 @@ export function LogoUpload({ logo, onUpdateLogo, generatedImages = [], isLoading
 
     setIsGenerating(true);
     try {
-      // Use generate-image function which saves to the generated/ folder for the library
-      const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { 
-          prompt: `Minimalist professional logo design: ${logoPrompt}. Simple, clean, iconic, suitable for a brand logo, white or transparent background, vector-style.`,
-          width: 512,
-          height: 512
-        }
-      });
+      const data = await AI.generateImage(
+        `Minimalist professional logo design: ${logoPrompt}. Simple, clean, iconic, suitable for a brand logo, white or transparent background, vector-style.`,
+        512,
+        512
+      );
 
-      if (error) {
-        console.error('Generation error:', error);
-        // If auth error, show specific message
-        if (error.message?.includes('401') || error.message?.includes('authentication')) {
-          toast.error('Session expired. Please refresh and try again.');
-        } else {
-          toast.error(error.message || 'Failed to generate logo');
-        }
-        return;
-      }
-      
       if (data?.imageUrl) {
         onUpdateLogo(data.imageUrl);
         toast.success('Logo generated and saved to library!');

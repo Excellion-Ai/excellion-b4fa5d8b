@@ -12,6 +12,7 @@ import { CreditBalance } from './CreditBalance';
 import { AttachmentMenu, AttachmentChips, AttachmentItem } from './attachments';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SiteSpec } from '@/types/site-spec';
+import { AI } from '@/services/ai';
 import { ExtendedCourse } from '@/types/course-pages';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { specFromChat } from '@/lib/specFromChat';
@@ -928,20 +929,15 @@ export function BuilderShell() {
         throw new Error('Please sign in to generate courses');
       }
 
-      const { data, error } = await supabase.functions.invoke('generate-course', {
-        body: {
-          prompt: ideaToUse,
-          options: {
-            duration_weeks: courseOptions?.duration_weeks || 6,
-            difficulty: courseOptions?.difficulty || 'beginner',
-            includeQuizzes: courseOptions?.includeQuizzes ?? true,
-            includeAssignments: courseOptions?.includeAssignments ?? false,
-          },
-        },
+      const data = await AI.generateCourse(ideaToUse, {
+        duration_weeks: courseOptions?.duration_weeks || 6,
+        difficulty: courseOptions?.difficulty || 'beginner',
+        includeQuizzes: courseOptions?.includeQuizzes ?? true,
+        includeAssignments: courseOptions?.includeAssignments ?? false,
       });
 
-      if (error || !data?.success) {
-        throw new Error(data?.error || error?.message || 'Failed to generate course');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to generate course');
       }
 
       updateStep(2, 'complete');
@@ -1277,31 +1273,13 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         throw new Error('Please sign in to use AI features');
       }
       
-      // Get the refreshed session with valid access token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('Session expired. Please sign in again.');
-      }
-      
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bot-chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({ 
-          messages: chatMessages, 
-          modelMode, 
-          projectId,
-          scaffold: generationScaffold // Pass scaffold for AI to follow
-        }),
+      const response = await AI.chatStream(chatMessages, {
+        modelMode, 
+        projectId,
+        scaffold: generationScaffold
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to generate website');
-      }
+      // AI.chatStream throws on error, response is ready to stream
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Database, Send, Loader2, RefreshCw, Copy, Check, MessageSquare } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { AI } from '@/services/ai';
 import { toast } from 'sonner';
 
 interface Table {
@@ -144,11 +144,7 @@ export const SchemaVizPanel: React.FC = () => {
     try {
       const schemaText = generateSchemaText(tables);
       
-      const { data, error } = await supabase.functions.invoke('database-ai', {
-        body: { query: query, schema: schemaText }
-      });
-
-      if (error) throw error;
+      const data = await AI.generateQuery(query, schemaText);
 
       const assistantMessage: Message = { 
         role: 'assistant', 

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { AI } from '@/services/ai';
 import { toast } from 'sonner';
 import { detectNiche } from '@/lib/motion/motionEngine';
 import { Niche } from '@/lib/motion/types';
@@ -41,31 +41,16 @@ export function useNicheImageGeneration() {
 
       setProgress(30);
 
-      const { data, error } = await supabase.functions.invoke('generate-niche-image', {
-        body: {
-          businessName,
-          businessDescription,
-          niche: detectedNiche,
-          imageType,
-          customPrompt,
-          count
-        }
+      const data = await AI.generateNicheImage({
+        businessName,
+        businessDescription,
+        niche: detectedNiche,
+        imageType,
+        customPrompt,
+        count
       });
 
       setProgress(90);
-
-      if (error) {
-        console.error('Image generation error:', error);
-        
-        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
-          toast.error('Rate limit reached. Please wait a moment and try again.');
-        } else if (error.message?.includes('402') || error.message?.includes('payment')) {
-          toast.error('Credits exhausted. Please add more credits to continue.');
-        } else {
-          toast.error('Failed to generate image. Using placeholder.');
-        }
-        return null;
-      }
 
       if (data?.images?.length > 0) {
         const newImages = data.images.map((url: string) => ({
