@@ -1,10 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Send, Loader2, Sparkles } from 'lucide-react';
 import { AI } from '@/services/ai';
-import { toast } from 'sonner';
 
 interface CommandMessage {
   role: 'user' | 'assistant';
@@ -44,8 +40,6 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
         course.design_config || {},
       );
 
-      // interpretCommand throws on error
-
       if (data?.success && data.result?.understood) {
         await onApplyChanges(data.result.changes);
         setCommandHistory((prev) => [
@@ -73,79 +67,80 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 h-full">
-      {/* Command History */}
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
+    <div className="flex flex-col h-full bg-zinc-950">
+      {/* Header */}
+      <div className="p-4 border-b border-zinc-800 shrink-0">
+        <h3 className="text-amber-500 font-semibold flex items-center gap-2">
+          <Sparkles className="w-4 h-4" />
+          AI Design Commands
+        </h3>
+      </div>
+
+      {/* Scrollable content area */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 min-h-0">
         {commandHistory.length === 0 && (
-          <div className="text-muted-foreground text-sm space-y-3">
-            <div className="flex items-center gap-2 text-primary">
-              <Sparkles className="w-4 h-4" />
-              <span className="font-medium">AI Design Commands</span>
+          <div className="space-y-2">
+            <p className="text-gray-500 text-sm">Try commands like:</p>
+            <div className="space-y-1">
+              {[
+                'Change the primary color to blue',
+                'Switch to timeline layout',
+                'Add a testimonials section',
+                'Change the hero headline to...',
+                'Reorder sections: hero, curriculum, outcomes',
+              ].map((cmd) => (
+                <button
+                  key={cmd}
+                  onClick={() => setCurrentCommand(cmd)}
+                  className="block w-full text-left text-sm text-gray-400 hover:text-amber-500 p-2 rounded hover:bg-zinc-900 transition"
+                >
+                  "{cmd}"
+                </button>
+              ))}
             </div>
-            <p className="text-xs">Try commands like:</p>
-            <ul className="space-y-1.5 text-xs">
-              <li className="px-2 py-1.5 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition"
-                onClick={() => setCurrentCommand('Change the primary color to blue')}>
-                "Change the primary color to blue"
-              </li>
-              <li className="px-2 py-1.5 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition"
-                onClick={() => setCurrentCommand('Switch to timeline layout')}>
-                "Switch to timeline layout"
-              </li>
-              <li className="px-2 py-1.5 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition"
-                onClick={() => setCurrentCommand('Add a testimonials section')}>
-                "Add a testimonials section"
-              </li>
-              <li className="px-2 py-1.5 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition"
-                onClick={() => setCurrentCommand('Change the hero headline to...')}>
-                "Change the hero headline to..."
-              </li>
-              <li className="px-2 py-1.5 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition"
-                onClick={() => setCurrentCommand('Reorder sections: hero, curriculum, outcomes')}>
-                "Reorder sections: hero, curriculum, outcomes"
-              </li>
-            </ul>
           </div>
         )}
+
         {commandHistory.map((msg, i) => (
           <div
             key={i}
-            className={`p-3 rounded-lg text-sm ${
+            className={`p-3 rounded-lg mb-2 text-sm ${
               msg.role === 'user'
-                ? 'bg-primary/20 text-primary-foreground ml-8'
-                : 'bg-muted text-foreground mr-8'
+                ? 'bg-amber-500/20 text-amber-100 ml-4'
+                : 'bg-zinc-800 text-gray-300 mr-4'
             }`}
           >
             {msg.content}
           </div>
         ))}
+
         {isProcessing && (
-          <div className="bg-muted text-muted-foreground p-3 rounded-lg mr-8 flex items-center gap-2">
+          <div className="bg-zinc-800 text-gray-400 p-3 rounded-lg flex items-center gap-2">
             <Loader2 className="w-3 h-3 animate-spin" />
-            <span className="text-sm">Processing your request...</span>
+            <span className="text-sm">Processing...</span>
           </div>
         )}
       </div>
 
-      {/* Command Input */}
-      <div className="p-4 border-t border-border shrink-0">
+      {/* FIXED PROMPT INPUT - ALWAYS AT BOTTOM */}
+      <div className="p-4 border-t border-zinc-800 bg-zinc-950 shrink-0">
         <div className="flex gap-2">
-          <Input
+          <input
+            type="text"
             value={currentCommand}
             onChange={(e) => setCurrentCommand(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && processCommand()}
+            onKeyDown={(e) => e.key === 'Enter' && !isProcessing && processCommand()}
             placeholder="Describe changes to your course..."
-            className="flex-1 bg-card/50 border-border"
+            className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none"
             disabled={isProcessing}
           />
-          <Button
+          <button
             onClick={processCommand}
             disabled={isProcessing || !currentCommand.trim()}
-            size="icon"
-            className="bg-primary hover:bg-primary/90 shrink-0"
+            className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </Button>
+            {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+          </button>
         </div>
       </div>
     </div>
