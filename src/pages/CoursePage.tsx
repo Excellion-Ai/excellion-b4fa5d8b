@@ -16,6 +16,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { CourseReviews } from '@/components/course';
+import { QuickstartLanding } from '@/components/course/QuickstartLanding';
 
 interface Lesson {
   id: string;
