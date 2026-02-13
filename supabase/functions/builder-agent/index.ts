@@ -772,9 +772,9 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY is not configured');
     }
 
     const userPrompt = `
@@ -787,27 +787,28 @@ IMPORTANT: First detect the industry from the idea, then use the industry-specif
 
 Generate the complete blueprint and build prompt. Return ONLY valid JSON matching the specified format.`;
 
-    console.log('Calling Lovable AI Gateway for builder agent...');
+    console.log('Calling Anthropic API for builder agent...');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-5',
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 8000,
+        system: SYSTEM_PROMPT,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt }
         ],
-        max_completion_tokens: 8000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
+      console.error('Anthropic API error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -821,11 +822,11 @@ Generate the complete blueprint and build prompt. Return ONLY valid JSON matchin
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      throw new Error(`AI Gateway error: ${response.status}`);
+      throw new Error(`Anthropic API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const content = data.content?.[0]?.text;
 
     if (!content) {
       throw new Error('No content in AI response');

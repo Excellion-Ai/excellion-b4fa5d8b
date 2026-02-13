@@ -20,9 +20,9 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not configured');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -31,26 +31,24 @@ serve(async (req) => {
 
     console.log('Processing help chat request with', messages.length, 'messages');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt || 'You are a helpful assistant.' },
-          ...messages
-        ],
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 500,
-        temperature: 0.7,
+        system: systemPrompt || 'You are a helpful assistant.',
+        messages: messages,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
+      console.error('Anthropic API error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -73,7 +71,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const assistantResponse = data.choices?.[0]?.message?.content || 'No response generated';
+    const assistantResponse = data.content?.[0]?.text || 'No response generated';
 
     console.log('Help chat response generated successfully');
 

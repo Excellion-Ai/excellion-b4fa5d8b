@@ -539,9 +539,9 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY is not configured');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY is not configured');
       return new Response(
         JSON.stringify({ success: false, error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -796,27 +796,28 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
 
     const userPrompt = `Create a complete ${template} style course curriculum for: ${prompt}`;
 
-    console.log('Calling Lovable AI with prompt:', userPrompt.substring(0, 100));
+    console.log('Calling Anthropic API with prompt:', userPrompt.substring(0, 100));
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 16000,
+        system: systemPrompt,
         messages: [
-          { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        max_tokens: 16000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+      console.error('Anthropic API error:', response.status, errorText);
       
       let errorMessage = 'Failed to generate course. Please try again.';
       try {
@@ -856,9 +857,9 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
     }
 
     const data = await response.json();
-    console.log('Lovable AI response received');
+    console.log('Anthropic API response received');
 
-    const content = data.choices?.[0]?.message?.content;
+    const content = data.content?.[0]?.text;
     if (!content) {
       console.error('No content in AI response:', data);
       return new Response(
