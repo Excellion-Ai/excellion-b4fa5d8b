@@ -75,9 +75,9 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0 h-full">
       {/* Command History */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
         {commandHistory.length === 0 && (
           <div className="text-muted-foreground text-sm space-y-3">
             <div className="flex items-center gap-2 text-primary">
@@ -130,7 +130,7 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
       </div>
 
       {/* Command Input */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border shrink-0">
         <div className="flex gap-2">
           <Input
             value={currentCommand}
