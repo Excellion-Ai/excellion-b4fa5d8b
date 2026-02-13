@@ -354,6 +354,29 @@ export default function CoursePage() {
   const defaultImage = "https://excellion.lovable.app/og-image.png";
   const courseUrl = `https://excellion.lovable.app/course/${course.subdomain || course.id}`;
 
+  // Dedicated quickstart landing page
+  if (subdomain === 'excellion-quickstart') {
+    return (
+      <>
+        <Helmet>
+          <title>{course.title} | Excellion</title>
+          <meta name="description" content={course.description || `Learn ${course.title}`} />
+          <meta property="og:title" content={course.title} />
+          <meta property="og:description" content={course.description || ''} />
+          <meta property="og:image" content={course.thumbnail_url || defaultImage} />
+          <meta property="og:url" content={courseUrl} />
+          <link rel="canonical" href={courseUrl} />
+        </Helmet>
+        <QuickstartLanding
+          course={course}
+          onEnroll={enrollInCourse}
+          isEnrolled={isEnrolled}
+          isEnrolling={isEnrolling}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <Helmet>
