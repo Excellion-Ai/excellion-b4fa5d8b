@@ -93,7 +93,6 @@ export function CourseActionBar({
                       ) : (
                         <AlertTriangle className="h-3 w-3" />
                       )}
-                      <span className="hidden sm:inline">{item.label}</span>
                     </div>
                   ))}
                 </div>

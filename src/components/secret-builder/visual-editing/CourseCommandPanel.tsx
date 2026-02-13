@@ -125,13 +125,18 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
       {/* FIXED PROMPT INPUT - ALWAYS AT BOTTOM */}
       <div className="p-4 border-t border-zinc-800 bg-zinc-950 shrink-0">
         <div className="flex gap-2">
-          <input
-            type="text"
+          <textarea
             value={currentCommand}
             onChange={(e) => setCurrentCommand(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !isProcessing && processCommand()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && !isProcessing) {
+                e.preventDefault();
+                processCommand();
+              }
+            }}
             placeholder="Describe changes to your course..."
-            className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none"
+            rows={3}
+            className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none resize-none text-sm"
             disabled={isProcessing}
           />
           <button
