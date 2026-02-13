@@ -1,28 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getPrebuiltCourse } from './prebuilt-templates.ts';
+import {
+  CourseTemplate, BaseTemplate,
+  TEMPLATE_TO_BASE, TEMPLATE_CONFIG,
+  detectMultiPageIntent, detectTemplate,
+  generateUUID, slugify, selectRandomSections,
+} from './template-config.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-type CourseTemplate = 'creator' | 'technical' | 'academic' | 'visual' | 'standard' | 'challenge' | 'leadmagnet' | 'webinar' | 'coach';
-
-interface CourseRequest {
-  prompt: string;
-  use_preloaded?: boolean;
-  options?: {
-    difficulty?: string;
-    duration_weeks?: number;
-    includeQuizzes?: boolean;
-    includeAssignments?: boolean;
-    template?: CourseTemplate;
-    separatePages?: boolean;
-    includeBonusPage?: boolean;
-    includeResourcesPage?: boolean;
-    includeCommunityPage?: boolean;
-    includeTestimonialsPage?: boolean;
-  };
-}
 
 interface Lesson {
   id: string;
@@ -50,16 +38,8 @@ interface LandingPage {
   features: Array<{ title: string; description: string; icon: string }>;
   faqs: Array<{ question: string; answer: string }>;
   sections?: string[];
-  instructor?: {
-    name: string;
-    bio: string;
-    avatar?: string;
-  };
-  pricing?: {
-    amount: number;
-    currency: string;
-    features: string[];
-  };
+  instructor?: { name: string; bio: string; avatar?: string };
+  pricing?: { amount: number; currency: string; features: string[] };
 }
 
 interface Curriculum {
@@ -95,284 +75,28 @@ interface GeneratedCourse {
   isMultiPage?: boolean;
 }
 
-// Base template type for config lookup
-type BaseTemplate = 'creator' | 'technical' | 'academic' | 'visual';
-
-// Map new template IDs to base template styles
-const TEMPLATE_TO_BASE: Record<CourseTemplate, BaseTemplate> = {
-  creator: 'creator',
-  technical: 'technical',
-  academic: 'academic',
-  visual: 'visual',
-  standard: 'technical',    // Standard courses use technical style
-  challenge: 'creator',     // Challenges use creator style (motivational)
-  leadmagnet: 'creator',    // Lead magnets use creator style (engaging)
-  webinar: 'academic',      // Webinars use academic style (professional)
-  coach: 'creator',         // Coaching uses creator style (personal)
-};
-
-// Template-specific configurations
-const TEMPLATE_CONFIG: Record<BaseTemplate, {
-  brandColor: string;
-  tone: string;
-  contentStyle: string;
-  lessonFormat: string;
-  copyStyle: string;
-  featureIcons: string[];
-  pricingFeatures: string[];
-}> = {
-  creator: {
-    brandColor: '#f59e0b',
-    tone: 'warm, personal, and encouraging',
-    contentStyle: 'story-driven with personal anecdotes and real-world examples',
-    lessonFormat: 'conversational video lessons with personal stories and actionable takeaways',
-    copyStyle: 'Use first-person, be authentic, share personal journey and transformation stories',
-    featureIcons: ['Heart', 'Users', 'Sparkles', 'MessageCircle', 'Star'],
-    pricingFeatures: ['Personal coaching support', 'Private community access', 'Lifetime updates', 'Bonus materials'],
-  },
-  technical: {
-    brandColor: '#6366f1',
-    tone: 'precise, structured, and professional',
-    contentStyle: 'systematic with code examples, diagrams, and step-by-step tutorials',
-    lessonFormat: 'hands-on coding tutorials with exercises and real project examples',
-    copyStyle: 'Use technical terminology accurately, focus on practical skills and measurable outcomes',
-    featureIcons: ['Code', 'Terminal', 'Laptop', 'Zap', 'Database'],
-    pricingFeatures: ['Source code included', 'Certificate of completion', 'Project files', 'Code review sessions'],
-  },
-  academic: {
-    brandColor: '#1e40af',
-    tone: 'formal, scholarly, and authoritative',
-    contentStyle: 'research-backed with citations, case studies, and theoretical frameworks',
-    lessonFormat: 'structured lectures with readings, assessments, and academic rigor',
-    copyStyle: 'Use formal language, cite research, emphasize credentials and methodology',
-    featureIcons: ['GraduationCap', 'BookOpen', 'Award', 'FileText', 'Shield'],
-    pricingFeatures: ['Accredited certificate', 'Academic support', 'Research materials', 'Professional credential'],
-  },
-  visual: {
-    brandColor: '#f43f5e',
-    tone: 'creative, inspiring, and visually-oriented',
-    contentStyle: 'portfolio-focused with visual examples, before/after showcases, and creative exercises',
-    lessonFormat: 'visual demonstrations with portfolio-building projects and creative challenges',
-    copyStyle: 'Use evocative language, focus on creativity, inspiration, and visual transformation',
-    featureIcons: ['Palette', 'Image', 'Brush', 'Eye', 'Sparkles'],
-    pricingFeatures: ['Portfolio review', 'Creative feedback', 'Asset library', 'Gallery showcase'],
-  },
-};
-
-// Niche detection for auto-selecting template
-const NICHE_KEYWORDS: Record<BaseTemplate, string[]> = {
-  creator: [
-    'coach', 'coaching', 'personal brand', 'influencer', 'creator', 'content',
-    'social media', 'youtube', 'podcast', 'speaking', 'motivation', 'mindset',
-    'life', 'wellness', 'self-help', 'productivity', 'habits', 'leadership',
-    'business', 'entrepreneur', 'marketing', 'sales', 'communication',
-    'relationship', 'parenting', 'fitness trainer', 'health coach'
-  ],
-  technical: [
-    'programming', 'coding', 'developer', 'software', 'web', 'app', 'python',
-    'javascript', 'react', 'data', 'machine learning', 'ai', 'artificial intelligence',
-    'database', 'cloud', 'devops', 'cybersecurity', 'blockchain', 'crypto',
-    'api', 'backend', 'frontend', 'fullstack', 'engineering', 'it', 'tech',
-    'automation', 'excel', 'spreadsheet', 'sql', 'analytics'
-  ],
-  academic: [
-    'certification', 'certificate', 'degree', 'accredited', 'professional',
-    'medical', 'legal', 'law', 'healthcare', 'nursing', 'psychology',
-    'research', 'science', 'biology', 'chemistry', 'physics', 'mathematics',
-    'economics', 'finance', 'accounting', 'mba', 'management', 'hr',
-    'compliance', 'regulatory', 'exam prep', 'cpa', 'pmp', 'six sigma'
-  ],
-  visual: [
-    'design', 'photography', 'video', 'editing', 'photoshop', 'illustrator',
-    'figma', 'ui', 'ux', 'graphic', 'art', 'drawing', 'painting', 'illustration',
-    'animation', 'motion', '3d', 'cinema', 'film', 'creative', 'portfolio',
-    'fashion', 'interior', 'architecture', 'branding', 'logo', 'visual'
-  ],
-};
-
-// Keywords that indicate user wants multiple pages
-const MULTI_PAGE_KEYWORDS = [
-  'multiple pages', 'separate pages', 'multi-page', 'multipage',
-  'with pages', 'different pages', 'extra pages', 'additional pages',
-  'full course', 'complete course', 'comprehensive course', 'full site',
-];
-
-const BONUS_PAGE_KEYWORDS = [
-  'bonus', 'bonuses', 'bonus page', 'bonus content', 'extra content',
-  'free bonus', 'include bonuses', 'with bonuses',
-];
-
-const RESOURCES_PAGE_KEYWORDS = [
-  'resource', 'resources', 'downloads', 'downloadable', 'templates',
-  'worksheets', 'checklists', 'resource page', 'materials',
-];
-
-const COMMUNITY_PAGE_KEYWORDS = [
-  'community', 'forum', 'discord', 'slack', 'group', 'membership',
-  'community page', 'student community', 'private group',
-];
-
-const TESTIMONIALS_PAGE_KEYWORDS = [
-  'testimonial', 'testimonials', 'reviews', 'success stories',
-  'student reviews', 'social proof', 'testimonials page',
-];
-
-interface MultiPageDetection {
-  isMultiPage: boolean;
-  includeBonusPage: boolean;
-  includeResourcesPage: boolean;
-  includeCommunityPage: boolean;
-  includeTestimonialsPage: boolean;
-}
-
-function detectMultiPageIntent(prompt: string): MultiPageDetection {
-  const lowerPrompt = prompt.toLowerCase();
-  
-  // Check for general multi-page intent
-  const hasMultiPageIntent = MULTI_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
-  
-  // Check for specific page types
-  const includeBonusPage = BONUS_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
-  const includeResourcesPage = RESOURCES_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
-  const includeCommunityPage = COMMUNITY_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
-  const includeTestimonialsPage = TESTIMONIALS_PAGE_KEYWORDS.some(kw => lowerPrompt.includes(kw));
-  
-  // If any specific page is requested, or general multi-page intent, enable multi-page
-  const isMultiPage = hasMultiPageIntent || includeBonusPage || includeResourcesPage || includeCommunityPage || includeTestimonialsPage;
-  
-  // If general multi-page intent without specifics, include common pages
-  if (hasMultiPageIntent && !includeBonusPage && !includeResourcesPage && !includeCommunityPage && !includeTestimonialsPage) {
-    return {
-      isMultiPage: true,
-      includeBonusPage: true,
-      includeResourcesPage: true,
-      includeCommunityPage: false,
-      includeTestimonialsPage: true,
-    };
-  }
-  
-  return {
-    isMultiPage,
-    includeBonusPage,
-    includeResourcesPage,
-    includeCommunityPage,
-    includeTestimonialsPage,
-  };
-}
-
-function detectTemplate(prompt: string): BaseTemplate {
-  const lowerPrompt = prompt.toLowerCase();
-  
-  const scores: Record<BaseTemplate, number> = {
-    creator: 0,
-    technical: 0,
-    academic: 0,
-    visual: 0,
-  };
-  
-  for (const [template, keywords] of Object.entries(NICHE_KEYWORDS)) {
-    for (const keyword of keywords) {
-      if (lowerPrompt.includes(keyword)) {
-        scores[template as BaseTemplate] += keyword.split(' ').length;
-      }
-    }
-  }
-  
-  let maxScore = 0;
-  let selectedTemplate: BaseTemplate = 'creator';
-  
-  for (const [template, score] of Object.entries(scores)) {
-    if (score > maxScore) {
-      maxScore = score;
-      selectedTemplate = template as BaseTemplate;
-    }
-  }
-  
-  return selectedTemplate;
-}
-
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-    .substring(0, 50);
-}
-
-const OPTIONAL_SECTIONS: Record<BaseTemplate, string[]> = {
-  creator: [
-    'who-is-this-for',
-    'meet-your-instructor',
-    'success-stories',
-    'community-access',
-    'transformation-journey',
-  ],
-  technical: [
-    'who-is-this-for',
-    'prerequisites',
-    'tech-stack',
-    'projects-portfolio',
-    'career-outcomes',
-  ],
-  academic: [
-    'who-is-this-for',
-    'credentials',
-    'research-methodology',
-    'assessment-structure',
-    'professional-outcomes',
-  ],
-  visual: [
-    'who-is-this-for',
-    'portfolio-showcase',
-    'before-after-gallery',
-    'creative-community',
-    'tools-resources',
-  ],
-};
-
-function selectRandomSections(template: BaseTemplate): string[] {
-  const sections = OPTIONAL_SECTIONS[template];
-  const count = 2 + Math.floor(Math.random() * 2); // 2-3 sections
-  const shuffled = [...sections].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
-}
-
-import { getPrebuiltCourse } from './prebuilt-templates.ts';
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { prompt, options, use_preloaded } = await req.json() as CourseRequest;
-
-    // Get Supabase credentials for database operations
+    const { prompt, options, use_preloaded } = await req.json();
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    // Handle preloaded template request - instant loading with database save
+    // Handle preloaded template request
     if (use_preloaded && options?.template) {
       console.log(`Loading prebuilt template: ${options.template}`);
       const prebuiltCourse = getPrebuiltCourse(options.template);
       
       if (!prebuiltCourse) {
-        console.error(`Unknown template: ${options.template}`);
         return new Response(
           JSON.stringify({ success: false, error: `Unknown template: ${options.template}` }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Get user ID from authorization header
       const authHeader = req.headers.get('authorization');
       if (!authHeader) {
         return new Response(
@@ -381,15 +105,11 @@ serve(async (req) => {
         );
       }
 
-      // Verify the user token and get user ID
       let userId: string | null = null;
       if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
         try {
           const userResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-            headers: {
-              'apikey': SUPABASE_SERVICE_ROLE_KEY,
-              'Authorization': authHeader,
-            },
+            headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': authHeader },
           });
           if (userResponse.ok) {
             const userData = await userResponse.json();
@@ -407,13 +127,9 @@ serve(async (req) => {
         );
       }
 
-      console.log(`Creating database records for user: ${userId}`);
-
-      // Generate new IDs for the saved records
       const projectId = generateUUID();
       const courseId = generateUUID();
 
-      // Create builder_projects record
       const projectSpec = {
         courseSpec: {
           ...prebuiltCourse.curriculum,
@@ -425,13 +141,11 @@ serve(async (req) => {
         messages: [],
       };
 
-      // Try to insert with unique name, appending number if duplicate exists
       let projectName = prebuiltCourse.title;
       let insertAttempts = 0;
-      const maxAttempts = 10;
       let projectInsertResponse: Response | null = null;
       
-      while (insertAttempts < maxAttempts) {
+      while (insertAttempts < 10) {
         const nameToTry = insertAttempts === 0 ? projectName : `${projectName} (${insertAttempts})`;
         
         projectInsertResponse = await fetch(`${SUPABASE_URL}/rest/v1/builder_projects`, {
@@ -443,44 +157,31 @@ serve(async (req) => {
             'Prefer': 'return=representation',
           },
           body: JSON.stringify({
-            id: projectId,
-            user_id: userId,
-            name: nameToTry,
-            idea: `${options.template} template`,
-            spec: projectSpec,
+            id: projectId, user_id: userId, name: nameToTry, idea: `${options.template} template`, spec: projectSpec,
           }),
         });
 
-        if (projectInsertResponse.ok) {
-          console.log(`Project created with name: ${nameToTry}`);
-          break;
-        }
+        if (projectInsertResponse.ok) break;
         
         const errText = await projectInsertResponse.text();
-        // Check if it's a duplicate key error (code 23505)
         if (errText.includes('23505') || errText.includes('duplicate key')) {
-          console.log(`Name "${nameToTry}" already exists, trying next...`);
           insertAttempts++;
           continue;
         }
         
-        // Some other error - fail immediately
-        console.error('Failed to create builder_projects:', errText);
         return new Response(
           JSON.stringify({ success: false, error: 'Failed to save project' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      if (!projectInsertResponse || !projectInsertResponse.ok) {
-        console.error('Failed to create builder_projects after max attempts');
+      if (!projectInsertResponse?.ok) {
         return new Response(
           JSON.stringify({ success: false, error: 'Failed to save project - too many duplicates' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Create courses record linked to the project
       const courseInsertResponse = await fetch(`${SUPABASE_URL}/rest/v1/courses`, {
         method: 'POST',
         headers: {
@@ -490,15 +191,11 @@ serve(async (req) => {
           'Prefer': 'return=representation',
         },
         body: JSON.stringify({
-          id: courseId,
-          user_id: userId,
-          builder_project_id: projectId,
-          title: prebuiltCourse.title,
-          description: prebuiltCourse.description,
+          id: courseId, user_id: userId, builder_project_id: projectId,
+          title: prebuiltCourse.title, description: prebuiltCourse.description,
           difficulty: prebuiltCourse.curriculum.difficulty || 'beginner',
           duration_weeks: prebuiltCourse.curriculum.duration_weeks || 6,
-          modules: prebuiltCourse.curriculum.modules,
-          status: 'draft',
+          modules: prebuiltCourse.curriculum.modules, status: 'draft',
           offer_type: options.template,
         }),
       });
@@ -512,20 +209,11 @@ serve(async (req) => {
         );
       }
 
-      console.log(`Prebuilt template saved successfully: project=${projectId}, course=${courseId}`);
-      
-      // Return with the project ID (for navigation to /secret-builder/:projectId)
       return new Response(
         JSON.stringify({
           success: true,
-          course: {
-            ...prebuiltCourse,
-            id: projectId, // Use project ID for navigation
-            courseId: courseId,
-          },
-          template: options.template,
-          isMultiPage: false,
-          separatePages: [],
+          course: { ...prebuiltCourse, id: projectId, courseId },
+          template: options.template, isMultiPage: false, separatePages: [],
           message: 'Template loaded successfully!',
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -541,7 +229,6 @@ serve(async (req) => {
 
     const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     if (!ANTHROPIC_API_KEY) {
-      console.error('ANTHROPIC_API_KEY is not configured');
       return new Response(
         JSON.stringify({ success: false, error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -553,7 +240,6 @@ serve(async (req) => {
     const includeQuizzes = options?.includeQuizzes ?? true;
     const includeAssignments = options?.includeAssignments ?? false;
     
-    // Auto-detect multi-page intent from prompt
     const multiPageDetection = detectMultiPageIntent(prompt);
     const separatePages = options?.separatePages ?? multiPageDetection.isMultiPage;
     const includeBonusPage = options?.includeBonusPage ?? multiPageDetection.includeBonusPage;
@@ -561,128 +247,26 @@ serve(async (req) => {
     const includeCommunityPage = options?.includeCommunityPage ?? multiPageDetection.includeCommunityPage;
     const includeTestimonialsPage = options?.includeTestimonialsPage ?? multiPageDetection.includeTestimonialsPage;
     
-    // Auto-detect template from prompt if not provided, or map to base template
     const template: CourseTemplate = options?.template || detectTemplate(prompt);
     const baseTemplate: BaseTemplate = TEMPLATE_TO_BASE[template] || 'creator';
     const templateConfig = TEMPLATE_CONFIG[baseTemplate];
 
-    console.log(`Detected template: ${template}, multiPage: ${separatePages}, bonus: ${includeBonusPage}, resources: ${includeResourcesPage}, community: ${includeCommunityPage}, testimonials: ${includeTestimonialsPage}`);
-
-    // Fetch global knowledge (user_knowledge table) to inject into course generation
+    // Fetch global knowledge
     let globalKnowledgeContext = '';
-    // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY already declared above
-    
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
       try {
-        console.log('Fetching global knowledge for course generation...');
         const globalResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/user_knowledge?name=eq.__global_instructions__&select=content`,
-          {
-            headers: {
-              'apikey': SUPABASE_SERVICE_ROLE_KEY,
-              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-            },
-          }
+          { headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
         );
-        
         if (globalResponse.ok) {
-          const globalEntries = await globalResponse.json();
-          if (globalEntries && globalEntries.length > 0 && globalEntries[0].content) {
-            globalKnowledgeContext = `
-====================================
-GLOBAL USER INSTRUCTIONS (APPLY TO ALL COURSES)
-====================================
-
-${globalEntries[0].content}
-
-====================================
-
-`;
-            console.log('Global knowledge loaded for course generation');
+          const entries = await globalResponse.json();
+          if (entries?.[0]?.content) {
+            globalKnowledgeContext = `\nGLOBAL USER INSTRUCTIONS:\n${entries[0].content}\n`;
           }
         }
-      } catch (error) {
-        console.error('Error fetching global knowledge:', error);
-        // Continue without global knowledge
-      }
-    }
-
-    // Build separate pages instructions if needed
-    let separatePagesInstructions = '';
-    if (separatePages) {
-      const pagesToGenerate: string[] = [];
-      if (includeBonusPage) pagesToGenerate.push('bonuses');
-      if (includeResourcesPage) pagesToGenerate.push('resources');
-      if (includeCommunityPage) pagesToGenerate.push('community');
-      if (includeTestimonialsPage) pagesToGenerate.push('testimonials');
-      
-      if (pagesToGenerate.length > 0) {
-        separatePagesInstructions = `
-
-SEPARATE PAGES TO GENERATE: ${pagesToGenerate.join(', ')}
-
-Include a "separate_pages" array in your JSON with these page types:
-${includeBonusPage ? `
-- bonuses: {
-    "id": "page-bonuses",
-    "type": "bonuses",
-    "title": "Exclusive Bonuses",
-    "slug": "bonuses",
-    "content": {
-      "bonuses": [
-        {"title": "Bonus 1", "description": "Description of bonus", "value": "$197", "icon": "Gift"},
-        {"title": "Bonus 2", "description": "Description of bonus", "value": "$97", "icon": "FileText"}
-      ]
-    },
-    "isEnabled": true,
-    "order": 2
-  }` : ''}
-${includeResourcesPage ? `
-- resources: {
-    "id": "page-resources",
-    "type": "resources",
-    "title": "Course Resources",
-    "slug": "resources",
-    "content": {
-      "resources": [
-        {"title": "Resource 1", "description": "Description", "type": "pdf"},
-        {"title": "Resource 2", "description": "Description", "type": "template"}
-      ]
-    },
-    "isEnabled": true,
-    "order": 3
-  }` : ''}
-${includeCommunityPage ? `
-- community: {
-    "id": "page-community",
-    "type": "community",
-    "title": "Join Our Community",
-    "slug": "community",
-    "content": {
-      "communityDescription": "Connect with fellow students...",
-      "communityFeatures": ["Feature 1", "Feature 2", "Feature 3"],
-      "communityPlatform": "Private Discord/Slack/Forum"
-    },
-    "isEnabled": true,
-    "order": 4
-  }` : ''}
-${includeTestimonialsPage ? `
-- testimonials: {
-    "id": "page-testimonials",
-    "type": "testimonials",
-    "title": "Student Success Stories",
-    "slug": "testimonials",
-    "content": {
-      "testimonials": [
-        {"name": "Student Name", "role": "Their Role", "quote": "Amazing course...", "rating": 5},
-        {"name": "Another Student", "role": "Their Role", "quote": "Transformed my skills...", "rating": 5}
-      ]
-    },
-    "isEnabled": true,
-    "order": 5
-  }` : ''}
-
-Make the content relevant to the course topic and ${template} style.`;
+      } catch (e) {
+        console.error('Error fetching global knowledge:', e);
       }
     }
 
@@ -696,107 +280,36 @@ TEMPLATE STYLE: ${template.toUpperCase()}
 - Lesson Format: ${templateConfig.lessonFormat}
 - Copy Guidelines: ${templateConfig.copyStyle}
 
-OUTPUT FORMAT: Return ONLY valid JSON with this exact structure (no markdown, no code blocks):
-
+OUTPUT FORMAT: Return ONLY valid JSON (no markdown, no code blocks):
 {
   "title": "Course Title",
-  "description": "2-3 sentence course description in ${templateConfig.tone} tone",
-  "tagline": "Short compelling tagline",
+  "description": "2-3 sentence description in ${templateConfig.tone} tone",
+  "tagline": "Short tagline",
   "learningOutcomes": ["Outcome 1", "Outcome 2", "Outcome 3", "Outcome 4"],
-  "modules": [
-    {
-      "id": "module-1",
-      "title": "Module Title",
-      "description": "Module description",
-      "lessons": [
-        {
-          "id": "lesson-1-1",
-          "title": "Lesson Title",
-          "duration_minutes": 15,
-          "content_type": "video",
-          "description": "Lesson description",
-          "is_preview": true
-        }
-      ]
-    }
-  ],
+  "modules": [{ "id": "module-1", "title": "...", "description": "...", "lessons": [{ "id": "lesson-1-1", "title": "...", "duration_minutes": 15, "content_type": "video", "description": "...", "is_preview": true }] }],
   "landing_page": {
-    "hero_headline": "Transform Your Skills with This Course",
-    "hero_subheadline": "Learn everything you need to know",
-    "features": [
-      {"title": "Feature 1", "description": "Description", "icon": "${templateConfig.featureIcons[0]}"},
-      {"title": "Feature 2", "description": "Description", "icon": "${templateConfig.featureIcons[1]}"},
-      {"title": "Feature 3", "description": "Description", "icon": "${templateConfig.featureIcons[2]}"}
-    ],
-    "faqs": [
-      {"question": "Question 1?", "answer": "Answer 1"},
-      {"question": "Question 2?", "answer": "Answer 2"}
-    ],
-    "instructor": {
-      "name": "Instructor Name",
-      "bio": "Expert bio here"
-    },
-    "pricing": {
-      "amount": 199,
-      "currency": "USD",
-      "features": ${JSON.stringify(templateConfig.pricingFeatures)}
-    }
-  }${separatePages ? `,
-  "separate_pages": [
-    ${includeBonusPage ? '{"id": "page-bonuses", "type": "bonuses", "title": "Exclusive Bonuses", "slug": "bonuses", "content": {"bonusItems": [{"title": "Bonus 1", "description": "...", "value": "$X"}]}, "isEnabled": true, "order": 1}' : ''}${includeBonusPage && (includeResourcesPage || includeCommunityPage || includeTestimonialsPage) ? ',' : ''}
-    ${includeResourcesPage ? '{"id": "page-resources", "type": "resources", "title": "Course Resources", "slug": "resources", "content": {"resources": [{"title": "Resource 1", "description": "...", "type": "pdf"}]}, "isEnabled": true, "order": 2}' : ''}${includeResourcesPage && (includeCommunityPage || includeTestimonialsPage) ? ',' : ''}
-    ${includeCommunityPage ? '{"id": "page-community", "type": "community", "title": "Join Our Community", "slug": "community", "content": {"communityDescription": "...", "communityFeatures": ["Feature 1"], "communityPlatform": "Discord"}, "isEnabled": true, "order": 3}' : ''}${includeCommunityPage && includeTestimonialsPage ? ',' : ''}
-    ${includeTestimonialsPage ? '{"id": "page-testimonials", "type": "testimonials", "title": "Student Success Stories", "slug": "testimonials", "content": {"testimonials": [{"name": "Student", "role": "Role", "quote": "...", "rating": 5}]}, "isEnabled": true, "order": 4}' : ''}
-  ]` : ''},
+    "hero_headline": "...", "hero_subheadline": "...",
+    "features": [{ "title": "...", "description": "...", "icon": "${templateConfig.featureIcons[0]}" }],
+    "faqs": [{ "question": "...?", "answer": "..." }],
+    "instructor": { "name": "...", "bio": "..." },
+    "pricing": { "amount": 199, "currency": "USD", "features": ${JSON.stringify(templateConfig.pricingFeatures)} }
+  }${separatePages ? `, "separate_pages": [...]` : ''},
   "brand_color": "${templateConfig.brandColor}"
 }
 
-${separatePagesInstructions}
-
-STYLE-SPECIFIC RULES FOR ${template.toUpperCase()}:
-${template === 'creator' ? `
-- Use warm, conversational language that connects emotionally
-- Include personal transformation stories in module descriptions
-- Focus on journey and personal growth outcomes
-- Use relatable, everyday examples
-- Emphasize community and support aspects` : ''}
-${template === 'technical' ? `
-- Use precise, technical terminology
-- Structure content in logical, progressive steps
-- Include hands-on exercises and coding challenges
-- Reference tools, frameworks, and technologies
-- Focus on practical, job-ready skills` : ''}
-${template === 'academic' ? `
-- Use formal, scholarly language
-- Include references to research and methodology
-- Structure content with clear learning objectives
-- Emphasize assessments and certification value
-- Focus on professional credentials and career advancement` : ''}
-${template === 'visual' ? `
-- Use evocative, creative language
-- Focus on visual outcomes and portfolio pieces
-- Include before/after transformation descriptions
-- Reference creative tools and artistic techniques
-- Emphasize inspiration and creative growth` : ''}
-
-GENERAL RULES:
+RULES:
 1. Create ${Math.max(3, Math.ceil(duration_weeks / 2))} modules with 4-6 lessons each
-2. Difficulty level: ${difficulty}
-3. Course duration: ${duration_weeks} weeks
-4. ${includeQuizzes ? 'Include quiz lessons (content_type: "quiz") at end of each module' : 'Do not include quizzes'}
-5. ${includeAssignments ? 'Include assignment lessons (content_type: "assignment") for practical exercises' : 'Do not include assignments'}
-6. Make the first lesson of the first module a preview (is_preview: true)
-7. Lesson durations: 10-30 minutes
-8. Content types: "video", "text", "quiz", "assignment"
-9. Create 4-6 learning outcomes that match the ${template} style
-10. Create 3-5 features for landing page using icons: ${templateConfig.featureIcons.join(', ')}
-11. Create 4-6 FAQs relevant to ${template} style courses
-${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array with complete page objects as specified in the SEPARATE PAGES section. Never leave it as an empty array.` : ''}
-13. Return ONLY the JSON object, no additional text`;
+2. Difficulty: ${difficulty}, Duration: ${duration_weeks} weeks
+3. ${includeQuizzes ? 'Include quiz lessons at end of each module' : 'No quizzes'}
+4. ${includeAssignments ? 'Include assignment lessons' : 'No assignments'}
+5. First lesson of first module is preview (is_preview: true)
+6. Lesson durations: 10-30 minutes
+7. Create 4-6 learning outcomes, 3-5 features, 4-6 FAQs
+8. Return ONLY the JSON object`;
 
     const userPrompt = `Create a complete ${template} style course curriculum for: ${prompt}`;
 
-    console.log('Calling Anthropic API with prompt:', userPrompt.substring(0, 100));
+    console.log('Calling Anthropic API:', userPrompt.substring(0, 100));
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -809,9 +322,7 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
         model: 'claude-sonnet-4-5-20250929',
         max_tokens: 16000,
         system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt },
-        ],
+        messages: [{ role: 'user', content: userPrompt }],
       }),
     });
 
@@ -819,31 +330,13 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
       const errorText = await response.text();
       console.error('Anthropic API error:', response.status, errorText);
       
-      let errorMessage = 'Failed to generate course. Please try again.';
-      try {
-        const errorJson = JSON.parse(errorText);
-        if (errorJson.error?.message) {
-          errorMessage = errorJson.error.message;
-        }
-      } catch {
-        // Use default message
-      }
-      
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again in a moment.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
-      if (response.status === 400 && errorMessage.includes('credit balance')) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'AI API credits exhausted. Please contact support.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      if (response.status === 402) {
+      if (response.status === 402 || (response.status === 400 && errorText.includes('credit balance'))) {
         return new Response(
           JSON.stringify({ success: false, error: 'API quota exceeded. Please contact support.' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -851,58 +344,42 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
       }
       
       return new Response(
-        JSON.stringify({ success: false, error: errorMessage }),
+        JSON.stringify({ success: false, error: 'Failed to generate course. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const data = await response.json();
-    console.log('Anthropic API response received');
-
     const content = data.content?.[0]?.text;
     if (!content) {
-      console.error('No content in AI response:', data);
       return new Response(
         JSON.stringify({ success: false, error: 'No content generated. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Parse JSON from response, handling potential markdown code blocks
     let courseData;
     try {
       let jsonStr = content.trim();
-      
-      // Remove markdown code blocks if present
-      if (jsonStr.startsWith('```json')) {
-        jsonStr = jsonStr.slice(7);
-      } else if (jsonStr.startsWith('```')) {
-        jsonStr = jsonStr.slice(3);
-      }
-      if (jsonStr.endsWith('```')) {
-        jsonStr = jsonStr.slice(0, -3);
-      }
-      jsonStr = jsonStr.trim();
-      
-      courseData = JSON.parse(jsonStr);
+      if (jsonStr.startsWith('```json')) jsonStr = jsonStr.slice(7);
+      else if (jsonStr.startsWith('```')) jsonStr = jsonStr.slice(3);
+      if (jsonStr.endsWith('```')) jsonStr = jsonStr.slice(0, -3);
+      courseData = JSON.parse(jsonStr.trim());
     } catch (parseError) {
-      console.error('Failed to parse course JSON:', parseError, 'Content:', content.substring(0, 500));
+      console.error('Failed to parse course JSON:', parseError);
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to parse generated course. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Validate required fields
     if (!courseData.title || !courseData.modules || !Array.isArray(courseData.modules)) {
-      console.error('Invalid course structure:', courseData);
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid course structure generated. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Enrich modules with metadata
     const enrichedModules = courseData.modules.map((module: Module, index: number) => ({
       ...module,
       is_first: index === 0,
@@ -911,19 +388,16 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
       has_assignment: module.lessons?.some((l: Lesson) => l.content_type === 'assignment') || false,
     }));
 
-    // Build the complete course object
     const courseId = generateUUID();
     const courseSlug = slugify(courseData.title);
     const selectedSections = selectRandomSections(baseTemplate);
 
-    // Process separate pages if they were generated
     const generatedSeparatePages: CoursePage[] = [];
     if (separatePages && courseData.separate_pages && Array.isArray(courseData.separate_pages)) {
       for (const page of courseData.separate_pages) {
         generatedSeparatePages.push({
           id: page.id || generateUUID(),
-          type: page.type,
-          title: page.title,
+          type: page.type, title: page.title,
           slug: page.slug || slugify(page.title),
           content: page.content || {},
           isEnabled: page.isEnabled ?? true,
@@ -933,11 +407,8 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
     }
 
     const course: GeneratedCourse = {
-      id: courseId,
-      title: courseData.title,
-      slug: courseSlug,
-      description: courseData.description || '',
-      tagline: courseData.tagline || '',
+      id: courseId, title: courseData.title, slug: courseSlug,
+      description: courseData.description || '', tagline: courseData.tagline || '',
       curriculum: {
         modules: enrichedModules,
         landing_page: {
@@ -950,23 +421,20 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
           pricing: courseData.landing_page?.pricing,
         },
         learningOutcomes: courseData.learningOutcomes || [],
-        difficulty: difficulty,
-        duration_weeks: duration_weeks,
+        difficulty, duration_weeks,
         brand_color: courseData.brand_color || templateConfig.brandColor,
-        template: template,
+        template,
       },
       status: 'draft',
       separatePages: generatedSeparatePages.length > 0 ? generatedSeparatePages : undefined,
       isMultiPage: separatePages && generatedSeparatePages.length > 0,
     };
 
-    console.log('Course generated successfully:', course.title, 'Template:', template, 'Pages:', generatedSeparatePages.length);
+    console.log('Course generated:', course.title, 'Template:', template);
 
     return new Response(
       JSON.stringify({
-        success: true,
-        course: course,
-        template: template,
+        success: true, course, template,
         isMultiPage: course.isMultiPage,
         separatePages: course.separatePages,
         message: 'Course created successfully!',
@@ -977,10 +445,7 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
   } catch (error) {
     console.error('Generate course error:', error);
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
-      }),
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
