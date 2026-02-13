@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+// send-survey-sms edge function
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -197,4 +197,4 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-serve(handler);
+Deno.serve(handler);

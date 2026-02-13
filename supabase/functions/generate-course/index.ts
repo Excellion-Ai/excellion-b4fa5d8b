@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// generate-course edge function
 import { getPrebuiltCourse } from './prebuilt-templates.ts';
 import {
   CourseTemplate, BaseTemplate,
@@ -75,7 +75,7 @@ interface GeneratedCourse {
   isMultiPage?: boolean;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

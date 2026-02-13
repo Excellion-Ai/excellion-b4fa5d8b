@@ -1,5 +1,5 @@
 // Builder agent system prompt - extracted to reduce bundle size
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 // Rate limiting by user ID
 const RATE_LIMIT_WINDOW_MS = 60000;
