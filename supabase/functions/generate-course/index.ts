@@ -798,7 +798,7 @@ ${separatePages ? `12. CRITICAL: You MUST populate the "separate_pages" array wi
 
     console.log('Calling Lovable AI with prompt:', userPrompt.substring(0, 100));
 
-    const response = await fetch('https://api.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
