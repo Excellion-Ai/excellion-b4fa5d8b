@@ -57,12 +57,12 @@ interface QuickstartLandingProps {
   isEnrolling: boolean;
 }
 
-const MODULE_DELIVERABLES: Record<string, string> = {
-  m1: 'Your offer and price finalized',
-  m2: 'Live offer page draft with CTA',
-  m3: 'Portal sections created',
-  m4: 'Forms + check-in workflow ready',
-  m5: 'Published + domain connected',
+const MODULE_DELIVERABLES: Record<string, { deliverable: string; minutes: number }> = {
+  m1: { deliverable: 'Your offer and price finalized', minutes: 10 },
+  m2: { deliverable: 'Live offer page draft with CTA', minutes: 15 },
+  m3: { deliverable: 'Portal sections created', minutes: 10 },
+  m4: { deliverable: 'Forms + check-in workflow ready', minutes: 15 },
+  m5: { deliverable: 'Published + domain connected', minutes: 10 },
 };
 
 const BUILD_TILES = [
@@ -79,7 +79,9 @@ function getModuleMinutes(mod: CourseModule): number {
 
 export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }: QuickstartLandingProps) {
   const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
-  const totalMinutes = course.modules.reduce((acc, m) => acc + getModuleMinutes(m), 0);
+
+  // Display "~1 hour" as positioned — the course is designed for quick completion
+  const displayTime = '1 hour';
 
   const scrollToCurriculum = () => {
     document.getElementById('curriculum')?.scrollIntoView({ behavior: 'smooth' });
@@ -107,7 +109,7 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
           {/* Metadata chips */}
           <div className="flex flex-wrap justify-center gap-3">
             <Badge variant="outline" className="gap-1.5 text-sm py-1 px-3">
-              <Clock className="w-3.5 h-3.5" /> ~{totalMinutes} min
+              <Clock className="w-3.5 h-3.5" /> ~{displayTime}
             </Badge>
             <Badge variant="outline" className="gap-1.5 text-sm py-1 px-3">
               <BookOpen className="w-3.5 h-3.5" /> {course.modules.length} modules
@@ -186,13 +188,14 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl font-bold text-foreground text-center mb-2">Curriculum</h2>
           <p className="text-center text-muted-foreground mb-8 text-sm">
-            {course.modules.length} parts · {totalLessons} lessons · ~{totalMinutes} min total
+            {course.modules.length} parts · {totalLessons} lessons · ~{displayTime} total
           </p>
 
           <Accordion type="multiple" className="space-y-3">
             {course.modules.map((mod, idx) => {
-              const mins = getModuleMinutes(mod);
-              const deliverable = MODULE_DELIVERABLES[mod.id] || mod.description || '';
+              const meta = MODULE_DELIVERABLES[mod.id];
+              const mins = meta?.minutes || getModuleMinutes(mod);
+              const deliverable = meta?.deliverable || mod.description || '';
 
               return (
                 <AccordionItem
