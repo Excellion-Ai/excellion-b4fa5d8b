@@ -1,4 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
+import { EditableOverlay } from './visual-editing/EditableOverlay';
+import { InlineEditModal, type EditTarget } from './visual-editing/InlineEditModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -107,6 +109,7 @@ interface CoursePreviewTabsProps {
   onUploadThumbnail?: () => void;
   isPublishing?: boolean;
   isPublished?: boolean;
+  isVisualEditMode?: boolean;
 }
 
 const BASE_TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
@@ -181,6 +184,7 @@ export function CoursePreviewTabs({
   onUploadThumbnail,
   isPublishing = false,
   isPublished = false,
+  isVisualEditMode = false,
 }: CoursePreviewTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('landing');
   const [selectedModuleIdx, setSelectedModuleIdx] = useState(0);
@@ -202,6 +206,9 @@ export function CoursePreviewTabs({
   const [lessonResourceCounts, setLessonResourceCounts] = useState<Record<string, number>>({});
   const isMobile = useIsMobile();
 
+  // Visual inline edit state
+  const [inlineEditTarget, setInlineEditTarget] = useState<EditTarget | null>(null);
+
   // Edit mode state for landing page sections
   const [isEditMode, setIsEditMode] = useState(false);
   const [landingSections, setLandingSections] = useState<string[]>(
@@ -209,6 +216,11 @@ export function CoursePreviewTabs({
     DEFAULT_PAGE_SECTIONS.landing
   );
   const [isSavingLayout, setIsSavingLayout] = useState(false);
+
+  // Helper to create inline edit target
+  const openInlineEdit = useCallback((label: string, type: 'text' | 'textarea', value: string, saveFn: (v: string) => void) => {
+    setInlineEditTarget({ label, type, value, onSave: saveFn });
+  }, []);
 
   // Lesson content editing handlers
   const handleStartEditLesson = useCallback(() => {
@@ -943,38 +955,44 @@ export function CoursePreviewTabs({
                 >
                   {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)} Level
                 </span>
-                <h1 
-                  className={hasDesignConfig ? '' : `text-2xl sm:text-3xl md:text-4xl font-bold mb-3 ${config.headingClass}`}
-                  style={hasDesignConfig ? {
-                    color: heroText,
-                    fontSize: '2.5rem',
-                    marginTop: '16px',
-                    marginBottom: '16px',
-                    lineHeight: 1.2,
-                    fontFamily: designFonts.heading || 'Inter',
-                  } : undefined}
-                >
-                  {course.title}
-                </h1>
-                {course.tagline && (
-                  <p 
-                    className={hasDesignConfig ? '' : `text-lg sm:text-xl font-medium ${accent.text} mb-4`}
-                    style={hasDesignConfig ? { color: heroPrimary, fontSize: '1.1rem', marginBottom: '12px' } : undefined}
+                <EditableOverlay isEditMode={isVisualEditMode} label="Title" onEdit={() => openInlineEdit('Course Title', 'text', course.title, (v) => onUpdate?.({ ...course, title: v }))}>
+                  <h1 
+                    className={hasDesignConfig ? '' : `text-2xl sm:text-3xl md:text-4xl font-bold mb-3 ${config.headingClass}`}
+                    style={hasDesignConfig ? {
+                      color: heroText,
+                      fontSize: '2.5rem',
+                      marginTop: '16px',
+                      marginBottom: '16px',
+                      lineHeight: 1.2,
+                      fontFamily: designFonts.heading || 'Inter',
+                    } : undefined}
                   >
-                    {course.tagline}
-                  </p>
+                    {course.title}
+                  </h1>
+                </EditableOverlay>
+                {course.tagline && (
+                  <EditableOverlay isEditMode={isVisualEditMode} label="Tagline" onEdit={() => openInlineEdit('Tagline', 'text', course.tagline || '', (v) => onUpdate?.({ ...course, tagline: v }))}>
+                    <p 
+                      className={hasDesignConfig ? '' : `text-lg sm:text-xl font-medium ${accent.text} mb-4`}
+                      style={hasDesignConfig ? { color: heroPrimary, fontSize: '1.1rem', marginBottom: '12px' } : undefined}
+                    >
+                      {course.tagline}
+                    </p>
+                  </EditableOverlay>
                 )}
-                <p 
-                  className={hasDesignConfig ? '' : 'text-muted-foreground mb-6'}
-                  style={hasDesignConfig ? {
-                    color: heroMuted,
-                    marginBottom: '24px',
-                    fontSize: '1.1rem',
-                    fontFamily: designFonts.body || 'Inter',
-                  } : undefined}
-                >
-                  {course.description}
-                </p>
+                <EditableOverlay isEditMode={isVisualEditMode} label="Description" onEdit={() => openInlineEdit('Description', 'textarea', course.description, (v) => onUpdate?.({ ...course, description: v }))}>
+                  <p 
+                    className={hasDesignConfig ? '' : 'text-muted-foreground mb-6'}
+                    style={hasDesignConfig ? {
+                      color: heroMuted,
+                      marginBottom: '24px',
+                      fontSize: '1.1rem',
+                      fontFamily: designFonts.body || 'Inter',
+                    } : undefined}
+                  >
+                    {course.description}
+                  </p>
+                </EditableOverlay>
                 <div 
                   className={hasDesignConfig ? '' : 'flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground'}
                   style={hasDesignConfig ? {
@@ -1011,7 +1029,7 @@ export function CoursePreviewTabs({
                     cursor: 'pointer',
                     fontSize: '16px',
                   } : undefined}
-                  onClick={() => setActiveTab('curriculum')}
+                  onClick={() => !isVisualEditMode && setActiveTab('curriculum')}
                 >
                   Enroll Now
                 </button>
@@ -1036,10 +1054,16 @@ export function CoursePreviewTabs({
                   </h2>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     {course.learningOutcomes.map((outcome, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px', backgroundColor: outcBg, borderRadius: 'var(--course-radius)' }}>
-                        <span style={{ color: outcPrimary, fontSize: '18px' }}>✓</span>
-                        <span style={{ color: outcText, fontSize: '14px' }}>{outcome}</span>
-                      </div>
+                      <EditableOverlay key={idx} isEditMode={isVisualEditMode} label={`Outcome ${idx + 1}`} onEdit={() => openInlineEdit(`Learning Outcome ${idx + 1}`, 'text', outcome, (v) => {
+                        const updated = [...(course.learningOutcomes || [])];
+                        updated[idx] = v;
+                        onUpdate?.({ ...course, learningOutcomes: updated });
+                      })}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px', backgroundColor: outcBg, borderRadius: 'var(--course-radius)' }}>
+                          <span style={{ color: outcPrimary, fontSize: '18px' }}>✓</span>
+                          <span style={{ color: outcText, fontSize: '14px' }}>{outcome}</span>
+                        </div>
+                      </EditableOverlay>
                     ))}
                   </div>
                 </div>
@@ -1060,7 +1084,13 @@ export function CoursePreviewTabs({
                   {course.learningOutcomes.map((outcome, idx) => (
                     <li key={idx} className="flex items-start gap-3">
                       <Check className={`w-5 h-5 ${accent.text} mt-0.5 shrink-0`} />
-                      <span className="text-foreground/90 text-sm">{outcome}</span>
+                      <EditableOverlay isEditMode={isVisualEditMode} label={`Outcome ${idx + 1}`} onEdit={() => openInlineEdit(`Learning Outcome ${idx + 1}`, 'text', outcome, (v) => {
+                        const updated = [...(course.learningOutcomes || [])];
+                        updated[idx] = v;
+                        onUpdate?.({ ...course, learningOutcomes: updated });
+                      })}>
+                        <span className="text-foreground/90 text-sm">{outcome}</span>
+                      </EditableOverlay>
                     </li>
                   ))}
                 </ul>
@@ -1099,9 +1129,14 @@ export function CoursePreviewTabs({
                           {layoutStyle === 'academic' ? formatSectionNumber(idx).replace('.0', '') : idx + 1}
                         </span>
                         <div>
-                          <p className={`font-medium text-foreground text-sm ${
-                            layoutStyle === 'technical' ? 'font-mono' : ''
-                          }`}>{module.title}</p>
+                          <EditableOverlay isEditMode={isVisualEditMode} label="Module" onEdit={() => openInlineEdit(`Module ${idx + 1} Title`, 'text', module.title, (v) => {
+                            const updatedModules = course.modules.map((m, i) => i === idx ? { ...m, title: v } : m);
+                            onUpdate?.({ ...course, modules: updatedModules });
+                          })}>
+                            <p className={`font-medium text-foreground text-sm ${
+                              layoutStyle === 'technical' ? 'font-mono' : ''
+                            }`}>{module.title}</p>
+                          </EditableOverlay>
                           <p className="text-xs text-muted-foreground">{module.lessons.length} lessons</p>
                         </div>
                       </div>
@@ -1151,10 +1186,15 @@ export function CoursePreviewTabs({
                   </h2>
                   <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '12px' }}>
                     {course.pages.faq.map((faq, idx) => (
-                      <div key={idx} style={{ backgroundColor: faqBg, padding: '20px', borderRadius: 'var(--course-radius)' }}>
-                        <div style={{ fontWeight: 600, color: faqText, marginBottom: '8px', fontSize: '15px' }}>{faq.question}</div>
-                        <div style={{ color: faqMuted, fontSize: '14px' }}>{faq.answer}</div>
-                      </div>
+                      <EditableOverlay key={idx} isEditMode={isVisualEditMode} label={`FAQ ${idx + 1}`} onEdit={() => openInlineEdit(`FAQ ${idx + 1} Question`, 'text', faq.question, (v) => {
+                        const updatedFaqs = course.pages!.faq!.map((f, i) => i === idx ? { ...f, question: v } : f);
+                        onUpdate?.({ ...course, pages: { ...course.pages!, faq: updatedFaqs } });
+                      })}>
+                        <div style={{ backgroundColor: faqBg, padding: '20px', borderRadius: 'var(--course-radius)' }}>
+                          <div style={{ fontWeight: 600, color: faqText, marginBottom: '8px', fontSize: '15px' }}>{faq.question}</div>
+                          <div style={{ color: faqMuted, fontSize: '14px' }}>{faq.answer}</div>
+                        </div>
+                      </EditableOverlay>
                     ))}
                   </div>
                 </div>
@@ -1179,10 +1219,20 @@ export function CoursePreviewTabs({
                       className={`bg-muted/20 border ${accent.borderLight} rounded-lg px-4`}
                     >
                       <AccordionTrigger className="hover:no-underline py-3 text-sm font-medium">
-                        {faq.question}
+                        <EditableOverlay isEditMode={isVisualEditMode} label="Question" onEdit={() => openInlineEdit(`FAQ ${idx + 1} Question`, 'text', faq.question, (v) => {
+                          const updatedFaqs = course.pages!.faq!.map((f, i) => i === idx ? { ...f, question: v } : f);
+                          onUpdate?.({ ...course, pages: { ...course.pages!, faq: updatedFaqs } });
+                        })}>
+                          <span>{faq.question}</span>
+                        </EditableOverlay>
                       </AccordionTrigger>
                       <AccordionContent className="text-sm text-muted-foreground pb-3">
-                        {faq.answer}
+                        <EditableOverlay isEditMode={isVisualEditMode} label="Answer" onEdit={() => openInlineEdit(`FAQ ${idx + 1} Answer`, 'textarea', faq.answer, (v) => {
+                          const updatedFaqs = course.pages!.faq!.map((f, i) => i === idx ? { ...f, answer: v } : f);
+                          onUpdate?.({ ...course, pages: { ...course.pages!, faq: updatedFaqs } });
+                        })}>
+                          <span>{faq.answer}</span>
+                        </EditableOverlay>
                       </AccordionContent>
                     </AccordionItem>
                   ))}
@@ -1212,12 +1262,16 @@ export function CoursePreviewTabs({
                 padding: 'var(--course-spacing)',
                 textAlign: 'center' as const,
               }}>
-                <h2 style={{ color: ctaText, marginBottom: '16px', fontSize: '2rem', fontFamily: designFonts.heading || 'Inter' }}>
-                  Ready to Get Started?
-                </h2>
-                <p style={{ color: ctaMuted, marginBottom: '24px' }}>
-                  {course.tagline || 'Begin your learning journey today'}
-                </p>
+                <EditableOverlay isEditMode={isVisualEditMode} label="CTA Headline" onEdit={() => openInlineEdit('CTA Headline', 'text', 'Ready to Get Started?', () => {})}>
+                  <h2 style={{ color: ctaText, marginBottom: '16px', fontSize: '2rem', fontFamily: designFonts.heading || 'Inter' }}>
+                    Ready to Get Started?
+                  </h2>
+                </EditableOverlay>
+                <EditableOverlay isEditMode={isVisualEditMode} label="Tagline" onEdit={() => openInlineEdit('Tagline', 'text', course.tagline || 'Begin your learning journey today', (v) => onUpdate?.({ ...course, tagline: v }))}>
+                  <p style={{ color: ctaMuted, marginBottom: '24px' }}>
+                    {course.tagline || 'Begin your learning journey today'}
+                  </p>
+                </EditableOverlay>
                 <button
                   style={{
                     backgroundColor: ctaPrimary,
@@ -2021,7 +2075,7 @@ export function CoursePreviewTabs({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       {/* Tab Navigation Bar */}
       <div className={`flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm px-4 py-2`}>
         {isMobile ? (
@@ -2200,6 +2254,17 @@ export function CoursePreviewTabs({
         {activeTab === 'dashboard' && renderDashboard()}
         {['bonuses', 'resources', 'community', 'testimonials'].includes(activeTab) && renderSeparatePage(activeTab)}
       </div>
+
+      {/* Visual Edit Mode Indicator */}
+      {isVisualEditMode && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-amber-500 text-black px-4 py-2 rounded-full font-medium flex items-center gap-2 z-50 shadow-lg text-sm pointer-events-none">
+          <Pencil className="w-4 h-4" />
+          Visual Edit Mode — Click any element to edit
+        </div>
+      )}
+
+      {/* Inline Edit Modal */}
+      <InlineEditModal target={inlineEditTarget} onClose={() => setInlineEditTarget(null)} />
     </div>
   );
 }

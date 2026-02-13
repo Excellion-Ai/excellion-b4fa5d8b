@@ -2238,6 +2238,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     onUploadThumbnail={() => toast.info('Thumbnail upload coming soon!')}
                     isPublishing={isPublishing}
                     isPublished={!!coursePublishedUrl}
+                    isVisualEditMode={isVisualEditMode}
                   />
                   <RefineChat
                     open={showRefineChat}
