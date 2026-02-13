@@ -11,15 +11,13 @@ import {
   Clock,
   BookOpen,
   GraduationCap,
-  FileText,
-  LayoutDashboard,
-  ClipboardList,
-  CalendarCheck,
-  Globe,
   Play,
   PlayCircle,
   CheckSquare,
   Info,
+  Sparkles,
+  MessageSquareText,
+  Rocket,
 } from 'lucide-react';
 
 interface Lesson {
@@ -58,19 +56,33 @@ interface QuickstartLandingProps {
 }
 
 const MODULE_DELIVERABLES: Record<string, { deliverable: string; minutes: number }> = {
-  m1: { deliverable: 'Your offer and price finalized', minutes: 10 },
-  m2: { deliverable: 'Live offer page draft with CTA', minutes: 15 },
-  m3: { deliverable: 'Portal sections created', minutes: 10 },
-  m4: { deliverable: 'Forms + check-in workflow ready', minutes: 15 },
-  m5: { deliverable: 'Published + domain connected', minutes: 10 },
+  m0: { deliverable: 'A finalized prompt ready to generate your draft', minutes: 10 },
+  m1: { deliverable: 'A prioritized list of sections you want to improve', minutes: 10 },
+  m2: { deliverable: 'All course content finalized', minutes: 15 },
+  m3: { deliverable: 'A sales page you are ready to publish', minutes: 10 },
+  m4: { deliverable: 'Any optional features configured (or skipped)', minutes: 10 },
+  m5: { deliverable: 'A live, shareable URL with your course and sales page', minutes: 5 },
 };
 
-const BUILD_TILES = [
-  { icon: FileText, label: 'Sales Page', sub: 'With CTA + checkout' },
-  { icon: LayoutDashboard, label: 'Client Portal', sub: 'Organized sections' },
-  { icon: ClipboardList, label: 'Intake Form', sub: 'Client onboarding' },
-  { icon: CalendarCheck, label: 'Weekly Check-ins', sub: 'Form + workflow' },
-  { icon: Globe, label: 'Domain + Publish', sub: 'Go live checklist' },
+const VALUE_PROPS = [
+  {
+    icon: Sparkles,
+    title: 'Generate a full draft in one click',
+    description:
+      'Course modules, lesson scripts, downloadable resources, and a sales page — all from a single AI-generated prompt.',
+  },
+  {
+    icon: MessageSquareText,
+    title: 'Refine any section by typing a prompt',
+    description:
+      'Rewrite a lesson, swap a module intro, update your FAQ, or change your sales headline without rebuilding the page.',
+  },
+  {
+    icon: Rocket,
+    title: 'Publish when you are ready',
+    description:
+      'Connect your domain, toggle sections on or off, and go live on your schedule.',
+  },
 ];
 
 function getModuleMinutes(mod: CourseModule): number {
@@ -79,8 +91,6 @@ function getModuleMinutes(mod: CourseModule): number {
 
 export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }: QuickstartLandingProps) {
   const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
-
-  // Display "~1 hour" as positioned — the course is designed for quick completion
   const displayTime = '1 hour';
 
   const scrollToCurriculum = () => {
@@ -103,7 +113,7 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Complete this in about 1 hour. By the end of the weekend, you'll have a live sales page, client portal, intake form, weekly check-in flow, and a connected domain.
+            One voice call creates your prompt. One click generates a complete draft — course, scripts, downloads, and sales page. Then refine any section with a typed command. No manual building.
           </p>
 
           {/* Metadata chips */}
@@ -136,29 +146,29 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
           </div>
 
           <p className="text-sm text-muted-foreground/70 italic">
-            Most creators finish setup in 1 weekend.
+            Most coaches generate their full draft in under 10 minutes and publish the same day.
           </p>
         </div>
       </section>
 
-      {/* ─── What You'll Build ─── */}
+      {/* ─── Value Props (3 cards) ─── */}
       <section className="pb-12 px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-foreground text-center mb-8">
-            What You'll Build This Weekend
+            How It Works
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {BUILD_TILES.map((tile) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {VALUE_PROPS.map((prop) => (
               <Card
-                key={tile.label}
+                key={prop.title}
                 className="bg-card/60 border-primary/10 hover:border-primary/30 transition-colors"
               >
-                <CardContent className="p-5 text-center space-y-3">
-                  <div className="mx-auto w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <tile.icon className="w-5 h-5 text-primary" />
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <prop.icon className="w-5 h-5 text-primary" />
                   </div>
-                  <p className="font-semibold text-foreground text-sm">{tile.label}</p>
-                  <p className="text-xs text-muted-foreground">{tile.sub}</p>
+                  <p className="font-semibold text-foreground">{prop.title}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{prop.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -188,7 +198,7 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl font-bold text-foreground text-center mb-2">Curriculum</h2>
           <p className="text-center text-muted-foreground mb-8 text-sm">
-            {course.modules.length} parts · {totalLessons} lessons · ~{displayTime} total
+            {course.modules.length} modules · {totalLessons} lessons · ~{displayTime} total
           </p>
 
           <Accordion type="multiple" className="space-y-3">
@@ -205,14 +215,13 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
                 >
                   <AccordionTrigger className="hover:no-underline px-4 py-4">
                     <div className="flex items-center gap-4 text-left w-full pr-4">
-                      {/* Part number */}
                       <span className="shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center">
-                        {idx + 1}
+                        {idx}
                       </span>
 
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-foreground text-sm md:text-base truncate">
-                          Part {idx + 1}: {mod.title}
+                          Module {idx}: {mod.title}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">
                           {deliverable}
@@ -232,12 +241,12 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
 
                   <AccordionContent className="px-4 pb-4">
                     <div className="space-y-4 pt-2">
-                      {/* Part 4 callout */}
+                      {/* Module 4 optional callout */}
                       {mod.id === 'm4' && (
                         <div className="flex items-start gap-2 p-3 rounded-lg border border-primary/20 bg-primary/5">
                           <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                           <p className="text-sm text-muted-foreground italic">
-                            Default weekly check-in questions included. Customize later.
+                            These add-ons are optional. Skip any that do not fit your program.
                           </p>
                         </div>
                       )}
@@ -247,7 +256,6 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
                           key={lesson.id}
                           className="rounded-lg border border-border/60 bg-background/50 p-4 space-y-3"
                         >
-                          {/* Lesson header */}
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <p className="font-medium text-foreground text-sm">
@@ -266,7 +274,6 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
                             )}
                           </div>
 
-                          {/* Video placeholder */}
                           <div className="flex items-center gap-3">
                             <div className="w-20 h-12 rounded bg-muted/20 border border-border flex items-center justify-center shrink-0">
                               <Play className="w-4 h-4 text-primary/50" />
@@ -276,7 +283,6 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
                             </span>
                           </div>
 
-                          {/* Checklist */}
                           {lesson.checklist && lesson.checklist.length > 0 && (
                             <div className="space-y-1.5">
                               <p className="text-xs font-semibold text-primary/80 uppercase tracking-wider">
@@ -305,10 +311,10 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
       <section className="pb-20 px-4">
         <div className="max-w-2xl mx-auto text-center space-y-6">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-            Ready to launch this weekend?
+            Ready to generate your draft?
           </h2>
           <p className="text-muted-foreground">
-            One hour of focused work. A complete coaching business by Sunday.
+            Most coaches generate their full draft in under 10 minutes and publish the same day.
           </p>
           <div className="flex flex-col items-center gap-3">
             <Button size="lg" className="text-base px-8 py-6" onClick={onEnroll} disabled={isEnrolling}>
