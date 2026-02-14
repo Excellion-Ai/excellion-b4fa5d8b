@@ -116,7 +116,8 @@ export function DesignEditorModal({
                       type="color"
                       value={design.colors?.[field.key] || field.default}
                       onChange={(e) => updateColor(field.key, e.target.value)}
-                      className="w-10 h-10 rounded cursor-pointer border-0"
+                      onInput={(e) => updateColor(field.key, (e.target as HTMLInputElement).value)}
+                      className="w-10 h-10 rounded cursor-pointer border-0 appearance-none bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded"
                     />
                     <Input
                       value={design.colors?.[field.key] || field.default}

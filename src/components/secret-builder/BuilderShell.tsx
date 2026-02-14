@@ -1000,7 +1000,7 @@ export function BuilderShell() {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) {
           const courseSlug = (course.slug || course.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `course-${Date.now()}`;
-          const { error: courseInsertError } = await supabase
+          const { data: courseRow, error: courseInsertError } = await supabase
             .from('courses')
             .upsert({
               id: courseSpec.id && courseSpec.id.length === 36 ? courseSpec.id : undefined,
@@ -1013,12 +1013,17 @@ export function BuilderShell() {
               duration_weeks: courseSpec.duration_weeks || 6,
               status: 'draft',
               builder_project_id: projectId || undefined,
-            }, { onConflict: 'id' });
+            }, { onConflict: 'id' })
+            .select('id')
+            .single();
 
           if (courseInsertError) {
             console.error('Failed to save course record:', courseInsertError);
           } else {
             console.log('Course saved to courses table');
+            if (courseRow?.id) {
+              setCourseId(courseRow.id);
+            }
           }
         }
       }
