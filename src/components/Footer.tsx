@@ -14,7 +14,7 @@ const Footer = () => {
               <span className="text-lg sm:text-xl font-bold text-accent">Excellion</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              AI-Powered Course Builder
+              AI Course Builder for Fitness Influencers
             </p>
           </div>
 

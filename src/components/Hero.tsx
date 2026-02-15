@@ -111,16 +111,16 @@ const Hero = () => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent text-sm font-medium mb-4">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              AI-Powered Course Builder
+              AI Course Builder for Fitness Creators
             </div>
             
-            <h1 className="text-3xl md:text-7xl font-bold text-foreground leading-tight">
-              Your course website, <span className="text-accent">written and structured by AI.</span>
-            </h1>
+             <h1 className="text-3xl md:text-7xl font-bold text-foreground leading-tight">
+               Launch your fitness course in <span className="text-accent">1 weekend.</span>
+             </h1>
 
-            <p className="text-base md:text-xl text-accent max-w-2xl mx-auto mt-3 md:mt-6 font-semibold">
-              Excellion builds a course website that sells from a short chat, including the landing page, curriculum outline, pricing, and conversion copy. You refine and publish.
-            </p>
+             <p className="text-base md:text-xl text-accent max-w-2xl mx-auto mt-3 md:mt-6 font-semibold">
+               Excellion generates your course outline, lesson plan, sales page copy, and student portal from 1 prompt. Spend the weekend polishing, filming, and publishing.
+             </p>
 
             <p className="text-xs text-foreground/80 dark:text-foreground/60 mt-3 md:mt-6 font-light">
               No credit card required to start.
@@ -134,17 +134,17 @@ const Hero = () => {
                 aria-label="Start building your course with guided questions"
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg shadow-[0_0_30px_rgba(234,179,8,0.3)] hover:shadow-[0_0_40px_rgba(234,179,8,0.4)] transition-all"
               >
-                <Zap className="w-5 h-5 mr-2" />
-                Build My Course
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => navigate("/secret-builder-hub")}
-                aria-label="Skip to builder with quick prompt"
-                className="font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg border-border/50 hover:bg-background/80"
-              >
-                Skip to Builder
+                 <Zap className="w-5 h-5 mr-2" />
+                 Generate My Course
+               </Button>
+               <Button
+                 size="lg"
+                 variant="outline"
+                 onClick={() => navigate("/secret-builder-hub")}
+                 aria-label="See an example course"
+                 className="font-semibold px-6 md:px-8 py-4 md:py-6 text-base md:text-lg border-border/50 hover:bg-background/80"
+               >
+                 See an Example
               </Button>
             </div>
           </div>

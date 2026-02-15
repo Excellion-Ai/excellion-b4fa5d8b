@@ -41,30 +41,30 @@ import { InterviewStepper } from "@/components/InterviewStepper";
 import { useInterviewIntake } from "@/hooks/useInterviewIntake";
 
 const suggestionChips = [
-  "6-week fat loss challenge",
-  "Online personal training program", 
-  "Home workout fundamentals"
+  "6-week fat loss course",
+  "Beginner strength course", 
+  "Home workout fundamentals course"
 ];
 
 const features = [
   {
     icon: Zap,
-    title: "Offer Page in Minutes",
-    description: "A ready-to-edit program page that clearly explains who it's for, the outcome, what's included, and how to join."
+    title: "Course Sales Page (Drafted for You)",
+    description: "A ready-to-edit sales page that explains who the course is for, the outcome, what's included, and how to enroll."
   },
   {
     icon: Users,
-    title: "Client Experience Included",
-    description: "Give clients a clean place to access what they need, follow the plan, and stay consistent."
+    title: "Student Portal Included",
+    description: "Give students a clean place to access lessons, follow the plan, and stay on track."
   },
   {
     icon: Globe,
-    title: "Publish Fast",
+    title: "Publish on Your Link or Domain",
     description: "Go live on your link or your own domain when you're ready."
   },
   {
     icon: PenTool,
-    title: "Intake and Check-Ins",
+    title: "Student Intake + Check-ins",
     description: "Collect goals, starting point, preferences, and ongoing updates without chasing messages."
   },
   {
@@ -74,31 +74,31 @@ const features = [
   },
   {
     icon: BarChart3,
-    title: "Track What Matters",
+    title: "Built-in Analytics",
     description: "See visits, clicks, and signups so you know what's working and what to improve."
   }
 ];
 
 const faqItems = [
   {
-    question: "Do I need technical skills to use Excellion?",
-    answer: "No. Excellion is designed for course creators, not developers. You describe your course idea in plain language, and the AI generates everything for you. Edit with simple clicks, not code."
+    question: "Can I really launch in 1 weekend?",
+    answer: "Yes. Excellion generates your course outline, lesson structure, and sales page copy in minutes. The '1 weekend' promise includes your time to review, film any video content, and publish."
   },
   {
-    question: "What types of courses can I create?",
-    answer: "Any type — video courses, text-based lessons, cohort programs, coaching programs, bootcamps, or self-paced courses. Excellion adapts to your format and audience."
+    question: "What types of fitness courses can I create?",
+    answer: "Any type — fat loss, strength, muscle gain, home workouts, postpartum, running programs, or beginner fitness. Excellion adapts to your niche and audience."
   },
   {
-    question: "How long does it take to create a course?",
-    answer: "Most users go from idea to published course in under 10 minutes. The AI generates your curriculum and landing page instantly. You just review and customize."
+    question: "Do I need technical skills?",
+    answer: "No. Describe your course idea in plain language and Excellion generates everything. Edit with simple clicks, not code."
   },
   {
     question: "Can I use my own domain?",
     answer: "Yes. Connect any custom domain you own. Your course will be accessible at yourdomain.com with SSL included."
   },
   {
-    question: "How much does it cost?",
-    answer: "$79/month or $790/year. One plan, everything included. Up to 3 active offers at once. Cancel anytime."
+    question: "How does pricing work?",
+    answer: "Your first month is $19, then $79/month (or $790/year to save $158). One plan, everything included. An active course is any published course currently available to students. You can have up to 3 at once. Cancel anytime."
   }
 ];
 
@@ -112,7 +112,7 @@ const WebBuilderHome = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const interview = useInterviewIntake();
 
-  const placeholderText = "Help [WHO] achieve [RESULT] in [TIMEFRAME] — without getting stuck or confused...";
+  const placeholderText = "Help [AUDIENCE] achieve [RESULT] in [TIMEFRAME]";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -235,11 +235,11 @@ const WebBuilderHome = () => {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Excellion",
-    "applicationCategory": "Fitness Coaching Platform",
-    "description": "AI-powered platform for fitness coaches to create offer pages, run clients, and grow their coaching business.",
+    "applicationCategory": "AI Course Builder",
+    "description": "AI-powered course builder for fitness influencers and creators. Generate your course outline, sales page, and student portal in 1 weekend.",
     "offers": {
       "@type": "Offer",
-      "price": "79",
+      "price": "19",
       "priceCurrency": "USD"
     }
   };
@@ -247,8 +247,8 @@ const WebBuilderHome = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Excellion — AI Course Builder | Create & Sell Online Courses</title>
-        <meta name="description" content="Create professional online courses in minutes with AI. Excellion generates your curriculum, landing page, and sales copy. Start free, publish instantly." />
+        <title>Excellion — AI Course Builder for Fitness Creators</title>
+        <meta name="description" content="Launch your fitness course in 1 weekend. Excellion generates your course outline, lesson plan, sales page copy, and student portal. Start for $19." />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://excellion.dev" />
         <script type="application/ld+json">
@@ -298,19 +298,19 @@ const WebBuilderHome = () => {
               <div className="flex justify-center mb-4 sm:mb-6">
                 <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/20 border border-primary/30 text-xs sm:text-sm text-primary">
                   <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>AI Course Builder</span>
+                  <span>AI Course Builder for Fitness Creators</span>
                 </div>
               </div>
 
               {/* H1 - Main SEO Target */}
               <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 leading-tight text-center">
-                Launch a fitness offer, challenge, or course in{" "}
-                <span className="text-primary">minutes.</span>
+                Launch your fitness course in{" "}
+                <span className="text-primary">1 weekend.</span>
               </h1>
 
               {/* H2 Subheadline */}
               <h2 className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 font-normal leading-relaxed text-center px-1">
-                Excellion drafts the page, structure, and sales copy for your coaching offer or course in minutes. You set the price, customize, and publish.
+                Excellion generates your course outline, lesson plan, sales page copy, and student portal from 1 prompt. Spend the weekend polishing, filming, and publishing.
               </h2>
 
               {/* Prompt Input */}
@@ -347,15 +347,15 @@ const WebBuilderHome = () => {
                     variant="outline"
                     className="flex-1 h-11 sm:h-12 text-sm sm:text-base gap-2 border-primary/30 hover:bg-primary/10 touch-manipulation"
                   >
-                    <Zap className="w-4 h-4" />
-                    Build Assist
+                   <Zap className="w-4 h-4" />
+                    See an example
                   </Button>
                   <Button 
                     onClick={handleStart} 
                     size="lg"
                     className="flex-1 h-11 sm:h-12 text-sm sm:text-base gap-2 touch-manipulation"
                   >
-                    Generate Course
+                    Generate my course
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </div>
@@ -383,8 +383,8 @@ const WebBuilderHome = () => {
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
               How Excellion Works
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground text-center mb-10 sm:mb-16 max-w-xl mx-auto">
-              Three steps to launch your coaching offer
+             <p className="text-sm sm:text-base text-muted-foreground text-center mb-10 sm:mb-16 max-w-xl mx-auto">
+              3 steps to launch your course this weekend
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
@@ -395,10 +395,10 @@ const WebBuilderHome = () => {
                 </div>
                 <div className="text-xs sm:text-sm font-medium text-primary mb-1.5 sm:mb-2">Step 1</div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
-                  Describe who you help
+                  Describe your audience + outcome
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  For example: busy dads, beginners, runners, powerlifters, or clients focused on fat loss.
+                  For example: busy dads, beginners, runners, powerlifters, or people focused on fat loss.
                 </p>
               </div>
 
@@ -409,10 +409,10 @@ const WebBuilderHome = () => {
                 </div>
                 <div className="text-xs sm:text-sm font-medium text-primary mb-1.5 sm:mb-2">Step 2</div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
-                  Excellion builds your program page
+                  Excellion generates your course + sales page
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Get a ready to edit page with your offer details, what clients get, and what to do next.
+                  Get a ready-to-edit course with your outline, lesson structure, sales page copy, and student portal.
                 </p>
               </div>
 
@@ -423,7 +423,7 @@ const WebBuilderHome = () => {
                 </div>
                 <div className="text-xs sm:text-sm font-medium text-primary mb-1.5 sm:mb-2">Step 3</div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
-                  Customize and publish
+                  Customize, connect your domain, and publish
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   Edit anything, connect your domain, and go live when you're ready.
@@ -436,11 +436,11 @@ const WebBuilderHome = () => {
         {/* Features Section */}
         <section id="features" className="py-12 sm:py-16 lg:py-24 px-4 bg-muted/30 border-t border-border/30">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
-              Built for Fitness Coaches
+             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
+              Built for fitness influencers
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground text-center mb-10 sm:mb-16 max-w-xl mx-auto">
-              Everything you need to package your coaching offer, share it, and run clients in one place
+              Create, sell, and deliver a course in one place.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -555,18 +555,18 @@ const WebBuilderHome = () => {
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground text-center mb-3 sm:mb-4">
               Pricing
             </h2>
-            <p className="text-sm sm:text-base text-muted-foreground text-center mb-8 sm:mb-12 max-w-xl mx-auto">
-              One plan. Works for any fitness coach.
-            </p>
+             <p className="text-sm sm:text-base text-muted-foreground text-center mb-8 sm:mb-12 max-w-xl mx-auto">
+               One plan for fitness course creators.
+             </p>
 
             {/* Single Plan Card */}
             <div className="p-6 sm:p-8 rounded-2xl bg-card border-2 border-primary relative">
-              <div className="text-center mb-6">
+               <div className="text-center mb-6">
                 <div className="text-4xl sm:text-5xl font-bold text-foreground mb-2">
-                  $79<span className="text-lg text-muted-foreground font-normal">/month</span>
+                  $19<span className="text-lg text-muted-foreground font-normal"> first month</span>
                 </div>
                 <div className="text-muted-foreground text-sm">
-                  or $790/year <span className="text-primary">(save $158)</span>
+                  then $79/month · or $790/year <span className="text-primary">(save $158)</span>
                 </div>
                 <p className="text-muted-foreground mt-3">
                   Everything included. Cancel anytime.
@@ -576,7 +576,7 @@ const WebBuilderHome = () => {
               <ul className="grid sm:grid-cols-2 gap-2.5 sm:gap-3 mb-6 sm:mb-8">
                 <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-primary shrink-0" />
-                  Up to 3 active offers
+                  Up to 3 active courses
                 </li>
                 <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-primary shrink-0" />
@@ -592,7 +592,7 @@ const WebBuilderHome = () => {
                 </li>
                 <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-primary shrink-0" />
-                  Client portal
+                  Student portal
                 </li>
                 <li className="flex items-center gap-2.5 sm:gap-3 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-primary shrink-0" />
@@ -604,12 +604,12 @@ const WebBuilderHome = () => {
                 className="w-full h-11 sm:h-12 touch-manipulation"
                 onClick={() => navigate("/pricing")}
               >
-                Get Started
+                 Start for $19
               </Button>
             </div>
 
             <p className="text-center mt-6 text-sm text-muted-foreground">
-              No hidden fees. No credit limits. Just build your coaching offer.
+              No hidden fees. Just build and sell your course.
             </p>
           </div>
         </section>
@@ -646,11 +646,11 @@ const WebBuilderHome = () => {
         {/* CTA Section */}
         <section className="py-12 sm:py-16 lg:py-24 px-4 border-t border-border/30">
           <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4">
-              Ready to launch your coaching offer?
+             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4">
+              Ready to launch your course this weekend?
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
-              Build your program page in minutes. Start taking clients today.
+              Generate the outline and sales page now. Film and publish when you're ready.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
               <Button 
@@ -658,7 +658,7 @@ const WebBuilderHome = () => {
                 className="w-full sm:w-auto h-12 px-8 gap-2 touch-manipulation"
                 onClick={() => navigate("/secret-builder-hub")}
               >
-                Get Started Free
+                Get Started for $19
                 <ArrowRight className="w-4 h-4" />
               </Button>
               <Button 
