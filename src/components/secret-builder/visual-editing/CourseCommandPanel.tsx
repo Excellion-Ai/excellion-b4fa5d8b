@@ -116,14 +116,74 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
     try {
       if (inputMode === 'chat') {
         // Chat mode — use help-chat for Q&A
+        // Build conversation history for context
+        const chatHistory = commandHistory
+          .filter(m => m.mode === 'chat' || !m.mode)
+          .slice(-10)
+          .map(m => ({ role: m.role, content: m.content }));
+        chatHistory.push({ role: 'user', content: command });
+
+        const courseContext = course ? `
+Current course: "${course.title || 'Untitled'}"
+Description: ${course.description || 'N/A'}
+Modules: ${Array.isArray(course.modules) ? course.modules.length : 0}
+Template: ${course.layout_template || course.design_config?.template || 'default'}
+Status: ${course.status || 'draft'}
+Price: ${course.price_cents ? `$${(course.price_cents / 100).toFixed(2)}` : 'Free'}
+` : '';
+
+        const systemPrompt = `You are Excellion AI, the built-in assistant for the Excellion Course Builder platform. You have deep knowledge of the entire platform.
+
+## PLATFORM OVERVIEW
+Excellion is an AI-powered course creation platform that lets users:
+- Describe a course idea in natural language and generate a complete course with AI
+- Choose from 4 visual templates (Creator, Technical, Academic, Visual)
+- Edit courses visually with point-and-click or AI commands
+- Preview courses across 4 page views (Landing, Curriculum, Lesson, Dashboard)
+- Publish courses to public URLs and sell them with Stripe integration
+- Track student enrollments, progress, and analytics
+
+## FEATURES YOU SHOULD KNOW ABOUT
+- **AI Course Generation**: Users type a course idea → AI generates modules, lessons, content
+- **4 Templates**: Creator (amber, coaching), Technical (indigo, dev-focused), Academic (navy, formal), Visual (rose, creative)
+- **Visual Edit Mode**: Click the pencil icon to hover and edit any section directly
+- **Build Mode**: Type commands like "add a module about X" or "change the hero headline"
+- **Chat Mode** (current): Ask questions about the platform, course strategy, or get help
+- **Landing Page**: Hero, outcomes, curriculum overview, FAQ, CTA sections — all customizable
+- **Curriculum Page**: Full module/lesson list with duration and content type badges
+- **Lesson Preview**: Sidebar navigation + markdown content rendering
+- **Student Dashboard**: Progress tracking, next lesson, completion stats
+- **Publishing**: Courses get a public URL at /course/:slug; custom domains supported
+- **Payments**: Stripe checkout for paid courses; free courses auto-enroll
+- **Analytics**: Course views, enrollments, lesson completion rates, revenue tracking
+- **Certificates**: Auto-generated on course completion
+- **Reviews**: Students can rate and review courses
+- **Quizzes**: Builders can add quiz lessons with scoring
+- **Resources**: Attach downloadable files to lessons
+- **SEO**: Custom meta titles, descriptions, and social images per course
+
+## COURSE STRUCTURE
+Each course has: Title, Description, Modules (each with Lessons). Lessons have markdown content, duration, content type (text/video/quiz), and preview flags.
+
+## DESIGN SYSTEM
+Users can customize: primary color, font family, spacing, border radius, and section order via the Design Editor or AI commands.
+
+## CURRENT USER CONTEXT
+${courseContext}
+
+## INSTRUCTIONS
+- Answer questions about Excellion features, course strategy, content tips, and platform usage
+- Be specific to THIS platform — don't reference Teachable, Kajabi, etc. unless comparing
+- If asked about a feature that exists, explain how to use it in Excellion
+- If asked about a feature that doesn't exist yet, say so honestly
+- Be concise, friendly, and actionable
+- Use markdown formatting for clarity`;
+
         const { data, error } = await supabase.functions.invoke("help-chat", {
-          body: {
-            messages: [{ role: 'user', content: command }],
-            systemPrompt: `You are a helpful course-building assistant. The user is working on a course titled "${course.title || 'Untitled'}". Answer their questions about course creation, content strategy, and the platform. Be concise and helpful.`,
-          },
+          body: { messages: chatHistory, systemPrompt },
         });
         if (error) throw error;
-        const reply = data?.reply || data?.content || data?.message || "I'm not sure how to answer that. Try rephrasing your question.";
+        const reply = data?.response || data?.reply || data?.content || data?.message || "I'm not sure how to answer that. Try rephrasing your question.";
         setCommandHistory((prev) => [
           ...prev,
           { role: 'assistant', content: reply, mode: 'chat' },
