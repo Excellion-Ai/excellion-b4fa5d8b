@@ -27,6 +27,7 @@ interface CourseCommandPanelProps {
 
 export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualEditMode = false, onToggleVisualEdit }: CourseCommandPanelProps) {
   const storageKey = courseId ? `course-commands-${courseId}` : null;
+  const prevStorageKeyRef = useRef<string | null>(storageKey);
 
   const [commandHistory, setCommandHistory] = useState<CommandMessage[]>(() => {
     if (!storageKey) return [];
@@ -35,6 +36,28 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
       return stored ? JSON.parse(stored) : [];
     } catch { return []; }
   });
+
+  // Re-load history when storageKey changes (e.g. courseId changes after save)
+  useEffect(() => {
+    if (storageKey && storageKey !== prevStorageKeyRef.current) {
+      prevStorageKeyRef.current = storageKey;
+      try {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          setCommandHistory(JSON.parse(stored));
+        }
+      } catch { /* ignore */ }
+    } else if (!storageKey) {
+      prevStorageKeyRef.current = null;
+    }
+  }, [storageKey]);
+
+  // Persist chat history to localStorage on every change
+  useEffect(() => {
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(commandHistory));
+    }
+  }, [commandHistory, storageKey]);
   const [currentCommand, setCurrentCommand] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -42,12 +65,6 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (storageKey && commandHistory.length > 0) {
-      localStorage.setItem(storageKey, JSON.stringify(commandHistory));
-    }
-  }, [commandHistory, storageKey]);
 
   useEffect(() => {
     if (scrollRef.current) {
