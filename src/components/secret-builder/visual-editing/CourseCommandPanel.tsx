@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Sparkles } from 'lucide-react';
-import { AI } from '@/services/ai';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CommandMessage {
   role: 'user' | 'assistant';
@@ -34,11 +34,15 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
     setCommandHistory((prev) => [...prev, { role: 'user', content: command }]);
 
     try {
-      const data = await AI.interpretCommand(
-        command,
-        course.curriculum || course,
-        course.design_config || {},
-      );
+      const { data, error } = await supabase.functions.invoke("interpret-course-command", {
+        body: {
+          command,
+          current_course: course.curriculum || course,
+          current_design: course.design_config || {},
+        },
+      });
+
+      if (error) throw error;
 
       if (data?.success && data.result?.understood) {
         await onApplyChanges(data.result.changes);
