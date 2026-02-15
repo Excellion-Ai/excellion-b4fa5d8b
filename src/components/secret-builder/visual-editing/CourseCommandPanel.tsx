@@ -14,10 +14,25 @@ interface CourseCommandPanelProps {
 }
 
 export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseCommandPanelProps) {
-  const [commandHistory, setCommandHistory] = useState<CommandMessage[]>([]);
+  const storageKey = courseId ? `course-commands-${courseId}` : null;
+
+  const [commandHistory, setCommandHistory] = useState<CommandMessage[]>(() => {
+    if (!storageKey) return [];
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
   const [currentCommand, setCurrentCommand] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Persist history to localStorage whenever it changes
+  useEffect(() => {
+    if (storageKey && commandHistory.length > 0) {
+      localStorage.setItem(storageKey, JSON.stringify(commandHistory));
+    }
+  }, [commandHistory, storageKey]);
 
   useEffect(() => {
     if (scrollRef.current) {
