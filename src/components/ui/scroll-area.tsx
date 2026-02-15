@@ -9,8 +9,8 @@ const scrollBarVariants = cva(
     variants: {
       variant: {
         default: "",
-        gold: "bg-zinc-900 rounded-full",
-        purple: "bg-zinc-900/50 rounded-full",
+        gold: "bg-transparent rounded-full",
+        purple: "bg-transparent rounded-full",
       },
       orientation: {
         vertical: "h-full w-2.5 border-l border-l-transparent p-[1px]",
