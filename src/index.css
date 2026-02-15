@@ -8,6 +8,36 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global transparent scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(0 0% 40% / 0.5) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: hsl(0 0% 40% / 0.5);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(0 0% 50% / 0.7);
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
 /* Force GPU acceleration for animations */
 @media (prefers-reduced-motion: no-preference) {
   * {
