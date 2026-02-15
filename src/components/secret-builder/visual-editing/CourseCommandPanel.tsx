@@ -1,10 +1,17 @@
-import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Sparkles } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Send, Loader2, Sparkles, Paperclip, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+
+interface Attachment {
+  id: string;
+  file: File;
+  preview?: string;
+}
 
 interface CommandMessage {
   role: 'user' | 'assistant';
   content: string;
+  attachments?: { name: string; preview?: string }[];
 }
 
 interface CourseCommandPanelProps {
@@ -25,9 +32,11 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
   });
   const [currentCommand, setCurrentCommand] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Persist history to localStorage whenever it changes
   useEffect(() => {
     if (storageKey && commandHistory.length > 0) {
       localStorage.setItem(storageKey, JSON.stringify(commandHistory));
@@ -40,13 +49,64 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
     }
   }, [commandHistory]);
 
+  const handleFiles = useCallback((files: FileList | File[]) => {
+    const newAttachments: Attachment[] = Array.from(files).map((file) => {
+      const att: Attachment = { id: crypto.randomUUID(), file };
+      if (file.type.startsWith('image/')) {
+        att.preview = URL.createObjectURL(file);
+      }
+      return att;
+    });
+    setAttachments((prev) => [...prev, ...newAttachments]);
+  }, []);
+
+  const removeAttachment = useCallback((id: string) => {
+    setAttachments((prev) => {
+      const removed = prev.find((a) => a.id === id);
+      if (removed?.preview) URL.revokeObjectURL(removed.preview);
+      return prev.filter((a) => a.id !== id);
+    });
+  }, []);
+
+  // Handle paste for images
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const handler = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const imageFiles: File[] = [];
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        handleFiles(imageFiles);
+      }
+    };
+    textarea.addEventListener('paste', handler);
+    return () => textarea.removeEventListener('paste', handler);
+  }, [handleFiles]);
+
   const processCommand = async () => {
-    if (!currentCommand.trim() || isProcessing) return;
+    if ((!currentCommand.trim() && attachments.length === 0) || isProcessing) return;
 
     const command = currentCommand.trim();
+    const currentAttachments = attachments.map((a) => ({
+      name: a.file.name,
+      preview: a.preview,
+    }));
+
     setCurrentCommand('');
+    setAttachments([]);
     setIsProcessing(true);
-    setCommandHistory((prev) => [...prev, { role: 'user', content: command }]);
+    setCommandHistory((prev) => [
+      ...prev,
+      { role: 'user', content: command || '(attached files)', attachments: currentAttachments },
+    ]);
 
     try {
       const { data, error } = await supabase.functions.invoke("interpret-course-command", {
@@ -129,6 +189,22 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
                 : 'bg-zinc-800 text-gray-300 mr-4'
             }`}
           >
+            {msg.attachments && msg.attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {msg.attachments.map((att, j) =>
+                  att.preview ? (
+                    <img
+                      key={j}
+                      src={att.preview}
+                      alt={att.name}
+                      className="w-16 h-16 object-cover rounded border border-zinc-700"
+                    />
+                  ) : (
+                    <span key={j} className="text-xs bg-zinc-700 px-2 py-1 rounded">{att.name}</span>
+                  )
+                )}
+              </div>
+            )}
             {msg.content}
           </div>
         ))}
@@ -143,8 +219,59 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
 
       {/* FIXED PROMPT INPUT - ALWAYS AT BOTTOM */}
       <div className="p-4 border-t border-zinc-800 bg-zinc-950 shrink-0">
-        <div className="flex gap-2">
+        {/* Attachment previews */}
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {attachments.map((att) => (
+              <div key={att.id} className="relative group">
+                {att.preview ? (
+                  <img
+                    src={att.preview}
+                    alt={att.file.name}
+                    className="w-14 h-14 object-cover rounded border border-zinc-700"
+                  />
+                ) : (
+                  <div className="w-14 h-14 bg-zinc-800 rounded border border-zinc-700 flex items-center justify-center">
+                    <span className="text-[10px] text-gray-400 text-center leading-tight px-1 truncate">
+                      {att.file.name.split('.').pop()}
+                    </span>
+                  </div>
+                )}
+                <button
+                  onClick={() => removeAttachment(att.id)}
+                  className="absolute -top-1.5 -right-1.5 bg-zinc-700 hover:bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex gap-2 items-end">
+          {/* Paperclip button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="text-gray-400 hover:text-amber-500 p-2 rounded transition shrink-0 mb-1"
+            title="Attach files or images"
+          >
+            <Paperclip className="w-5 h-5" />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf,.doc,.docx,.txt,.csv"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files) handleFiles(e.target.files);
+              e.target.value = '';
+            }}
+          />
+
           <textarea
+            ref={textareaRef}
             value={currentCommand}
             onChange={(e) => setCurrentCommand(e.target.value)}
             onKeyDown={(e) => {
@@ -160,8 +287,8 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
           />
           <button
             onClick={processCommand}
-            disabled={isProcessing || !currentCommand.trim()}
-            className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
+            disabled={isProcessing || (!currentCommand.trim() && attachments.length === 0)}
+            className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
           >
             {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </button>
