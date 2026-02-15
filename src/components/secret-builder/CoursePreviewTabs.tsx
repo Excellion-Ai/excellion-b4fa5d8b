@@ -2113,20 +2113,18 @@ export function CoursePreviewTabs({
             </Select>
             {/* Mobile Action Buttons */}
             <div className="flex items-center gap-2">
-              {activeTab === 'landing' && (
-                <Button
-                  variant={isEditMode ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setIsEditMode(!isEditMode)}
-                  className={`flex-1 ${isEditMode 
-                    ? 'bg-amber-500 hover:bg-amber-600 text-black' 
-                    : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
-                  }`}
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Edit Layout
-                </Button>
-              )}
+              <Button
+                variant={isEditMode ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setIsEditMode(!isEditMode)}
+                className={`flex-1 ${isEditMode 
+                  ? 'bg-amber-500 hover:bg-amber-600 text-black' 
+                  : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                }`}
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Edit Layout
+              </Button>
               {isPublished && onUnpublish && (
                 <Button
                   variant="outline"
@@ -2181,21 +2179,19 @@ export function CoursePreviewTabs({
             
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
-              {/* Edit Layout Button - only on landing tab */}
-              {activeTab === 'landing' && (
-                <Button
-                  variant={isEditMode ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setIsEditMode(!isEditMode)}
-                  className={isEditMode 
-                    ? 'bg-amber-500 hover:bg-amber-600 text-black' 
-                    : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
-                  }
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Edit Layout
-                </Button>
-              )}
+              {/* Edit Layout Button */}
+              <Button
+                variant={isEditMode ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setIsEditMode(!isEditMode)}
+                className={isEditMode 
+                  ? 'bg-amber-500 hover:bg-amber-600 text-black' 
+                  : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                }
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Edit Layout
+              </Button>
               
               {/* Unpublish Button - only if published */}
               {isPublished && onUnpublish && (
