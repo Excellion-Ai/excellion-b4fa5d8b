@@ -34,15 +34,17 @@ export function DesignEditorModal({
   const [sectionOrder, setSectionOrder] = useState(initialSectionOrder || ['hero', 'outcomes', 'curriculum', 'faq', 'cta']);
   const [isSaving, setIsSaving] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [wasOpen, setWasOpen] = useState(false);
 
-  // Re-sync local state when modal opens with new props
+  // Only re-sync local state when modal transitions from closed → open
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpen) {
       setDesign(designConfig || {});
       setLayout(layoutTemplate || 'suspended');
       setSectionOrder(initialSectionOrder || ['hero', 'outcomes', 'curriculum', 'faq', 'cta']);
     }
-  }, [open, designConfig, layoutTemplate, initialSectionOrder]);
+    setWasOpen(open);
+  }, [open]);
 
   const updateColor = (key: string, value: string) => {
     setDesign({
