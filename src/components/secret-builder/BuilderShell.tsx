@@ -1971,6 +1971,11 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
                   }
                 }}
+                isVisualEditMode={isVisualEditMode}
+                onToggleVisualEdit={() => {
+                  setIsVisualEditMode(!isVisualEditMode);
+                  toast.success(isVisualEditMode ? 'Visual edit mode off' : 'Visual edit mode on — hover sections to edit');
+                }}
               />
               </div>
             ) : (
