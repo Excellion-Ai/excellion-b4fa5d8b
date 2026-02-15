@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Loader2, Sparkles, Paperclip, X, Pencil } from 'lucide-react';
+import { Send, Loader2, Sparkles, Paperclip, X, Pencil, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Attachment {
@@ -8,9 +8,12 @@ interface Attachment {
   preview?: string;
 }
 
+type InputMode = 'build' | 'chat';
+
 interface CommandMessage {
   role: 'user' | 'assistant';
   content: string;
+  mode?: InputMode;
   attachments?: { name: string; preview?: string }[];
 }
 
@@ -35,6 +38,7 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
   const [currentCommand, setCurrentCommand] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [inputMode, setInputMode] = useState<InputMode>('build');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -70,7 +74,6 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
     });
   }, []);
 
-  // Handle paste for images
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -107,34 +110,52 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
     setIsProcessing(true);
     setCommandHistory((prev) => [
       ...prev,
-      { role: 'user', content: command || '(attached files)', attachments: currentAttachments },
+      { role: 'user', content: command || '(attached files)', mode: inputMode, attachments: currentAttachments },
     ]);
 
     try {
-      const { data, error } = await supabase.functions.invoke("interpret-course-command", {
-        body: {
-          command,
-          current_course: course.curriculum || course,
-          current_design: course.design_config || {},
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.success && data.result?.understood) {
-        await onApplyChanges(data.result.changes);
+      if (inputMode === 'chat') {
+        // Chat mode — use help-chat for Q&A
+        const { data, error } = await supabase.functions.invoke("help-chat", {
+          body: {
+            messages: [{ role: 'user', content: command }],
+            systemPrompt: `You are a helpful course-building assistant. The user is working on a course titled "${course.title || 'Untitled'}". Answer their questions about course creation, content strategy, and the platform. Be concise and helpful.`,
+          },
+        });
+        if (error) throw error;
+        const reply = data?.reply || data?.content || data?.message || "I'm not sure how to answer that. Try rephrasing your question.";
         setCommandHistory((prev) => [
           ...prev,
-          { role: 'assistant', content: data.result.preview_message },
+          { role: 'assistant', content: reply, mode: 'chat' },
         ]);
       } else {
-        setCommandHistory((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: data?.result?.error_message || "I didn't understand that. Try being more specific about what you want to change.",
+        // Build mode — use interpret-course-command
+        const { data, error } = await supabase.functions.invoke("interpret-course-command", {
+          body: {
+            command,
+            current_course: course.curriculum || course,
+            current_design: course.design_config || {},
           },
-        ]);
+        });
+
+        if (error) throw error;
+
+        if (data?.success && data.result?.understood) {
+          await onApplyChanges(data.result.changes);
+          setCommandHistory((prev) => [
+            ...prev,
+            { role: 'assistant', content: data.result.preview_message, mode: 'build' },
+          ]);
+        } else {
+          setCommandHistory((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: data?.result?.error_message || "I didn't understand that. Try being more specific about what you want to change.",
+              mode: 'build',
+            },
+          ]);
+        }
       }
     } catch (err) {
       console.error('Command error:', err);
@@ -172,7 +193,7 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
               ].map((cmd) => (
                 <button
                   key={cmd}
-                  onClick={() => setCurrentCommand(cmd)}
+                  onClick={() => { setCurrentCommand(cmd); setInputMode('build'); }}
                   className="block w-full text-left text-sm text-gray-400 hover:text-amber-500 p-2 rounded hover:bg-zinc-900 transition"
                 >
                   "{cmd}"
@@ -187,10 +208,17 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
             key={i}
             className={`p-3 rounded-lg mb-2 text-sm ${
               msg.role === 'user'
-                ? 'bg-amber-500/20 text-amber-100 ml-4'
+                ? msg.mode === 'chat'
+                  ? 'bg-blue-500/20 text-blue-100 ml-4'
+                  : 'bg-amber-500/20 text-amber-100 ml-4'
                 : 'bg-zinc-800 text-gray-300 mr-4'
             }`}
           >
+            {msg.role === 'user' && (
+              <span className="text-[10px] uppercase tracking-wider opacity-60 block mb-1">
+                {msg.mode === 'chat' ? '💬 Question' : '🔧 Build'}
+              </span>
+            )}
             {msg.attachments && msg.attachments.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {msg.attachments.map((att, j) =>
@@ -251,26 +279,26 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
         )}
 
         <div className="flex gap-2 items-end">
-        <div className="flex flex-col gap-1 shrink-0 mb-1">
-          {/* Visual edit toggle */}
-          <button
-            type="button"
-            onClick={onToggleVisualEdit}
-            className={`p-2 rounded transition ${isVisualEditMode ? 'text-amber-500 bg-amber-500/10' : 'text-gray-400 hover:text-amber-500'}`}
-            title={isVisualEditMode ? 'Visual edit mode ON' : 'Visual edit mode OFF'}
-          >
-            <Pencil className="w-5 h-5" />
-          </button>
-          {/* Paperclip button */}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="text-gray-400 hover:text-amber-500 p-2 rounded transition"
-            title="Attach files or images"
-          >
-            <Paperclip className="w-5 h-5" />
-          </button>
-        </div>
+          <div className="flex flex-col gap-1 shrink-0 mb-1">
+            {/* Visual edit toggle */}
+            <button
+              type="button"
+              onClick={onToggleVisualEdit}
+              className={`p-2 rounded transition ${isVisualEditMode ? 'text-amber-500 bg-amber-500/10' : 'text-gray-400 hover:text-amber-500'}`}
+              title={isVisualEditMode ? 'Visual edit mode ON' : 'Visual edit mode OFF'}
+            >
+              <Pencil className="w-5 h-5" />
+            </button>
+            {/* Paperclip button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="text-gray-400 hover:text-amber-500 p-2 rounded transition"
+              title="Attach files or images"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
@@ -293,18 +321,39 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
                 processCommand();
               }
             }}
-            placeholder="Describe changes to your course..."
+            placeholder={inputMode === 'chat' ? 'Ask a question about your course...' : 'Describe changes to your course...'}
             rows={3}
             className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none resize-none text-sm"
             disabled={isProcessing}
           />
-          <button
-            onClick={processCommand}
-            disabled={isProcessing || (!currentCommand.trim() && attachments.length === 0)}
-            className="bg-amber-500 hover:bg-amber-600 text-black px-4 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
-          >
-            {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-          </button>
+
+          <div className="flex flex-col gap-1 shrink-0 mb-1">
+            {/* Chat mode toggle */}
+            <button
+              type="button"
+              onClick={() => setInputMode(inputMode === 'chat' ? 'build' : 'chat')}
+              className={`p-2 rounded transition ${inputMode === 'chat' ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400'}`}
+              title={inputMode === 'chat' ? 'Chat mode (click to switch to build)' : 'Switch to chat mode'}
+            >
+              <MessageCircle className="w-5 h-5" />
+            </button>
+            {/* Send button */}
+            <button
+              onClick={processCommand}
+              disabled={isProcessing || (!currentCommand.trim() && attachments.length === 0)}
+              className="bg-amber-500 hover:bg-amber-600 text-black p-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
+            >
+              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mode indicator */}
+        <div className="mt-2 flex items-center gap-1.5">
+          <div className={`w-1.5 h-1.5 rounded-full ${inputMode === 'chat' ? 'bg-blue-400' : 'bg-amber-500'}`} />
+          <span className="text-[11px] text-gray-500">
+            {inputMode === 'chat' ? 'Chat mode — ask questions' : 'Build mode — apply changes'}
+          </span>
         </div>
       </div>
     </div>
