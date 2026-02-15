@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Loader2, Sparkles, Paperclip, X } from 'lucide-react';
+import { Send, Loader2, Sparkles, Paperclip, X, Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Attachment {
@@ -18,9 +18,11 @@ interface CourseCommandPanelProps {
   course: any;
   courseId: string | null;
   onApplyChanges: (changes: any) => Promise<void>;
+  isVisualEditMode?: boolean;
+  onToggleVisualEdit?: () => void;
 }
 
-export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseCommandPanelProps) {
+export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualEditMode = false, onToggleVisualEdit }: CourseCommandPanelProps) {
   const storageKey = courseId ? `course-commands-${courseId}` : null;
 
   const [commandHistory, setCommandHistory] = useState<CommandMessage[]>(() => {
@@ -249,15 +251,26 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges }: CourseC
         )}
 
         <div className="flex gap-2 items-end">
+        <div className="flex flex-col gap-1 shrink-0 mb-1">
+          {/* Visual edit toggle */}
+          <button
+            type="button"
+            onClick={onToggleVisualEdit}
+            className={`p-2 rounded transition ${isVisualEditMode ? 'text-amber-500 bg-amber-500/10' : 'text-gray-400 hover:text-amber-500'}`}
+            title={isVisualEditMode ? 'Visual edit mode ON' : 'Visual edit mode OFF'}
+          >
+            <Pencil className="w-5 h-5" />
+          </button>
           {/* Paperclip button */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="text-gray-400 hover:text-amber-500 p-2 rounded transition shrink-0 mb-1"
+            className="text-gray-400 hover:text-amber-500 p-2 rounded transition"
             title="Attach files or images"
           >
             <Paperclip className="w-5 h-5" />
           </button>
+        </div>
           <input
             ref={fileInputRef}
             type="file"
