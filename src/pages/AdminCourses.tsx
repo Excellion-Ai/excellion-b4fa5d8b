@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Loader2, BookOpen, Eye, EyeOff, ChevronDown, ChevronRight, Pencil, Check, X } from 'lucide-react';
+import { Loader2, BookOpen, Eye, EyeOff, ChevronDown, ChevronRight, Pencil, Check, X, RefreshCw } from 'lucide-react';
 
 interface CourseRow {
   id: string;
@@ -126,9 +126,39 @@ export default function AdminCourses() {
             <BookOpen className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">Course Management</h1>
           </div>
-          <Button variant="outline" onClick={() => navigate('/admin')}>
-            Back to Admin
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  const resp = await fetch(
+                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/seed-quickstart`,
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ force_reset: true }),
+                    }
+                  );
+                  const result = await resp.json();
+                  if (result?.success) {
+                    toast.success('Quickstart course reset to canonical curriculum');
+                    fetchCourses();
+                  } else {
+                    toast.error('Reset failed');
+                  }
+                } catch {
+                  toast.error('Reset failed');
+                }
+              }}
+              className="gap-1.5"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Reset Quickstart
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/admin')}>
+              Back to Admin
+            </Button>
+          </div>
         </div>
 
         {loading ? (

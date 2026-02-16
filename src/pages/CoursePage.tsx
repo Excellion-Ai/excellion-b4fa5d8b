@@ -139,8 +139,8 @@ export default function CoursePage() {
       setCurrentUser(session?.session?.user || null);
 
       // Protect the quickstart course — require login
-      if (subdomain === 'excellion-quickstart' && !userId) {
-        navigate(`/auth?redirect=/course/excellion-quickstart`);
+      if (subdomain === 'quickstart' && !userId) {
+        navigate(`/auth?redirect=/course/quickstart`);
         return;
       }
 
@@ -195,11 +195,42 @@ export default function CoursePage() {
         }
       }
 
-      // If no course found at all
+      // If no course found at all — try auto-seed for quickstart
       if (courseError || !courseData) {
-        setError('Course not found');
-        setIsLoading(false);
-        return;
+        if (subdomain === 'quickstart') {
+          try {
+            setError(null);
+            const seedResp = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/seed-quickstart`,
+              { method: 'POST', headers: { 'Content-Type': 'application/json' } }
+            );
+            const seedResult = await seedResp.json();
+            if (seedResult?.success) {
+              // Re-fetch after seeding
+              const retryQuery = await supabase
+                .from('public_courses' as any)
+                .select('*')
+                .eq('subdomain', 'quickstart')
+                .single();
+              if (retryQuery.data) {
+                courseData = retryQuery.data;
+                courseError = null;
+              }
+            }
+          } catch (seedErr) {
+            console.error('Quickstart seed failed:', seedErr);
+          }
+        }
+
+        if (courseError || !courseData) {
+          if (subdomain === 'quickstart') {
+            setError('recovery');
+          } else {
+            setError('Course not found');
+          }
+          setIsLoading(false);
+          return;
+        }
       }
 
 
@@ -344,18 +375,18 @@ export default function CoursePage() {
   }
 
   if (error || !course) {
-    // Admin fallback for quickstart course
-    if (subdomain === 'excellion-quickstart' && isAdmin) {
+    // Recovery state for quickstart course
+    if (error === 'recovery' && subdomain === 'quickstart') {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center max-w-md mx-auto px-4">
-            <AlertTriangle className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Quickstart Course Missing</h1>
+            <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Restoring this course…</h1>
             <p className="text-muted-foreground mb-6">
-              The Excellion Quickstart Course record was not found. It may need to be re-seeded in the database.
+              We're restoring the Excellion Quickstart now. Refresh in 10 seconds.
             </p>
-            <Button onClick={() => navigate('/admin/courses')}>
-              Go to Course Admin
+            <Button onClick={() => window.location.reload()}>
+              Refresh
             </Button>
           </div>
         </div>
@@ -384,7 +415,7 @@ export default function CoursePage() {
   const courseUrl = `https://excellion.lovable.app/course/${course.subdomain || course.id}`;
 
   // Dedicated quickstart landing page
-  if (subdomain === 'excellion-quickstart') {
+  if (subdomain === 'quickstart') {
     return (
       <>
         <Helmet>

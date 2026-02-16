@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare, FileText, PlayCircle, Film, Paperclip, Search, Download, SkipForward } from 'lucide-react';
+import { Loader2, Check, ChevronLeft, ChevronRight, Circle, Trophy, Star, Award, MessageSquare, FileText, PlayCircle, Film, Paperclip, Search, Download, SkipForward, ListChecks } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -459,11 +460,11 @@ export default function LearnPage() {
             </Button>
           )}
           {/* Templates link for quickstart course */}
-          {course.subdomain === 'excellion-quickstart' && (
+          {course.subdomain === 'quickstart' && (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/course/excellion-quickstart/templates')}
+              onClick={() => navigate('/course/quickstart/templates')}
               className="gap-1.5"
             >
               <Download className="h-3.5 w-3.5" />
@@ -549,6 +550,19 @@ export default function LearnPage() {
                   </div>
                 );
               })}
+              {/* Add-ons link for quickstart course */}
+              {course.subdomain === 'quickstart' && (
+                <div className="pt-3 border-t border-border">
+                  <button
+                    onClick={() => navigate('/course/quickstart/addons')}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-sm hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ListChecks className="h-4 w-4 shrink-0" />
+                    <span>Optional Add-Ons Checklist</span>
+                    <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0">Optional</Badge>
+                  </button>
+                </div>
+              )}
             </div>
           </ScrollArea>
         </aside>
