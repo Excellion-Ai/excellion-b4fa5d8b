@@ -19,6 +19,10 @@ import { CourseReviewForm } from '@/components/course';
 import { VideoPlayer } from '@/components/video';
 import { QuizPlayer } from '@/components/quiz';
 import { ResourceManager } from '@/components/resources';
+import { LessonLayoutTemplate } from '@/components/course/LessonLayoutTemplate';
+import { StartHereDashboard } from '@/components/course/StartHereDashboard';
+import { TemplatesGallery } from '@/components/course/TemplatesGallery';
+import { getLessonMeta } from '@/components/course/quickstart-lesson-data';
 import type { QuizQuestion } from '@/types/course-pages';
 
 interface Lesson {
@@ -72,6 +76,7 @@ export default function LearnPage() {
   const currentLessonViewIdRef = useRef<string | null>(null);
   const [lessonResourceCounts, setLessonResourceCounts] = useState<Record<string, number>>({});
   const [sidebarSearch, setSidebarSearch] = useState('');
+  const [showTemplatesGallery, setShowTemplatesGallery] = useState(false);
 
   // Calculate total lessons
   const totalLessons = useMemo(() => {
@@ -464,7 +469,7 @@ export default function LearnPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/course/quickstart/templates')}
+              onClick={() => setShowTemplatesGallery(true)}
               className="gap-1.5"
             >
               <Download className="h-3.5 w-3.5" />
@@ -595,58 +600,94 @@ export default function LearnPage() {
               />
             ) : (
               <>
-                {/* Video content */}
-                {(currentLesson?.type === 'video' || currentLesson?.type === 'text_video') && currentLesson?.video_url && (
-                  <div className="mb-6">
-                    <VideoPlayer url={currentLesson.video_url} />
-                  </div>
-                )}
+                {/* Quickstart enhanced layout */}
+                {course.subdomain === 'quickstart' && (() => {
+                  const meta = getLessonMeta(currentLesson?.id || '', selectedModuleIndex, selectedLessonIndex);
+                  
+                  // Start Here Dashboard for Module 1, Lesson 1
+                  if (selectedModuleIndex === 0 && selectedLessonIndex === 0) {
+                    return (
+                      <div className="mb-6">
+                        <StartHereDashboard onNavigateToLesson={handleSelectLesson} />
+                      </div>
+                    );
+                  }
 
-                {/* Text content */}
-                {currentLesson?.type !== 'video' && currentLesson?.type !== 'quiz' && (
-                  <div className="prose prose-invert max-w-none mb-8">
-                    <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
-                      {lessonContent}
-                    </div>
-                  </div>
-                )}
+                  // Standard lesson with enhanced layout
+                  if (meta) {
+                    return (
+                      <LessonLayoutTemplate meta={meta}>
+                        {/* Original content inside collapsible */}
+                        {lessonContent && lessonContent !== 'No content available.' && (
+                          <div className="prose prose-invert max-w-none">
+                            <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                              {lessonContent}
+                            </div>
+                          </div>
+                        )}
+                      </LessonLayoutTemplate>
+                    );
+                  }
+                  return null;
+                })()}
 
-                {/* Lesson description (from quickstart data) */}
-                {currentLesson?.description && (
-                  <div className="mb-6 p-4 rounded-lg bg-secondary/20 border border-border">
-                    <p className="text-sm text-muted-foreground italic">{currentLesson.description}</p>
-                  </div>
-                )}
+                {/* Non-quickstart or fallback content */}
+                {(course.subdomain !== 'quickstart' || !getLessonMeta(currentLesson?.id || '', selectedModuleIndex, selectedLessonIndex)) && selectedModuleIndex !== 0 || (course.subdomain !== 'quickstart') ? (
+                  <>
+                    {/* Video content */}
+                    {(currentLesson?.type === 'video' || currentLesson?.type === 'text_video') && currentLesson?.video_url && (
+                      <div className="mb-6">
+                        <VideoPlayer url={currentLesson.video_url} />
+                      </div>
+                    )}
 
-                {/* Do this now checklist */}
-                {currentLesson?.checklist && currentLesson.checklist.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                      <Check className="h-4 w-4 text-primary" />
-                      Do This Now
-                    </h3>
-                    <ul className="space-y-2">
-                      {currentLesson.checklist.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-foreground/80">
-                          <Circle className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                    {/* Text content */}
+                    {currentLesson?.type !== 'video' && currentLesson?.type !== 'quiz' && (
+                      <div className="prose prose-invert max-w-none mb-8">
+                        <div className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                          {lessonContent}
+                        </div>
+                      </div>
+                    )}
 
-                {/* Template badges */}
-                {currentLesson?.templates && currentLesson.templates.length > 0 && (
-                  <div className="mb-6 flex flex-wrap gap-2">
-                    {currentLesson.templates.map((t, idx) => (
-                      <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
-                        <FileText className="h-3 w-3" />
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                    {/* Lesson description */}
+                    {currentLesson?.description && (
+                      <div className="mb-6 p-4 rounded-lg bg-secondary/20 border border-border">
+                        <p className="text-sm text-muted-foreground italic">{currentLesson.description}</p>
+                      </div>
+                    )}
+
+                    {/* Checklist */}
+                    {currentLesson?.checklist && currentLesson.checklist.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                          <Check className="h-4 w-4 text-primary" />
+                          Do This Now
+                        </h3>
+                        <ul className="space-y-2">
+                          {currentLesson.checklist.map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm text-foreground/80">
+                              <Circle className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Template badges */}
+                    {currentLesson?.templates && currentLesson.templates.length > 0 && (
+                      <div className="mb-6 flex flex-wrap gap-2">
+                        {currentLesson.templates.map((t, idx) => (
+                          <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
+                            <FileText className="h-3 w-3" />
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : null}
 
                 {/* Lesson Resources */}
                 {course && currentLesson && currentLesson.type !== 'quiz' && (
@@ -797,6 +838,9 @@ export default function LearnPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Templates Gallery Modal */}
+      <TemplatesGallery open={showTemplatesGallery} onClose={() => setShowTemplatesGallery(false)} />
     </div>
   );
 }
