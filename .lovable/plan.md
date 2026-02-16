@@ -1,73 +1,86 @@
 
 
-# Add Custom Background Images to Course Builder
+# Fix Publishing, Domains, and Infrastructure Gaps
 
-## What This Does
-Adds the ability to upload and set custom background images on course landing page sections -- starting with the hero section. You'll be able to upload any image from the Design Settings modal, and it will appear as a background in your course preview and published course.
+## Current State Summary
 
-## Changes Overview
+- **Course publishing** works entirely through client-side routing (`/course/{subdomain}`). Data lives in the `courses` table and is rendered by your React app. No static HTML, no Caddy involvement.
+- **Site builder publishing** generates static HTML, uploads it to storage, and serves it via `{slug}.excellion.app` through Caddy and the `serve-site` edge function.
+- **Custom domains for sites** have a full pipeline: DNS instructions (A records + TXT verification), `verify-domain-dns` edge function, `allowed-domains` check, and `serve-site` resolution.
+- **Custom domains for courses** are just a text input that saves a string to the database. There is no DNS verification, no serving infrastructure, and the CNAME instructions shown are incorrect (pointing to a nonexistent `courses.excellion.com`).
+- **Caddy config** references an old Supabase project ID (`twaljzxgbbkhhjjocilf`) instead of the current one (`ejrbfyvlkibbaufcyxtc`).
 
-### 1. Extend the Design Config type to support background images
-**File:** `src/types/course-pages.ts`
+## Planned Changes
 
-Add a `backgrounds` field to the existing `DesignConfig` interface:
-```typescript
-backgrounds?: {
-  hero?: string;       // URL for hero section background
-  curriculum?: string; // URL for curriculum section background  
-  cta?: string;        // URL for CTA section background
-};
-```
+### 1. Fix Caddy configuration (infrastructure)
+**File:** `caddy/Caddyfile`
 
-### 2. Add background image upload controls to Design Settings modal
-**File:** `src/components/secret-builder/visual-editing/DesignEditorModal.tsx`
+Update all `reverse_proxy` URLs from `twaljzxgbbkhhjjocilf.supabase.co` to `ejrbfyvlkibbaufcyxtc.supabase.co` so that site serving and domain validation actually reach the correct backend.
 
-- Import the existing `ImageUpload` component
-- Add a new "Background Images" section below the existing Colors section
-- Include upload controls for Hero, Curriculum, and CTA backgrounds
-- Each shows a preview thumbnail with upload/remove functionality
-- Store URLs in `design.backgrounds.hero`, etc.
+### 2. Fix wrong storage URL in CustomDomainsPanel
+**File:** `src/components/secret-builder/CustomDomainsPanel.tsx`
 
-### 3. Render background images in the course landing preview
-**File:** `src/components/secret-builder/CourseLandingPreview.tsx`
+The `STORAGE_BASE_URL` constant on line 31 references the old project ID. Update it to use the current project ID (`ejrbfyvlkibbaufcyxtc`).
 
-- Read `course.design_config?.backgrounds?.hero` in the hero section renderer
-- If a custom background URL exists, render it as a full-bleed background image with a dark overlay for text readability (similar to how `course.thumbnail` is currently used, but with higher opacity and priority)
-- Apply the same pattern for curriculum and CTA sections if backgrounds are set
+### 3. Upgrade the Course Publish Settings domain tab with real DNS verification
+**File:** `src/components/secret-builder/CoursePublishSettingsDialog.tsx`
 
-### 4. No database changes needed
-The `design_config` column on the `courses` table is already a JSONB column, so adding `backgrounds` to it requires no schema migration.
+Replace the current placeholder Domain tab with a proper implementation:
+- When a custom domain is entered and saved, insert a record into the `custom_domains` table (linking to the course via the course's `builder_project_id` or a new reference column)
+- Show the correct DNS setup instructions: A records pointing to `185.158.133.1` and a TXT verification record
+- Add a "Verify Now" button that calls the existing `verify-domain-dns` edge function
+- Show verification status badge (Pending / Verified)
+- Remove the incorrect CNAME instructions
+
+### 4. Update `serve-site` edge function to also resolve course domains
+**File:** `supabase/functions/serve-site/index.ts`
+
+When a custom domain resolves to a project via the `custom_domains` table, check if that project has a linked course (`builder_project_id` on the `courses` table). If so, redirect to the course's published URL on the main app (e.g., `excellion.lovable.app/course/{subdomain}`) instead of trying to fetch static HTML from storage.
+
+This enables custom domains like `learn.mybrand.com` to redirect to the course page.
+
+### 5. Fix TXT record naming convention
+**File:** `src/components/secret-builder/CustomDomainsPanel.tsx`
+
+The current DNS instructions show `_lovable` as the TXT record name with `lovable_verify=...` as the value. However, the `verify-domain-dns` edge function checks for `excellion={token}`. These need to be aligned:
+- Update the UI to show `_excellion` as the TXT name and `excellion={token}` as the value (matching what the edge function expects), OR
+- Update the edge function to also accept the `lovable_verify=` format
+
+The recommendation is to update the UI to use `_excellion` and `excellion={token}` since this is your own platform.
+
+---
 
 ## Technical Details
 
-**Hero section background rendering (CourseLandingPreview.tsx, ~line 254):**
+### DNS instruction alignment
 
-The current code uses `course.thumbnail` as a faint overlay. The updated logic will:
-1. Check `course.design_config?.backgrounds?.hero` first (custom background takes priority)
-2. Fall back to `course.thumbnail` if no custom background is set
-3. Custom backgrounds render at higher opacity (0.4-0.5) for a more prominent effect
+Current mismatch:
+- **UI shows:** TXT name `_lovable`, value `lovable_verify={token}`
+- **Edge function checks:** TXT name `_excellion.{domain}`, value `excellion={token}`
 
-**DesignEditorModal.tsx -- new section (inserted after Colors):**
+Fix: Update `CustomDomainsPanel.tsx` lines 566-570 to show `_excellion` and `excellion={token}`.
+
+### Course domain serving flow
 
 ```text
-Background Images
-+------------------------------+
-| Hero Background              |
-| [Upload Image]  or [Preview] |
-+------------------------------+
-| Curriculum Background        |
-| [Upload Image]  or [Preview] |
-+------------------------------+
-| CTA Background               |
-| [Upload Image]  or [Preview] |
-+------------------------------+
+User visits learn.mybrand.com
+  --> Caddy proxies to serve-site edge function
+  --> serve-site looks up custom_domains table
+  --> Finds project_id, checks for linked course
+  --> Returns 302 redirect to excellion.lovable.app/course/{subdomain}
 ```
 
-Each uses the existing `ImageUpload` component with `aspectRatio="banner"` for a wide preview.
+This avoids needing to generate static HTML for courses while still enabling custom domain access.
 
-**State flow:**
-- User uploads image via `ImageUpload` -> gets public URL from storage
-- URL stored in local `design` state as `design.backgrounds.hero`
-- On "Apply Design", saved to `courses.design_config` JSONB in the database
-- `CourseLandingPreview` reads from `course.design_config.backgrounds.hero` and renders it
+### Files changed summary
 
+| File | Change |
+|------|--------|
+| `caddy/Caddyfile` | Fix Supabase project ID |
+| `src/components/secret-builder/CustomDomainsPanel.tsx` | Fix storage URL, fix TXT record instructions |
+| `src/components/secret-builder/CoursePublishSettingsDialog.tsx` | Add real DNS verification UI for course custom domains |
+| `supabase/functions/serve-site/index.ts` | Add course domain redirect logic |
+
+### No database changes needed
+
+The existing `custom_domains` table already has `project_id` which can reference the course's `builder_project_id`. The `courses` table already has `custom_domain` and `builder_project_id` columns.
