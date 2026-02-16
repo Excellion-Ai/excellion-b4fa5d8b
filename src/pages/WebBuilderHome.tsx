@@ -702,7 +702,7 @@ const WebBuilderHome = () => {
               <Button 
                 size="lg"
                 className="w-full sm:w-auto h-12 px-8 gap-2 touch-manipulation"
-                onClick={() => navigate("/secret-builder-hub")}
+                onClick={() => navigate("/checkout?plan=coach")}
               >
                 Get Started for $19
                 <ArrowRight className="w-4 h-4" />
