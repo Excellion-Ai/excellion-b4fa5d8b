@@ -65,6 +65,28 @@ Deno.serve(async (req) => {
         return new Response('Site not found', { status: 404 })
       }
 
+      // Check if this domain is linked to a course via builder_project_id
+      const { data: courseData } = await supabase
+        .from('courses')
+        .select('subdomain, status')
+        .eq('builder_project_id', domainData.project_id)
+        .eq('status', 'published')
+        .maybeSingle()
+
+      if (courseData?.subdomain) {
+        // Redirect to the course page on the main app
+        const redirectUrl = `https://excellion.lovable.app/course/${courseData.subdomain}`
+        console.log(`[serve-site] Course domain redirect: ${domain} -> ${redirectUrl}`)
+        return new Response(null, {
+          status: 302,
+          headers: {
+            'Location': redirectUrl,
+            ...corsHeaders
+          }
+        })
+      }
+
+      // Otherwise serve the site builder project
       const { data, error } = await supabase
         .from('builder_projects')
         .select('name, published_url')
