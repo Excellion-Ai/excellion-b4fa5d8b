@@ -1467,6 +1467,48 @@ export type Database = {
       }
     }
     Views: {
+      course_purchase_stats: {
+        Row: {
+          amount_cents: number | null
+          course_id: string | null
+          created_at: string | null
+          currency: string | null
+          purchased_at: string | null
+          status: string | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          course_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          purchased_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount_cents?: number | null
+          course_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          purchased_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       github_connections_safe: {
         Row: {
           connected_at: string | null
