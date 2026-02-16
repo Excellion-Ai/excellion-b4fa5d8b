@@ -100,17 +100,17 @@ export default function CoursesPage() {
   }, []);
 
   async function fetchCourses() {
+    // Use public_courses view which strips lesson content_markdown for security
     const { data, error } = await supabase
-      .from('courses')
+      .from('public_courses' as any)
       .select('id, title, subdomain, description, difficulty, duration_weeks, modules, status, published_at, thumbnail_url, average_rating, review_count')
-      .eq('status', 'published')
       .order('published_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching courses:', error);
       setCourses([]);
     } else if (data) {
-      const mappedCourses: CourseData[] = data.map(course => ({
+      const mappedCourses: CourseData[] = (data as any[]).map((course: any) => ({
         ...course,
         modules: Array.isArray(course.modules) ? course.modules as unknown as CourseModule[] : null,
       }));
