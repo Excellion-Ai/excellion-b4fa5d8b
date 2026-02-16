@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Real Stripe Price IDs
 const PRICE_IDS = {
-  monthly: "price_1T1YjKPCTHzXvqDggzAat1Q0",  // $19 first month, then $79/mo
+  monthly: "price_1T1YnuPCTHzXvqDgZwElpsRS",  // $79/mo (with coupon = $19 first month)
   annual: "price_1T1YjxPCTHzXvqDg3Plq3gtT",    // $790/yr
 };
 
