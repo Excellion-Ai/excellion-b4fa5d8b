@@ -144,26 +144,55 @@ export default function CoursePage() {
         return;
       }
 
-      // First, try to find the course by subdomain (regardless of status)
-      let { data: courseData, error: courseError } = await supabase
-        .from('courses')
+      // Try loading from public_courses view first (strips lesson content for security)
+      let courseData: any = null;
+      let courseError: any = null;
+
+      const publicQuery = await supabase
+        .from('public_courses' as any)
         .select('*')
         .eq('subdomain', subdomain)
-        .is('deleted_at', null)
         .single();
-
+      
+      courseData = publicQuery.data;
+      courseError = publicQuery.error;
 
       // Fallback: try by UUID if subdomain lookup failed
       if (courseError && subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         const idQuery = await supabase
-          .from('courses')
+          .from('public_courses' as any)
           .select('*')
           .eq('id', subdomain)
-          .is('deleted_at', null)
           .single();
         
         courseData = idQuery.data;
         courseError = idQuery.error;
+      }
+
+      // If public view didn't find it, try the base table (owner/enrolled access)
+      if (courseError && userId) {
+        const ownerQuery = await supabase
+          .from('courses')
+          .select('*')
+          .eq('subdomain', subdomain)
+          .is('deleted_at', null)
+          .single();
+        
+        if (ownerQuery.data) {
+          courseData = ownerQuery.data;
+          courseError = null;
+        } else if (subdomain.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+          const ownerIdQuery = await supabase
+            .from('courses')
+            .select('*')
+            .eq('id', subdomain)
+            .is('deleted_at', null)
+            .single();
+          if (ownerIdQuery.data) {
+            courseData = ownerIdQuery.data;
+            courseError = null;
+          }
+        }
       }
 
       // If no course found at all
