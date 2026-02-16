@@ -164,6 +164,11 @@ export interface DesignConfig {
   spacing?: 'compact' | 'normal' | 'spacious';
   borderRadius?: 'none' | 'small' | 'medium' | 'large';
   heroStyle?: string;
+  backgrounds?: {
+    hero?: string;
+    curriculum?: string;
+    cta?: string;
+  };
 }
 
 export interface ExtendedCourse {
