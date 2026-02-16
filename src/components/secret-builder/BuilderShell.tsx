@@ -47,6 +47,7 @@ import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
 import { useCredits, CreditActionType } from '@/hooks/useCredits';
+import { useSubscription } from '@/hooks/useSubscription';
 import { calculateCreditCost } from '@/lib/calculateCreditCost';
 import { detectNiche } from '@/lib/motion/motionEngine';
 import { MotionIntensity } from '@/lib/motion/types';
@@ -408,6 +409,12 @@ export function BuilderShell() {
     reset: resetSiteSpec 
   } = useHistory<SiteSpec | null>(null);
   const [courseSpec, setCourseSpecInternal] = useState<ExtendedCourse | null>(null);
+  
+  // Subscription gating (must be before setCourseSpec wrapper)
+  const { subscribed: isPaidUser } = useSubscription();
+  const [courseEditCount, setCourseEditCount] = useState(0);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const FREE_EDIT_LIMIT = 3;
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -435,12 +442,18 @@ export function BuilderShell() {
       const next = typeof newSpec === 'function' ? newSpec(prev) : newSpec;
       // Only mark dirty for actual content changes, not clearing
       if (next !== null && prev !== null) {
+        // Check free edit limit
+        if (!isPaidUser && courseEditCount >= FREE_EDIT_LIMIT) {
+          setShowUpgradeModal(true);
+          return prev; // Block the edit
+        }
+        setCourseEditCount(c => c + 1);
         setIsDirty(true);
         setSaveStatus('unsaved');
       }
       return next;
     });
-  }, []);
+  }, [isPaidUser, courseEditCount]);
   
   const [imageAttachment, setImageAttachment] = useState<string | null>(null);
   const [showImageDialog, setShowImageDialog] = useState(false);
@@ -503,6 +516,7 @@ export function BuilderShell() {
     authenticated: isAuthenticated,
     fetchCredits 
   } = useCredits();
+  
   
   // Wrapper to make setSiteSpec work like useState setter for useSiteEditor
   // Also marks dirty state for tracking unsaved changes
@@ -591,6 +605,7 @@ export function BuilderShell() {
       // Populate state from course data
       setProjectName(courseData.title || 'Untitled Course');
       setCourseId(courseData.id);
+      setCourseEditCount((courseData as any).edit_count || 0);
       if (courseData.published_url) {
         setCoursePublishedUrl(courseData.published_url);
       }
@@ -808,6 +823,7 @@ export function BuilderShell() {
       }
     };
   }, [siteSpec, courseSpec, isDirty, projectId]);
+
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
@@ -1742,9 +1758,21 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
   const [coursePublishedUrl, setCoursePublishedUrl] = useState<string | null>(null);
   const [showCoursePublishDialog, setShowCoursePublishDialog] = useState(false);
 
+  // Sync edit_count to courses table when it changes
+  useEffect(() => {
+    if (!courseId || courseEditCount === 0) return;
+    supabase.from('courses').update({ edit_count: courseEditCount } as any).eq('id', courseId).then();
+  }, [courseId, courseEditCount]);
+
   const handlePublishCourse = async () => {
     if (!courseSpec) {
       toast.error('No course to publish');
+      return;
+    }
+
+    // Gate: free users cannot publish
+    if (!isPaidUser) {
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -2834,6 +2862,47 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
           ]}
         />
       )}
+
+      {/* Upgrade Modal */}
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" />
+              Upgrade to Continue
+            </DialogTitle>
+            <DialogDescription>
+              {courseEditCount >= FREE_EDIT_LIMIT
+                ? "You've reached the free edit limit (3 edits). Upgrade to the Coach plan for unlimited edits and publishing."
+                : "Publishing courses requires a paid plan. Upgrade to the Coach plan to publish and share your courses."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-foreground">Coach Plan</span>
+                <span className="text-2xl font-bold text-foreground">$19<span className="text-sm font-normal text-muted-foreground">/first mo</span></span>
+              </div>
+              <p className="text-sm text-muted-foreground">Then $79/month. Unlimited edits, publishing, and more.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowUpgradeModal(false)}
+              >
+                Maybe Later
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => navigate('/checkout?plan=coach')}
+              >
+                Upgrade Now
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

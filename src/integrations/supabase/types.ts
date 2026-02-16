@@ -383,6 +383,7 @@ export type Database = {
           design_config: Json | null
           difficulty: string | null
           duration_weeks: number | null
+          edit_count: number
           id: string
           instructor_bio: string | null
           instructor_name: string | null
@@ -417,6 +418,7 @@ export type Database = {
           design_config?: Json | null
           difficulty?: string | null
           duration_weeks?: number | null
+          edit_count?: number
           id?: string
           instructor_bio?: string | null
           instructor_name?: string | null
@@ -451,6 +453,7 @@ export type Database = {
           design_config?: Json | null
           difficulty?: string | null
           duration_weeks?: number | null
+          edit_count?: number
           id?: string
           instructor_bio?: string | null
           instructor_name?: string | null
