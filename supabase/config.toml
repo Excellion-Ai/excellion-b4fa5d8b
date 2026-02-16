@@ -2,3 +2,6 @@ project_id = "ejrbfyvlkibbaufcyxtc"
 
 [functions.send-password-reset]
 verify_jwt = false
+
+[functions.seed-quickstart]
+verify_jwt = false
