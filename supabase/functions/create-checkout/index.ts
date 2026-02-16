@@ -6,22 +6,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Price IDs for subscription plans
+// Excellion Coach Plan — the only plan
 const PRICE_IDS = {
-  starter: "price_1SmmvRPCTHzXvqDgcuiCxcqD",
-  pro: "price_1SmmvnPCTHzXvqDgbSE6wxMV",
-  agency: "price_1Smmy1PCTHzXvqDg1t7EjziF",
-  starter_annual: "price_1SmmyuPCTHzXvqDgr8k0y8s6",
-  pro_annual: "price_1Smn0VPCTHzXvqDgXLwyNKJ3",
-  agency_annual: "price_1Smn33PCTHzXvqDgxuGNuQkT",
-  coach_monthly: "price_1T1YnuPCTHzXvqDgZwElpsRS",  // $79/mo
+  coach_monthly: "price_1T1YnuPCTHzXvqDgZwElpsRS",  // $79/mo (with coupon = $19 first month)
   coach_annual: "price_1T1YjxPCTHzXvqDg3Plq3gtT",   // $790/year
 };
 
 // Coupon ID for $60 off first month (makes $79 → $19)
 const FIRST_MONTH_COUPON = "bIX05TiJ";
 
-// Price IDs that get the first-month coupon
+// Only the monthly price gets the first-month coupon
 const COUPON_ELIGIBLE_PRICES = new Set([PRICE_IDS.coach_monthly]);
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
