@@ -27,7 +27,7 @@ interface CustomDomainsPanelProps {
 
 const LOVABLE_IP = '185.158.133.1';
 const EXCELLION_DOMAIN = 'excellion.app';
-const STORAGE_BASE_URL = 'https://twaljzxgbbkhhjjocilf.supabase.co/storage/v1/object/public/published-sites';
+const STORAGE_BASE_URL = 'https://ejrbfyvlkibbaufcyxtc.supabase.co/storage/v1/object/public/published-sites';
 
 export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
   const [domains, setDomains] = useState<CustomDomain[]>([]);
@@ -551,7 +551,7 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
                           variant="ghost"
                           size="sm"
                           className="h-6 px-2"
-                          onClick={() => copyToClipboard(`lovable_verify=${domain.verification_token}`, 'TXT Value')}
+                          onClick={() => copyToClipboard(`excellion=${domain.verification_token}`, 'TXT Value')}
                         >
                           <Copy className="w-3 h-3" />
                         </Button>
@@ -563,11 +563,11 @@ export function CustomDomainsPanel({ projectId }: CustomDomainsPanelProps) {
                         </div>
                         <div>
                           <span className="text-muted-foreground text-xs">Name</span>
-                          <p className="font-mono">_lovable</p>
+                          <p className="font-mono">_excellion</p>
                         </div>
                         <div>
                           <span className="text-muted-foreground text-xs">Value</span>
-                          <p className="font-mono text-xs break-all">lovable_verify={domain.verification_token}</p>
+                          <p className="font-mono text-xs break-all">excellion={domain.verification_token}</p>
                         </div>
                       </div>
                     </div>

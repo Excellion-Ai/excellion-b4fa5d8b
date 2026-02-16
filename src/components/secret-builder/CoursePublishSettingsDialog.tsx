@@ -21,10 +21,16 @@ import {
   Settings,
   ExternalLink,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  CheckCircle2,
+  Clock,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+const LOVABLE_IP = '185.158.133.1';
 
 interface PublishSettings {
   status: 'draft' | 'published';
@@ -34,6 +40,15 @@ interface PublishSettings {
   socialImageUrl: string;
   publishedUrl: string;
   subdomain: string;
+}
+
+interface DomainRecord {
+  id: string;
+  domain: string;
+  status: string;
+  verification_token: string;
+  is_verified: boolean;
+  ssl_provisioned: boolean;
 }
 
 interface CoursePublishSettingsDialogProps {
@@ -67,10 +82,17 @@ export function CoursePublishSettingsDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Load settings when dialog opens
+  // Domain verification state
+  const [domainRecord, setDomainRecord] = useState<DomainRecord | null>(null);
+  const [newDomainInput, setNewDomainInput] = useState('');
+  const [isAddingDomain, setIsAddingDomain] = useState(false);
+  const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
+  const [isDeletingDomain, setIsDeletingDomain] = useState(false);
+
   useEffect(() => {
     if (open && courseId) {
       loadSettings();
+      loadDomainRecord();
     }
   }, [open, courseId]);
 
@@ -106,6 +128,161 @@ export function CoursePublishSettingsDialog({
     }
   };
 
+  const loadDomainRecord = async () => {
+    if (!courseId) return;
+
+    // Get the course's builder_project_id to find linked domain
+    const { data: course } = await supabase
+      .from('courses')
+      .select('builder_project_id, custom_domain')
+      .eq('id', courseId)
+      .single();
+
+    if (!course?.custom_domain) {
+      setDomainRecord(null);
+      return;
+    }
+
+    // Look up the domain record
+    const { data: domainData } = await supabase
+      .from('custom_domains')
+      .select('id, domain, status, verification_token, is_verified, ssl_provisioned')
+      .eq('domain', course.custom_domain)
+      .maybeSingle();
+
+    if (domainData) {
+      setDomainRecord(domainData as DomainRecord);
+    } else {
+      setDomainRecord(null);
+    }
+  };
+
+  const handleAddDomain = async () => {
+    if (!courseId || !newDomainInput.trim()) return;
+
+    const domainRegex = /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+    if (!domainRegex.test(newDomainInput.trim())) {
+      toast.error('Please enter a valid domain (e.g., learn.yourbrand.com)');
+      return;
+    }
+
+    setIsAddingDomain(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const domain = newDomainInput.trim().toLowerCase();
+
+      // Get or create a builder_project_id for this course
+      const { data: course } = await supabase
+        .from('courses')
+        .select('builder_project_id')
+        .eq('id', courseId)
+        .single();
+
+      let projectId = course?.builder_project_id;
+
+      // If no builder_project_id, create a placeholder project entry
+      if (!projectId) {
+        const { data: newProject, error: projError } = await supabase
+          .from('builder_projects')
+          .insert({
+            name: `Course: ${courseTitle}`,
+            idea: `Course domain hosting for ${courseTitle}`,
+            user_id: userData.user?.id,
+          })
+          .select('id')
+          .single();
+
+        if (projError) throw projError;
+        projectId = newProject.id;
+
+        // Link the course to this project
+        await supabase
+          .from('courses')
+          .update({ builder_project_id: projectId })
+          .eq('id', courseId);
+      }
+
+      // Insert the custom domain record
+      const { data: domainData, error: domainError } = await supabase
+        .from('custom_domains')
+        .insert({
+          project_id: projectId,
+          domain,
+          user_id: userData.user?.id,
+        })
+        .select()
+        .single();
+
+      if (domainError) {
+        if (domainError.code === '23505') {
+          toast.error('This domain is already registered');
+        } else {
+          throw domainError;
+        }
+        return;
+      }
+
+      // Save the custom domain to the course record
+      await supabase
+        .from('courses')
+        .update({ custom_domain: domain })
+        .eq('id', courseId);
+
+      setSettings(prev => ({ ...prev, customDomain: domain }));
+      setDomainRecord(domainData as DomainRecord);
+      setNewDomainInput('');
+      toast.success('Domain added! Configure DNS records below.');
+    } catch (error) {
+      console.error('Error adding domain:', error);
+      toast.error('Failed to add domain');
+    } finally {
+      setIsAddingDomain(false);
+    }
+  };
+
+  const handleVerifyDomain = async () => {
+    if (!domainRecord) return;
+
+    setIsVerifyingDomain(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-domain-dns', {
+        body: { domain: domainRecord.domain, token: domainRecord.verification_token },
+      });
+
+      if (error) throw error;
+
+      if (data?.verified) {
+        await loadDomainRecord();
+        toast.success('Domain verified successfully!');
+      } else {
+        toast.error(data?.message || 'Verification failed. Check your DNS records.');
+      }
+    } catch (err) {
+      console.error('Verification error:', err);
+      toast.error('Failed to verify domain');
+    } finally {
+      setIsVerifyingDomain(false);
+    }
+  };
+
+  const handleRemoveDomain = async () => {
+    if (!domainRecord || !courseId) return;
+
+    setIsDeletingDomain(true);
+    try {
+      await supabase.from('custom_domains').delete().eq('id', domainRecord.id);
+      await supabase.from('courses').update({ custom_domain: null }).eq('id', courseId);
+      setDomainRecord(null);
+      setSettings(prev => ({ ...prev, customDomain: '' }));
+      toast.success('Domain removed');
+    } catch (error) {
+      console.error('Error removing domain:', error);
+      toast.error('Failed to remove domain');
+    } finally {
+      setIsDeletingDomain(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!courseId) {
       toast.error('No course to save');
@@ -120,7 +297,6 @@ export function CoursePublishSettingsDialog({
           status: settings.status,
           seo_title: settings.seoTitle || null,
           seo_description: settings.seoDescription || null,
-          custom_domain: settings.customDomain || null,
           social_image_url: settings.socialImageUrl || null,
           published_at: settings.status === 'published' ? new Date().toISOString() : null,
         })
@@ -153,7 +329,30 @@ export function CoursePublishSettingsDialog({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied to clipboard`);
+  };
+
   const courseUrl = `${window.location.origin}/course/${settings.subdomain || courseSubdomain}`;
+
+  const getDomainStatusBadge = () => {
+    if (!domainRecord) return null;
+    if (domainRecord.is_verified || domainRecord.status === 'active') {
+      return (
+        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+          <CheckCircle2 className="w-3 h-3 mr-1" />
+          Verified {domainRecord.ssl_provisioned && '(SSL)'}
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+        <Clock className="w-3 h-3 mr-1" />
+        Pending Verification
+      </Badge>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -309,52 +508,181 @@ export function CoursePublishSettingsDialog({
 
               {/* Domain Tab */}
               <TabsContent value="domain" className="space-y-6">
+                {/* Default Excellion URL */}
                 <div className="space-y-3">
-                  <Label>Excellion URL</Label>
+                  <Label>Default Course URL</Label>
                   <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                    <code className="flex-1 text-sm text-foreground">
-                      excellion.lovable.app/course/{settings.subdomain || courseSubdomain}
+                    <code className="flex-1 text-sm text-foreground truncate">
+                      {courseUrl}
                     </code>
-                    <Badge variant="outline" className="text-green-400 border-green-500/30">
+                    <Badge variant="outline" className="text-emerald-400 border-emerald-500/30 shrink-0">
                       Active
                     </Badge>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <Label htmlFor="customDomain">Custom Domain (Optional)</Label>
-                  <Input
-                    id="customDomain"
-                    placeholder="learn.yourbrand.com"
-                    value={settings.customDomain}
-                    onChange={(e) => setSettings(prev => ({ ...prev, customDomain: e.target.value }))}
-                    className="bg-muted"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Example: learn.yourbrand.com or courses.yourcompany.com
-                  </p>
-                </div>
-
-                {settings.customDomain && (
-                  <div className="space-y-3 p-4 bg-muted/50 rounded-lg border border-border">
-                    <Label className="text-primary">DNS Setup Instructions</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Add this CNAME record to your domain's DNS settings:
-                    </p>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div className="p-2 bg-muted rounded">
-                        <div className="text-xs text-muted-foreground mb-1">Type</div>
-                        <div className="font-mono">CNAME</div>
-                      </div>
-                      <div className="p-2 bg-muted rounded">
-                        <div className="text-xs text-muted-foreground mb-1">Name</div>
-                        <div className="font-mono truncate">{settings.customDomain.split('.')[0]}</div>
-                      </div>
-                      <div className="p-2 bg-muted rounded">
-                        <div className="text-xs text-muted-foreground mb-1">Value</div>
-                        <div className="font-mono text-xs">courses.excellion.com</div>
-                      </div>
+                {/* Custom Domain Section */}
+                {domainRecord ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Custom Domain</Label>
+                      {getDomainStatusBadge()}
                     </div>
+                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                      <code className="flex-1 text-sm text-foreground">
+                        {domainRecord.domain}
+                      </code>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive h-8"
+                        onClick={handleRemoveDomain}
+                        disabled={isDeletingDomain}
+                      >
+                        {isDeletingDomain ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertCircle className="w-4 h-4" />}
+                        Remove
+                      </Button>
+                    </div>
+
+                    {/* DNS Instructions (show when not yet verified) */}
+                    {!domainRecord.is_verified && domainRecord.status !== 'active' && (
+                      <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                        <Label className="text-primary">DNS Setup Instructions</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Add these records at your domain registrar:
+                        </p>
+
+                        {/* A Record - Root */}
+                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">A Record (Root Domain)</span>
+                            <Button variant="ghost" size="sm" className="h-6 px-2" onClick={() => copyToClipboard(LOVABLE_IP, 'IP Address')}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <div>
+                              <span className="text-muted-foreground text-xs">Type</span>
+                              <p className="font-mono">A</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground text-xs">Name</span>
+                              <p className="font-mono">@</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground text-xs">Value</span>
+                              <p className="font-mono">{LOVABLE_IP}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* A Record - WWW */}
+                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">A Record (WWW Subdomain)</span>
+                            <Button variant="ghost" size="sm" className="h-6 px-2" onClick={() => copyToClipboard(LOVABLE_IP, 'IP Address')}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <div>
+                              <span className="text-muted-foreground text-xs">Type</span>
+                              <p className="font-mono">A</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground text-xs">Name</span>
+                              <p className="font-mono">www</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground text-xs">Value</span>
+                              <p className="font-mono">{LOVABLE_IP}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* TXT Record */}
+                        <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">TXT Record (Verification)</span>
+                            <Button variant="ghost" size="sm" className="h-6 px-2" onClick={() => copyToClipboard(`excellion=${domainRecord.verification_token}`, 'TXT Value')}>
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <div>
+                              <span className="text-muted-foreground text-xs">Type</span>
+                              <p className="font-mono">TXT</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground text-xs">Name</span>
+                              <p className="font-mono">_excellion</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground text-xs">Value</span>
+                              <p className="font-mono text-xs break-all">excellion={domainRecord.verification_token}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground">
+                          DNS changes can take up to 72 hours to propagate. SSL will be automatically provisioned once verified.
+                        </p>
+
+                        <Button
+                          className="w-full"
+                          onClick={handleVerifyDomain}
+                          disabled={isVerifyingDomain}
+                        >
+                          {isVerifyingDomain ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              Verifying...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 mr-2" />
+                              Verify Now
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Verified state */}
+                    {(domainRecord.is_verified || domainRecord.status === 'active') && (
+                      <div className="p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                        <div className="flex items-center gap-2 text-emerald-400">
+                          <CheckCircle2 className="w-5 h-5" />
+                          <span className="text-sm font-medium">Domain verified and active</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Your course is accessible at{' '}
+                          <a href={`https://${domainRecord.domain}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                            https://{domainRecord.domain}
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Label htmlFor="customDomain">Connect Custom Domain</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="customDomain"
+                        placeholder="learn.yourbrand.com"
+                        value={newDomainInput}
+                        onChange={(e) => setNewDomainInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddDomain()}
+                        className="bg-muted flex-1"
+                      />
+                      <Button onClick={handleAddDomain} disabled={isAddingDomain || !newDomainInput.trim()}>
+                        {isAddingDomain ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Point your domain to your course with full DNS verification and SSL.
+                    </p>
                   </div>
                 )}
               </TabsContent>

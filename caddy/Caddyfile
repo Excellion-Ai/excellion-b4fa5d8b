@@ -8,7 +8,7 @@
     # On-Demand TLS configuration
     on_demand_tls {
         # API endpoint to validate domains before issuing certificates
-        ask https://twaljzxgbbkhhjjocilf.supabase.co/functions/v1/allowed-domains?domain={host}
+        ask https://ejrbfyvlkibbaufcyxtc.supabase.co/functions/v1/allowed-domains?domain={host}
         
         # Rate limiting for certificate requests
         interval 1m
@@ -22,7 +22,7 @@
         on_demand
     }
     
-    reverse_proxy https://twaljzxgbbkhhjjocilf.supabase.co/functions/v1/serve-site {
+    reverse_proxy https://ejrbfyvlkibbaufcyxtc.supabase.co/functions/v1/serve-site {
         header_up Host {upstream_hostport}
         header_up X-Forwarded-Host {host}
         header_up X-Original-Host {host}
@@ -42,7 +42,7 @@
         on_demand
     }
     
-    reverse_proxy https://twaljzxgbbkhhjjocilf.supabase.co/functions/v1/serve-site {
+    reverse_proxy https://ejrbfyvlkibbaufcyxtc.supabase.co/functions/v1/serve-site {
         header_up Host {upstream_hostport}
         header_up X-Forwarded-Host {host}
         header_up X-Original-Host {host}
