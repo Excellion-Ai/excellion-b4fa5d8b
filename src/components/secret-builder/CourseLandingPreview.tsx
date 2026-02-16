@@ -249,18 +249,19 @@ export function CourseLandingPreview({
 
   const renderSection = (sectionType: LandingSectionType) => {
     switch (sectionType) {
-      case 'hero':
+      case 'hero': {
+        const heroBg = course.design_config?.backgrounds?.hero;
+        const bgImage = heroBg || course.thumbnail;
+        const bgOpacity = heroBg ? 'opacity-40' : (styleConfig.imageHeavy ? 'opacity-30' : 'opacity-20');
         return (
           <div key="hero" className={`relative rounded-xl overflow-hidden ${styleConfig.containerClass} p-8 md:p-12`}>
-            {course.thumbnail && styleConfig.imageHeavy && (
-              <div className="absolute inset-0 opacity-30">
-                <img src={course.thumbnail} alt="" className="w-full h-full object-cover" />
+            {bgImage && (
+              <div className={`absolute inset-0 ${bgOpacity}`}>
+                <img src={bgImage} alt="" className="w-full h-full object-cover" />
               </div>
             )}
-            {course.thumbnail && !styleConfig.imageHeavy && (
-              <div className="absolute inset-0 opacity-20">
-                <img src={course.thumbnail} alt="" className="w-full h-full object-cover" />
-              </div>
+            {heroBg && (
+              <div className="absolute inset-0 bg-black/40" />
             )}
             <div className="relative z-10 max-w-2xl">
               <Badge className={accent.badge}>
@@ -294,6 +295,7 @@ export function CourseLandingPreview({
             </div>
           </div>
         );
+      }
 
       case 'outcomes':
         return course.learningOutcomes && course.learningOutcomes.length > 0 ? (
@@ -567,11 +569,21 @@ export function CourseLandingPreview({
       {sections.map(section => renderSection(section))}
       
       {/* Final CTA */}
-      <div className="text-center py-8">
-        <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={onEnrollClick}>
-          Enroll Now & Start Learning
-          <ChevronRight className="w-5 h-5 ml-1" />
-        </Button>
+      <div className="relative text-center py-8 rounded-xl overflow-hidden">
+        {course.design_config?.backgrounds?.cta && (
+          <>
+            <div className="absolute inset-0 opacity-40">
+              <img src={course.design_config.backgrounds.cta} alt="" className="w-full h-full object-cover" />
+            </div>
+            <div className="absolute inset-0 bg-black/40" />
+          </>
+        )}
+        <div className="relative z-10">
+          <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={onEnrollClick}>
+            Enroll Now & Start Learning
+            <ChevronRight className="w-5 h-5 ml-1" />
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { X, GripVertical } from 'lucide-react';
+import { ImageUpload } from '@/components/secret-builder/ImageUpload';
 
 interface DesignEditorModalProps {
   open: boolean;
@@ -129,6 +130,49 @@ export function DesignEditorModal({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Background Images */}
+          <div>
+            <Label className="text-sm text-muted-foreground mb-3 block">Background Images</Label>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Hero Background</Label>
+                <ImageUpload
+                  currentUrl={design.backgrounds?.hero}
+                  onUpload={(url) => setDesign({ ...design, backgrounds: { ...(design.backgrounds || {}), hero: url } })}
+                  onRemove={() => {
+                    const { hero, ...rest } = design.backgrounds || {};
+                    setDesign({ ...design, backgrounds: rest });
+                  }}
+                  aspectRatio="banner"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Curriculum Background</Label>
+                <ImageUpload
+                  currentUrl={design.backgrounds?.curriculum}
+                  onUpload={(url) => setDesign({ ...design, backgrounds: { ...(design.backgrounds || {}), curriculum: url } })}
+                  onRemove={() => {
+                    const { curriculum, ...rest } = design.backgrounds || {};
+                    setDesign({ ...design, backgrounds: rest });
+                  }}
+                  aspectRatio="banner"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">CTA Background</Label>
+                <ImageUpload
+                  currentUrl={design.backgrounds?.cta}
+                  onUpload={(url) => setDesign({ ...design, backgrounds: { ...(design.backgrounds || {}), cta: url } })}
+                  onRemove={() => {
+                    const { cta, ...rest } = design.backgrounds || {};
+                    setDesign({ ...design, backgrounds: rest });
+                  }}
+                  aspectRatio="banner"
+                />
+              </div>
             </div>
           </div>
 
