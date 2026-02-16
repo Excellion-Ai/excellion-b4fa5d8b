@@ -253,6 +253,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "certificates_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "certificates_enrollment_id_fkey"
             columns: ["enrollment_id"]
             isOneToOne: false
@@ -307,6 +314,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "course_reviews_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "course_reviews_enrollment_id_fkey"
             columns: ["enrollment_id"]
             isOneToOne: false
@@ -346,6 +360,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_views_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
             referencedColumns: ["id"]
           },
         ]
@@ -588,6 +609,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
             referencedColumns: ["id"]
           },
         ]
@@ -848,6 +876,13 @@ export type Database = {
             referencedRelation: "courses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lesson_resources_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lesson_views: {
@@ -884,6 +919,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_views_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
             referencedColumns: ["id"]
           },
           {
@@ -964,6 +1006,13 @@ export type Database = {
             referencedRelation: "courses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "purchases_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
+            referencedColumns: ["id"]
+          },
         ]
       }
       quiz_attempts: {
@@ -1003,6 +1052,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
             referencedColumns: ["id"]
           },
           {
@@ -1438,6 +1494,119 @@ export type Database = {
         }
         Relationships: []
       }
+      public_courses: {
+        Row: {
+          average_rating: number | null
+          builder_project_id: string | null
+          created_at: string | null
+          currency: string | null
+          custom_domain: string | null
+          deleted_at: string | null
+          description: string | null
+          design_config: Json | null
+          difficulty: string | null
+          duration_weeks: number | null
+          id: string | null
+          instructor_bio: string | null
+          instructor_name: string | null
+          layout_template: string | null
+          modules: Json | null
+          offer_type: string | null
+          page_sections: Json | null
+          price_cents: number | null
+          published_at: string | null
+          published_url: string | null
+          review_count: number | null
+          section_order: Json | null
+          seo_description: string | null
+          seo_title: string | null
+          social_image_url: string | null
+          status: string | null
+          subdomain: string | null
+          thumbnail_url: string | null
+          title: string | null
+          total_students: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          average_rating?: number | null
+          builder_project_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          custom_domain?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          design_config?: Json | null
+          difficulty?: string | null
+          duration_weeks?: number | null
+          id?: string | null
+          instructor_bio?: string | null
+          instructor_name?: string | null
+          layout_template?: string | null
+          modules?: never
+          offer_type?: string | null
+          page_sections?: Json | null
+          price_cents?: number | null
+          published_at?: string | null
+          published_url?: string | null
+          review_count?: number | null
+          section_order?: Json | null
+          seo_description?: string | null
+          seo_title?: string | null
+          social_image_url?: string | null
+          status?: string | null
+          subdomain?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          total_students?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          average_rating?: number | null
+          builder_project_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          custom_domain?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          design_config?: Json | null
+          difficulty?: string | null
+          duration_weeks?: number | null
+          id?: string | null
+          instructor_bio?: string | null
+          instructor_name?: string | null
+          layout_template?: string | null
+          modules?: never
+          offer_type?: string | null
+          page_sections?: Json | null
+          price_cents?: number | null
+          published_at?: string | null
+          published_url?: string | null
+          review_count?: number | null
+          section_order?: Json | null
+          seo_description?: string | null
+          seo_title?: string | null
+          social_image_url?: string | null
+          status?: string | null
+          subdomain?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          total_students?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_builder_project_id_fkey"
+            columns: ["builder_project_id"]
+            isOneToOne: false
+            referencedRelation: "builder_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_invites_safe: {
         Row: {
           created_at: string | null
@@ -1493,6 +1662,7 @@ export type Database = {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
       }
+      strip_lesson_content: { Args: { modules: Json }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
