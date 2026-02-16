@@ -306,6 +306,17 @@ export default function SecretBuilderHub() {
     };
 
     fetchData();
+
+    // Re-fetch when auth state changes (e.g., session restored after page load)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          fetchData();
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleDeleteClick = (project: BuilderProject, e: React.MouseEvent) => {
