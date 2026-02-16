@@ -186,7 +186,7 @@ export default function QuickstartTemplates() {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/auth?redirect=/course/excellion-quickstart/templates');
+        navigate('/auth?redirect=/course/quickstart/templates');
         return;
       }
       setIsLoading(false);
@@ -216,7 +216,7 @@ export default function QuickstartTemplates() {
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/learn/excellion-quickstart')}>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/learn/quickstart')}>
             <ChevronLeft className="h-4 w-4 mr-1" />
             Back to Course
           </Button>

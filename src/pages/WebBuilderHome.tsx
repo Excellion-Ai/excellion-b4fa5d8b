@@ -522,9 +522,9 @@ const WebBuilderHome = () => {
                     className="w-full sm:w-auto"
                     onClick={() => {
                       if (user) {
-                        navigate('/course/excellion-quickstart');
+                        navigate('/course/quickstart');
                       } else {
-                        navigate('/auth?redirect=/course/excellion-quickstart');
+                        navigate('/auth?redirect=/course/quickstart');
                       }
                     }}
                   >
