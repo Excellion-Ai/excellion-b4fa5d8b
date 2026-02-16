@@ -108,6 +108,7 @@ const WebBuilderHome = () => {
   const [interviewOpen, setInterviewOpen] = useState(false);
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [homeBilling, setHomeBilling] = useState<"monthly" | "annual">("monthly");
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const interview = useInterviewIntake();
@@ -560,13 +561,59 @@ const WebBuilderHome = () => {
 
             {/* Single Plan Card */}
             <div className="p-6 sm:p-8 rounded-2xl bg-card border-2 border-primary relative">
-               <div className="text-center mb-6">
-                <div className="text-4xl sm:text-5xl font-bold text-foreground mb-2">
-                  $19<span className="text-lg text-muted-foreground font-normal"> first month</span>
+              {/* Billing Toggle */}
+              <div className="flex justify-center mb-6">
+                <div className="inline-flex items-center gap-1 p-1 bg-secondary rounded-lg">
+                  <button
+                    onClick={() => setHomeBilling("monthly")}
+                    className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all touch-manipulation ${
+                      homeBilling === "monthly"
+                        ? "bg-accent text-accent-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setHomeBilling("annual")}
+                    className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 sm:gap-2 touch-manipulation ${
+                      homeBilling === "annual"
+                        ? "bg-accent text-accent-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Yearly
+                    <span className="text-[10px] sm:text-xs bg-primary/20 text-primary px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                      Save $158
+                    </span>
+                  </button>
                 </div>
-                <div className="text-muted-foreground text-sm">
-                  then $79/month · or $790/year <span className="text-primary">(save $158)</span>
-                </div>
+              </div>
+
+              <div className="text-center mb-6">
+                {homeBilling === "monthly" ? (
+                  <>
+                    <div className="text-4xl sm:text-5xl font-bold text-foreground mb-2">
+                      $19<span className="text-lg text-muted-foreground font-normal"> first month</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      then $79/month · or{" "}
+                      <button onClick={() => setHomeBilling("annual")} className="underline hover:text-foreground transition-colors">
+                        $790/year
+                      </button>{" "}
+                      <span className="text-primary">(save $158)</span>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-4xl sm:text-5xl font-bold text-foreground mb-2">
+                      $790<span className="text-lg text-muted-foreground font-normal"> /year</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      That's ~$66/month billed annually
+                    </p>
+                  </>
+                )}
                 <p className="text-muted-foreground mt-3">
                   Everything included. Cancel anytime.
                 </p>
@@ -601,9 +648,9 @@ const WebBuilderHome = () => {
 
               <Button 
                 className="w-full h-11 sm:h-12 touch-manipulation"
-                onClick={() => navigate("/pricing")}
+                onClick={() => navigate(homeBilling === "annual" ? "/pricing?billing=annual" : "/pricing")}
               >
-                 Start for $19
+                {homeBilling === "monthly" ? "Start for $19" : "Start for $790/year"}
               </Button>
             </div>
 
