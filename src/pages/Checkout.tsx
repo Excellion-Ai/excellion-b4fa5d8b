@@ -14,41 +14,19 @@ import { toast } from "sonner";
 // Stripe publishable key
 const stripePromise = loadStripe("pk_live_51Sfw2PPCTHzXvqDgF5hSFN8VJyO5SJWbpMJHPNKCiIEvXIcQy5fOFLdN4EsOqJEP6vpSqqEwKH6nJYnlbxmM99BV00Hl1d5vfU");
 
-const PLAN_DETAILS: Record<string, { name: string; monthlyPrice: string; yearlyPrice: string; monthlyDisplay: string; credits: number; features: string[] }> = {
-  starter: {
-    name: "Starter",
+const PLAN_DETAILS: Record<string, { name: string; monthlyPrice: string; yearlyPrice: string; monthlyDisplay: string; features: string[] }> = {
+  coach: {
+    name: "Coach",
     monthlyPrice: "$19",
-    yearlyPrice: "$192",
-    monthlyDisplay: "$16",
-    credits: 200,
+    yearlyPrice: "$790",
+    monthlyDisplay: "$19 first month, then $79",
     features: [
-      "Publish your course site + connect your domain",
-      "Enough build credits for a full first draft + edits",
-      "Basic SEO + simple analytics",
-    ],
-  },
-  pro: {
-    name: "Pro",
-    monthlyPrice: "$39",
-    yearlyPrice: "$396",
-    monthlyDisplay: "$33",
-    credits: 500,
-    features: [
-      "More build credits for frequent edits",
-      "Multiple pages and offers (upsells, waitlist, lead magnet)",
-      "More advanced sections and layouts",
-    ],
-  },
-  agency: {
-    name: "Agency",
-    monthlyPrice: "$99",
-    yearlyPrice: "$996",
-    monthlyDisplay: "$83",
-    credits: 3000,
-    features: [
-      "Highest build credits for heavy use",
-      "Multiple team seats",
-      "White-label options + export tools",
+      "Up to 3 active courses",
+      "Unlimited page views",
+      "Custom domain",
+      "Intake & check-ins",
+      "Student portal",
+      "Built-in analytics",
     ],
   },
 };
@@ -60,10 +38,10 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const plan = searchParams.get("plan") || "pro";
+  const plan = searchParams.get("plan") || "coach";
   const isAnnual = searchParams.get("annual") === "true";
-  const planDetails = PLAN_DETAILS[plan] || PLAN_DETAILS.pro;
-  const displayPrice = isAnnual ? planDetails.monthlyDisplay : planDetails.monthlyPrice;
+  const planDetails = PLAN_DETAILS[plan] || PLAN_DETAILS.coach;
+  const displayPrice = isAnnual ? "~$66" : planDetails.monthlyPrice;
 
   const fetchClientSecret = useCallback(async () => {
     try {
@@ -135,13 +113,9 @@ const Checkout = () => {
                   <span className="font-semibold text-foreground">{planDetails.name} Plan {isAnnual && "(Annual)"}</span>
                   <span className="text-2xl font-bold text-foreground">{displayPrice}<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-accent">
-                  <Sparkles className="w-4 h-4" />
-                  {planDetails.credits} build credits/month (rolls over)
-                </div>
-                {isAnnual && (
-                  <p className="text-xs text-muted-foreground mt-2">Billed as {planDetails.yearlyPrice}/year</p>
-                )}
+                <p className="text-sm text-accent">
+                  {isAnnual ? `Billed as ${planDetails.yearlyPrice}/year` : "First month $19, then $79/mo"}
+                </p>
               </div>
 
               <ul className="space-y-3">
