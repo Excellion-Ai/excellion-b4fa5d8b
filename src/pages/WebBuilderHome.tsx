@@ -648,7 +648,7 @@ const WebBuilderHome = () => {
 
               <Button 
                 className="w-full h-11 sm:h-12 touch-manipulation"
-                onClick={() => navigate(homeBilling === "annual" ? "/pricing?billing=annual" : "/pricing")}
+                onClick={() => navigate(homeBilling === "annual" ? "/checkout?plan=coach&annual=true" : "/checkout?plan=coach")}
               >
                 {homeBilling === "monthly" ? "Start for $19" : "Start for $790/year"}
               </Button>
