@@ -15,6 +15,9 @@ const PRICE_IDS = {
   starter_annual: "price_1SmmyuPCTHzXvqDgr8k0y8s6", // $192/year ($16/mo)
   pro_annual: "price_1Smn0VPCTHzXvqDgXLwyNKJ3",     // $396/year ($33/mo)
   agency_annual: "price_1Smn33PCTHzXvqDgxuGNuQkT",  // $996/year ($83/mo)
+  // Coach plan
+  coach_monthly: "price_1T1YjKPCTHzXvqDggzAat1Q0",  // $19 first month, then $79/mo
+  coach_annual: "price_1T1YjxPCTHzXvqDg3Plq3gtT",   // $790/year
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {

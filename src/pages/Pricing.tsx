@@ -8,14 +8,13 @@ import { Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-// Price IDs for the single plan
+// Real Stripe Price IDs
 const PRICE_IDS = {
-  monthly: "price_coach_monthly",  // $79/mo - TODO: Replace with actual Stripe Price ID
-  annual: "price_coach_annual",    // $790/yr - TODO: Replace with actual Stripe Price ID
+  monthly: "price_1T1YjKPCTHzXvqDggzAat1Q0",  // $19 first month, then $79/mo
+  annual: "price_1T1YjxPCTHzXvqDg3Plq3gtT",    // $790/yr
 };
 
 const Pricing = () => {
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("yearly");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -43,14 +42,12 @@ const Pricing = () => {
           description: "Please sign in to subscribe",
           variant: "destructive",
         });
-        navigate("/auth?redirect=/checkout?plan=coach" + (billingPeriod === "yearly" ? "&annual=true" : ""));
+        navigate("/auth?redirect=/pricing");
         return;
       }
 
-      const priceId = billingPeriod === "yearly" ? PRICE_IDS.annual : PRICE_IDS.monthly;
-      
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
+        body: { priceId: PRICE_IDS.monthly, planType: "coach_monthly" },
       });
 
       if (error) throw error;
@@ -80,54 +77,26 @@ const Pricing = () => {
               Pricing
             </h1>
             <p className="text-base sm:text-xl text-muted-foreground">
-              One plan. Works for any fitness coach.
+              One plan for fitness course creators.
             </p>
           </div>
 
           {/* Single Plan Card */}
           <Card className="relative bg-card border-2 border-primary">
             <CardHeader className="text-center p-6 sm:p-8 pb-4">
-              {/* Billing Toggle */}
-              <div className="inline-flex items-center gap-1 p-1 bg-secondary rounded-lg mx-auto mb-6">
-                <button
-                  onClick={() => setBillingPeriod("monthly")}
-                  className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all touch-manipulation ${
-                    billingPeriod === "monthly"
-                      ? "bg-accent text-accent-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Monthly
-                </button>
-                <button
-                  onClick={() => setBillingPeriod("yearly")}
-                  className={`px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 sm:gap-2 touch-manipulation ${
-                    billingPeriod === "yearly"
-                      ? "bg-accent text-accent-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Yearly
-                  <span className="text-[10px] sm:text-xs bg-green-500/20 text-green-400 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
-                    Save $158
-                  </span>
-                </button>
-              </div>
-
               <div className="mb-2">
                 <span className="text-4xl sm:text-5xl font-bold text-foreground">
-                  {billingPeriod === "yearly" ? "$790" : "$79"}
+                  $19
                 </span>
                 <span className="text-lg text-muted-foreground ml-2">
-                  {billingPeriod === "yearly" ? "/year" : "/month"}
+                  first month
                 </span>
               </div>
               
-              {billingPeriod === "yearly" && (
-                <p className="text-sm text-muted-foreground">
-                  That's ~$66/month billed annually
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                then $79/month · or $790/year{" "}
+                <span className="text-emerald-400/90">(save $158)</span>
+              </p>
               
               <p className="text-muted-foreground mt-4">
                 Everything included. Cancel anytime.
@@ -135,7 +104,7 @@ const Pricing = () => {
             </CardHeader>
 
             <CardContent className="p-6 sm:p-8 pt-0">
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                 {features.map((feature, idx) => (
                   <div key={idx} className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-primary shrink-0" />
@@ -157,7 +126,7 @@ const Pricing = () => {
                     Loading...
                   </>
                 ) : (
-                  "Get Started"
+                  "Start for $19"
                 )}
               </Button>
             </CardFooter>
@@ -165,7 +134,7 @@ const Pricing = () => {
 
           {/* Trust line */}
           <p className="text-center text-sm text-muted-foreground mt-6">
-            No hidden fees. No credit limits. Just build your coaching offer.
+            No hidden fees. Just build and sell your course.
           </p>
         </div>
       </main>
