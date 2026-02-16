@@ -478,7 +478,7 @@ const WebBuilderHome = () => {
                 Excellion Quickstart Course (Preview)
               </h2>
               <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-                A step-by-step walkthrough that helps you publish your offer page, client portal, and weekly check-ins fast.
+                One voice call creates your prompt. One click generates a complete draft — course, scripts, downloads, and sales page. Then refine any section with a typed command.
               </p>
             </div>
 
@@ -487,9 +487,9 @@ const WebBuilderHome = () => {
               <div>
                 <ul className="space-y-3 mb-6">
                   {[
-                    "Write and structure your offer in minutes",
-                    "Build a clean client portal that reduces support messages",
-                    "Launch weekly check-ins that keep clients consistent",
+                    "Generate a full draft from a single AI prompt",
+                    "Refine any section by typing a command",
+                    "Publish and share a live link on your schedule",
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm sm:text-base text-muted-foreground">
                       <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -502,11 +502,10 @@ const WebBuilderHome = () => {
                   <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-3">Course Outline</p>
                   <ul className="space-y-2">
                     {[
-                      "Module 1: Offer + pricing",
-                      "Module 2: Offer page + CTA",
-                      "Module 3: Client portal setup",
-                      "Module 4: Intake + check-ins",
-                      "Module 5: Publish + domain",
+                      "Module 1: Prompt Call (Start Here)",
+                      "Module 2: Generate + Review Your Draft",
+                      "Module 3: Regenerate Anything",
+                      "Module 4: Publish + Go Live",
                     ].map((mod, i) => (
                       <li key={i} className="flex items-center gap-2.5 text-sm text-muted-foreground">
                         <Check className="w-4 h-4 text-primary/60 shrink-0" />
