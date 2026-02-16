@@ -1,86 +1,178 @@
 
 
-# Fix Publishing, Domains, and Infrastructure Gaps
+# Fix and Restructure Excellion Quickstart Course
 
-## Current State Summary
+## Summary
 
-- **Course publishing** works entirely through client-side routing (`/course/{subdomain}`). Data lives in the `courses` table and is rendered by your React app. No static HTML, no Caddy involvement.
-- **Site builder publishing** generates static HTML, uploads it to storage, and serves it via `{slug}.excellion.app` through Caddy and the `serve-site` edge function.
-- **Custom domains for sites** have a full pipeline: DNS instructions (A records + TXT verification), `verify-domain-dns` edge function, `allowed-domains` check, and `serve-site` resolution.
-- **Custom domains for courses** are just a text input that saves a string to the database. There is no DNS verification, no serving infrastructure, and the CNAME instructions shown are incorrect (pointing to a nonexistent `courses.excellion.com`).
-- **Caddy config** references an old Supabase project ID (`twaljzxgbbkhhjjocilf`) instead of the current one (`ejrbfyvlkibbaufcyxtc`).
+The quickstart course already exists in the database with 4 modules and 15 lessons, status "published", and the correct system-owned user ID. The main issues are: (a) the slug is `excellion-quickstart` but the plan calls for `quickstart`, (b) there is no auto-recovery if the record is missing, (c) no admin reset capability, and (d) the "Optional Add-Ons Checklist" is embedded inside Module 4 Lesson 2 instead of being a standalone page.
 
-## Planned Changes
+---
 
-### 1. Fix Caddy configuration (infrastructure)
-**File:** `caddy/Caddyfile`
+## A. Final Curriculum (as it will appear in the course player)
 
-Update all `reverse_proxy` URLs from `twaljzxgbbkhhjjocilf.supabase.co` to `ejrbfyvlkibbaufcyxtc.supabase.co` so that site serving and domain validation actually reach the correct backend.
+**Module 1: Prompt Call (Start Here)** -- 4 lessons, ~13 min
+1. What the call covers and how long it takes (3 min) -- Preview
+2. Preparing your answers (offer, audience, pricing) (3 min)
+3. Start the voice call agent (5 min)
+4. Review your generated prompt (2 min)
 
-### 2. Fix wrong storage URL in CustomDomainsPanel
-**File:** `src/components/secret-builder/CustomDomainsPanel.tsx`
+**Module 2: Generate + Review Your Draft** -- 3 lessons, ~10 min
+1. Course structure walkthrough (4 min)
+2. Sales page and pricing overview (3 min)
+3. Identify sections to regenerate (3 min)
 
-The `STORAGE_BASE_URL` constant on line 31 references the old project ID. Update it to use the current project ID (`ejrbfyvlkibbaufcyxtc`).
+**Module 3: Regenerate Anything** -- 6 lessons, ~25 min
+1. How the command prompt works (3 min)
+2. Regenerate lesson scripts and module intros (5 min)
+3. Regenerate sales page sections (5 min)
+4. Regenerate downloads and resources (4 min)
+5. Batch prompts for multiple sections (4 min)
+6. Preview your full result (4 min)
 
-### 3. Upgrade the Course Publish Settings domain tab with real DNS verification
-**File:** `src/components/secret-builder/CoursePublishSettingsDialog.tsx`
+**Module 4: Publish + Go Live** -- 2 lessons, ~10 min
+1. Final preview and domain setup (5 min)
+2. Publish and share your live link (5 min)
 
-Replace the current placeholder Domain tab with a proper implementation:
-- When a custom domain is entered and saved, insert a record into the `custom_domains` table (linking to the course via the course's `builder_project_id` or a new reference column)
-- Show the correct DNS setup instructions: A records pointing to `185.158.133.1` and a TXT verification record
-- Add a "Verify Now" button that calls the existing `verify-domain-dns` edge function
-- Show verification status badge (Pending / Verified)
-- Remove the incorrect CNAME instructions
+**Standalone page (not a module): Optional Add-Ons Checklist**
+- Linked at the bottom of Module 4 and in the sidebar
 
-### 4. Update `serve-site` edge function to also resolve course domains
-**File:** `supabase/functions/serve-site/index.ts`
+Total: 4 modules, 15 lessons, ~58 minutes
 
-When a custom domain resolves to a project via the `custom_domains` table, check if that project has a linked course (`builder_project_id` on the `courses` table). If so, redirect to the course's published URL on the main app (e.g., `excellion.lovable.app/course/{subdomain}`) instead of trying to fetch static HTML from storage.
+---
 
-This enables custom domains like `learn.mybrand.com` to redirect to the course page.
+## B. Optional Add-Ons Checklist Page Content
 
-### 5. Fix TXT record naming convention
-**File:** `src/components/secret-builder/CustomDomainsPanel.tsx`
+- Weekly check-in forms (drip a short form each week to track student progress)
+- Resource library page (centralize all downloadable worksheets, templates, and PDFs)
+- Community or discussion link (connect a Circle, Skool, or Discord community)
+- Email notifications (set up enrollment confirmations and lesson reminders)
+- Upsell or next-offer page (add a checkout link for your next course or 1:1 coaching)
+- Affiliate or referral tracking (create a shareable link with a referral code)
+- Student testimonials section (collect and display social proof on your sales page)
+- Completion certificate customization (upload a branded certificate background)
 
-The current DNS instructions show `_lovable` as the TXT record name with `lovable_verify=...` as the value. However, the `verify-domain-dns` edge function checks for `excellion={token}`. These need to be aligned:
-- Update the UI to show `_excellion` as the TXT name and `excellion={token}` as the value (matching what the edge function expects), OR
-- Update the edge function to also accept the `lovable_verify=` format
+---
 
-The recommendation is to update the UI to use `_excellion` and `excellion={token}` since this is your own platform.
+## C. Implementation Checklist
+
+### 1. Change slug from `excellion-quickstart` to `quickstart`
+
+**Database:** Update the course record's `subdomain` from `excellion-quickstart` to `quickstart`.
+
+**Files to update (all references):**
+- `src/pages/CoursePage.tsx` -- change all `excellion-quickstart` string checks to `quickstart`
+- `src/pages/LearnPage.tsx` -- change the templates link check
+- `src/pages/WebBuilderHome.tsx` -- update navigation URLs
+- `src/pages/QuickstartTemplates.tsx` -- update redirect and back-link URLs
+- `src/App.tsx` -- update the templates route path from `/course/excellion-quickstart/templates` to `/course/quickstart/templates`
+
+### 2. Auto-seed with recovery fallback (CoursePage.tsx)
+
+When loading the quickstart course (`subdomain === 'quickstart'`):
+- If the database query returns no course, instead of showing "Course Not Found", call a new `seed-quickstart` edge function that upserts the canonical curriculum
+- Show a "Restoring this course..." spinner while the seed runs
+- After seed completes, re-fetch the course and render normally
+- If the seed also fails, show a recovery UI: "We're restoring this course now. Refresh in 10 seconds." with a Refresh button
+
+### 3. Create `seed-quickstart` edge function
+
+**File:** `supabase/functions/seed-quickstart/index.ts`
+
+This function:
+- Checks if the course already exists (by subdomain `quickstart`)
+- If missing, inserts the full canonical curriculum with:
+  - `user_id`: `00000000-0000-0000-0000-000000000000` (system-owned)
+  - `status`: `published`
+  - `published_at`: current timestamp
+  - `subdomain`: `quickstart`
+  - `price_cents`: 0
+  - All 4 modules with 15 lessons (exact content from section A above)
+- If exists but unpublished, updates `status` to `published` and sets `published_at`
+- Returns the course record
+
+**Config:** Add `verify_jwt = false` in `supabase/config.toml` for this function (it needs to run for unauthenticated recovery scenarios, but uses service_role internally).
+
+### 4. Admin "Reset Quickstart Course" button (AdminCourses.tsx)
+
+Add a button visible only when the quickstart course is listed (or missing). When clicked:
+- Calls the `seed-quickstart` edge function with a `{ force_reset: true }` flag
+- The edge function, when `force_reset` is true, overwrites the `modules` JSONB with the canonical curriculum regardless of current content
+- Shows a success toast on completion
+
+### 5. Standalone Add-Ons Checklist page
+
+**File:** `src/pages/QuickstartAddons.tsx` (new)
+
+A simple page showing the checklist from section B above, with:
+- A header: "Optional Add-Ons Checklist"
+- Badge: "Optional"
+- Each item as a checkbox row (local state only, not persisted)
+- Back link to `/learn/quickstart`
+
+**Routing:** Add route `/course/quickstart/addons` in `App.tsx`
+
+**Sidebar link:** In `LearnPage.tsx`, after the modules list, add a link to this page when `course.subdomain === 'quickstart'`:
+```
+Optional Add-Ons Checklist (Optional) ->
+```
+
+### 6. Remove Module 0 labeling
+
+The current `LearnPage.tsx` sidebar already uses `Module {mi + 1}` (line 508), so module numbering starts at 1. The `QuickstartLanding.tsx` curriculum section also uses `{idx + 1}`. No Module 0 exists anywhere. This is already correct.
+
+### 7. Remove the add-ons checklist data from Module 4 Lesson 2
+
+Update the canonical curriculum so Module 4, Lesson 2 (`m4l2`) no longer embeds the `checklist` and `templates` arrays. Those items move to the standalone page. The lesson description changes to: "Publish your course and start sharing it with your audience."
 
 ---
 
 ## Technical Details
 
-### DNS instruction alignment
-
-Current mismatch:
-- **UI shows:** TXT name `_lovable`, value `lovable_verify={token}`
-- **Edge function checks:** TXT name `_excellion.{domain}`, value `excellion={token}`
-
-Fix: Update `CustomDomainsPanel.tsx` lines 566-570 to show `_excellion` and `excellion={token}`.
-
-### Course domain serving flow
+### Edge function: `seed-quickstart`
 
 ```text
-User visits learn.mybrand.com
-  --> Caddy proxies to serve-site edge function
-  --> serve-site looks up custom_domains table
-  --> Finds project_id, checks for linked course
-  --> Returns 302 redirect to excellion.lovable.app/course/{subdomain}
+POST /seed-quickstart
+Body: { force_reset?: boolean }
+
+- Uses SUPABASE_SERVICE_ROLE_KEY to bypass RLS
+- Upserts to courses table with ON CONFLICT on subdomain
+- Returns { success: true, course_id: "..." }
 ```
 
-This avoids needing to generate static HTML for courses while still enabling custom domain access.
+### CoursePage.tsx recovery flow (pseudocode)
+
+```text
+if (subdomain === 'quickstart' && courseNotFound) {
+  setRecoveryState('seeding')
+  call seed-quickstart edge function
+  if (success) {
+    re-fetch course
+    setRecoveryState(null)
+  } else {
+    setRecoveryState('failed')
+    show "Restoring... Refresh in 10 seconds" + Refresh button
+  }
+}
+```
 
 ### Files changed summary
 
 | File | Change |
 |------|--------|
-| `caddy/Caddyfile` | Fix Supabase project ID |
-| `src/components/secret-builder/CustomDomainsPanel.tsx` | Fix storage URL, fix TXT record instructions |
-| `src/components/secret-builder/CoursePublishSettingsDialog.tsx` | Add real DNS verification UI for course custom domains |
-| `supabase/functions/serve-site/index.ts` | Add course domain redirect logic |
+| `src/pages/CoursePage.tsx` | Slug references, auto-seed recovery logic |
+| `src/pages/LearnPage.tsx` | Slug references, add-ons sidebar link |
+| `src/pages/WebBuilderHome.tsx` | Slug references |
+| `src/pages/QuickstartTemplates.tsx` | Slug references |
+| `src/App.tsx` | Route paths for templates and addons |
+| `src/pages/AdminCourses.tsx` | Admin reset button |
+| `src/pages/QuickstartAddons.tsx` | New standalone checklist page |
+| `supabase/functions/seed-quickstart/index.ts` | New edge function |
+| `supabase/config.toml` | JWT config for seed function |
 
-### No database changes needed
+### Database change
 
-The existing `custom_domains` table already has `project_id` which can reference the course's `builder_project_id`. The `courses` table already has `custom_domain` and `builder_project_id` columns.
+One data update (not a schema migration):
+```sql
+UPDATE courses SET subdomain = 'quickstart' WHERE subdomain = 'excellion-quickstart';
+```
+
