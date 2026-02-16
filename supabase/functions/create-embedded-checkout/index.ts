@@ -6,19 +6,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Price IDs for subscription plans - Monthly
+// Excellion Coach Plan — the only plan
 const PRICE_IDS: Record<string, string> = {
-  starter: "price_1SmmvRPCTHzXvqDgcuiCxcqD",        // $19/mo
-  pro: "price_1SmmvnPCTHzXvqDgbSE6wxMV",            // $39/mo
-  agency: "price_1Smmy1PCTHzXvqDg1t7EjziF",         // $99/mo
+  coach: "price_1T1YnuPCTHzXvqDgZwElpsRS",  // $79/mo (coupon makes first month $19)
 };
 
-// Annual price IDs
 const ANNUAL_PRICE_IDS: Record<string, string> = {
-  starter: "price_1SmmyuPCTHzXvqDgr8k0y8s6",        // $192/year ($16/mo)
-  pro: "price_1Smn0VPCTHzXvqDgXLwyNKJ3",            // $396/year ($33/mo)
-  agency: "price_1Smn33PCTHzXvqDgxuGNuQkT",         // $996/year ($83/mo)
+  coach: "price_1T1YjxPCTHzXvqDg3Plq3gtT",  // $790/year
 };
+
+// Coupon ID for $60 off first month (makes $79 → $19)
+const FIRST_MONTH_COUPON = "bIX05TiJ";
+const COUPON_ELIGIBLE_PRICES = new Set([PRICE_IDS.coach]);
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -82,7 +81,7 @@ Deno.serve(async (req) => {
 
     // Create embedded checkout session
     const origin = req.headers.get("origin") || "https://excellionweb.com";
-    const session = await stripe.checkout.sessions.create({
+    const sessionOptions: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -98,7 +97,15 @@ Deno.serve(async (req) => {
         user_id: user.id,
         plan_type: planType,
       },
-    });
+    };
+
+    // Auto-apply first-month coupon for eligible prices
+    if (COUPON_ELIGIBLE_PRICES.has(selectedPriceId)) {
+      sessionOptions.discounts = [{ coupon: FIRST_MONTH_COUPON }];
+      logStep("Applied first-month coupon", { coupon: FIRST_MONTH_COUPON });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
     logStep("Embedded checkout session created", { sessionId: session.id });
 
     return new Response(JSON.stringify({ 
