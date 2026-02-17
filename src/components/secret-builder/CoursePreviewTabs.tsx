@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { EditableOverlay } from './visual-editing/EditableOverlay';
+import { PricingTab } from './PricingTab';
 import { InlineEditModal, type EditTarget } from './visual-editing/InlineEditModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +40,7 @@ import {
   ChevronLeft,
   ChevronUp,
   ChevronDown,
+  DollarSign,
   GraduationCap,
   Users,
   Target,
@@ -94,7 +96,7 @@ import {
 } from './course-sections';
 import { ResourceManager } from '@/components/resources';
 
-type TabType = 'landing' | 'curriculum' | 'lesson' | 'dashboard' | 'bonuses' | 'resources' | 'community' | 'testimonials';
+type TabType = 'landing' | 'curriculum' | 'lesson' | 'dashboard' | 'pricing' | 'bonuses' | 'resources' | 'community' | 'testimonials';
 
 interface CoursePreviewTabsProps {
   course: ExtendedCourse;
@@ -117,6 +119,7 @@ const BASE_TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
   { id: 'curriculum', label: 'Curriculum', icon: BookOpen },
   { id: 'lesson', label: 'Lesson Preview', icon: Play },
   { id: 'dashboard', label: 'Student Dashboard', icon: LayoutDashboard },
+  { id: 'pricing', label: 'Pricing', icon: DollarSign },
 ];
 
 const PAGE_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
@@ -2248,6 +2251,18 @@ export function CoursePreviewTabs({
         {activeTab === 'curriculum' && renderCurriculum()}
         {activeTab === 'lesson' && renderLessonPreview()}
         {activeTab === 'dashboard' && renderDashboard()}
+        {activeTab === 'pricing' && (
+          <PricingTab
+            courseId={course.id}
+            priceCents={(course as any).price_cents ?? null}
+            currency={(course as any).currency ?? 'USD'}
+            onUpdate={(updates) => {
+              if (onUpdate) {
+                onUpdate({ ...course, price_cents: updates.price_cents ?? undefined } as any);
+              }
+            }}
+          />
+        )}
         {['bonuses', 'resources', 'community', 'testimonials'].includes(activeTab) && renderSeparatePage(activeTab)}
       </div>
 
