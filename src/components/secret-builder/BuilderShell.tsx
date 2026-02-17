@@ -415,6 +415,18 @@ export function BuilderShell() {
   const [courseEditCount, setCourseEditCount] = useState(0);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const FREE_EDIT_LIMIT = 3;
+  
+  // Founder accounts get unlimited edits
+  const FOUNDER_EMAILS = ['excellionai@gmail.com'];
+  const [isFounder, setIsFounder] = useState(false);
+  
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.email && FOUNDER_EMAILS.includes(user.email.toLowerCase())) {
+        setIsFounder(true);
+      }
+    });
+  }, []);
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -442,8 +454,8 @@ export function BuilderShell() {
       const next = typeof newSpec === 'function' ? newSpec(prev) : newSpec;
       // Only mark dirty for actual content changes, not clearing
       if (next !== null && prev !== null) {
-        // Check free edit limit
-        if (!isPaidUser && courseEditCount >= FREE_EDIT_LIMIT) {
+        // Check free edit limit (founders and paid users bypass)
+        if (!isPaidUser && !isFounder && courseEditCount >= FREE_EDIT_LIMIT) {
           setShowUpgradeModal(true);
           return prev; // Block the edit
         }
@@ -453,7 +465,7 @@ export function BuilderShell() {
       }
       return next;
     });
-  }, [isPaidUser, courseEditCount]);
+  }, [isPaidUser, isFounder, courseEditCount]);
   
   const [imageAttachment, setImageAttachment] = useState<string | null>(null);
   const [showImageDialog, setShowImageDialog] = useState(false);
