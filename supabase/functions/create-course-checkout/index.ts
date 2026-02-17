@@ -52,12 +52,28 @@ Deno.serve(async (req) => {
     }
     logStep("Request parsed", { course_id });
 
-    // Fetch course details
+    // Fetch course details + creator's Stripe account
     const { data: course, error: courseError } = await supabaseAdmin
       .from("courses")
       .select("id, title, price_cents, currency, subdomain, user_id")
       .eq("id", course_id)
       .single();
+
+    if (courseError || !course) {
+      throw new Error("Course not found");
+    }
+
+    // Look up creator's connected Stripe account
+    const { data: creatorProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("stripe_account_id, stripe_onboarding_complete")
+      .eq("id", course.user_id)
+      .single();
+
+    const creatorStripeAccountId = creatorProfile?.stripe_onboarding_complete
+      ? creatorProfile.stripe_account_id
+      : null;
+    logStep("Creator Stripe account", { creatorStripeAccountId, onboarded: creatorProfile?.stripe_onboarding_complete });
 
     if (courseError || !course) {
       throw new Error("Course not found");
@@ -102,8 +118,14 @@ Deno.serve(async (req) => {
     const finalSuccessUrl = success_url || `${origin}/purchase-success?session_id={CHECKOUT_SESSION_ID}&course=${courseSlug}`;
     const finalCancelUrl = cancel_url || `${origin}/course/${courseSlug}`;
 
-    // Create checkout session with price_data for dynamic pricing
-    const session = await stripe.checkout.sessions.create({
+    // Calculate platform fee (2% of price)
+    const applicationFeeAmount = creatorStripeAccountId
+      ? Math.round(course.price_cents * 0.02)
+      : 0;
+    logStep("Fee calculation", { price: course.price_cents, applicationFee: applicationFeeAmount });
+
+    // Build checkout session options
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -127,7 +149,20 @@ Deno.serve(async (req) => {
         course_id: course.id,
         course_title: course.title,
       },
-    });
+    };
+
+    // If creator has a connected Stripe account, use destination charges
+    if (creatorStripeAccountId) {
+      sessionParams.payment_intent_data = {
+        application_fee_amount: applicationFeeAmount,
+        transfer_data: {
+          destination: creatorStripeAccountId,
+        },
+      };
+      logStep("Using Connect destination charge", { destination: creatorStripeAccountId, fee: applicationFeeAmount });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
     // Create pending purchase record
