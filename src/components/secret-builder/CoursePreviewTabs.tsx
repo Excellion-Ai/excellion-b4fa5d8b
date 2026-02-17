@@ -1593,8 +1593,8 @@ export function CoursePreviewTabs({
                       </div>
                     )}
 
-                    {/* Resources Section */}
-                    {course.id && currentLesson && editedLessonType !== 'quiz' && (
+                    {/* Resources Section - available for ALL lesson types */}
+                    {course.id && currentLesson && (
                       <ResourceManager
                         courseId={course.id}
                         lessonId={currentLesson.id}
