@@ -1,0 +1,4 @@
+
+-- Add Stripe Connect columns to profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS stripe_account_id text;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS stripe_onboarding_complete boolean NOT NULL DEFAULT false;

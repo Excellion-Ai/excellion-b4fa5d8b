@@ -101,6 +101,7 @@ import { useInterviewIntake } from '@/hooks/useInterviewIntake';
 import excellionLogo from '@/assets/excellion-logo.png';
 import studioBackground from '@/assets/studio-background.png';
 import { CourseCardPreview } from '@/components/secret-builder/CourseCardPreview';
+import { StripeConnectBanner } from '@/components/secret-builder/StripeConnectBanner';
 
 interface BuilderProject {
   id: string;
@@ -1431,6 +1432,9 @@ export default function SecretBuilderHub() {
               ))}
             </div>
           </section>
+
+          {/* Stripe Connect Banner */}
+          <StripeConnectBanner />
 
           {/* Courses Section */}
           <section id="projects-section" className="mb-12">
