@@ -13,7 +13,9 @@ import { toast } from 'sonner';
 import { 
   FileText, 
   FileSpreadsheet, 
-  Image as ImageIcon, 
+  Image as ImageIcon,
+  Video,
+  Music,
   Archive, 
   File, 
   Plus, 
@@ -60,6 +62,12 @@ const getFileIcon = (fileType: string | null) => {
   }
   if (fileType.includes('image')) {
     return <ImageIcon className="w-5 h-5 text-purple-500" />;
+  }
+  if (fileType.includes('video') || fileType.includes('mp4')) {
+    return <Video className="w-5 h-5 text-orange-500" />;
+  }
+  if (fileType.includes('audio') || fileType.includes('mp3')) {
+    return <Music className="w-5 h-5 text-pink-500" />;
   }
   if (fileType.includes('zip') || fileType.includes('archive')) {
     return <Archive className="w-5 h-5 text-amber-500" />;
@@ -341,14 +349,14 @@ export function ResourceManager({
                       Drop file here or click to browse
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      PDF, Word, Excel, ZIP, PNG, JPG (max 10MB)
+                      PDF, Word, Excel, Video, Audio, ZIP, Images (max 10MB)
                     </p>
                   </>
                 )}
                 <input
                   type="file"
                   className="absolute inset-0 opacity-0 cursor-pointer"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg,.mp4,.mov,.mp3,.wav,.pptx,.txt,.csv"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) handleFileSelect(file);
