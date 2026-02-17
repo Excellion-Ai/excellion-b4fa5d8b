@@ -119,7 +119,6 @@ const BASE_TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
   { id: 'curriculum', label: 'Curriculum', icon: BookOpen },
   { id: 'lesson', label: 'Lesson Preview', icon: Play },
   { id: 'dashboard', label: 'Student Dashboard', icon: LayoutDashboard },
-  { id: 'pricing', label: 'Pricing', icon: DollarSign },
 ];
 
 const PAGE_TYPE_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
@@ -2117,16 +2116,16 @@ export function CoursePreviewTabs({
             {/* Mobile Action Buttons */}
             <div className="flex items-center gap-2">
               <Button
-                variant={isEditMode ? 'default' : 'outline'}
+                variant={activeTab === 'pricing' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setIsEditMode(!isEditMode)}
-                className={`flex-1 ${isEditMode 
+                onClick={() => setActiveTab(activeTab === 'pricing' ? 'landing' : 'pricing')}
+                className={`flex-1 ${activeTab === 'pricing'
                   ? 'bg-amber-500 hover:bg-amber-600 text-black' 
                   : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
                 }`}
               >
-                <Settings className="w-4 h-4 mr-2" />
-                Edit Layout
+                <DollarSign className="w-4 h-4 mr-2" />
+                Pricing
               </Button>
               {isPublished && onUnpublish && (
                 <Button
@@ -2182,18 +2181,18 @@ export function CoursePreviewTabs({
             
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
-              {/* Edit Layout Button */}
+              {/* Pricing Button */}
               <Button
-                variant={isEditMode ? 'default' : 'outline'}
+                variant={activeTab === 'pricing' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setIsEditMode(!isEditMode)}
-                className={isEditMode 
+                onClick={() => setActiveTab(activeTab === 'pricing' ? 'landing' : 'pricing')}
+                className={activeTab === 'pricing'
                   ? 'bg-amber-500 hover:bg-amber-600 text-black' 
                   : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
                 }
               >
-                <Settings className="w-4 h-4 mr-2" />
-                Edit Layout
+                <DollarSign className="w-4 h-4 mr-2" />
+                Pricing
               </Button>
               
               {/* Unpublish Button - only if published */}
