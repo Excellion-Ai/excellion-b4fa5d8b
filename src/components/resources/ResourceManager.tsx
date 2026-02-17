@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -89,6 +89,10 @@ export function ResourceManager({
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Store callback in a ref to avoid re-triggering effects
+  const onResourcesChangeRef = useRef(onResourcesChange);
+  onResourcesChangeRef.current = onResourcesChange;
+
   const fetchResources = useCallback(async () => {
     if (!courseId || !lessonId) return;
     
@@ -104,10 +108,10 @@ export function ResourceManager({
       console.error('Error fetching resources:', error);
     } else {
       setResources(data || []);
-      onResourcesChange?.(data?.length || 0);
+      onResourcesChangeRef.current?.(data?.length || 0);
     }
     setIsLoading(false);
-  }, [courseId, lessonId, onResourcesChange]);
+  }, [courseId, lessonId]);
 
   useEffect(() => {
     fetchResources();
