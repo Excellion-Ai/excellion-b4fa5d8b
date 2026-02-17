@@ -2119,25 +2119,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
 
           {/* Toolbar buttons matching screenshot */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Visual Edit Mode */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (courseSpec) {
-                  setIsVisualEditMode(!isVisualEditMode);
-                  toast.success(isVisualEditMode ? 'Visual edit mode off' : 'Visual edit mode on - hover sections to edit');
-                } else {
-                  setVisualEditsEnabled(!visualEditsEnabled);
-                  toast.success(visualEditsEnabled ? 'Visual edits disabled' : 'Visual edits enabled - click elements to edit');
-                }
-              }}
-              className={`gap-1.5 text-xs px-3 h-9 ${(courseSpec ? isVisualEditMode : visualEditsEnabled) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              <Pencil className="h-4 w-4" />
-              <span>Visual</span>
-            </Button>
-
             {/* Design Editor - only for courses */}
             {courseSpec && (
               <Button
@@ -2203,17 +2184,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             >
               <BarChart3 className="h-4 w-4" />
               <span>Analytics</span>
-            </Button>
-
-            {/* GitHub */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toast.info('GitHub sync coming soon!')}
-              className="gap-1.5 text-xs px-3 h-9 text-muted-foreground hover:text-foreground"
-            >
-              <Github className="h-4 w-4" />
-              <span>GitHub</span>
             </Button>
 
             {/* Publish */}
