@@ -1381,8 +1381,8 @@ export function CoursePreviewTabs({
     <div className={`flex flex-col lg:flex-row gap-4 ${config.containerClass} min-h-0`}>
       {/* Sidebar - 30% on desktop, doesn't grow */}
       <div className="lg:w-[30%] lg:min-w-[240px] lg:max-w-[320px] shrink-0 overflow-hidden">
-        <Card className={`${config.cardClass} border-border h-full`}>
-          <CardHeader className="py-3 px-4">
+        <Card className={`${config.cardClass} border-border flex flex-col overflow-hidden`}>
+          <CardHeader className="py-3 px-4 shrink-0">
             <div className="flex items-center justify-between">
               <CardTitle className={`text-sm ${config.headingClass}`}>Course Content</CardTitle>
               {progressPercent > 0 && (
@@ -1390,8 +1390,8 @@ export function CoursePreviewTabs({
               )}
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="max-h-[300px] lg:max-h-[calc(100vh-400px)]">
+          <CardContent className="p-0 flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="h-[280px] lg:h-[calc(100vh-420px)]">
               <div className="p-2 space-y-2">
                 {course.modules.map((module, moduleIdx) => {
                   const modProgress = moduleProgress.find(p => p.moduleId === module.id);
