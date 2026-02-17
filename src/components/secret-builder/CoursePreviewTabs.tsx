@@ -1188,15 +1188,20 @@ export function CoursePreviewTabs({
                   </h2>
                   <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '12px' }}>
                     {course.pages.faq.map((faq, idx) => (
-                      <EditableOverlay key={idx} isEditMode={isVisualEditMode} label={`FAQ ${idx + 1}`} onEdit={() => openInlineEdit(`FAQ ${idx + 1} Question`, 'text', faq.question, (v) => {
-                        const updatedFaqs = course.pages!.faq!.map((f, i) => i === idx ? { ...f, question: v } : f);
-                        onUpdate?.({ ...course, pages: { ...course.pages!, faq: updatedFaqs } });
-                      })}>
-                        <div style={{ backgroundColor: faqBg, padding: '20px', borderRadius: 'var(--course-radius)' }}>
+                      <div key={idx} style={{ backgroundColor: faqBg, padding: '20px', borderRadius: 'var(--course-radius)' }}>
+                        <EditableOverlay isEditMode={isVisualEditMode} label={`Question ${idx + 1}`} onEdit={() => openInlineEdit(`FAQ ${idx + 1} Question`, 'text', faq.question, (v) => {
+                          const updatedFaqs = course.pages!.faq!.map((f, i) => i === idx ? { ...f, question: v } : f);
+                          onUpdate?.({ ...course, pages: { ...course.pages!, faq: updatedFaqs } });
+                        })}>
                           <div style={{ fontWeight: 600, color: faqText, marginBottom: '8px', fontSize: '15px' }}>{faq.question}</div>
+                        </EditableOverlay>
+                        <EditableOverlay isEditMode={isVisualEditMode} label={`Answer ${idx + 1}`} onEdit={() => openInlineEdit(`FAQ ${idx + 1} Answer`, 'textarea', faq.answer, (v) => {
+                          const updatedFaqs = course.pages!.faq!.map((f, i) => i === idx ? { ...f, answer: v } : f);
+                          onUpdate?.({ ...course, pages: { ...course.pages!, faq: updatedFaqs } });
+                        })}>
                           <div style={{ color: faqMuted, fontSize: '14px' }}>{faq.answer}</div>
-                        </div>
-                      </EditableOverlay>
+                        </EditableOverlay>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -1299,12 +1304,16 @@ export function CoursePreviewTabs({
               className={`bg-gradient-to-r from-${config.accentColor}-500/10 to-${config.accentColor}-600/5 ${accent.borderLight}`}
             >
               <CardContent className="py-8 text-center">
-                <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${config.headingClass}`}>
-                  Ready to Start?
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  Join thousands of students already learning
-                </p>
+                <EditableOverlay isEditMode={isVisualEditMode} label="CTA Title" onEdit={() => openInlineEdit('CTA Title', 'text', 'Ready to Start?', () => {})}>
+                  <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${config.headingClass}`}>
+                    Ready to Start?
+                  </h3>
+                </EditableOverlay>
+                <EditableOverlay isEditMode={isVisualEditMode} label="CTA Subtitle" onEdit={() => openInlineEdit('CTA Subtitle', 'text', 'Join thousands of students already learning', () => {})}>
+                  <p className="text-muted-foreground mb-6">
+                    Join thousands of students already learning
+                  </p>
+                </EditableOverlay>
                 <Button 
                   size="lg" 
                   className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
