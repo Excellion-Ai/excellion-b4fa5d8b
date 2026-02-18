@@ -2306,6 +2306,16 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     isPublishing={isPublishing}
                     isPublished={!!coursePublishedUrl}
                     isVisualEditMode={isVisualEditMode}
+                    logoUrl={(courseSpec as any).design_config?.logo_url}
+                    onUpdateLogo={(url) => {
+                      setCourseSpec((prev: any) => ({
+                        ...prev,
+                        design_config: {
+                          ...(prev?.design_config || {}),
+                          logo_url: url,
+                        },
+                      }));
+                    }}
                   />
                   <RefineChat
                     open={showRefineChat}
