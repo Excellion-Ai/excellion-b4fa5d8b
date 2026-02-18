@@ -2202,25 +2202,25 @@ export function CoursePreviewTabs({
           </div>
         ) : (
           /* Desktop: Standard website navbar */
-          <div className="flex items-center h-14 px-6">
+          <div className="flex items-center h-16 px-6">
             {/* Logo - left */}
             <div className="flex items-center gap-3 shrink-0">
               {isCreatorView ? (
                 <button
                   onClick={() => logoFileRef.current?.click()}
-                  className="shrink-0 w-8 h-8 rounded-md border border-border/40 bg-muted/10 flex items-center justify-center overflow-hidden hover:border-primary/40 hover:bg-muted/30 transition-all group"
+                  className="shrink-0 w-10 h-10 rounded-lg border border-border/40 bg-muted/10 flex items-center justify-center overflow-hidden hover:border-primary/40 hover:bg-muted/30 transition-all group"
                   title={logoUrl ? "Change logo" : "Upload logo"}
                 >
                   {isUploadingLogo ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                   ) : logoUrl ? (
                     <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
                   ) : (
-                    <ImageIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    <ImageIcon className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                   )}
                 </button>
               ) : logoUrl ? (
-                <div className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center overflow-hidden">
+                <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
                   <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
                 </div>
               ) : null}
