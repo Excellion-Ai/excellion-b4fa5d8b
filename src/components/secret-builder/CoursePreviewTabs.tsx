@@ -1414,75 +1414,73 @@ export function CoursePreviewTabs({
 
   // Lesson Preview Content
   const renderLessonPreview = () => (
-    <div className={`flex flex-col lg:flex-row gap-4 ${config.containerClass} min-h-0`}>
-      {/* Sidebar - 30% on desktop, doesn't grow */}
-      <div className="lg:w-[30%] lg:min-w-[240px] lg:max-w-[320px] shrink-0 overflow-hidden">
-        <Card className={`${config.cardClass} border-border h-full flex flex-col overflow-hidden`}>
+    <div className={`grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 ${config.containerClass}`} style={{ minHeight: 0 }}>
+      {/* Sidebar - fixed width, fully contained */}
+      <div className="hidden lg:flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <Card className={`${config.cardClass} border-border flex flex-col overflow-hidden h-full`}>
           <div className="h-12 min-h-[48px] max-h-[48px] flex items-center justify-between px-4 border-b border-border shrink-0">
             <span className={`text-sm font-semibold ${config.headingClass}`}>Course Content</span>
             {progressPercent > 0 && (
               <span className={`text-xs font-medium ${accent.text}`}>{progressPercent}%</span>
             )}
           </div>
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="p-2 space-y-2">
-                {course.modules.map((module, moduleIdx) => {
-                  const modProgress = moduleProgress.find(p => p.moduleId === module.id);
-                  return (
-                    <div key={module.id} className="space-y-1">
-                      <div className="flex items-center gap-2 p-2">
-                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                          modProgress?.isComplete 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : `${accent.bgLight} ${accent.text}`
-                        }`}>
-                          {modProgress?.isComplete ? <Check className="w-3 h-3" /> : moduleIdx + 1}
-                        </span>
-                        <span className={`text-xs font-medium truncate ${config.headingClass}`}>{module.title}</span>
-                      </div>
-                      <div className="ml-5 space-y-0.5">
-                        {module.lessons.map((lesson, lessonIdx) => {
-                          const isActive = selectedModuleIdx === moduleIdx && selectedLessonIdx === lessonIdx;
-                          const isComplete = isLessonComplete(lesson.id);
-                          return (
-                            <button
-                              key={lesson.id}
-                              onClick={() => {
-                                setSelectedModuleIdx(moduleIdx);
-                                setSelectedLessonIdx(lessonIdx);
-                              }}
-                              className={`flex items-center gap-2 w-full p-2 rounded text-left text-xs transition-colors touch-manipulation ${
-                                isActive
-                                  ? `${accent.bgLight} ${accent.text} border ${accent.borderLight}`
-                                  : isComplete
-                                    ? 'text-green-400 hover:bg-green-500/10'
-                                    : 'hover:bg-muted/50 text-muted-foreground'
-                              }`}
-                            >
-                              {isComplete ? (
-                                <CheckCircle2 className="w-3 h-3 shrink-0 text-green-400" />
-                              ) : isActive ? (
-                                <Play className="w-3 h-3 shrink-0" />
-                              ) : (
-                                <Circle className="w-3 h-3 shrink-0" />
-                              )}
-                              <span className="truncate">{lesson.title}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
+          <ScrollArea className="flex-1 min-h-0">
+            <div className="p-2 space-y-2">
+              {course.modules.map((module, moduleIdx) => {
+                const modProgress = moduleProgress.find(p => p.moduleId === module.id);
+                return (
+                  <div key={module.id} className="space-y-1">
+                    <div className="flex items-center gap-2 p-2">
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${
+                        modProgress?.isComplete 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : `${accent.bgLight} ${accent.text}`
+                      }`}>
+                        {modProgress?.isComplete ? <Check className="w-3 h-3" /> : moduleIdx + 1}
+                      </span>
+                      <span className={`text-xs font-medium truncate ${config.headingClass}`}>{module.title}</span>
                     </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </div>
+                    <div className="ml-5 space-y-0.5">
+                      {module.lessons.map((lesson, lessonIdx) => {
+                        const isActive = selectedModuleIdx === moduleIdx && selectedLessonIdx === lessonIdx;
+                        const isComplete = isLessonComplete(lesson.id);
+                        return (
+                          <button
+                            key={lesson.id}
+                            onClick={() => {
+                              setSelectedModuleIdx(moduleIdx);
+                              setSelectedLessonIdx(lessonIdx);
+                            }}
+                            className={`flex items-center gap-2 w-full p-2 rounded text-left text-xs transition-colors touch-manipulation ${
+                              isActive
+                                ? `${accent.bgLight} ${accent.text} border ${accent.borderLight}`
+                                : isComplete
+                                  ? 'text-green-400 hover:bg-green-500/10'
+                                  : 'hover:bg-muted/50 text-muted-foreground'
+                            }`}
+                          >
+                            {isComplete ? (
+                              <CheckCircle2 className="w-3 h-3 shrink-0 text-green-400" />
+                            ) : isActive ? (
+                              <Play className="w-3 h-3 shrink-0" />
+                            ) : (
+                              <Circle className="w-3 h-3 shrink-0" />
+                            )}
+                            <span className="truncate">{lesson.title}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollArea>
         </Card>
       </div>
 
-      {/* Main Content - 70% on desktop */}
-      <div className="flex-1 min-w-0 overflow-hidden space-y-4">
+      {/* Main Content */}
+      <div className="min-w-0 overflow-hidden space-y-4">
         {currentLesson ? (
           <>
             {/* Lesson Header */}
