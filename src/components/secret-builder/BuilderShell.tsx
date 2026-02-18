@@ -410,11 +410,9 @@ export function BuilderShell() {
   } = useHistory<SiteSpec | null>(null);
   const [courseSpec, setCourseSpecInternal] = useState<ExtendedCourse | null>(null);
   
-  // Subscription gating (must be before setCourseSpec wrapper)
-  const { subscribed: isPaidUser } = useSubscription();
-  const [courseEditCount, setCourseEditCount] = useState(0);
+  // Subscription gating - paid plan required to use builder
+  const { subscribed: isPaidUser, loading: subscriptionLoading } = useSubscription();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const FREE_EDIT_LIMIT = 3;
   
   // Founder accounts get unlimited edits
   const FOUNDER_EMAILS = ['excellionai@gmail.com'];
@@ -454,18 +452,12 @@ export function BuilderShell() {
       const next = typeof newSpec === 'function' ? newSpec(prev) : newSpec;
       // Only mark dirty for actual content changes, not clearing
       if (next !== null && prev !== null) {
-        // Check free edit limit (founders and paid users bypass)
-        if (!isPaidUser && !isFounder && courseEditCount >= FREE_EDIT_LIMIT) {
-          setShowUpgradeModal(true);
-          return prev; // Block the edit
-        }
-        setCourseEditCount(c => c + 1);
         setIsDirty(true);
         setSaveStatus('unsaved');
       }
       return next;
     });
-  }, [isPaidUser, isFounder, courseEditCount]);
+  }, []);
   
   const [imageAttachment, setImageAttachment] = useState<string | null>(null);
   const [showImageDialog, setShowImageDialog] = useState(false);
@@ -617,7 +609,7 @@ export function BuilderShell() {
       // Populate state from course data
       setProjectName(courseData.title || 'Untitled Course');
       setCourseId(courseData.id);
-      setCourseEditCount((courseData as any).edit_count || 0);
+      // edit_count no longer used for gating
       if (courseData.published_url) {
         setCoursePublishedUrl(courseData.published_url);
       }
@@ -1770,11 +1762,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
   const [coursePublishedUrl, setCoursePublishedUrl] = useState<string | null>(null);
   const [showCoursePublishDialog, setShowCoursePublishDialog] = useState(false);
 
-  // Sync edit_count to courses table when it changes
-  useEffect(() => {
-    if (!courseId || courseEditCount === 0) return;
-    supabase.from('courses').update({ edit_count: courseEditCount } as any).eq('id', courseId).then();
-  }, [courseId, courseEditCount]);
 
   const handlePublishCourse = async () => {
     if (!courseSpec) {
@@ -1936,6 +1923,40 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
       toast.error('Failed to rename project');
     }
   };
+
+  // Full-page gate: require paid plan to use builder (founders bypass)
+  if (!subscriptionLoading && !isPaidUser && !isFounder) {
+    return (
+      <div className="h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-md w-full text-center space-y-6">
+          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <CreditCard className="h-8 w-8 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-foreground">Pro Plan Required</h1>
+            <p className="text-muted-foreground">
+              The Course Builder is available exclusively for Pro subscribers. Upgrade to the Coach plan to create, edit, and publish unlimited courses.
+            </p>
+          </div>
+          <div className="p-4 rounded-lg bg-primary/10 border border-primary/30 text-left">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-foreground">Coach Plan</span>
+              <span className="text-2xl font-bold text-foreground">$19<span className="text-sm font-normal text-muted-foreground">/first mo</span></span>
+            </div>
+            <p className="text-sm text-muted-foreground">Then $79/month. Unlimited courses, publishing, custom domains, and more.</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => navigate('/secret-builder-hub')}>
+              Back to Studio
+            </Button>
+            <Button className="flex-1" onClick={() => navigate('/checkout?plan=coach')}>
+              Upgrade Now
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen overflow-hidden bg-background">
@@ -2854,9 +2875,7 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
               Upgrade to Continue
             </DialogTitle>
             <DialogDescription>
-              {courseEditCount >= FREE_EDIT_LIMIT
-                ? "You've reached the free edit limit (3 edits). Upgrade to the Coach plan for unlimited edits and publishing."
-                : "Publishing courses requires a paid plan. Upgrade to the Coach plan to publish and share your courses."}
+              The Course Builder requires a Pro subscription. Upgrade to the Coach plan to create, edit, and publish courses.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
