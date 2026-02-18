@@ -325,8 +325,9 @@ export function CoursePreviewTabs({
 
   // Design config from design editor - CSS custom properties for live preview
   const designConfig: DesignConfig = (course as any).design_config || {};
-  const designColors = designConfig.colors || {};
+   const designColors = designConfig.colors || {};
   const designFonts = designConfig.fonts || {};
+  const designBackgrounds = (designConfig as any).backgrounds || {};
 
   const designCssVars: React.CSSProperties = useMemo(() => {
     const vars: Record<string, string> = {};
@@ -932,17 +933,23 @@ export function CoursePreviewTabs({
               key="hero"
               className={`relative overflow-hidden ${hasDesignConfig ? '' : `rounded-xl p-6 sm:p-8 md:p-12 ${config.cardClass}`}`}
               style={hasDesignConfig ? { 
-                background: heroBg,
+                background: designBackgrounds.hero ? undefined : heroBg,
                 padding: 'var(--course-spacing)',
               } : { 
                 background: heroBg || `linear-gradient(135deg, hsl(var(--${config.accentColor === 'amber' ? 'primary' : config.accentColor}-500) / 0.2) 0%, hsl(var(--background)) 100%)`,
               }}
             >
-              {course.thumbnail && (
+              {/* Background image from design config or thumbnail */}
+              {designBackgrounds.hero ? (
+                <div className="absolute inset-0">
+                  <img src={designBackgrounds.hero} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50" />
+                </div>
+              ) : course.thumbnail ? (
                 <div className="absolute inset-0 opacity-20">
                   <img src={course.thumbnail} alt="" className="w-full h-full object-cover" />
                 </div>
-              )}
+              ) : null}
               <div 
                 className="relative z-10"
                 style={hasDesignConfig ? {
@@ -1116,7 +1123,14 @@ export function CoursePreviewTabs({
 
         case 'curriculum':
           return (
-            <Card key="curriculum" className={`${config.cardClass} border-border`}>
+            <Card key="curriculum" className={`${config.cardClass} border-border relative overflow-hidden`}>
+              {designBackgrounds.curriculum && (
+                <div className="absolute inset-0">
+                  <img src={designBackgrounds.curriculum} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-background/80" />
+                </div>
+              )}
+              <div className="relative z-10">
               <CardHeader>
                 <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
                   <BookOpen className={`w-5 h-5 ${accent.text}`} />
@@ -1160,6 +1174,7 @@ export function CoursePreviewTabs({
                   ))}
                 </div>
               </CardContent>
+              </div>
             </Card>
           );
 
@@ -1277,11 +1292,18 @@ export function CoursePreviewTabs({
 
           if (hasDesignConfig) {
             return (
-              <div key="cta" style={{
-                background: `linear-gradient(135deg, ${ctaSecondary}, ${ctaBg})`,
+              <div key="cta" className="relative overflow-hidden" style={{
+                background: designBackgrounds.cta ? undefined : `linear-gradient(135deg, ${ctaSecondary}, ${ctaBg})`,
                 padding: 'var(--course-spacing)',
                 textAlign: 'center' as const,
               }}>
+                {designBackgrounds.cta && (
+                  <div className="absolute inset-0">
+                    <img src={designBackgrounds.cta} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/60" />
+                  </div>
+                )}
+                <div className="relative z-10">
                 <EditableOverlay isEditMode={isVisualEditMode} label="CTA Headline" onEdit={() => openInlineEdit('CTA Headline', 'text', 'Ready to Get Started?', () => {})}>
                   <h2 style={{ color: ctaText, marginBottom: '16px', fontSize: '2rem', fontFamily: designFonts.heading || 'Inter' }}>
                     Ready to Get Started?
@@ -1307,6 +1329,7 @@ export function CoursePreviewTabs({
                 >
                   Enroll Now
                 </button>
+                </div>
               </div>
             );
           }
