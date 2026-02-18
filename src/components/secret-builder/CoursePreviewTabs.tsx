@@ -70,6 +70,8 @@ import {
   PlayCircle,
   Paperclip,
   ImageIcon,
+  LogIn,
+  User,
 } from 'lucide-react';
 import { 
   ExtendedCourse, 
@@ -115,6 +117,8 @@ interface CoursePreviewTabsProps {
   isVisualEditMode?: boolean;
   logoUrl?: string;
   onUpdateLogo?: (url: string | undefined) => void;
+  isCreatorView?: boolean;
+  onSignIn?: () => void;
 }
 
 const BASE_TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
@@ -192,6 +196,8 @@ export function CoursePreviewTabs({
   isVisualEditMode = false,
   logoUrl,
   onUpdateLogo,
+  isCreatorView = true,
+  onSignIn,
 }: CoursePreviewTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('landing');
   const [selectedModuleIdx, setSelectedModuleIdx] = useState(0);
@@ -2177,27 +2183,41 @@ export function CoursePreviewTabs({
             </div>
             {/* Mobile action row */}
             <div className="flex items-center gap-2">
-              <Button
-                variant={activeTab === 'pricing' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTab(activeTab === 'pricing' ? 'landing' : 'pricing')}
-                className={`flex-1 h-8 text-xs ${activeTab === 'pricing'
-                  ? 'bg-amber-500 hover:bg-amber-600 text-black' 
-                  : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
-                }`}
-              >
-                <DollarSign className="w-3.5 h-3.5 mr-1" />
-                Pricing
-              </Button>
-              {onOpenPublishSettings && (
+              {isCreatorView ? (
+                <>
+                  <Button
+                    variant={activeTab === 'pricing' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTab(activeTab === 'pricing' ? 'landing' : 'pricing')}
+                    className={`flex-1 h-8 text-xs ${activeTab === 'pricing'
+                      ? 'bg-amber-500 hover:bg-amber-600 text-black' 
+                      : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                    }`}
+                  >
+                    <DollarSign className="w-3.5 h-3.5 mr-1" />
+                    Pricing
+                  </Button>
+                  {onOpenPublishSettings && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onOpenPublishSettings}
+                      className="flex-1 h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
+                    >
+                      <Globe className="w-3.5 h-3.5 mr-1" />
+                      {isPublished ? 'Settings' : 'Publish'}
+                    </Button>
+                  )}
+                </>
+              ) : (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onOpenPublishSettings}
+                  onClick={onSignIn}
                   className="flex-1 h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
                 >
-                  <Globe className="w-3.5 h-3.5 mr-1" />
-                  {isPublished ? 'Settings' : 'Publish'}
+                  <LogIn className="w-3.5 h-3.5 mr-1" />
+                  Sign In
                 </Button>
               )}
             </div>
@@ -2206,19 +2226,25 @@ export function CoursePreviewTabs({
           /* Desktop: Website-style header */
           <div className="flex items-center h-12 px-4 gap-4">
             {/* Logo area - left */}
-            <button
-              onClick={() => logoFileRef.current?.click()}
-              className="shrink-0 w-9 h-9 rounded-lg border border-border/50 bg-muted/20 flex items-center justify-center overflow-hidden hover:border-primary/50 hover:bg-muted/40 transition-all group"
-              title={logoUrl ? "Click to change logo" : "Upload your logo"}
-            >
-              {isUploadingLogo ? (
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-              ) : logoUrl ? (
+            {isCreatorView ? (
+              <button
+                onClick={() => logoFileRef.current?.click()}
+                className="shrink-0 w-9 h-9 rounded-lg border border-border/50 bg-muted/20 flex items-center justify-center overflow-hidden hover:border-primary/50 hover:bg-muted/40 transition-all group"
+                title={logoUrl ? "Click to change logo" : "Upload your logo"}
+              >
+                {isUploadingLogo ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                ) : logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <ImageIcon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                )}
+              </button>
+            ) : logoUrl ? (
+              <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden">
                 <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
-              ) : (
-                <ImageIcon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              )}
-            </button>
+              </div>
+            ) : null}
 
             {/* Divider */}
             <div className="w-px h-6 bg-border/50" />
@@ -2250,44 +2276,58 @@ export function CoursePreviewTabs({
 
             {/* Right action buttons */}
             <div className="flex items-center gap-1.5 shrink-0">
-              {/* Pricing */}
-              <Button
-                variant={activeTab === 'pricing' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTab(activeTab === 'pricing' ? 'landing' : 'pricing')}
-                className={`h-8 text-xs ${activeTab === 'pricing'
-                  ? 'bg-amber-500 hover:bg-amber-600 text-black' 
-                  : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
-                }`}
-              >
-                <DollarSign className="w-3.5 h-3.5 mr-1" />
-                Pricing
-              </Button>
+              {isCreatorView ? (
+                <>
+                  {/* Pricing */}
+                  <Button
+                    variant={activeTab === 'pricing' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveTab(activeTab === 'pricing' ? 'landing' : 'pricing')}
+                    className={`h-8 text-xs ${activeTab === 'pricing'
+                      ? 'bg-amber-500 hover:bg-amber-600 text-black' 
+                      : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                    }`}
+                  >
+                    <DollarSign className="w-3.5 h-3.5 mr-1" />
+                    Pricing
+                  </Button>
 
-              {/* Unpublish */}
-              {isPublished && onUnpublish && (
+                  {/* Unpublish */}
+                  {isPublished && onUnpublish && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onUnpublish}
+                      disabled={isPublishing}
+                      className="h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                    >
+                      <EyeOff className="w-3.5 h-3.5 mr-1" />
+                      <span className="hidden lg:inline">Unpublish</span>
+                    </Button>
+                  )}
+
+                  {/* Publish */}
+                  {onOpenPublishSettings && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onOpenPublishSettings}
+                      className="h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
+                    >
+                      <Globe className="w-3.5 h-3.5 mr-1" />
+                      <span className="hidden lg:inline">{isPublished ? 'Publish Settings' : 'Publish'}</span>
+                    </Button>
+                  )}
+                </>
+              ) : (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onUnpublish}
-                  disabled={isPublishing}
-                  className="h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
-                >
-                  <EyeOff className="w-3.5 h-3.5 mr-1" />
-                  <span className="hidden lg:inline">Unpublish</span>
-                </Button>
-              )}
-
-              {/* Publish */}
-              {onOpenPublishSettings && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onOpenPublishSettings}
+                  onClick={onSignIn}
                   className="h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
                 >
-                  <Globe className="w-3.5 h-3.5 mr-1" />
-                  <span className="hidden lg:inline">{isPublished ? 'Publish Settings' : 'Publish'}</span>
+                  <User className="w-3.5 h-3.5 mr-1" />
+                  Sign In
                 </Button>
               )}
             </div>
