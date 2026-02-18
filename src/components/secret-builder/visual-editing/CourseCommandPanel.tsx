@@ -257,15 +257,15 @@ ${courseContext}
   return (
     <div className="flex flex-col h-full bg-zinc-950">
       {/* Header */}
-      <div className="p-4 border-b border-zinc-800 shrink-0">
-        <h3 className="text-amber-500 font-semibold flex items-center gap-2">
-          <Sparkles className="w-4 h-4" />
+      <div className="px-5 py-4 border-b border-zinc-800 shrink-0">
+        <h3 className="text-amber-500 font-semibold text-base flex items-center gap-2">
+          <Sparkles className="w-5 h-5" />
           AI Design Commands
         </h3>
       </div>
 
       {/* Scrollable content area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 min-h-0">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 min-h-0">
         {commandHistory.length === 0 && (
           <div className="space-y-2">
             <p className="text-gray-500 text-sm">Try commands like:</p>
@@ -334,7 +334,7 @@ ${courseContext}
       </div>
 
       {/* FIXED PROMPT INPUT - ALWAYS AT BOTTOM */}
-      <div className="p-4 border-t border-zinc-800 bg-zinc-950 shrink-0">
+      <div className="px-5 py-4 border-t border-zinc-800 bg-zinc-950 shrink-0 mt-auto">
         {/* Attachment previews */}
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
@@ -408,8 +408,8 @@ ${courseContext}
               }
             }}
             placeholder={inputMode === 'chat' ? 'Ask a question about your course...' : 'Describe changes to your course...'}
-            rows={3}
-            className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none resize-none text-sm"
+            rows={2}
+            className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none resize-none text-sm leading-relaxed"
             disabled={isProcessing}
           />
 
@@ -427,7 +427,7 @@ ${courseContext}
             <button
               onClick={processCommand}
               disabled={isProcessing || (!currentCommand.trim() && attachments.length === 0)}
-              className="bg-amber-500 hover:bg-amber-600 text-black p-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
+              className="bg-amber-500 hover:bg-amber-600 text-black p-2.5 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
             >
               {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </button>
