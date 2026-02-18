@@ -21,7 +21,7 @@ import { CoursePreviewTabs } from './CoursePreviewTabs';
 import { CourseBuilderPanel } from './CourseBuilderPanel';
 import { RefineChat } from './RefineChat';
 import { CourseSettingsDialog } from './CourseSettingsDialog';
-import { CourseActionBar } from './CourseActionBar';
+
 import { CoursePublishDialog } from './CoursePublishDialog';
 import { CoursePublishSettingsDialog } from './CoursePublishSettingsDialog';
 import { ThemeEditor } from './ThemeEditor';
@@ -2813,58 +2813,6 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
         </div>
       )}
 
-      {/* Course Action Bar - Sticky Bottom */}
-      {courseSpec && (
-        <CourseActionBar
-          onSaveDraft={async () => {
-            // Cancel any pending auto-save
-            if (saveTimeoutRef.current) {
-              clearTimeout(saveTimeoutRef.current);
-            }
-            setSaveStatus('saving');
-            try {
-              const firstUserMessage = messages.find(m => m.role === 'user');
-              await saveProject(generatedHtml, messages, firstUserMessage?.content || idea, siteSpec, courseSpec);
-              setIsDirty(false);
-              setSaveStatus('saved');
-              lastSavedSpecRef.current = JSON.stringify({ siteSpec, courseSpec });
-              toast.success('Draft saved!');
-            } catch (error) {
-              setSaveStatus('unsaved');
-              toast.error('Failed to save draft');
-            }
-          }}
-          onPreview={() => toast.info('Student preview coming soon!')}
-          onPublish={() => {
-            toast.success('Course publishing coming soon!');
-          }}
-          isSaving={saveStatus === 'saving'}
-          isPublishing={isPublishing}
-          saveStatus={saveStatus}
-          checklist={[
-            { 
-              label: 'Title', 
-              complete: Boolean(courseSpec?.title), 
-              required: true 
-            },
-            { 
-              label: 'Modules', 
-              complete: (courseSpec?.modules?.length || 0) >= 3, 
-              required: true 
-            },
-            { 
-              label: 'Thumbnail', 
-              complete: Boolean(courseSettings.thumbnail), 
-              required: false 
-            },
-            { 
-              label: 'Pricing', 
-              complete: courseSettings.price !== null, 
-              required: false 
-            },
-          ]}
-        />
-      )}
 
       {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
