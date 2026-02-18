@@ -408,7 +408,7 @@ ${courseContext}
               }
             }}
             placeholder={inputMode === 'chat' ? 'Ask a question about your course...' : 'Describe changes to your course...'}
-            rows={2}
+            rows={4}
             className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none resize-none text-sm leading-relaxed"
             disabled={isProcessing}
           />
