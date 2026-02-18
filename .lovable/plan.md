@@ -1,64 +1,40 @@
 
 
-# Fix Stripe Payments for Creator Subscriptions and Course Purchases
+# Fix Pricing Page -- $19 First Month + Copy Updates
 
-## Problem Summary
+## What's Wrong
+The pricing page (`BuilderPricing.tsx`) has three issues:
+1. When "Monthly" is selected, it just shows "$79/month" with no mention of the **$19 first month** introductory deal
+2. Feature list uses old terminology ("offers", "Client") instead of course-focused language ("courses", "Student")
+3. The Stripe Price IDs are still placeholders (TODO) instead of the real ones
 
-There are two blockers preventing Stripe from working:
+## Changes
 
-1. **Missing Secret**: The `STRIPE_SECRET_KEY` is not configured. All three payment edge functions (`create-checkout`, `create-course-checkout`, `verify-course-purchase`) fail immediately with "STRIPE_SECRET_KEY is not set".
+### File: `src/pages/BuilderPricing.tsx`
 
-2. **Price ID Mismatch**: The Pricing page sends placeholder IDs (`price_coach_monthly`, `price_coach_annual`) but the `create-checkout` edge function expects starter/pro/agency tier IDs that already exist in your Stripe dashboard.
+**1. Update Price IDs** -- Replace the TODO placeholder IDs with the real Stripe Price IDs (already used in `Pricing.tsx`):
+- Monthly: `price_1T1YnuPCTHzXvqDgZwElpsRS`
+- Annual: `price_1T1YjxPCTHzXvqDg3Plq3gtT`
 
----
+**2. Monthly price display** -- When "Monthly" is selected, show the $19 first-month promo prominently:
+- Large text: **$19** with "first month" label
+- Subtext: "then $79/month" with a link to switch to yearly + "(save $158)"
+- CTA button text: "Start for $19"
 
-## Plan
+**3. Yearly price display** -- Keep as-is ($790/year) but update CTA button to "Start for $790/year"
 
-### Step 1 -- Add the Stripe Secret Key
+**4. Update features list** to match the course-builder language:
+- "Up to 3 active courses" (not "offers")
+- "Student portal" (not "Client access portal")
+- "Intake & check-ins" (not "Intake forms & check-ins")
+- Keep: Unlimited page views, Custom domain support, Built-in analytics, SSL included, Cancel anytime
 
-Use the Stripe integration tool to connect your Stripe account. This will securely store the `STRIPE_SECRET_KEY` so all three edge functions can communicate with Stripe.
+**5. Update checkout flow** -- Route to `create-checkout` edge function (like the working `Pricing.tsx` does) instead of navigating to `/checkout`.
 
-### Step 2 -- Align the Pricing Page with Real Stripe Price IDs
-
-Update `Pricing.tsx` to send actual Stripe Price IDs instead of placeholders. Two options:
-
-- **Option A (single plan at $79/mo, $790/yr):** Create these two prices in your Stripe dashboard, then hardcode the real IDs in the Pricing page.
-- **Option B (reuse existing tiers):** Switch the Pricing page to show the starter/pro/agency tiers that already have real Price IDs in the `create-checkout` edge function ($19/$39/$99 monthly).
-
-The edge function itself needs no changes -- it already accepts a `priceId` directly and validates it.
-
-### Step 3 -- Add JWT bypass for payment edge functions
-
-The `create-checkout`, `create-course-checkout`, and `verify-course-purchase` functions authenticate users manually via the Authorization header, but they are not listed in `config.toml` with `verify_jwt = false`. This means Supabase's gateway may reject requests before the function code even runs. Add entries to `config.toml`.
-
-### Step 4 -- Verify course purchase flow end-to-end
-
-The course checkout flow (`CoursePage -> create-course-checkout -> Stripe -> PurchaseSuccess -> verify-course-purchase`) is structurally complete. Once the secret key is set, it will work for any course with a non-zero `price_cents` value in the database.
-
-No code changes needed for this flow -- just the secret key from Step 1.
-
----
+**6. Update FAQ item** -- Change "3 active offers" to "3 active courses" in the FAQ answer.
 
 ## Technical Details
 
-### Files to modify
-
-| File | Change |
-|------|--------|
-| (Secret) | Add `STRIPE_SECRET_KEY` via Stripe integration tool |
-| `src/pages/Pricing.tsx` | Replace placeholder Price IDs with real Stripe IDs |
-| `supabase/config.toml` | Add `verify_jwt = false` for `create-checkout`, `create-course-checkout`, `verify-course-purchase` |
-
-### Edge functions (no code changes needed)
-
-- `create-checkout` -- handles creator subscriptions, already supports direct `priceId` param
-- `create-course-checkout` -- handles course purchases using dynamic `price_cents` from DB, fully implemented
-- `verify-course-purchase` -- verifies Stripe session, updates purchase record, auto-enrolls student, fully implemented
-
-### What needs your input
-
-Before implementation, I need to know which pricing structure you want on the Pricing page:
-
-- Keep the single Coach plan at $79/mo and $790/yr (requires creating 2 new prices in Stripe)
-- Or switch to the starter/pro/agency tiers that already have Stripe Price IDs
-
+- Only one file is modified: `src/pages/BuilderPricing.tsx`
+- The `billingPeriod` state type changes from `"monthly" | "yearly"` to `"monthly" | "annual"` for consistency with the checkout edge function
+- The checkout handler will invoke `supabase.functions.invoke("create-checkout")` and open the returned URL, matching the pattern already used in `Pricing.tsx`
