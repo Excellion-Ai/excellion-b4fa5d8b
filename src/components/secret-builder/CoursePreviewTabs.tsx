@@ -1414,7 +1414,7 @@ export function CoursePreviewTabs({
 
   // Lesson Preview Content
   const renderLessonPreview = () => (
-    <div className={`grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 ${config.containerClass}`} style={{ minHeight: 0 }}>
+    <div className={`grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-4 ${config.containerClass}`} style={{ minHeight: 0 }}>
       {/* Sidebar - fixed width, fully contained */}
       <div className="hidden lg:flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 200px)' }}>
         <Card className={`${config.cardClass} border-border flex flex-col overflow-hidden h-full`}>
