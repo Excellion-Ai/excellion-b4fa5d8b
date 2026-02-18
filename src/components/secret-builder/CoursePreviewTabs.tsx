@@ -2131,209 +2131,164 @@ export function CoursePreviewTabs({
         onChange={handleLogoFileUpload}
       />
 
-      {/* Website-Style Header Navigation */}
-      <div className="flex-shrink-0 border-b border-border bg-background/95 backdrop-blur-sm">
+      {/* Website Navigation Bar */}
+      <header className="flex-shrink-0 border-b border-border/40 bg-background">
         {isMobile ? (
-          <div className="px-3 py-2 space-y-2">
-            {/* Mobile: Logo + dropdown */}
+          <div className="px-4 py-2.5 space-y-2">
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => logoFileRef.current?.click()}
-                className="shrink-0 w-8 h-8 rounded-md border border-border/50 bg-muted/30 flex items-center justify-center overflow-hidden hover:border-primary/50 transition-colors"
-                title="Upload logo"
-              >
-                {isUploadingLogo ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                ) : logoUrl ? (
+              {/* Logo */}
+              {isCreatorView ? (
+                <button
+                  onClick={() => logoFileRef.current?.click()}
+                  className="shrink-0 w-8 h-8 rounded-md border border-border/40 bg-muted/20 flex items-center justify-center overflow-hidden hover:border-primary/40 transition-colors"
+                  title="Upload logo"
+                >
+                  {isUploadingLogo ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  ) : logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
+                  ) : (
+                    <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                  )}
+                </button>
+              ) : logoUrl ? (
+                <div className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center overflow-hidden">
                   <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
-                ) : (
-                  <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
-                )}
-              </button>
+                </div>
+              ) : null}
+
               <Select value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)}>
                 <SelectTrigger className="flex-1 bg-card border-border h-9">
                   <SelectValue>
                     {(() => {
                       const tab = TABS.find(t => t.id === activeTab);
                       if (!tab) return null;
-                      const Icon = tab.icon;
-                      return (
-                        <span className="flex items-center gap-2 text-sm">
-                          <Icon className="w-4 h-4" />
-                          {tab.label}
-                        </span>
-                      );
+                      return <span className="text-sm">{tab.label}</span>;
                     })()}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {TABS.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <SelectItem key={tab.id} value={tab.id}>
-                        <span className="flex items-center gap-2">
-                          <Icon className="w-4 h-4" />
-                          {tab.label}
-                        </span>
-                      </SelectItem>
-                    );
-                  })}
+                  {TABS.map((tab) => (
+                    <SelectItem key={tab.id} value={tab.id}>
+                      {tab.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            </div>
-            {/* Mobile action row */}
-            <div className="flex items-center gap-2">
+
+              {/* Mobile right actions */}
               {isCreatorView ? (
-                <>
-                  <Button
-                    variant={activeTab === 'pricing' ? 'default' : 'outline'}
-                    size="sm"
+                <div className="flex items-center gap-1.5">
+                  <button
                     onClick={() => setActiveTab(activeTab === 'pricing' ? 'landing' : 'pricing')}
-                    className={`flex-1 h-8 text-xs ${activeTab === 'pricing'
-                      ? 'bg-amber-500 hover:bg-amber-600 text-black' 
-                      : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                    className={`text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors ${
+                      activeTab === 'pricing' ? 'text-foreground bg-muted' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <DollarSign className="w-3.5 h-3.5 mr-1" />
                     Pricing
-                  </Button>
+                  </button>
                   {onOpenPublishSettings && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onOpenPublishSettings}
-                      className="flex-1 h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
-                    >
-                      <Globe className="w-3.5 h-3.5 mr-1" />
+                    <Button size="sm" className="h-7 text-xs bg-primary text-primary-foreground hover:bg-primary/90" onClick={onOpenPublishSettings}>
                       {isPublished ? 'Settings' : 'Publish'}
                     </Button>
                   )}
-                </>
+                </div>
               ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onSignIn}
-                  className="flex-1 h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
-                >
-                  <LogIn className="w-3.5 h-3.5 mr-1" />
+                <Button size="sm" variant="outline" onClick={onSignIn} className="h-7 text-xs">
                   Sign In
                 </Button>
               )}
             </div>
           </div>
         ) : (
-          /* Desktop: Website-style header */
-          <div className="flex items-center h-12 px-4 gap-4">
-            {/* Logo area - left */}
-            {isCreatorView ? (
-              <button
-                onClick={() => logoFileRef.current?.click()}
-                className="shrink-0 w-9 h-9 rounded-lg border border-border/50 bg-muted/20 flex items-center justify-center overflow-hidden hover:border-primary/50 hover:bg-muted/40 transition-all group"
-                title={logoUrl ? "Click to change logo" : "Upload your logo"}
-              >
-                {isUploadingLogo ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                ) : logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
-                ) : (
-                  <ImageIcon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                )}
-              </button>
-            ) : logoUrl ? (
-              <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden">
-                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
-              </div>
-            ) : null}
-
-            {/* Divider */}
-            <div className="w-px h-6 bg-border/50" />
+          /* Desktop: Standard website navbar */
+          <div className="flex items-center h-14 px-6">
+            {/* Logo - left */}
+            <div className="flex items-center gap-3 shrink-0">
+              {isCreatorView ? (
+                <button
+                  onClick={() => logoFileRef.current?.click()}
+                  className="shrink-0 w-8 h-8 rounded-md border border-border/40 bg-muted/10 flex items-center justify-center overflow-hidden hover:border-primary/40 hover:bg-muted/30 transition-all group"
+                  title={logoUrl ? "Change logo" : "Upload logo"}
+                >
+                  {isUploadingLogo ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  ) : logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
+                  ) : (
+                    <ImageIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  )}
+                </button>
+              ) : logoUrl ? (
+                <div className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center overflow-hidden">
+                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
+                </div>
+              ) : null}
+            </div>
 
             {/* Navigation links - center */}
-            <nav className="flex items-center gap-0.5 flex-1 min-w-0">
+            <nav className="flex items-center gap-1 flex-1 justify-center">
               {TABS.map((tab) => {
-                const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all rounded-md whitespace-nowrap ${
+                    className={`relative px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive
-                        ? `${accent.text} ${accent.bgLight}`
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        ? 'text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span className="hidden xl:inline">{tab.label}</span>
+                    {tab.label}
                     {isActive && (
-                      <span className={`absolute -bottom-[9px] left-2 right-2 h-0.5 ${accent.bg} rounded-full`} />
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full" />
                     )}
                   </button>
                 );
               })}
             </nav>
 
-            {/* Right action buttons */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            {/* Right actions */}
+            <div className="flex items-center gap-3 shrink-0">
               {isCreatorView ? (
                 <>
-                  {/* Pricing */}
-                  <Button
-                    variant={activeTab === 'pricing' ? 'default' : 'outline'}
-                    size="sm"
+                  <button
                     onClick={() => setActiveTab(activeTab === 'pricing' ? 'landing' : 'pricing')}
-                    className={`h-8 text-xs ${activeTab === 'pricing'
-                      ? 'bg-amber-500 hover:bg-amber-600 text-black' 
-                      : 'border-amber-500/30 text-amber-400 hover:bg-amber-500/10'
+                    className={`text-sm font-medium transition-colors ${
+                      activeTab === 'pricing' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <DollarSign className="w-3.5 h-3.5 mr-1" />
                     Pricing
-                  </Button>
+                  </button>
 
-                  {/* Unpublish */}
                   {isPublished && onUnpublish && (
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={onUnpublish}
                       disabled={isPublishing}
-                      className="h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                      className="text-sm font-medium text-destructive/70 hover:text-destructive transition-colors disabled:opacity-50"
                     >
-                      <EyeOff className="w-3.5 h-3.5 mr-1" />
-                      <span className="hidden lg:inline">Unpublish</span>
-                    </Button>
+                      Unpublish
+                    </button>
                   )}
 
-                  {/* Publish */}
                   {onOpenPublishSettings && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={onOpenPublishSettings}
-                      className="h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
-                    >
-                      <Globe className="w-3.5 h-3.5 mr-1" />
-                      <span className="hidden lg:inline">{isPublished ? 'Publish Settings' : 'Publish'}</span>
+                    <Button size="sm" className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90" onClick={onOpenPublishSettings}>
+                      <Globe className="w-3.5 h-3.5 mr-1.5" />
+                      {isPublished ? 'Publish Settings' : 'Publish'}
                     </Button>
                   )}
                 </>
               ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onSignIn}
-                  className="h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
-                >
-                  <User className="w-3.5 h-3.5 mr-1" />
+                <Button size="sm" variant="outline" onClick={onSignIn} className="h-8 text-xs">
+                  <User className="w-3.5 h-3.5 mr-1.5" />
                   Sign In
                 </Button>
               )}
             </div>
           </div>
         )}
-      </div>
+      </header>
 
       {/* Tab Content - Isolated Course Preview Container */}
       <div 
