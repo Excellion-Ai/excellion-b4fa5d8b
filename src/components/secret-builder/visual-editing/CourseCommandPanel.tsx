@@ -364,25 +364,25 @@ ${courseContext}
           </div>
         )}
 
-        <div className="flex gap-2 items-end">
-          <div className="flex flex-col gap-1 shrink-0 mb-1">
+        <div className="flex gap-3 items-stretch">
+          <div className="flex flex-col justify-evenly shrink-0">
             {/* Visual edit toggle */}
             <button
               type="button"
               onClick={onToggleVisualEdit}
-              className={`p-2 rounded transition ${isVisualEditMode ? 'text-amber-500 bg-amber-500/10' : 'text-gray-400 hover:text-amber-500'}`}
+              className={`p-2.5 rounded-lg transition ${isVisualEditMode ? 'text-amber-500 bg-amber-500/10' : 'text-gray-400 hover:text-amber-500'}`}
               title={isVisualEditMode ? 'Visual edit mode ON' : 'Visual edit mode OFF'}
             >
-              <Pencil className="w-5 h-5" />
+              <Pencil className="w-6 h-6" />
             </button>
             {/* Paperclip button */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-gray-400 hover:text-amber-500 p-2 rounded transition"
+              className="text-gray-400 hover:text-amber-500 p-2.5 rounded-lg transition"
               title="Attach files or images"
             >
-              <Paperclip className="w-5 h-5" />
+              <Paperclip className="w-6 h-6" />
             </button>
           </div>
           <input
@@ -413,23 +413,23 @@ ${courseContext}
             disabled={isProcessing}
           />
 
-          <div className="flex flex-col gap-1 shrink-0 mb-1">
+          <div className="flex flex-col justify-evenly shrink-0">
             {/* Chat mode toggle */}
             <button
               type="button"
               onClick={() => setInputMode(inputMode === 'chat' ? 'build' : 'chat')}
-              className={`p-2 rounded transition ${inputMode === 'chat' ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400'}`}
+              className={`p-2.5 rounded-lg transition ${inputMode === 'chat' ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400'}`}
               title={inputMode === 'chat' ? 'Chat mode (click to switch to build)' : 'Switch to chat mode'}
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="w-6 h-6" />
             </button>
             {/* Send button */}
             <button
               onClick={processCommand}
               disabled={isProcessing || (!currentCommand.trim() && attachments.length === 0)}
-              className="bg-amber-500 hover:bg-amber-600 text-black p-2.5 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
+              className="bg-amber-500 hover:bg-amber-600 text-black p-3 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shrink-0"
             >
-              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6" />}
             </button>
           </div>
         </div>
