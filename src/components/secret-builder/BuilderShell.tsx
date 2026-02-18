@@ -415,7 +415,7 @@ export function BuilderShell() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
   // Founder accounts get unlimited edits
-  const FOUNDER_EMAILS = ['excellionai@gmail.com'];
+  const FOUNDER_EMAILS = ['excellionai@gmail.com', 'johnlewton3@gmail.com'];
   const [isFounder, setIsFounder] = useState(false);
   
   useEffect(() => {
