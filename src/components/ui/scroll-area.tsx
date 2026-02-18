@@ -11,6 +11,7 @@ const scrollBarVariants = cva(
         default: "",
         gold: "bg-transparent rounded-full",
         purple: "bg-transparent rounded-full",
+        grey: "bg-transparent rounded-full",
       },
       orientation: {
         vertical: "h-full w-2.5 border-l border-l-transparent p-[1px]",
@@ -32,6 +33,7 @@ const scrollThumbVariants = cva(
         default: "bg-border",
         gold: "bg-orange-500 hover:bg-orange-400 transition-colors",
         purple: "bg-purple-950 hover:bg-purple-900 transition-colors",
+        grey: "bg-gray-500/40 hover:bg-gray-400/50 transition-colors",
       },
     },
     defaultVariants: {
@@ -41,7 +43,7 @@ const scrollThumbVariants = cva(
 );
 
 interface ScrollAreaProps extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> {
-  scrollbarVariant?: "default" | "gold" | "purple";
+  scrollbarVariant?: "default" | "gold" | "purple" | "grey";
 }
 
 const ScrollArea = React.forwardRef<
@@ -58,7 +60,7 @@ ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
 interface ScrollBarProps extends React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
   VariantProps<typeof scrollBarVariants> {
-  variant?: "default" | "gold" | "purple";
+  variant?: "default" | "gold" | "purple" | "grey";
 }
 
 const ScrollBar = React.forwardRef<

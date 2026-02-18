@@ -1424,7 +1424,7 @@ export function CoursePreviewTabs({
               <span className={`text-xs font-medium ${accent.text}`}>{progressPercent}%</span>
             )}
           </div>
-          <ScrollArea className="flex-1 min-h-0">
+          <ScrollArea className="flex-1 min-h-0" scrollbarVariant="grey">
             <div className="p-2 space-y-2">
               {course.modules.map((module, moduleIdx) => {
                 const modProgress = moduleProgress.find(p => p.moduleId === module.id);
