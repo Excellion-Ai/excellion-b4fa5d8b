@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Eye, Users, Trophy, Clock, TrendingUp, Monitor, Smartphone, Tablet, ExternalLink, Sparkles, DollarSign } from 'lucide-react';
+import { Loader2, Eye, Users, Trophy, Clock, TrendingUp, Monitor, Smartphone, Tablet, ExternalLink, Sparkles, DollarSign, ArrowLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -320,9 +320,19 @@ export default function CreatorAnalytics() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Analytics</h1>
-            <p className="text-muted-foreground">Track your course performance</p>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/secret-builder-hub')}
+              className="h-9 w-9 rounded-full hover:bg-muted"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Analytics</h1>
+              <p className="text-muted-foreground">Track your course performance</p>
+            </div>
           </div>
           
           {/* Date Range Filter */}
