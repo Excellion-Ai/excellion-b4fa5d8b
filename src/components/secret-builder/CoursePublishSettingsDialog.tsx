@@ -171,42 +171,13 @@ export function CoursePublishSettingsDialog({
       const { data: userData } = await supabase.auth.getUser();
       const domain = newDomainInput.trim().toLowerCase();
 
-      // Get or create a builder_project_id for this course
-      const { data: course } = await supabase
-        .from('courses')
-        .select('builder_project_id')
-        .eq('id', courseId)
-        .single();
-
-      let projectId = course?.builder_project_id;
-
-      // If no builder_project_id, create a placeholder project entry
-      if (!projectId) {
-        const { data: newProject, error: projError } = await supabase
-          .from('builder_projects')
-          .insert({
-            name: `Course: ${courseTitle}`,
-            idea: `Course domain hosting for ${courseTitle}`,
-            user_id: userData.user?.id,
-          })
-          .select('id')
-          .single();
-
-        if (projError) throw projError;
-        projectId = newProject.id;
-
-        // Link the course to this project
-        await supabase
-          .from('courses')
-          .update({ builder_project_id: projectId })
-          .eq('id', courseId);
-      }
-
-      // Insert the custom domain record
+      // Insert domain record linked directly to the course via course_id
+      // No phantom builder_project needed anymore
       const { data: domainData, error: domainError } = await supabase
         .from('custom_domains')
         .insert({
-          project_id: projectId,
+          project_id: '00000000-0000-0000-0000-000000000000', // placeholder required by FK; course_id is the real link
+          course_id: courseId,
           domain,
           user_id: userData.user?.id,
         })
@@ -323,8 +294,7 @@ export function CoursePublishSettingsDialog({
   };
 
   const copyUrl = () => {
-    const url = `${window.location.origin}/course/${settings.subdomain || courseSubdomain}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(courseUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -334,7 +304,11 @@ export function CoursePublishSettingsDialog({
     toast.success(`${label} copied to clipboard`);
   };
 
-  const courseUrl = `${window.location.origin}/course/${settings.subdomain || courseSubdomain}`;
+  const subdomain = settings.subdomain || courseSubdomain;
+  // Temporary domain: slug.excellion.app (real public URL via Caddy)
+  const courseUrl = subdomain
+    ? `https://${subdomain}.excellion.app`
+    : `${window.location.origin}/course/${subdomain}`;
 
   const getDomainStatusBadge = () => {
     if (!domainRecord) return null;

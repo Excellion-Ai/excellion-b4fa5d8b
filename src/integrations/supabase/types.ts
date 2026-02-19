@@ -530,6 +530,7 @@ export type Database = {
       }
       custom_domains: {
         Row: {
+          course_id: string | null
           created_at: string
           domain: string
           id: string
@@ -544,6 +545,7 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
+          course_id?: string | null
           created_at?: string
           domain: string
           id?: string
@@ -558,6 +560,7 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          course_id?: string | null
           created_at?: string
           domain?: string
           id?: string
@@ -572,6 +575,20 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "custom_domains_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_domains_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "public_courses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "custom_domains_project_id_fkey"
             columns: ["project_id"]

@@ -42,9 +42,10 @@ Deno.serve(async (req) => {
     )
 
     // Check if domain exists and is verified in custom_domains table
+    // Supports both project_id (site builder) and course_id (course) linked domains
     const { data, error } = await supabase
       .from('custom_domains')
-      .select('id, project_id, status, ssl_provisioned, is_verified')
+      .select('id, project_id, course_id, status, ssl_provisioned, is_verified')
       .eq('domain', domain)
       .maybeSingle()
 
