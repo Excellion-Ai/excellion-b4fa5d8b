@@ -342,10 +342,8 @@ export function CoursePublishSettingsDialog({
   };
 
   const subdomain = settings.subdomain || courseSubdomain;
-  // Temporary domain: slug.excellion.app (real public URL via Caddy)
-  const courseUrl = subdomain
-    ? `https://${subdomain}.excellion.app`
-    : `${window.location.origin}/course/${subdomain}`;
+  // Course public URL — routes through the main app
+  const courseUrl = `https://excellion.lovable.app/course/${subdomain}`;
 
   const getDomainStatusBadge = () => {
     if (!domainRecord) return null;
