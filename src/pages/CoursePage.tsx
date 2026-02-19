@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
@@ -8,6 +8,25 @@ import { Button } from '@/components/ui/button';
 import { CoursePreviewTabs } from '@/components/secret-builder/CoursePreviewTabs';
 import { QuickstartLanding } from '@/components/course/QuickstartLanding';
 import type { ExtendedCourse, ModuleWithContent, LessonContent } from '@/types/course-pages';
+
+// Load Google Fonts dynamically from design_config
+function useDesignFonts(designConfig: any) {
+  const loadedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const fonts = designConfig?.fonts || {};
+    const headingFont = fonts.heading;
+    const bodyFont = fonts.body;
+    const toLoad = [headingFont, bodyFont].filter(Boolean).filter((f: string) => f !== 'Inter' && !loadedRef.current.has(f));
+    if (toLoad.length === 0) return;
+    const families = toLoad.map((f: string) => `${f.replace(/ /g, '+')}:wght@400;500;600;700`).join('&family=');
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${families}&display=swap`;
+    document.head.appendChild(link);
+    toLoad.forEach((f: string) => loadedRef.current.add(f));
+    return () => { document.head.removeChild(link); };
+  }, [designConfig]);
+}
 
 // Helper: map raw DB row to ExtendedCourse
 function mapToExtendedCourse(raw: any): ExtendedCourse {
@@ -113,6 +132,8 @@ export default function CoursePage() {
   const { subdomain } = useParams<{ subdomain: string }>();
   const navigate = useNavigate();
   const [course, setCourse] = useState<any | null>(null);
+  // Load custom fonts from design_config on mount/change
+  useDesignFonts((course as any)?.design_config);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -344,19 +365,29 @@ export default function CoursePage() {
 
   const extendedCourse = mapToExtendedCourse(course);
   const logoUrl = (course.design_config as any)?.logo_url || undefined;
+  const designColors = (course.design_config as any)?.colors || {};
+  const designFonts = (course.design_config as any)?.fonts || {};
+  const hasDesignConfig = Object.keys(designColors).length > 0;
+
+  // Build CSS vars matching exactly what CoursePreviewTabs does internally
+  const outerStyle: React.CSSProperties = hasDesignConfig ? {
+    backgroundColor: designColors.background || '#0a0a0a',
+    color: designColors.text || '#ffffff',
+    fontFamily: designFonts.body || undefined,
+  } : { backgroundColor: '#0a0a0a' };
 
   return (
     <>
       <Helmet>
-        <title>{course.title} | Excellion</title>
-        <meta name="description" content={course.description || `Learn ${course.title}`} />
+        <title>{course.seo_title || course.title} | Excellion</title>
+        <meta name="description" content={course.seo_description || course.description || `Learn ${course.title}`} />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content={course.title} />
-        <meta property="og:description" content={course.description || ''} />
+        <meta property="og:title" content={course.seo_title || course.title} />
+        <meta property="og:description" content={course.seo_description || course.description || ''} />
         <meta property="og:image" content={course.social_image_url || course.thumbnail_url || defaultImage} />
         <meta property="og:url" content={courseUrl} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={course.title} />
+        <meta name="twitter:title" content={course.seo_title || course.title} />
         <meta name="twitter:image" content={course.social_image_url || course.thumbnail_url || defaultImage} />
         <link rel="canonical" href={courseUrl} />
       </Helmet>
@@ -364,9 +395,7 @@ export default function CoursePage() {
       {/* Full-height layout matching the builder exactly */}
       <div
         className="h-screen flex flex-col overflow-hidden"
-        style={(course.design_config as any)?.colors?.background
-          ? { backgroundColor: (course.design_config as any).colors.background }
-          : { backgroundColor: '#0a0a0a' }}
+        style={outerStyle}
       >
         {/* Draft Preview Banner */}
         {course._isOwnerPreview && (
