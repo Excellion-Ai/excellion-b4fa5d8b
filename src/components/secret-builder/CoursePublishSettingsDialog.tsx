@@ -25,8 +25,11 @@ import {
   CheckCircle2,
   Clock,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Upload,
+  X
 } from 'lucide-react';
+import { useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -81,6 +84,8 @@ export function CoursePublishSettingsDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const socialImageInputRef = useRef<HTMLInputElement>(null);
 
   // Domain verification state
   const [domainRecord, setDomainRecord] = useState<DomainRecord | null>(null);
@@ -254,7 +259,39 @@ export function CoursePublishSettingsDialog({
     }
   };
 
+  const handleSocialImageUpload = async (file: File) => {
+    if (!courseId) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+    setIsUploadingImage(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `social/${courseId}/og-image.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('course-thumbnails')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage
+        .from('course-thumbnails')
+        .getPublicUrl(path);
+      setSettings(prev => ({ ...prev, socialImageUrl: urlData.publicUrl }));
+      toast.success('Social image uploaded!');
+    } catch (err) {
+      console.error('Image upload error:', err);
+      toast.error('Failed to upload image');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const handleSave = async () => {
+
     if (!courseId) {
       toast.error('No course to save');
       return;
@@ -663,42 +700,75 @@ export function CoursePublishSettingsDialog({
 
               {/* Social Sharing Tab */}
               <TabsContent value="social" className="space-y-6">
-                <div className="space-y-3">
-                  <Label htmlFor="socialImage">Social Share Image URL</Label>
-                  <Input
-                    id="socialImage"
-                    placeholder="https://example.com/og-image.jpg"
-                    value={settings.socialImageUrl}
-                    onChange={(e) => setSettings(prev => ({ ...prev, socialImageUrl: e.target.value }))}
-                    className="bg-muted"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Recommended size: 1200 x 630 pixels
-                  </p>
-                </div>
+                {/* Hidden file input */}
+                <input
+                  ref={socialImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleSocialImageUpload(file);
+                    e.target.value = '';
+                  }}
+                />
 
-                {/* Social Preview */}
+                {/* Social Preview — click to upload */}
                 <div className="space-y-3">
-                  <Label>Social Card Preview</Label>
-                  <div className="border rounded-lg overflow-hidden bg-white">
-                    <div className="aspect-[1200/630] bg-muted flex items-center justify-center">
-                      {settings.socialImageUrl ? (
-                        <img 
-                          src={settings.socialImageUrl} 
-                          alt="Social preview" 
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
+                  <div className="flex items-center justify-between">
+                    <Label>Social Card Preview</Label>
+                    {settings.socialImageUrl && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+                        onClick={() => setSettings(prev => ({ ...prev, socialImageUrl: '' }))}
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <div
+                    className="border rounded-lg overflow-hidden bg-white cursor-pointer group"
+                    onClick={() => !isUploadingImage && socialImageInputRef.current?.click()}
+                    title="Click to upload social image"
+                  >
+                    <div className="aspect-[1200/630] bg-muted flex items-center justify-center relative">
+                      {isUploadingImage ? (
                         <div className="text-center text-muted-foreground">
-                          <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p className="text-sm">No image set</p>
+                          <Loader2 className="h-10 w-10 mx-auto mb-2 animate-spin text-primary" />
+                          <p className="text-sm">Uploading...</p>
+                        </div>
+                      ) : settings.socialImageUrl ? (
+                        <>
+                          <img
+                            src={settings.socialImageUrl}
+                            alt="Social preview"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                          {/* Hover overlay */}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="text-center text-white">
+                              <Upload className="h-8 w-8 mx-auto mb-1" />
+                              <p className="text-sm font-medium">Replace image</p>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center text-muted-foreground group-hover:text-foreground transition-colors">
+                          <div className="w-16 h-16 rounded-full bg-muted-foreground/10 group-hover:bg-primary/10 flex items-center justify-center mx-auto mb-3 transition-colors">
+                            <Upload className="h-7 w-7 group-hover:text-primary transition-colors" />
+                          </div>
+                          <p className="text-sm font-medium">Click to upload social image</p>
+                          <p className="text-xs text-muted-foreground mt-1">Recommended: 1200 × 630px · Max 5MB</p>
                         </div>
                       )}
                     </div>
-                    <div className="p-3 text-left">
+                    <div className="p-3 text-left border-t">
                       <div className="text-xs text-gray-500 uppercase">
                         excellion.lovable.app
                       </div>
@@ -711,7 +781,20 @@ export function CoursePublishSettingsDialog({
                     </div>
                   </div>
                 </div>
+
+                {/* URL field (secondary, for manual entry) */}
+                <div className="space-y-2">
+                  <Label htmlFor="socialImage" className="text-xs text-muted-foreground">Or paste an image URL</Label>
+                  <Input
+                    id="socialImage"
+                    placeholder="https://example.com/og-image.jpg"
+                    value={settings.socialImageUrl}
+                    onChange={(e) => setSettings(prev => ({ ...prev, socialImageUrl: e.target.value }))}
+                    className="bg-muted text-xs h-8"
+                  />
+                </div>
               </TabsContent>
+
             </Tabs>
 
             <div className="flex gap-3 pt-4 border-t">
