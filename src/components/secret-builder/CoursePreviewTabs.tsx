@@ -226,10 +226,17 @@ export function CoursePreviewTabs({
 
   // Edit mode state for landing page sections
   const [isEditMode, setIsEditMode] = useState(false);
-  const [landingSections, setLandingSections] = useState<string[]>(
-    (course as { page_sections?: { landing?: string[] } }).page_sections?.landing || 
-    DEFAULT_PAGE_SECTIONS.landing
-  );
+  const [landingSections, setLandingSections] = useState<string[]>(() => {
+    // Prefer section_order (canonical), then page_sections.landing, then default
+    if (Array.isArray((course as any).section_order) && (course as any).section_order.length > 0) {
+      return (course as any).section_order;
+    }
+    const fromPageSections = (course as { page_sections?: { landing?: string[] } }).page_sections?.landing;
+    if (Array.isArray(fromPageSections) && fromPageSections.length > 0) {
+      return fromPageSections;
+    }
+    return DEFAULT_PAGE_SECTIONS.landing;
+  });
   const [isSavingLayout, setIsSavingLayout] = useState(false);
 
   // Helper to create inline edit target
