@@ -369,12 +369,23 @@ export default function CoursePage() {
   const designFonts = (course.design_config as any)?.fonts || {};
   const hasDesignConfig = Object.keys(designColors).length > 0;
 
-  // Build CSS vars matching exactly what CoursePreviewTabs does internally
+  // Build CSS vars matching EXACTLY what CoursePreviewTabs does internally (lines 2363-2380)
   const outerStyle: React.CSSProperties = hasDesignConfig ? {
+    // Visible properties
     backgroundColor: designColors.background || '#0a0a0a',
     color: designColors.text || '#ffffff',
-    fontFamily: designFonts.body || undefined,
-  } : { backgroundColor: '#0a0a0a' };
+    fontFamily: designFonts.body ? `'${designFonts.body}', sans-serif` : undefined,
+    // CSS custom properties so child components (sections) can use var(--course-*)
+    '--course-primary': designColors.primary || '#d4a853',
+    '--course-secondary': designColors.secondary || '#1a1a1a',
+    '--course-accent': designColors.accent || '#f59e0b',
+    '--course-background': designColors.background || '#0a0a0a',
+    '--course-card-bg': designColors.cardBackground || '#111111',
+    '--course-text': designColors.text || '#ffffff',
+    '--course-text-muted': designColors.textMuted || '#9ca3af',
+    '--course-spacing': ((course as any).design_config?.spacing === 'compact' ? '24px' : (course as any).design_config?.spacing === 'spacious' ? '64px' : '40px'),
+    '--course-radius': ((course as any).design_config?.borderRadius === 'none' ? '0px' : (course as any).design_config?.borderRadius === 'small' ? '4px' : (course as any).design_config?.borderRadius === 'large' ? '16px' : '8px'),
+  } as React.CSSProperties : { backgroundColor: '#0a0a0a' };
 
   return (
     <>
