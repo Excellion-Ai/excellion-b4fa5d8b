@@ -177,9 +177,9 @@ export default function CoursePage() {
       let courseData: any = null;
       let courseError: any = null;
 
-      // FULL select columns — public_courses view strips some fields like tagline/learning_outcomes
-      // so we ALWAYS fetch from the courses table to get complete design data
-      const FULL_SELECT = 'id,title,description,tagline,difficulty,duration_weeks,modules,design_config,page_sections,section_order,layout_template,price_cents,currency,status,published_at,subdomain,thumbnail_url,social_image_url,seo_title,seo_description,instructor_name,instructor_bio,user_id,deleted_at,offer_type';
+      // FULL select columns — public_courses view strips some fields
+      // Note: 'tagline' is NOT a DB column — it lives in design_config or page_sections
+      const FULL_SELECT = 'id,title,description,difficulty,duration_weeks,modules,design_config,page_sections,section_order,layout_template,price_cents,currency,status,published_at,subdomain,thumbnail_url,social_image_url,seo_title,seo_description,instructor_name,instructor_bio,user_id,deleted_at,offer_type';
 
       // First try fetching from courses directly by subdomain (works for published + owner)
       const directQuery = await supabase
