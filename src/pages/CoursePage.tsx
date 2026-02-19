@@ -353,7 +353,12 @@ export default function CoursePage() {
       </Helmet>
 
       {/* Full-height layout matching the builder exactly */}
-      <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <div
+        className="h-screen flex flex-col overflow-hidden"
+        style={(course.design_config as any)?.colors?.background
+          ? { backgroundColor: (course.design_config as any).colors.background }
+          : { backgroundColor: '#0a0a0a' }}
+      >
         {/* Draft Preview Banner */}
         {course._isOwnerPreview && (
           <div className="bg-yellow-600 px-4 py-2 text-center text-sm flex-shrink-0 z-50" style={{ color: '#000' }}>
