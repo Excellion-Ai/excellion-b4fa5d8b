@@ -1051,9 +1051,13 @@ export function CoursePreviewTabs({
                     cursor: 'pointer',
                     fontSize: '16px',
                   } : undefined}
-                  onClick={() => !isVisualEditMode && setActiveTab('curriculum')}
+                  onClick={() => {
+                    if (isVisualEditMode) return;
+                    if (!isCreatorView) { onSignIn?.(); return; }
+                    setActiveTab('curriculum');
+                  }}
                 >
-                  Enroll Now
+                  {isCreatorView ? 'Enroll Now' : 'Sign In to Enroll'}
                 </button>
               </div>
             </div>
@@ -1325,9 +1329,9 @@ export function CoursePreviewTabs({
                     border: 'none',
                     cursor: 'pointer',
                   }}
-                  onClick={() => setActiveTab('curriculum')}
+                  onClick={() => isCreatorView ? setActiveTab('curriculum') : onSignIn?.()}
                 >
-                  Enroll Now
+                  {isCreatorView ? 'Enroll Now' : 'Sign In to Enroll'}
                 </button>
                 </div>
               </div>
@@ -1353,10 +1357,10 @@ export function CoursePreviewTabs({
                 <Button 
                   size="lg" 
                   className={`${accent.bg} hover:opacity-90 text-white w-full sm:w-auto`}
-                  onClick={() => setActiveTab('curriculum')}
+                  onClick={() => isCreatorView ? setActiveTab('curriculum') : onSignIn?.()}
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Enroll Now
+                  {isCreatorView ? 'Enroll Now' : 'Sign In to Enroll'}
                 </Button>
               </CardContent>
             </Card>
@@ -1369,7 +1373,7 @@ export function CoursePreviewTabs({
     };
 
     return (
-      <div className={`space-y-6 ${config.containerClass}`}>
+      <div className={hasDesignConfig ? 'space-y-0' : `space-y-6 p-4 sm:p-6 ${config.containerClass}`}>
         {landingSections.map(renderSection)}
       </div>
     );
@@ -1377,7 +1381,7 @@ export function CoursePreviewTabs({
 
   // Curriculum Content - Uses template-specific module renderer
   const renderCurriculum = () => (
-    <div className={`space-y-6 ${config.containerClass}`}>
+    <div className={`space-y-6 p-4 sm:p-6 ${config.containerClass}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className={`text-xl sm:text-2xl font-bold ${config.headingClass}`}>{course.title}</h2>
@@ -1414,7 +1418,7 @@ export function CoursePreviewTabs({
 
   // Lesson Preview Content
   const renderLessonPreview = () => (
-    <div className={`grid grid-cols-1 lg:grid-cols-[438px_1fr] gap-4 ${config.containerClass}`} style={{ minHeight: 0 }}>
+    <div className={`grid grid-cols-1 lg:grid-cols-[438px_1fr] gap-4 p-4 sm:p-6 ${config.containerClass}`} style={{ minHeight: 0 }}>
       {/* Sidebar - fixed width, fully contained */}
       <div className="hidden lg:flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 200px)' }}>
         <Card className={`${config.cardClass} border-border flex flex-col overflow-hidden h-full`}>
@@ -1828,7 +1832,7 @@ export function CoursePreviewTabs({
     const isComplete = progressPercent === 100;
     
     return (
-      <div className={`space-y-6 ${config.containerClass}`}>
+      <div className={`space-y-6 p-4 sm:p-6 ${config.containerClass}`}>
         {/* Welcome Message */}
         <div className={`rounded-xl p-6 border ${
           isComplete 
@@ -2313,7 +2317,7 @@ export function CoursePreviewTabs({
 
       {/* Tab Content - Isolated Course Preview Container */}
       <div 
-        className="flex-1 overflow-auto p-4"
+        className="flex-1 overflow-auto"
         style={{
           // Isolate course preview from builder UI colors
           ...(hasDesignConfig ? {
@@ -2336,18 +2340,22 @@ export function CoursePreviewTabs({
         {activeTab === 'lesson' && renderLessonPreview()}
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'pricing' && (
-          <PricingTab
-            courseId={course.id}
-            priceCents={(course as any).price_cents ?? null}
-            currency={(course as any).currency ?? 'USD'}
-            onUpdate={(updates) => {
-              if (onUpdate) {
-                onUpdate({ ...course, price_cents: updates.price_cents ?? undefined } as any);
-              }
-            }}
-          />
+          <div className="p-4 sm:p-6">
+            <PricingTab
+              courseId={course.id}
+              priceCents={(course as any).price_cents ?? null}
+              currency={(course as any).currency ?? 'USD'}
+              onUpdate={(updates) => {
+                if (onUpdate) {
+                  onUpdate({ ...course, price_cents: updates.price_cents ?? undefined } as any);
+                }
+              }}
+            />
+          </div>
         )}
-        {['bonuses', 'resources', 'community', 'testimonials'].includes(activeTab) && renderSeparatePage(activeTab)}
+        {['bonuses', 'resources', 'community', 'testimonials'].includes(activeTab) && (
+          <div className="p-4 sm:p-6">{renderSeparatePage(activeTab)}</div>
+        )}
       </div>
 
       {/* Visual Edit Mode Indicator */}
