@@ -2157,7 +2157,15 @@ export function CoursePreviewTabs({
       />
 
       {/* Website Navigation Bar */}
-      <header className="flex-shrink-0 border-b border-border/40 bg-background">
+      <header
+        className="flex-shrink-0 border-b"
+        style={hasDesignConfig ? {
+          backgroundColor: designColors.secondary || designColors.background || '#111111',
+          borderColor: `${designColors.primary || '#d4a853'}22`,
+          color: designColors.text || '#ffffff',
+        } : undefined}
+      >
+        <div className={hasDesignConfig ? '' : 'border-border/40 bg-background'}>
         {isMobile ? (
           <div className="px-4 py-2.5 space-y-2">
             <div className="flex items-center gap-3">
@@ -2219,9 +2227,17 @@ export function CoursePreviewTabs({
                   )}
                 </div>
               ) : (
-                <Button size="sm" variant="outline" onClick={onSignIn} className="h-7 text-xs">
+                <button
+                  onClick={onSignIn}
+                  className="h-7 text-xs px-3 py-1.5 rounded-md border font-medium transition-colors"
+                  style={hasDesignConfig ? {
+                    borderColor: `${designColors.primary || '#d4a853'}60`,
+                    color: designColors.primary || '#d4a853',
+                    backgroundColor: 'transparent',
+                  } : undefined}
+                >
                   Sign In
-                </Button>
+                </button>
               )}
             </div>
           </div>
@@ -2255,19 +2271,28 @@ export function CoursePreviewTabs({
             <nav className="flex items-center gap-1 flex-1 justify-center">
               {TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
+                const navText = hasDesignConfig ? (designColors.text || '#ffffff') : undefined;
+                const navMuted = hasDesignConfig ? `${designColors.text || '#ffffff'}99` : undefined;
+                const navUnderline = hasDesignConfig ? (designColors.primary || '#d4a853') : undefined;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`relative px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
-                      isActive
-                        ? 'text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
+                      !hasDesignConfig
+                        ? isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                        : ''
                     }`}
+                    style={hasDesignConfig ? {
+                      color: isActive ? navText : navMuted,
+                    } : undefined}
                   >
                     {tab.label}
                     {isActive && (
-                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary rounded-full" />
+                      <span
+                        className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
+                        style={hasDesignConfig ? { backgroundColor: navUnderline } : { backgroundColor: 'hsl(var(--primary))' }}
+                      />
                     )}
                   </button>
                 );
@@ -2283,6 +2308,9 @@ export function CoursePreviewTabs({
                     className={`text-sm font-medium transition-colors ${
                       activeTab === 'pricing' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                     }`}
+                    style={hasDesignConfig ? {
+                      color: activeTab === 'pricing' ? (designColors.text || '#ffffff') : `${designColors.text || '#ffffff'}99`,
+                    } : undefined}
                   >
                     Pricing
                   </button>
@@ -2305,14 +2333,23 @@ export function CoursePreviewTabs({
                   )}
                 </>
               ) : (
-                <Button size="sm" variant="outline" onClick={onSignIn} className="h-8 text-xs">
-                  <User className="w-3.5 h-3.5 mr-1.5" />
+                <button
+                  onClick={onSignIn}
+                  className="h-8 text-sm px-4 py-1.5 rounded-md border font-medium transition-all hover:opacity-90"
+                  style={hasDesignConfig ? {
+                    borderColor: `${designColors.primary || '#d4a853'}60`,
+                    color: designColors.primary || '#d4a853',
+                    backgroundColor: `${designColors.primary || '#d4a853'}15`,
+                  } : undefined}
+                >
+                  <User className="w-3.5 h-3.5 mr-1.5 inline" />
                   Sign In
-                </Button>
+                </button>
               )}
             </div>
           </div>
         )}
+        </div>
       </header>
 
       {/* Tab Content - Isolated Course Preview Container */}
