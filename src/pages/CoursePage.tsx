@@ -17,7 +17,14 @@ function mapToExtendedCourse(raw: any): ExtendedCourse {
     const lessons: LessonContent[] = (Array.isArray(mod.lessons) ? mod.lessons : []).map((les: any) => ({
       id: les.id || `lesson-${Math.random()}`,
       title: les.title || 'Untitled Lesson',
-      duration: les.duration || les.duration_minutes ? `${les.duration_minutes} min` : '10 min',
+      // Preserve original duration string if present, else format from minutes
+      duration: les.duration
+        ? les.duration
+        : les.duration_minutes
+          ? `${les.duration_minutes} min`
+          : les.estimated_minutes
+            ? `${les.estimated_minutes} min`
+            : '10 min',
       type: les.type || les.content_type || 'text',
       description: les.description,
       is_preview: les.is_preview || false,
@@ -42,25 +49,34 @@ function mapToExtendedCourse(raw: any): ExtendedCourse {
   const pageSections = raw.page_sections as any;
   const designConfig = raw.design_config as any;
 
+  // Spread raw first so all DB fields (page_sections, design_config, etc.) are available
+  // Then override with properly typed/mapped fields so CoursePreviewTabs gets correct data
   return {
+    // 1. All raw DB fields available via (course as any) reads in CoursePreviewTabs
+    ...(raw as any),
+    // 2. Properly mapped typed fields override the raw ones
     id: raw.id,
     title: raw.title,
     description: raw.description || '',
     tagline: raw.tagline,
     difficulty: raw.difficulty || 'beginner',
     duration_weeks: raw.duration_weeks || 0,
+    // modules must be the mapped array, not the raw JSONB
     modules,
-    learningOutcomes: Array.isArray(raw.learningOutcomes)
-      ? raw.learningOutcomes
-      : Array.isArray(raw.learning_outcomes)
+    learningOutcomes: Array.isArray(raw.learning_outcomes)
       ? raw.learning_outcomes
+      : Array.isArray(raw.learningOutcomes)
+      ? raw.learningOutcomes
       : [],
     thumbnail: raw.thumbnail_url,
     brand_color: raw.brand_color,
     layout_style: (raw.layout_template || 'creator') as any,
     layout_template: raw.layout_template,
+    // design_config stays as raw object so CoursePreviewTabs can read colors/fonts/backgrounds
     design_config: designConfig || undefined,
     section_order: raw.section_order as any,
+    // page_sections kept as-is for CoursePreviewTabs internal reads
+    page_sections: pageSections,
     pages: pageSections
       ? {
           landing_sections: pageSections.landing || [],
@@ -71,8 +87,6 @@ function mapToExtendedCourse(raw: any): ExtendedCourse {
             : undefined,
         }
       : undefined,
-    // pass through db-level fields that CoursePreviewTabs reads via (course as any)
-    ...(raw as any),
   } as ExtendedCourse;
 }
 
