@@ -920,152 +920,132 @@ export function CoursePreviewTabs({
       );
     }
 
+    // Derive active layout template
+    const activeLayout = (course as any).layout_template || 'suspended';
+
     // Dynamic Section Renderer
     const renderSection = (sectionId: string) => {
       switch (sectionId) {
         case 'hero': {
-          const heroBg = hasDesignConfig
-            ? `linear-gradient(135deg, ${designColors.secondary || '#1a1a1a'}, ${designColors.background || '#0a0a0a'})`
-            : course.brand_color 
-              ? `linear-gradient(135deg, ${course.brand_color}30 0%, hsl(var(--background)) 100%)`
-              : undefined;
-          const heroPrimary = hasDesignConfig ? (designColors.primary || '#d4a853') : undefined;
-          const heroText = hasDesignConfig ? (designColors.text || '#ffffff') : undefined;
-          const heroMuted = hasDesignConfig ? (designColors.textMuted || '#9ca3af') : undefined;
-          const heroCardBg = hasDesignConfig ? (designColors.cardBackground || '#111111') : undefined;
-          const heroRadius = hasDesignConfig ? 'var(--course-radius)' : undefined;
+          const primary = designColors.primary || '#d4a853';
+          const bg = designColors.background || '#0a0a0a';
+          const cardBg = designColors.cardBackground || '#111111';
+          const textColor = designColors.text || '#ffffff';
+          const mutedColor = designColors.textMuted || '#9ca3af';
+          const secondary = designColors.secondary || '#1a1a1a';
+          const accent2 = designColors.accent || '#f59e0b';
+          const heroStyle = (designConfig as any).hero_style || {};
+          const radius = designConfig.borderRadius === 'none' ? '0px' : designConfig.borderRadius === 'small' ? '4px' : designConfig.borderRadius === 'large' ? '16px' : '8px';
+          const font = designFonts.heading || 'Inter';
+          const bodyFont = designFonts.body || 'Inter';
 
-          return (
-            <div 
-              key="hero"
-              className={`relative overflow-hidden ${hasDesignConfig ? '' : `rounded-xl p-6 sm:p-8 md:p-12 ${config.cardClass}`}`}
-              style={hasDesignConfig ? { 
-                background: designBackgrounds.hero ? undefined : heroBg,
-                padding: 'var(--course-spacing)',
-              } : { 
-                background: heroBg || `linear-gradient(135deg, hsl(var(--${config.accentColor === 'amber' ? 'primary' : config.accentColor}-500) / 0.2) 0%, hsl(var(--background)) 100%)`,
-              }}
-            >
-              {/* Background image from design config or thumbnail */}
-              {designBackgrounds.hero ? (
-                <div className="absolute inset-0">
-                  <img src={designBackgrounds.hero} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/50" />
-                </div>
-              ) : course.thumbnail ? (
-                <div className="absolute inset-0 opacity-20">
-                  <img src={course.thumbnail} alt="" className="w-full h-full object-cover" />
-                </div>
-              ) : null}
-              <div 
-                className="relative z-10"
-                style={hasDesignConfig ? {
-                  backgroundColor: heroCardBg,
-                  borderRadius: heroRadius,
-                  border: `1px solid ${heroPrimary}33`,
-                  padding: '48px',
-                  maxWidth: '800px',
-                  margin: '0 auto',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-                } : { maxWidth: '42rem' }}
+          const heroBgImage = designBackgrounds.hero;
+          const bgImageOverlay = heroBgImage ? (
+            <div className="absolute inset-0">
+              <img src={heroBgImage} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/50" />
+            </div>
+          ) : null;
+
+          const heroContent = (
+            <>
+              <span style={{ backgroundColor: primary, color: '#000', padding: '4px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: 600, display: 'inline-block', marginBottom: '16px' }}>
+                {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)} Level
+              </span>
+              <EditableOverlay isEditMode={isVisualEditMode} label="Title" onEdit={() => openInlineEdit('Course Title', 'text', course.title, (v) => onUpdate?.({ ...course, title: v }))}>
+                <h1 style={{ color: textColor, fontSize: '2.5rem', marginTop: '8px', marginBottom: '16px', lineHeight: 1.2, fontFamily: font }}>
+                  {course.title}
+                </h1>
+              </EditableOverlay>
+              {course.tagline && (
+                <EditableOverlay isEditMode={isVisualEditMode} label="Tagline" onEdit={() => openInlineEdit('Tagline', 'text', course.tagline || '', (v) => onUpdate?.({ ...course, tagline: v }))}>
+                  <p style={{ color: primary, fontSize: '1.1rem', marginBottom: '12px', fontFamily: bodyFont }}>{course.tagline}</p>
+                </EditableOverlay>
+              )}
+              <EditableOverlay isEditMode={isVisualEditMode} label="Description" onEdit={() => openInlineEdit('Description', 'textarea', course.description, (v) => onUpdate?.({ ...course, description: v }))}>
+                <p style={{ color: mutedColor, marginBottom: '24px', fontSize: '1rem', fontFamily: bodyFont }}>{course.description}</p>
+              </EditableOverlay>
+              <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '16px', marginBottom: '24px', fontSize: '14px', color: mutedColor }}>
+                <div className="flex items-center gap-2"><BookOpen className="w-4 h-4" />{course.modules.length} modules</div>
+                <div className="flex items-center gap-2"><GraduationCap className="w-4 h-4" />{totalLessons} lessons</div>
+                <div className="flex items-center gap-2"><Clock className="w-4 h-4" />{totalHours}+ hours</div>
+              </div>
+              <button
+                style={{ backgroundColor: primary, color: '#000', padding: '12px 24px', borderRadius: radius, fontWeight: 600, border: 'none', cursor: 'pointer', fontSize: '16px' }}
+                onClick={() => { if (isVisualEditMode) return; if (!isCreatorView) { onSignIn?.(); return; } setActiveTab('curriculum'); }}
               >
-                <span 
-                  className={hasDesignConfig ? '' : `${accent.bgLight} ${accent.text} ${accent.borderLight} inline-block mb-4 px-3 py-1 rounded text-xs font-medium`}
-                  style={hasDesignConfig ? {
-                    backgroundColor: heroPrimary,
-                    color: '#000',
-                    padding: '4px 12px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    display: 'inline-block',
-                    marginBottom: '16px',
-                  } : undefined}
-                >
-                  {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)} Level
-                </span>
-                <EditableOverlay isEditMode={isVisualEditMode} label="Title" onEdit={() => openInlineEdit('Course Title', 'text', course.title, (v) => onUpdate?.({ ...course, title: v }))}>
-                  <h1 
-                    className={hasDesignConfig ? '' : `text-2xl sm:text-3xl md:text-4xl font-bold mb-3 ${config.headingClass}`}
-                    style={hasDesignConfig ? {
-                      color: heroText,
-                      fontSize: '2.5rem',
-                      marginTop: '16px',
-                      marginBottom: '16px',
-                      lineHeight: 1.2,
-                      fontFamily: designFonts.heading || 'Inter',
-                    } : undefined}
-                  >
-                    {course.title}
-                  </h1>
-                </EditableOverlay>
-                {course.tagline && (
-                  <EditableOverlay isEditMode={isVisualEditMode} label="Tagline" onEdit={() => openInlineEdit('Tagline', 'text', course.tagline || '', (v) => onUpdate?.({ ...course, tagline: v }))}>
-                    <p 
-                      className={hasDesignConfig ? '' : `text-lg sm:text-xl font-medium ${accent.text} mb-4`}
-                      style={hasDesignConfig ? { color: heroPrimary, fontSize: '1.1rem', marginBottom: '12px' } : undefined}
-                    >
-                      {course.tagline}
-                    </p>
-                  </EditableOverlay>
-                )}
-                <EditableOverlay isEditMode={isVisualEditMode} label="Description" onEdit={() => openInlineEdit('Description', 'textarea', course.description, (v) => onUpdate?.({ ...course, description: v }))}>
-                  <p 
-                    className={hasDesignConfig ? '' : 'text-muted-foreground mb-6'}
-                    style={hasDesignConfig ? {
-                      color: heroMuted,
-                      marginBottom: '24px',
-                      fontSize: '1.1rem',
-                      fontFamily: designFonts.body || 'Inter',
-                    } : undefined}
-                  >
-                    {course.description}
-                  </p>
-                </EditableOverlay>
-                <div 
-                  className={hasDesignConfig ? '' : 'flex flex-wrap gap-4 mb-6 text-sm text-muted-foreground'}
-                  style={hasDesignConfig ? {
-                    display: 'flex',
-                    flexWrap: 'wrap' as const,
-                    gap: '16px',
-                    marginBottom: '24px',
-                    fontSize: '14px',
-                    color: heroMuted,
-                  } : undefined}
-                >
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" />
-                    {course.modules.length} modules
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <GraduationCap className="w-4 h-4" />
-                    {totalLessons} lessons
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {totalHours}+ hours
-                  </div>
+                {isCreatorView ? 'Enroll Now' : 'Sign In to Enroll'}
+              </button>
+            </>
+          );
+
+          // ── TIMELINE LAYOUT ── Full-width centered hero with left accent bar
+          if (activeLayout === 'timeline') {
+            return (
+              <div key="hero" className="relative overflow-hidden" style={{ backgroundColor: bg, padding: '80px 24px', borderBottom: `1px solid ${primary}40` }}>
+                {bgImageOverlay}
+                <div className="relative z-10" style={{ maxWidth: heroStyle.width === 'narrow' ? '600px' : '900px', margin: heroStyle.centered === false ? '0' : '0 auto', textAlign: heroStyle.centered === false ? 'left' as const : 'center' as const }}>
+                  <div style={{ width: '4px', height: '80px', background: primary, margin: heroStyle.centered === false ? '0 0 24px 0' : '0 auto 24px', borderRadius: '2px' }} />
+                  {heroContent}
                 </div>
-                <button
-                  className={hasDesignConfig ? '' : `${accent.bg} hover:opacity-90 text-white px-6 py-3 rounded-lg font-semibold`}
-                  style={hasDesignConfig ? {
-                    backgroundColor: heroPrimary,
-                    color: '#000',
-                    padding: '12px 24px',
-                    borderRadius: heroRadius || '8px',
-                    fontWeight: 600,
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                  } : undefined}
-                  onClick={() => {
-                    if (isVisualEditMode) return;
-                    if (!isCreatorView) { onSignIn?.(); return; }
-                    setActiveTab('curriculum');
-                  }}
-                >
-                  {isCreatorView ? 'Enroll Now' : 'Sign In to Enroll'}
-                </button>
+              </div>
+            );
+          }
+
+          // ── GRID LAYOUT ── Bold typography, large visual accent
+          if (activeLayout === 'grid') {
+            return (
+              <div key="hero" className="relative overflow-hidden" style={{ backgroundColor: bg, padding: '100px 24px 60px' }}>
+                {bgImageOverlay}
+                <div className="relative z-10" style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' as const }}>
+                  <div style={{ display: 'inline-block', background: `linear-gradient(135deg, ${primary}, ${accent2})`, borderRadius: radius, marginBottom: '32px', padding: '8px 20px' }}>
+                    <span style={{ color: '#000', fontSize: '12px', fontWeight: 700 }}>
+                      {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)} · {course.modules.length} Modules
+                    </span>
+                  </div>
+                  <EditableOverlay isEditMode={isVisualEditMode} label="Title" onEdit={() => openInlineEdit('Course Title', 'text', course.title, (v) => onUpdate?.({ ...course, title: v }))}>
+                    <h1 style={{ color: textColor, fontSize: '3.5rem', lineHeight: 1.1, marginBottom: '20px', fontFamily: font, fontWeight: 800 }}>{course.title}</h1>
+                  </EditableOverlay>
+                  {course.tagline && (
+                    <EditableOverlay isEditMode={isVisualEditMode} label="Tagline" onEdit={() => openInlineEdit('Tagline', 'text', course.tagline || '', (v) => onUpdate?.({ ...course, tagline: v }))}>
+                      <p style={{ color: primary, fontSize: '1.25rem', marginBottom: '16px', fontWeight: 600 }}>{course.tagline}</p>
+                    </EditableOverlay>
+                  )}
+                  <EditableOverlay isEditMode={isVisualEditMode} label="Description" onEdit={() => openInlineEdit('Description', 'textarea', course.description, (v) => onUpdate?.({ ...course, description: v }))}>
+                    <p style={{ color: mutedColor, fontSize: '1.1rem', marginBottom: '32px', maxWidth: '700px', margin: '0 auto 32px' }}>{course.description}</p>
+                  </EditableOverlay>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '32px', flexWrap: 'wrap' as const, color: mutedColor, fontSize: '14px' }}>
+                    <span className="flex items-center gap-2"><BookOpen className="w-4 h-4" />{course.modules.length} modules</span>
+                    <span className="flex items-center gap-2"><GraduationCap className="w-4 h-4" />{totalLessons} lessons</span>
+                    <span className="flex items-center gap-2"><Clock className="w-4 h-4" />{totalHours}+ hours</span>
+                  </div>
+                  <button
+                    style={{ backgroundColor: primary, color: '#000', padding: '16px 40px', borderRadius: radius, fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '18px' }}
+                    onClick={() => { if (isVisualEditMode) return; if (!isCreatorView) { onSignIn?.(); return; } setActiveTab('curriculum'); }}
+                  >
+                    {isCreatorView ? 'Enroll Now' : 'Sign In to Enroll'}
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          // ── SUSPENDED LAYOUT (default) ── Floating card with depth
+          return (
+            <div key="hero" className="relative overflow-hidden" style={{ background: heroBgImage ? undefined : `linear-gradient(135deg, ${secondary}, ${bg})`, padding: 'var(--course-spacing, 40px) 24px' }}>
+              {bgImageOverlay}
+              <div className="relative z-10" style={{
+                backgroundColor: cardBg,
+                borderRadius: radius,
+                border: `1px solid ${primary}33`,
+                padding: '48px',
+                maxWidth: heroStyle.width === 'narrow' ? '600px' : heroStyle.width === 'full' ? '100%' : '800px',
+                width: '100%',
+                margin: heroStyle.centered === false ? '0' : '0 auto',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                boxSizing: 'border-box' as const,
+              }}>
+                {heroContent}
               </div>
             </div>
           );
@@ -1132,62 +1112,85 @@ export function CoursePreviewTabs({
           );
         }
 
-        case 'curriculum':
-          return (
-            <Card key="curriculum" className={`${config.cardClass} border-border relative overflow-hidden`}>
-              {designBackgrounds.curriculum && (
-                <div className="absolute inset-0">
-                  <img src={designBackgrounds.curriculum} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-background/80" />
+        case 'curriculum': {
+          const primary = designColors.primary || '#d4a853';
+          const bg = designColors.background || '#0a0a0a';
+          const cardBg = designColors.cardBackground || '#111111';
+          const textColor = designColors.text || '#ffffff';
+          const mutedColor = designColors.textMuted || '#9ca3af';
+          const radius = designConfig.borderRadius === 'none' ? '0px' : designConfig.borderRadius === 'small' ? '4px' : designConfig.borderRadius === 'large' ? '16px' : '8px';
+          const font = designFonts.heading || 'Inter';
+
+          // Timeline curriculum - vertical with dots
+          if (activeLayout === 'timeline') {
+            return (
+              <div key="curriculum" style={{ backgroundColor: bg, padding: '48px 24px' }}>
+                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                  <h2 style={{ color: textColor, fontSize: '1.8rem', fontFamily: font, marginBottom: '32px', textAlign: 'center' as const }}>Course Curriculum</h2>
+                  <div style={{ borderLeft: `3px solid ${primary}`, paddingLeft: '32px', marginLeft: '20px' }}>
+                    {course.modules.map((module, idx) => (
+                      <div key={module.id} style={{ position: 'relative' as const, paddingBottom: '32px' }}>
+                        <div style={{ position: 'absolute' as const, left: '-44px', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 700, fontSize: '12px' }}>
+                          {idx + 1}
+                        </div>
+                        <EditableOverlay isEditMode={isVisualEditMode} label="Module" onEdit={() => openInlineEdit(`Module ${idx + 1} Title`, 'text', module.title, (v) => { const u = course.modules.map((m, i) => i === idx ? { ...m, title: v } : m); onUpdate?.({ ...course, modules: u }); })}>
+                          <div style={{ backgroundColor: cardBg, borderRadius: radius, padding: '20px', cursor: 'pointer' }} onClick={() => handleLessonClick(idx, 0)}>
+                            <h3 style={{ color: textColor, margin: '0 0 8px', fontFamily: font, fontSize: '1rem', fontWeight: 600 }}>{module.title}</h3>
+                            <p style={{ color: mutedColor, fontSize: '13px', margin: '0 0 8px' }}>{module.description}</p>
+                            <span style={{ color: primary, fontSize: '12px' }}>{module.lessons.length} lessons</span>
+                          </div>
+                        </EditableOverlay>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              )}
-              <div className="relative z-10">
-              <CardHeader>
-                <CardTitle className={`flex items-center gap-2 ${config.headingClass}`}>
-                  <BookOpen className={`w-5 h-5 ${accent.text}`} />
-                  Course Curriculum
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {course.modules.length} modules • {totalLessons} lessons
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
+              </div>
+            );
+          }
+
+          // Grid curriculum - cards
+          if (activeLayout === 'grid') {
+            return (
+              <div key="curriculum" style={{ backgroundColor: bg, padding: '48px 24px' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                  <h2 style={{ color: textColor, fontSize: '1.8rem', fontFamily: font, marginBottom: '32px', textAlign: 'center' as const }}>Course Curriculum</h2>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+                    {course.modules.map((module, idx) => (
+                      <EditableOverlay key={module.id} isEditMode={isVisualEditMode} label="Module" onEdit={() => openInlineEdit(`Module ${idx + 1} Title`, 'text', module.title, (v) => { const u = course.modules.map((m, i) => i === idx ? { ...m, title: v } : m); onUpdate?.({ ...course, modules: u }); })}>
+                        <div style={{ backgroundColor: cardBg, borderRadius: radius, padding: '24px', borderTop: `4px solid ${primary}`, cursor: 'pointer' }} onClick={() => handleLessonClick(idx, 0)}>
+                          <span style={{ color: primary, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' as const }}>Module {idx + 1}</span>
+                          <h3 style={{ color: textColor, margin: '8px 0 8px', fontFamily: font, fontSize: '1rem', fontWeight: 600 }}>{module.title}</h3>
+                          <p style={{ color: mutedColor, fontSize: '13px', margin: 0 }}>{module.lessons.length} lessons</p>
+                        </div>
+                      </EditableOverlay>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // Suspended curriculum (default) - list with cards
+          return (
+            <div key="curriculum" style={{ backgroundColor: bg, padding: '40px 24px' }}>
+              <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+                <h2 style={{ color: textColor, fontSize: '1.8rem', fontFamily: font, marginBottom: '24px', textAlign: 'center' as const }}>Course Curriculum</h2>
+                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '12px' }}>
                   {course.modules.map((module, idx) => (
-                    <div 
-                      key={module.id}
-                      className={`flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 hover:${accent.borderLight} transition-colors cursor-pointer`}
-                      onClick={() => {
-                        setSelectedModuleIdx(idx);
-                        setActiveTab('curriculum');
-                      }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`flex items-center justify-center w-7 h-7 rounded-full ${accent.bgLight} ${accent.text} text-sm font-medium ${
-                          layoutStyle === 'technical' ? 'font-mono' : ''
-                        }`}>
-                          {layoutStyle === 'academic' ? formatSectionNumber(idx).replace('.0', '') : idx + 1}
-                        </span>
-                        <div>
-                          <EditableOverlay isEditMode={isVisualEditMode} label="Module" onEdit={() => openInlineEdit(`Module ${idx + 1} Title`, 'text', module.title, (v) => {
-                            const updatedModules = course.modules.map((m, i) => i === idx ? { ...m, title: v } : m);
-                            onUpdate?.({ ...course, modules: updatedModules });
-                          })}>
-                            <p className={`font-medium text-foreground text-sm ${
-                              layoutStyle === 'technical' ? 'font-mono' : ''
-                            }`}>{module.title}</p>
-                          </EditableOverlay>
-                          <p className="text-xs text-muted-foreground">{module.lessons.length} lessons</p>
+                    <EditableOverlay key={module.id} isEditMode={isVisualEditMode} label="Module" onEdit={() => openInlineEdit(`Module ${idx + 1} Title`, 'text', module.title, (v) => { const u = course.modules.map((m, i) => i === idx ? { ...m, title: v } : m); onUpdate?.({ ...course, modules: u }); })}>
+                      <div style={{ backgroundColor: cardBg, borderRadius: radius, borderLeft: `4px solid ${primary}`, overflow: 'hidden', cursor: 'pointer' }} onClick={() => handleLessonClick(idx, 0)}>
+                        <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ color: textColor, fontWeight: 600, fontSize: '15px' }}>{module.title}</span>
+                          <span style={{ color: mutedColor, fontSize: '12px' }}>{module.lessons.length} lessons</span>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </div>
+                    </EditableOverlay>
                   ))}
                 </div>
-              </CardContent>
               </div>
-            </Card>
+            </div>
           );
+        }
 
         case 'instructor':
           return (
