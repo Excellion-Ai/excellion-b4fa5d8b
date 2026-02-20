@@ -182,6 +182,7 @@ Deno.serve(async (req) => {
         );
       }
 
+      const landingPage = prebuiltCourse.curriculum.landing_page || {};
       const courseInsertResponse = await fetch(`${SUPABASE_URL}/rest/v1/courses`, {
         method: 'POST',
         headers: {
@@ -197,6 +198,31 @@ Deno.serve(async (req) => {
           duration_weeks: prebuiltCourse.curriculum.duration_weeks || 6,
           modules: prebuiltCourse.curriculum.modules, status: 'draft',
           offer_type: options.template,
+          design_config: {
+            colors: {
+              primary: prebuiltCourse.curriculum.brand_color || '#d4a853',
+              secondary: '#1a1a1a',
+              accent: '#f59e0b',
+              background: '#0a0a0a',
+              cardBackground: '#111111',
+              text: '#ffffff',
+              textMuted: '#9ca3af',
+            },
+            fonts: { heading: 'Inter', body: 'Inter' },
+            spacing: 'normal',
+            borderRadius: 'medium',
+          },
+          layout_template: prebuiltCourse.curriculum.layout_style || 'suspended',
+          section_order: landingPage.sections || ['hero', 'outcomes', 'curriculum', 'faq', 'cta'],
+          page_sections: {
+            landing: {
+              hero_headline: landingPage.hero_headline,
+              hero_subheadline: landingPage.hero_subheadline,
+              hero_image: landingPage.hero_image,
+              tagline: prebuiltCourse.curriculum.tagline,
+              cta_text: landingPage.cta_text || 'Enroll Now',
+            },
+          },
         }),
       });
 
