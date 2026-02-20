@@ -2034,8 +2034,24 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                 onApplyChanges={async (changes) => {
                   if (!changes) return;
                   const updates: any = {};
+
+                  // Deep-merge design_config changes (colors, fonts, hero_style, etc.)
                   if (changes.design_config) {
-                    updates.design_config = { ...(courseSpec as any).design_config, ...changes.design_config };
+                    const existing = (courseSpec as any).design_config || {};
+                    updates.design_config = {
+                      ...existing,
+                      ...changes.design_config,
+                      colors: { ...(existing.colors || {}), ...(changes.design_config.colors || {}) },
+                      fonts: { ...(existing.fonts || {}), ...(changes.design_config.fonts || {}) },
+                    };
+                  }
+                  // hero_style can come directly from AI changes (e.g., centering, width)
+                  if (changes.hero_style) {
+                    const existing = (courseSpec as any).design_config || {};
+                    updates.design_config = {
+                      ...(updates.design_config || existing),
+                      hero_style: { ...((updates.design_config || existing).hero_style || {}), ...changes.hero_style },
+                    };
                   }
                   if (changes.layout_template) {
                     updates.layout_template = changes.layout_template;
@@ -2047,14 +2063,18 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
                     const currCurriculum = (courseSpec as any).curriculum || courseSpec;
                     updates.curriculum = { ...currCurriculum, ...changes.curriculum };
                   }
+
+                  // Update local state immediately so preview reflects changes
+                  setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
+
+                  // Persist to database
                   if (Object.keys(updates).length > 0 && courseId) {
                     const { error } = await supabase.from('courses').update(updates).eq('id', courseId);
-                    if (!error) {
-                      setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
+                    if (error) {
+                      console.error('Failed to save AI changes:', error);
+                    } else {
                       toast.success('Changes applied');
                     }
-                  } else {
-                    setCourseSpec((prev: any) => prev ? { ...prev, ...updates } : prev);
                   }
                 }}
                 isVisualEditMode={isVisualEditMode}
