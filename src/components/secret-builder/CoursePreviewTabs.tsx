@@ -982,10 +982,9 @@ export function CoursePreviewTabs({
           // ── TIMELINE LAYOUT ── Full-width centered hero with left accent bar
           if (activeLayout === 'timeline') {
             return (
-              <div key="hero" className="relative overflow-hidden" style={{ backgroundColor: bg, padding: '80px 24px', borderBottom: `1px solid ${primary}40` }}>
+              <div key="hero" className="relative overflow-hidden" style={{ backgroundColor: bg, padding: '48px 24px 40px', borderBottom: `1px solid ${primary}20` }}>
                 {bgImageOverlay}
                 <div className="relative z-10" style={{ maxWidth: heroStyle.width === 'narrow' ? '600px' : '900px', margin: heroStyle.centered === false ? '0' : '0 auto', textAlign: heroStyle.centered === false ? 'left' as const : 'center' as const }}>
-                  <div style={{ width: '4px', height: '80px', background: primary, margin: heroStyle.centered === false ? '0 0 24px 0' : '0 auto 24px', borderRadius: '2px' }} />
                   {heroContent}
                 </div>
               </div>
