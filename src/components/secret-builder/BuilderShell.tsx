@@ -1033,6 +1033,31 @@ export function BuilderShell() {
               duration_weeks: courseSpec.duration_weeks || 6,
               status: 'draft',
               builder_project_id: projectId || undefined,
+              design_config: {
+                colors: {
+                  primary: curriculum?.brand_color || '#d4a853',
+                  secondary: '#1a1a1a',
+                  accent: '#f59e0b',
+                  background: '#0a0a0a',
+                  cardBackground: '#111111',
+                  text: '#ffffff',
+                  textMuted: '#9ca3af',
+                },
+                fonts: { heading: 'Inter', body: 'Inter' },
+                spacing: 'normal',
+                borderRadius: 'medium',
+              } as unknown as import('@/integrations/supabase/types').Json,
+              layout_template: curriculum?.layout_style || 'suspended',
+              section_order: (curriculum?.landing_page?.sections || ['hero', 'outcomes', 'curriculum', 'faq', 'cta']) as unknown as import('@/integrations/supabase/types').Json,
+              page_sections: {
+                landing: {
+                  hero_headline: curriculum?.landing_page?.hero_headline,
+                  hero_subheadline: curriculum?.landing_page?.hero_subheadline,
+                  hero_image: curriculum?.landing_page?.hero_image,
+                  tagline: curriculum?.tagline,
+                  cta_text: curriculum?.landing_page?.cta_text || 'Enroll Now',
+                },
+              } as unknown as import('@/integrations/supabase/types').Json,
             }, { onConflict: 'id' })
             .select('id')
             .single();

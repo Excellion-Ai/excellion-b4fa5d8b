@@ -14,7 +14,7 @@ export default function CoursePage() {
 
       const bySubdomain = await supabase
         .from('courses')
-        .select('*')
+        .select('*, builder_project_id')
         .eq('subdomain', slug as string)
         .maybeSingle()
 
@@ -23,13 +23,29 @@ export default function CoursePage() {
       } else if (slug?.match(/^[0-9a-f-]{36}$/i)) {
         const byId = await supabase
           .from('courses')
-          .select('*')
+          .select('*, builder_project_id')
           .eq('id', slug as string)
           .maybeSingle()
         data = byId.data
       }
 
       if (data) {
+        // Fallback: if design_config is empty, pull from linked builder_projects
+        const designCfg = data.design_config as any
+        const isEmptyDesign = !designCfg || Object.keys(designCfg).length === 0
+        if (isEmptyDesign && data.builder_project_id) {
+          const { data: proj } = await supabase
+            .from('builder_projects')
+            .select('spec')
+            .eq('id', data.builder_project_id)
+            .maybeSingle()
+          const courseSpec = (proj?.spec as any)?.courseSpec
+          if (courseSpec) {
+            data.design_config = courseSpec.design_config || {}
+            data._fallback_curriculum = courseSpec.curriculum || courseSpec
+          }
+        }
+
         setCourse(data)
         console.log('Course loaded:', data)
         console.log('Design config:', data.design_config)
@@ -66,10 +82,18 @@ export default function CoursePage() {
   // Modules live directly in courses.modules (JSONB array), NOT in curriculum
   const modules: any[] = Array.isArray(course.modules) ? course.modules : []
 
-  // Landing page data from page_sections
+  // Landing page data: page_sections.landing → fallback curriculum → bare fields
   const pageSections = (course.page_sections as any) || {}
-  const landingPage = pageSections.landing || pageSections.landing_page || {}
+  const fallbackCurriculum = (course._fallback_curriculum as any) || {}
+  const landingPage = pageSections.landing || fallbackCurriculum.landing_page || {}
   const heroImage = landingPage.hero_image || design.hero_image || null
+
+  const heroHeadline = landingPage.hero_headline || fallbackCurriculum.hero_headline || course.title
+  const heroSubheadline = landingPage.hero_subheadline || fallbackCurriculum.description || course.description
+  const tagline = landingPage.tagline || fallbackCurriculum.tagline || ''
+  const difficulty = course.difficulty || 'Beginner'
+  const durationWeeks = course.duration_weeks || 6
+  const totalLessons = modules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0)
 
   // Colors with fallbacks
   const primaryColor = colors.primary || '#d4a853'
@@ -79,13 +103,6 @@ export default function CoursePage() {
   const mutedColor = colors.textMuted || '#9ca3af'
   const headingFont = fonts.heading || 'Inter'
   const bodyFont = fonts.body || 'Inter'
-
-  const heroHeadline = landingPage.hero_headline || course.title
-  const heroSubheadline = landingPage.hero_subheadline || course.description
-  const tagline = design.tagline || pageSections.tagline || ''
-  const difficulty = course.difficulty || 'Beginner'
-  const durationWeeks = course.duration_weeks || 6
-  const totalLessons = modules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0)
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor, color: textColor, fontFamily: `'${bodyFont}', sans-serif` }}>
