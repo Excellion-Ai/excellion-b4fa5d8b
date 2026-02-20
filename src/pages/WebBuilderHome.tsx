@@ -536,12 +536,11 @@ const WebBuilderHome = () => {
               {/* Right Column – Video Placeholder */}
               <div className="rounded-xl bg-card border border-border overflow-hidden">
                 <video
-                  className="w-full aspect-video object-cover"
+                  className="w-full rounded-xl"
                   src="/videos/quickstart-preview.mp4"
-                  autoPlay
-                  muted
-                  loop
+                  controls
                   playsInline
+                  preload="metadata"
                 />
               </div>
             </div>
