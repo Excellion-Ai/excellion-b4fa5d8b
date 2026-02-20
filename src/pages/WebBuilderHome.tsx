@@ -534,9 +534,9 @@ const WebBuilderHome = () => {
               </div>
 
               {/* Right Column – Video Placeholder */}
-              <div className="rounded-xl bg-card border border-border overflow-hidden">
+              <div>
                 <video
-                  className="w-full rounded-xl"
+                  className="w-full rounded-xl border border-border"
                   src="/videos/quickstart-preview.mp4"
                   controls
                   playsInline
