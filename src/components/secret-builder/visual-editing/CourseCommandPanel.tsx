@@ -26,47 +26,66 @@ interface CourseCommandPanelProps {
 }
 
 export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualEditMode = false, onToggleVisualEdit }: CourseCommandPanelProps) {
-  // Use courseId, fallback to course.id, fallback to a session-stable temp key
   const resolvedId = courseId || course?.id || null;
-  const storageKey = resolvedId ? `course-commands-${resolvedId}` : 'course-commands-temp';
-  const prevStorageKeyRef = useRef<string | null>(storageKey);
 
-  const [commandHistory, setCommandHistory] = useState<CommandMessage[]>(() => {
-    try {
-      const stored = localStorage.getItem(storageKey);
-      return stored ? JSON.parse(stored) : [];
-    } catch { return []; }
-  });
+  const [commandHistory, setCommandHistory] = useState<CommandMessage[]>([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
 
-  // Re-load history when storageKey changes (e.g. courseId assigned after save)
+  // Load chat history from database on mount / when course changes
   useEffect(() => {
-    if (storageKey !== prevStorageKeyRef.current) {
-      // If upgrading from temp key to real key, migrate the history
-      const oldKey = prevStorageKeyRef.current;
-      prevStorageKeyRef.current = storageKey;
-      
+    async function loadChatHistory() {
+      if (!resolvedId) {
+        setCommandHistory([]);
+        setHistoryLoaded(true);
+        return;
+      }
+
       try {
-        const stored = localStorage.getItem(storageKey);
-        if (stored) {
-          setCommandHistory(JSON.parse(stored));
-        } else if (oldKey) {
-          // Migrate temp history to the new real key
-          const oldStored = localStorage.getItem(oldKey);
-          if (oldStored) {
-            localStorage.setItem(storageKey, oldStored);
-            if (oldKey === 'course-commands-temp') {
-              localStorage.removeItem(oldKey);
-            }
-          }
-        }
-      } catch { /* ignore */ }
-    }
-  }, [storageKey]);
+        const { data } = await supabase
+          .from('course_chat_history')
+          .select('*')
+          .eq('course_id', resolvedId)
+          .order('created_at', { ascending: true });
 
-  // Persist chat history to localStorage on every change
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(commandHistory));
-  }, [commandHistory, storageKey]);
+        if (data && data.length > 0) {
+          setCommandHistory(data.map((msg: any) => ({
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            mode: (msg.mode as InputMode) || 'build',
+          })));
+        } else {
+          setCommandHistory([]);
+        }
+      } catch (err) {
+        console.error('Failed to load chat history:', err);
+      }
+      setHistoryLoaded(true);
+    }
+
+    setHistoryLoaded(false);
+    loadChatHistory();
+  }, [resolvedId]);
+
+  // Helper to save a single message to the database
+  const saveMessageToDb = async (role: 'user' | 'assistant', content: string, mode: InputMode = 'build') => {
+    if (!resolvedId) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('course_chat_history')
+        .insert({
+          course_id: resolvedId,
+          user_id: user.id,
+          role,
+          content,
+          mode,
+        });
+    } catch (err) {
+      console.error('Failed to save chat message:', err);
+    }
+  };
   const [currentCommand, setCurrentCommand] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -134,10 +153,12 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
     setCurrentCommand('');
     setAttachments([]);
     setIsProcessing(true);
+    const userContent = command || '(attached files)';
     setCommandHistory((prev) => [
       ...prev,
-      { role: 'user', content: command || '(attached files)', mode: inputMode, attachments: currentAttachments },
+      { role: 'user', content: userContent, mode: inputMode, attachments: currentAttachments },
     ]);
+    saveMessageToDb('user', userContent, inputMode);
 
     try {
       if (inputMode === 'chat') {
@@ -214,6 +235,7 @@ ${courseContext}
           ...prev,
           { role: 'assistant', content: reply, mode: 'chat' },
         ]);
+        saveMessageToDb('assistant', reply, 'chat');
       } else {
         // Build mode — use interpret-course-command
         const { data, error } = await supabase.functions.invoke("interpret-course-command", {
@@ -232,15 +254,14 @@ ${courseContext}
             ...prev,
             { role: 'assistant', content: data.result.preview_message, mode: 'build' },
           ]);
+          saveMessageToDb('assistant', data.result.preview_message, 'build');
         } else {
+          const errContent = data?.result?.error_message || "I didn't understand that. Try being more specific about what you want to change.";
           setCommandHistory((prev) => [
             ...prev,
-            {
-              role: 'assistant',
-              content: data?.result?.error_message || "I didn't understand that. Try being more specific about what you want to change.",
-              mode: 'build',
-            },
+            { role: 'assistant', content: errContent, mode: 'build' },
           ]);
+          saveMessageToDb('assistant', errContent, 'build');
         }
       }
     } catch (err) {
@@ -249,6 +270,7 @@ ${courseContext}
         ...prev,
         { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' },
       ]);
+      saveMessageToDb('assistant', 'Sorry, something went wrong. Please try again.', inputMode);
     }
 
     setIsProcessing(false);
