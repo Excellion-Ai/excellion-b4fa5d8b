@@ -18,7 +18,6 @@ import {
   BarChart3,
   X,
   Mic,
-  Play,
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
@@ -536,14 +535,14 @@ const WebBuilderHome = () => {
 
               {/* Right Column – Video Placeholder */}
               <div className="rounded-xl bg-card border border-border overflow-hidden">
-                {/* ▼ Replace inner content below with a real embed later ▼ */}
-                <div className="aspect-video flex flex-col items-center justify-center bg-card text-muted-foreground gap-3">
-                  <div className="w-14 h-14 rounded-full border-2 border-primary/40 flex items-center justify-center">
-                    <Play className="w-6 h-6 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium">Video coming soon</span>
-                </div>
-                {/* ▲ Replace inner content above with a real embed later ▲ */}
+                <video
+                  className="w-full aspect-video object-cover"
+                  src="/videos/quickstart-preview.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
               </div>
             </div>
           </div>
