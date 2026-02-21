@@ -536,7 +536,7 @@ const WebBuilderHome = () => {
               {/* Right Column – Video Placeholder */}
               <div>
                 <video
-                  className="w-full rounded-xl border border-border"
+                  className="w-full rounded-xl border border-border [&::-webkit-media-controls-fullscreen-button]:hidden"
                   src="/videos/quickstart-preview.mp4"
                   controls
                   controlsList="nofullscreen"
