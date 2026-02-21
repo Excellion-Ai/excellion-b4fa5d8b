@@ -54,7 +54,8 @@ interface Course {
 }
 
 export default function LearnPage() {
-  const { slug } = useParams<{ slug: string }>();
+  const params = useParams<{ slug: string }>();
+  const slug = params.slug || 'quickstart';
   const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
