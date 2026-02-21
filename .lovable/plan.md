@@ -1,146 +1,63 @@
 
-# Course Publishing: Temporary Domains + Custom Domains
 
-## Current State Assessment
+# Fix: Course Database Persistence
 
-The infrastructure for this already exists in large part. Here is exactly what is built vs. what is missing:
+## The Problem
+Courses show up in the builder preview but are never saved to the database. The courses table stays empty because save operations silently fail without any user feedback.
 
-### What Already Exists
+## Root Causes Found
 
-**Database:**
-- `courses` table has: `subdomain`, `status`, `published_at`, `published_url`, `custom_domain`, `seo_title`, `seo_description`, `builder_project_id`
-- `custom_domains` table with: `domain`, `status`, `verification_token`, `ssl_provisioned`, `is_verified`, `is_verified`, `user_id`, `project_id`
+### 1. Silent failures with no user feedback
+When `saveCourseToDatabase` fails, it returns `null` and logs to the console, but the user is never told. The course looks fine in the builder (because it's in local state) but doesn't exist in the database.
 
-**Backend Edge Functions:**
-- `publish-site` - uploads HTML to Supabase Storage and returns a `slug.excellion.app` URL
-- `serve-site` - serves HTML from storage for `*.excellion.app` subdomains and custom domains
-- `allowed-domains` - validates whether a domain is allowed for SSL provisioning (used by Caddy)
-- `verify-domain-dns` - checks DNS TXT records to verify domain ownership
-- `unpublish-site` - clears published state
+### 2. Broken save chain
+The initial save must succeed to set `courseId` state. If it fails, the auto-save system (which syncs edits every 1.5 seconds) checks `if (courseSpec && courseId)` -- since `courseId` is null, ALL future edits are also never saved. One failure breaks everything permanently for that session.
 
-**Frontend Components:**
-- `CoursePublishSettingsDialog` - has General, SEO, Domain, and Social tabs
-- `CustomDomainsPanel` - for the website builder's domain management
-- `serve-site` already handles course custom domains by redirecting to `/course/{subdomain}`
+### 3. UUID handling issue
+The edge function generates a UUID client-side (`generateUUID()`) and passes it back. The frontend then passes this as `existingId` to `saveCourseToDatabase`, which triggers the upsert path. But if any unique constraint (like `subdomain`) fails during an upsert, the retry logic may not handle it correctly.
 
-**Routing:**
-- `/course/:subdomain` loads `CoursePage` using the subdomain as the lookup key
-- `CoursePage` queries `public_courses` view (secure, strips lesson content)
+### 4. Missing subdomain in prebuilt template path  
+The prebuilt template save in the edge function doesn't include a `subdomain` field, which could cause silent constraint issues.
 
-### What is Missing / Broken
+## The Fix
 
-**The Core Gap:** Courses currently publish to an internal app URL (`excellion.lovable.app/course/my-slug`) rather than a real standalone website. The `publish-site` edge function is wired for the website builder (static HTML), NOT courses. Course "publishing" just sets a status flag in the database.
+### Step 1: Rewrite `saveCourseToDatabase` for reliability
+- Remove the `existingId`/upsert path for NEW courses -- always use `insert` for new courses
+- Let Postgres generate the UUID (remove client-side ID)
+- Add proper error toasts so users KNOW when a save fails
+- Add detailed error logging for every failure case
 
-**Specific Missing Pieces:**
+### Step 2: Add retry/recovery to BuilderShell
+- If the initial save fails, show a toast with "Retry" action
+- Store the course data and retry on the next auto-save cycle
+- The auto-save system should attempt to create the course row if `courseId` is still null (not just update)
 
-1. **Temporary Domain Display**: The General tab in `CoursePublishSettingsDialog` shows `window.location.origin/course/{subdomain}` (the internal app URL), not a real `slug.excellion.app` URL. This needs to show the real temp domain.
+### Step 3: Fix the auto-save to handle missing courseId
+- Currently auto-save only calls `updateCourseInDatabase` when `courseId` exists
+- Change it to call `saveCourseToDatabase` (insert) when `courseId` is null but `courseSpec` exists
+- This gives the system multiple chances to persist the course instead of giving up after one try
 
-2. **Custom Domain Serving**: The `serve-site` edge function currently issues a 302 redirect to the main app for course custom domains. This means `mycourse.com` redirects to `excellion.lovable.app/course/slug`, which breaks the custom domain experience — the user's custom domain doesn't stay in the browser bar.
+### Step 4: Fix prebuilt template edge function
+- Add `subdomain` field to the prebuilt template course insert in `generate-course/index.ts`
 
-3. **Domain-to-Course Linking**: The `custom_domains` table links to `project_id` (builder projects), but courses need their own direct custom domain linkage. The dialog creates a phantom `builder_project` just to hold the domain record, which is a workaround.
+## Files to Change
 
-4. **Missing `course_id` column on `custom_domains`**: Custom domains have no direct course reference — they go through `builder_project_id`, which is fragile.
+1. **`src/lib/coursePersistence.ts`** -- Simplify save logic, add toast feedback, remove fragile upsert path for new courses
+2. **`src/components/secret-builder/BuilderShell.tsx`** -- Fix auto-save to retry initial save when courseId is null; add error toasts
+3. **`supabase/functions/generate-course/index.ts`** -- Add subdomain to prebuilt template insert
 
-5. **DNS Instructions for Courses**: The Domain tab in `CoursePublishSettingsDialog` shows DNS instructions but they point to the website builder IP (`185.158.133.1`) without explaining the full flow for courses.
+## Technical Details
 
----
+### coursePersistence.ts changes
+- `saveCourseToDatabase`: Always use INSERT (not upsert) for new courses. Let Postgres auto-generate the `id`. Keep the subdomain retry logic. Add `toast.error()` on failure.
+- `updateCourseInDatabase`: Add toast feedback on failure.
+- New export: `ensureCourseExists(params)` -- checks if course exists by builder_project_id, creates if not, returns the course id. Used by auto-save as a safety net.
 
-## Implementation Plan
+### BuilderShell.tsx changes  
+- After `saveCourseToDatabase` call (line 1041): If it returns null, show `toast.error('Failed to save course to database. Retrying...')` 
+- In auto-save effect (line 808): If `courseSpec` exists but `courseId` is null, attempt `saveCourseToDatabase` instead of `updateCourseInDatabase`
+- This means the system will retry saving on every 1.5s auto-save cycle until it succeeds
 
-### Phase 1 - Database Migration
+### generate-course/index.ts changes
+- Add `subdomain: slugify(prebuiltCourse.title) + '-' + Math.random().toString(36).substring(2,8)` to the prebuilt template course insert
 
-Add a `course_id` column to `custom_domains` so domains can be linked directly to courses without the `builder_project` workaround:
-
-```sql
-ALTER TABLE public.custom_domains 
-ADD COLUMN IF NOT EXISTS course_id UUID REFERENCES public.courses(id) ON DELETE CASCADE;
-```
-
-### Phase 2 - Fix `serve-site` Edge Function
-
-Change the course custom domain handling from a 302 redirect to a proper server-side render. When a custom domain maps to a course, `serve-site` should:
-
-1. Look up the course by `course_id` (via `custom_domains.course_id`)
-2. Fetch the full course data from Supabase
-3. Generate and return a full HTML page that is a static render of the course landing page
-
-This is the key fix that makes custom domains actually stay on the user's domain rather than redirecting away.
-
-### Phase 3 - Fix Temporary Domain Display in `CoursePublishSettingsDialog`
-
-Update the General tab to show `{subdomain}.excellion.app` as the real course URL, replacing the internal `window.location.origin/course/{subdomain}` display. This gives creators a proper shareable link.
-
-### Phase 4 - Fix Custom Domain Flow in `CoursePublishSettingsDialog`
-
-Update `handleAddDomain` to:
-- Skip creating the phantom `builder_project` (or keep it but also write `course_id`)
-- Insert `custom_domains` with `course_id` directly referencing the course
-- Update the DNS instructions to show the correct A record target (`185.158.133.1`) and the TXT verification record format
-
-### Phase 5 - Update `allowed-domains` Edge Function
-
-Ensure the function also checks for verified domains linked via `course_id` in the `custom_domains` table (not just `project_id`).
-
----
-
-## Technical Architecture (After Fix)
-
-```text
-Student visits mycourse.com
-        |
-        v
-Caddy (185.158.133.1)
-  asks: allowed-domains?domain=mycourse.com
-  Response: allowed=true
-        |
-        v
-Caddy proxies to serve-site edge function
-  Header: x-original-host: mycourse.com
-        |
-        v
-serve-site looks up custom_domains
-  WHERE domain = 'mycourse.com' AND is_verified = true
-  Finds: course_id = 'abc-123'
-        |
-        v
-serve-site fetches course from courses table
-  Renders full HTML landing page for the course
-        |
-        v
-Returns HTML — URL stays as mycourse.com ✓
-```
-
-```text
-Creator flow:
-1. Creates course in builder
-2. Opens Publish Settings dialog
-3. General tab shows: myketo.excellion.app (temp domain, shareable now)
-4. Clicks Domain tab → enters "learn.mybrand.com"
-5. Dialog shows DNS records:
-   A Record: @ → 185.158.133.1
-   TXT Record: _excellion → excellion={token}
-6. Creator adds records at their registrar (GoDaddy, Namecheap, etc.)
-7. Clicks "Verify Now" → system checks DNS
-8. On success: domain goes live, serves full course page at learn.mybrand.com
-```
-
----
-
-## Files to Create / Modify
-
-| File | Change |
-|---|---|
-| `supabase/migrations/` | Add `course_id` column to `custom_domains` |
-| `supabase/functions/serve-site/index.ts` | Replace 302 redirect with real HTML render for course domains |
-| `supabase/functions/allowed-domains/index.ts` | Also allow domains linked via `course_id` |
-| `src/components/secret-builder/CoursePublishSettingsDialog.tsx` | Fix temp URL display + custom domain insertion to use `course_id` |
-
----
-
-## What This Unlocks
-
-- Every course gets a real `{slug}.excellion.app` URL immediately on creation (temp domain, always on)
-- Creators can connect `learn.mybrand.com` or any domain they own
-- The custom domain shows their actual course landing page — no redirects, no Excellion branding in the URL bar
-- DNS verification flow already works via `verify-domain-dns` edge function
-- SSL is handled automatically by Caddy's on-demand TLS (already configured)
