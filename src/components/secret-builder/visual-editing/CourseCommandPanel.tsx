@@ -68,7 +68,10 @@ export function CourseCommandPanel({ course, courseId, onApplyChanges, isVisualE
 
   // Helper to save a single message to the database
   const saveMessageToDb = async (role: 'user' | 'assistant', content: string, mode: InputMode = 'build') => {
-    if (!resolvedId) return;
+    if (!resolvedId) {
+      console.warn('[CourseCommandPanel] Cannot save message — no course ID available');
+      return;
+    }
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -189,6 +192,7 @@ Excellion is an AI-powered course creation platform that lets users:
 - Preview courses across 4 page views (Landing, Curriculum, Lesson, Dashboard)
 - Publish courses to public URLs and sell them with Stripe integration
 - Track student enrollments, progress, and analytics
+- **Chat history is fully persistent** — all messages are saved to the database and restored when you reopen a course
 
 ## FEATURES YOU SHOULD KNOW ABOUT
 - **AI Course Generation**: Users type a course idea → AI generates modules, lessons, content
@@ -196,6 +200,7 @@ Excellion is an AI-powered course creation platform that lets users:
 - **Visual Edit Mode**: Click the pencil icon to hover and edit any section directly
 - **Build Mode**: Type commands like "add a module about X" or "change the hero headline"
 - **Chat Mode** (current): Ask questions about the platform, course strategy, or get help
+- **Persistent Chat History**: All chat and build messages are saved permanently per course and restored across sessions
 - **Landing Page**: Hero, outcomes, curriculum overview, FAQ, CTA sections — all customizable
 - **Curriculum Page**: Full module/lesson list with duration and content type badges
 - **Lesson Preview**: Sidebar navigation + markdown content rendering
