@@ -43,6 +43,7 @@ import { SecurityScanPanel } from './SecurityScanPanel';
 import { RenameDialog } from './RenameDialog';
 import { CourseCommandPanel, SectionEditorModal, DesignEditorModal, DynamicCoursePreview } from './visual-editing';
 import { supabase } from '@/integrations/supabase/client';
+import { saveCourseToDatabase, updateCourseInDatabase } from '@/lib/coursePersistence';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
@@ -818,6 +819,21 @@ export function BuilderShell() {
       setSaveStatus('saving');
       const firstUserMessage = messages.find(m => m.role === 'user');
       await saveProject(generatedHtml, messages, firstUserMessage?.content || '', siteSpec, courseSpec);
+      
+      // Also sync course changes to the courses table
+      if (courseSpec && courseId) {
+        await updateCourseInDatabase(courseId, {
+          title: courseSpec.title,
+          description: courseSpec.description,
+          modules: courseSpec.modules as unknown as Json,
+          difficulty: courseSpec.difficulty,
+          duration_weeks: courseSpec.duration_weeks,
+          design_config: courseSpec.design_config as unknown as Json,
+          layout_template: courseSpec.layout_template,
+          section_order: courseSpec.section_order as unknown as Json,
+        });
+      }
+      
       setIsDirty(false);
       setSaveStatus('saved');
       // Store what we saved to detect external changes
@@ -1022,56 +1038,27 @@ export function BuilderShell() {
         // Also save to courses table so it appears in "Your Courses"
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) {
-          const courseSlug = (course.slug || course.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `course-${Date.now()}`;
-          const { data: courseRow, error: courseInsertError } = await supabase
-            .from('courses')
-            .upsert({
-              id: courseSpec.id && courseSpec.id.length === 36 ? courseSpec.id : undefined,
-              user_id: currentUser.id,
-              title: course.title || 'Untitled Course',
-              description: course.description || '',
-              subdomain: courseSlug,
-              modules: courseSpec.modules as unknown as import('@/integrations/supabase/types').Json,
-              difficulty: courseSpec.difficulty || 'beginner',
-              duration_weeks: courseSpec.duration_weeks || 6,
-              status: 'draft',
-              builder_project_id: projectId || undefined,
-              design_config: {
-                colors: {
-                  primary: curriculum?.brand_color || '#d4a853',
-                  secondary: '#1a1a1a',
-                  accent: '#f59e0b',
-                  background: '#0a0a0a',
-                  cardBackground: '#111111',
-                  text: '#ffffff',
-                  textMuted: '#9ca3af',
-                },
-                fonts: { heading: 'Inter', body: 'Inter' },
-                spacing: 'normal',
-                borderRadius: 'medium',
-              } as unknown as import('@/integrations/supabase/types').Json,
-              layout_template: curriculum?.layout_style || 'suspended',
-              section_order: (curriculum?.landing_page?.sections || ['hero', 'outcomes', 'curriculum', 'faq', 'cta']) as unknown as import('@/integrations/supabase/types').Json,
-              page_sections: {
-                landing: {
-                  hero_headline: curriculum?.landing_page?.hero_headline,
-                  hero_subheadline: curriculum?.landing_page?.hero_subheadline,
-                  hero_image: curriculum?.landing_page?.hero_image,
-                  tagline: curriculum?.tagline,
-                  cta_text: curriculum?.landing_page?.cta_text || 'Enroll Now',
-                },
-              } as unknown as import('@/integrations/supabase/types').Json,
-            }, { onConflict: 'id' })
-            .select('id')
-            .single();
+          const courseRow = await saveCourseToDatabase({
+            userId: currentUser.id,
+            title: course.title || 'Untitled Course',
+            description: course.description || '',
+            tagline: course.tagline,
+            originalPrompt: ideaToUse,
+            modules: courseSpec.modules,
+            difficulty: courseSpec.difficulty || 'beginner',
+            durationWeeks: courseSpec.duration_weeks || 6,
+            builderProjectId: projectId || undefined,
+            brandColor: curriculum?.brand_color,
+            layoutStyle: curriculum?.layout_style,
+            landingPage: curriculum?.landing_page,
+            learningOutcomes: curriculum?.learningOutcomes,
+            existingId: courseSpec.id,
+          });
 
-          if (courseInsertError) {
-            console.error('Failed to save course record:', courseInsertError);
-          } else {
-            console.log('Course saved to courses table');
-            if (courseRow?.id) {
-              setCourseId(courseRow.id);
-            }
+          if (courseRow?.id) {
+            setCourseId(courseRow.id);
+            // Update courseSpec with the persisted ID
+            setCourseSpecInternal(prev => prev ? { ...prev, id: courseRow.id } : prev);
           }
         }
       }

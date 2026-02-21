@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
+import { saveCourseToDatabase } from '@/lib/coursePersistence';
 import { AI } from '@/services/ai';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -1765,45 +1766,20 @@ export default function SecretBuilderHub() {
                                 .select('id')
                                 .single();
                               if (projErr) throw projErr;
-                              // Save to courses table
-                              const courseSlug = (course.slug || course.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `course-${Date.now()}`;
-                              await supabase.from('courses').insert({
-                                user_id: currentUser.id,
-                                title: course.title || 'Untitled Course',
-                                description: course.description || '',
-                                subdomain: courseSlug,
-                                modules: (curriculum.modules || []) as unknown as import('@/integrations/supabase/types').Json,
-                                difficulty: curriculum.difficulty || 'beginner',
-                                duration_weeks: curriculum.duration_weeks || 6,
-                                status: 'draft',
-                                builder_project_id: projData.id,
-                                design_config: {
-                                  colors: {
-                                    primary: curriculum?.brand_color || '#d4a853',
-                                    secondary: '#1a1a1a',
-                                    accent: '#f59e0b',
-                                    background: '#0a0a0a',
-                                    cardBackground: '#111111',
-                                    text: '#ffffff',
-                                    textMuted: '#9ca3af',
-                                  },
-                                  fonts: { heading: 'Inter', body: 'Inter' },
-                                  spacing: 'normal',
-                                  borderRadius: 'medium',
-                                } as unknown as import('@/integrations/supabase/types').Json,
-                                layout_template: curriculum?.layout_style || 'suspended',
-                                section_order: (curriculum?.landing_page?.sections || ['hero', 'outcomes', 'curriculum', 'faq', 'cta']) as unknown as import('@/integrations/supabase/types').Json,
-                                page_sections: {
-                                  landing: {
-                                    hero_headline: curriculum?.landing_page?.hero_headline,
-                                    hero_subheadline: curriculum?.landing_page?.hero_subheadline,
-                                    hero_image: curriculum?.landing_page?.hero_image,
-                                    tagline: curriculum?.tagline,
-                                    cta_text: curriculum?.landing_page?.cta_text || 'Enroll Now',
-                                  },
-                                } as unknown as import('@/integrations/supabase/types').Json,
-                              });
-                              navigate(`/studio/${projData.id}`, { state: { projectId: projData.id, initialIdea: template.prompt } });
+                               // Save to courses table
+                               await saveCourseToDatabase({
+                                 userId: currentUser.id,
+                                 title: course.title || 'Untitled Course',
+                                 description: course.description || '',
+                                 modules: curriculum.modules || [],
+                                 difficulty: curriculum.difficulty || 'beginner',
+                                 durationWeeks: curriculum.duration_weeks || 6,
+                                 builderProjectId: projData.id,
+                                 brandColor: curriculum?.brand_color,
+                                 layoutStyle: curriculum?.layout_style,
+                                 landingPage: curriculum?.landing_page,
+                               });
+                               navigate(`/studio/${projData.id}`, { state: { projectId: projData.id, initialIdea: template.prompt } });
                             } else {
                               toast({
                                 title: "Error",
@@ -1938,44 +1914,19 @@ export default function SecretBuilderHub() {
                                 .select('id')
                                 .single();
                               if (projErr) throw projErr;
-                              // Save to courses table
-                              const courseSlug = (course.slug || course.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `course-${Date.now()}`;
-                              await supabase.from('courses').insert({
-                                user_id: currentUser.id,
-                                title: course.title || 'Untitled Course',
-                                description: course.description || '',
-                                subdomain: courseSlug,
-                                modules: (curriculum.modules || []) as unknown as import('@/integrations/supabase/types').Json,
-                                difficulty: curriculum.difficulty || 'beginner',
-                                duration_weeks: curriculum.duration_weeks || 6,
-                                status: 'draft',
-                                builder_project_id: projData.id,
-                                design_config: {
-                                  colors: {
-                                    primary: curriculum?.brand_color || '#d4a853',
-                                    secondary: '#1a1a1a',
-                                    accent: '#f59e0b',
-                                    background: '#0a0a0a',
-                                    cardBackground: '#111111',
-                                    text: '#ffffff',
-                                    textMuted: '#9ca3af',
-                                  },
-                                  fonts: { heading: 'Inter', body: 'Inter' },
-                                  spacing: 'normal',
-                                  borderRadius: 'medium',
-                                } as unknown as import('@/integrations/supabase/types').Json,
-                                layout_template: curriculum?.layout_style || 'suspended',
-                                section_order: (curriculum?.landing_page?.sections || ['hero', 'outcomes', 'curriculum', 'faq', 'cta']) as unknown as import('@/integrations/supabase/types').Json,
-                                page_sections: {
-                                  landing: {
-                                    hero_headline: curriculum?.landing_page?.hero_headline,
-                                    hero_subheadline: curriculum?.landing_page?.hero_subheadline,
-                                    hero_image: curriculum?.landing_page?.hero_image,
-                                    tagline: curriculum?.tagline,
-                                    cta_text: curriculum?.landing_page?.cta_text || 'Enroll Now',
-                                  },
-                                } as unknown as import('@/integrations/supabase/types').Json,
-                              });
+                               // Save to courses table
+                               await saveCourseToDatabase({
+                                 userId: currentUser.id,
+                                 title: course.title || 'Untitled Course',
+                                 description: course.description || '',
+                                 modules: curriculum.modules || [],
+                                 difficulty: curriculum.difficulty || 'beginner',
+                                 durationWeeks: curriculum.duration_weeks || 6,
+                                 builderProjectId: projData.id,
+                                 brandColor: curriculum?.brand_color,
+                                 layoutStyle: curriculum?.layout_style,
+                                 landingPage: curriculum?.landing_page,
+                               });
                               navigate(`/studio/${projData.id}`, { state: { projectId: projData.id, initialIdea: template.prompt } });
                             } else {
                               toast({
