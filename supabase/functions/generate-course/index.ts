@@ -183,6 +183,7 @@ Deno.serve(async (req) => {
       }
 
       const landingPage = prebuiltCourse.curriculum.landing_page || {};
+      const prebuiltSubdomain = slugify(prebuiltCourse.title) + '-' + Math.random().toString(36).substring(2, 8);
       const courseInsertResponse = await fetch(`${SUPABASE_URL}/rest/v1/courses`, {
         method: 'POST',
         headers: {
@@ -194,6 +195,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           id: courseId, user_id: userId, builder_project_id: projectId,
           title: prebuiltCourse.title, description: prebuiltCourse.description,
+          subdomain: prebuiltSubdomain,
           difficulty: prebuiltCourse.curriculum.difficulty || 'beginner',
           duration_weeks: prebuiltCourse.curriculum.duration_weeks || 6,
           modules: prebuiltCourse.curriculum.modules, status: 'draft',
