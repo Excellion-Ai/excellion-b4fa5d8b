@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 
 export default function CoursePage() {
-  const { slug } = useParams()
+  const { subdomain: slug } = useParams()
   const [course, setCourse] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
