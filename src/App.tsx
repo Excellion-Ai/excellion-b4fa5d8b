@@ -38,6 +38,7 @@ const About = lazyWithRetry(() => import("./pages/About"), "About");
 const QuickstartTemplates = lazyWithRetry(() => import("./pages/QuickstartTemplates"), "QuickstartTemplates");
 const QuickstartAddons = lazyWithRetry(() => import("./pages/QuickstartAddons"), "QuickstartAddons");
 const AdminCourses = lazyWithRetry(() => import("./pages/AdminCourses"), "AdminCourses");
+const QuickstartCoursePage = lazyWithRetry(() => import("./pages/QuickstartCoursePage"), "QuickstartCoursePage");
 
 // Settings pages
 const Settings = lazyWithRetry(() => import("./pages/Settings"), "Settings");
@@ -110,7 +111,7 @@ const App = () => (
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/course/quickstart/templates" element={<QuickstartTemplates />} />
         <Route path="/course/quickstart/addons" element={<QuickstartAddons />} />
-        <Route path="/course/quickstart" element={<LearnPage key="quickstart" />} />
+        <Route path="/course/quickstart" element={<QuickstartCoursePage />} />
         <Route path="/course/:subdomain" element={<CoursePage />} />
         <Route path="/admin/courses" element={<AdminCourses />} />
         <Route path="/learn/:slug" element={<LearnPage />} />
