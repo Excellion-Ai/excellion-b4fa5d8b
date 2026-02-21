@@ -110,6 +110,7 @@ const App = () => (
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/course/quickstart/templates" element={<QuickstartTemplates />} />
         <Route path="/course/quickstart/addons" element={<QuickstartAddons />} />
+        <Route path="/course/quickstart" element={<LearnPage key="quickstart" />} />
         <Route path="/course/:subdomain" element={<CoursePage />} />
         <Route path="/admin/courses" element={<AdminCourses />} />
         <Route path="/learn/:slug" element={<LearnPage />} />
