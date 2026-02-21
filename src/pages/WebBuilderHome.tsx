@@ -539,6 +539,8 @@ const WebBuilderHome = () => {
                   className="w-full rounded-xl border border-border"
                   src="/videos/quickstart-preview.mp4"
                   controls
+                  controlsList="nofullscreen"
+                  disablePictureInPicture
                   playsInline
                   preload="metadata"
                 />
