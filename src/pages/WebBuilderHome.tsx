@@ -18,6 +18,7 @@ import {
   BarChart3,
   X,
   Mic,
+  Play,
 } from "lucide-react";
 import homeBackgroundVideo from "@/assets/home-background.mp4";
 import Footer from "@/components/Footer";
@@ -534,7 +535,16 @@ const WebBuilderHome = () => {
               </div>
 
               {/* Right Column – Video Placeholder */}
-              <div>
+              <div className="relative group cursor-pointer" onClick={(e) => {
+                const video = e.currentTarget.querySelector('video');
+                const overlay = e.currentTarget.querySelector('[data-play-overlay]') as HTMLElement;
+                if (video && overlay) {
+                  if (video.paused) {
+                    video.play();
+                    overlay.style.display = 'none';
+                  }
+                }
+              }}>
                 <video
                   className="w-full rounded-xl border border-border [&::-webkit-media-controls-fullscreen-button]:hidden"
                   src="/videos/quickstart-preview.mp4"
@@ -543,7 +553,20 @@ const WebBuilderHome = () => {
                   disablePictureInPicture
                   playsInline
                   preload="metadata"
+                  onPlay={(e) => {
+                    const overlay = e.currentTarget.parentElement?.querySelector('[data-play-overlay]') as HTMLElement;
+                    if (overlay) overlay.style.display = 'none';
+                  }}
+                  onPause={(e) => {
+                    const overlay = e.currentTarget.parentElement?.querySelector('[data-play-overlay]') as HTMLElement;
+                    if (overlay) overlay.style.display = 'flex';
+                  }}
                 />
+                <div data-play-overlay className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl transition-opacity hover:bg-black/40">
+                  <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-lg">
+                    <Play className="w-7 h-7 text-primary-foreground ml-1" fill="currentColor" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
