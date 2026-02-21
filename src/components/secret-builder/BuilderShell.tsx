@@ -2256,50 +2256,62 @@ ${bk.logo ? `- Logo URL: ${bk.logo}` : ''}]`;
             </Button>
 
             {/* Publish */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="sm"
-                  disabled={!siteSpec || isPublishing}
-                  className="gap-1.5 bg-primary hover:bg-primary/90 px-4 h-9"
-                >
-                  {isPublishing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )}
-                  <span>{isPublishing ? 'Publishing...' : 'Publish'}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handlePublish} disabled={!siteSpec || isPublishing} className="gap-2">
-                  <Upload className="h-4 w-4" />
-                  <span>Publish Site</span>
-                </DropdownMenuItem>
-                {publishedUrl && (
-                  <DropdownMenuItem 
-                    onClick={handleUnpublish} 
-                    disabled={isUnpublishing} 
-                    className="gap-2 text-destructive focus:text-destructive"
+            {courseSpec ? (
+              /* Course mode: single publish button opens publish settings */
+              <Button
+                size="sm"
+                onClick={() => setShowPublishSettings(true)}
+                className="gap-1.5 bg-primary hover:bg-primary/90 px-4 h-9"
+              >
+                <Upload className="h-4 w-4" />
+                <span>Publish</span>
+              </Button>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    disabled={!siteSpec || isPublishing}
+                    className="gap-1.5 bg-primary hover:bg-primary/90 px-4 h-9"
                   >
-                    {isUnpublishing ? (
+                    {isPublishing ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <CloudOff className="h-4 w-4" />
+                      <Upload className="h-4 w-4" />
                     )}
-                    <span>{isUnpublishing ? 'Unpublishing...' : 'Unpublish Site'}</span>
+                    <span>{isPublishing ? 'Publishing...' : 'Publish'}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={handlePublish} disabled={!siteSpec || isPublishing} className="gap-2">
+                    <Upload className="h-4 w-4" />
+                    <span>Publish Site</span>
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={() => setShowDomainsDialog(true)} disabled={!projectId} className="gap-2">
-                  <Globe className="h-4 w-4" />
-                  <span>Custom Domains</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShowSecurityDialog(true)} className="gap-2">
-                  <Shield className="h-4 w-4" />
-                  <span>Security</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {publishedUrl && (
+                    <DropdownMenuItem 
+                      onClick={handleUnpublish} 
+                      disabled={isUnpublishing} 
+                      className="gap-2 text-destructive focus:text-destructive"
+                    >
+                      {isUnpublishing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CloudOff className="h-4 w-4" />
+                      )}
+                      <span>{isUnpublishing ? 'Unpublishing...' : 'Unpublish Site'}</span>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => setShowDomainsDialog(true)} disabled={!projectId} className="gap-2">
+                    <Globe className="h-4 w-4" />
+                    <span>Custom Domains</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowSecurityDialog(true)} className="gap-2">
+                    <Shield className="h-4 w-4" />
+                    <span>Security</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 
