@@ -2229,11 +2229,6 @@ export function CoursePreviewTabs({
                   >
                     Pricing
                   </button>
-                  {onOpenPublishSettings && (
-                    <Button size="sm" className="h-7 text-xs bg-primary text-primary-foreground hover:bg-primary/90" onClick={onOpenPublishSettings}>
-                      {isPublished ? 'Settings' : 'Publish'}
-                    </Button>
-                  )}
                 </div>
               ) : (
                 <button
@@ -2332,13 +2327,6 @@ export function CoursePreviewTabs({
                     >
                       Unpublish
                     </button>
-                  )}
-
-                  {onOpenPublishSettings && (
-                    <Button size="sm" className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90" onClick={onOpenPublishSettings}>
-                      <Globe className="w-3.5 h-3.5 mr-1.5" />
-                      {isPublished ? 'Publish Settings' : 'Publish'}
-                    </Button>
                   )}
                 </>
               ) : (
