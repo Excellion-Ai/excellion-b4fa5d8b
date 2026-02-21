@@ -43,7 +43,7 @@ import { SecurityScanPanel } from './SecurityScanPanel';
 import { RenameDialog } from './RenameDialog';
 import { CourseCommandPanel, SectionEditorModal, DesignEditorModal, DynamicCoursePreview } from './visual-editing';
 import { supabase } from '@/integrations/supabase/client';
-import { saveCourseToDatabase, updateCourseInDatabase } from '@/lib/coursePersistence';
+import { saveCourseToDatabase, updateCourseInDatabase, ensureCourseExists } from '@/lib/coursePersistence';
 import { useSiteEditor } from '@/hooks/useSiteEditor';
 import { useHistory } from '@/hooks/useHistory';
 import { usePresence } from '@/hooks/usePresence';
@@ -832,6 +832,29 @@ export function BuilderShell() {
           layout_template: courseSpec.layout_template,
           section_order: courseSpec.section_order as unknown as Json,
         });
+      } else if (courseSpec && !courseId && projectId) {
+        // courseId is null — initial save must have failed. Retry now.
+        console.warn('⚠️ courseId missing — retrying initial course save...');
+        const { data: { user: retryUser } } = await supabase.auth.getUser();
+        if (retryUser) {
+          const retryResult = await ensureCourseExists({
+            userId: retryUser.id,
+            title: courseSpec.title || 'Untitled Course',
+            description: courseSpec.description || '',
+            modules: courseSpec.modules || [],
+            difficulty: courseSpec.difficulty || 'beginner',
+            durationWeeks: courseSpec.duration_weeks || 6,
+            builderProjectId: projectId,
+            brandColor: (courseSpec.design_config as any)?.colors?.primary,
+            layoutStyle: courseSpec.layout_template,
+          });
+          if (retryResult) {
+            setCourseId(retryResult);
+            setCourseSpecInternal(prev => prev ? { ...prev, id: retryResult } : prev);
+            console.log('✅ Course save recovered:', retryResult);
+            toast.success('Course saved to database!');
+          }
+        }
       }
       
       setIsDirty(false);
@@ -1052,7 +1075,6 @@ export function BuilderShell() {
             layoutStyle: curriculum?.layout_style,
             landingPage: curriculum?.landing_page,
             learningOutcomes: curriculum?.learningOutcomes,
-            existingId: courseSpec.id,
           });
 
           if (courseRow?.id) {

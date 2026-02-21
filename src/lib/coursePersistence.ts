@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 
 /**
@@ -41,15 +42,16 @@ export interface SaveCourseParams {
   };
   learningOutcomes?: string[];
   offerType?: string;
-  existingId?: string; // Pass existing course UUID to upsert
 }
 
 /**
- * Save a course to the courses table with unique slug handling.
+ * Save a NEW course to the courses table.
+ * Always uses INSERT (never upsert) — Postgres generates the UUID.
+ * Retries up to 3 times on subdomain conflicts.
  * Returns the saved course row or null on failure.
  */
-export async function saveCourseToDatabase(params: SaveCourseParams) {
-  const subdomain = generateUniqueSlug(params.title);
+export async function saveCourseToDatabase(params: SaveCourseParams): Promise<{ id: string } | null> {
+  let subdomain = generateUniqueSlug(params.title);
 
   const coursePayload: Record<string, unknown> = {
     user_id: params.userId,
@@ -97,53 +99,49 @@ export async function saveCourseToDatabase(params: SaveCourseParams) {
     coursePayload.builder_project_id = params.builderProjectId;
   }
 
-  // If we have a valid existing UUID, include it for upsert
-  if (params.existingId && params.existingId.length === 36) {
-    coursePayload.id = params.existingId;
-  }
-
-  // Try insert first; if subdomain conflicts, retry with new slug
+  // Always INSERT — never upsert for new courses. Retry on subdomain conflicts.
   let attempts = 0;
   while (attempts < 3) {
-    const { data, error } = params.existingId && params.existingId.length === 36
-      ? await supabase
-          .from('courses')
-          .upsert(coursePayload as any, { onConflict: 'id' })
-          .select('id')
-          .maybeSingle()
-      : await supabase
-          .from('courses')
-          .insert(coursePayload as any)
-          .select('id')
-          .maybeSingle();
+    coursePayload.subdomain = subdomain;
+
+    const { data, error } = await supabase
+      .from('courses')
+      .insert(coursePayload as any)
+      .select('id')
+      .maybeSingle();
 
     if (!error && data) {
       console.log('✅ Course saved to database:', data.id, params.title);
       return data;
     }
 
-    // Check if it's a subdomain uniqueness error
+    // Check if it's a subdomain uniqueness error — retry with new slug
     const errMsg = error?.message || '';
-    if (errMsg.includes('courses_subdomain') || errMsg.includes('duplicate key') || errMsg.includes('23505')) {
+    const isSubdomainConflict = errMsg.includes('courses_subdomain') || errMsg.includes('duplicate key') || errMsg.includes('23505');
+
+    if (isSubdomainConflict) {
       attempts++;
-      coursePayload.subdomain = generateUniqueSlug(params.title);
-      console.warn(`Subdomain conflict, retrying (attempt ${attempts})...`);
+      subdomain = generateUniqueSlug(params.title);
+      console.warn(`Subdomain conflict, retrying with "${subdomain}" (attempt ${attempts})...`);
       continue;
     }
 
-    // Other error - log and bail
+    // Non-subdomain error — show toast and bail
     console.error('❌ Failed to save course to database:', error);
+    toast.error('Failed to save course. ' + (error?.message || 'Unknown error'));
     return null;
   }
 
   console.error('❌ Failed to save course after 3 attempts (subdomain conflicts)');
+  toast.error('Failed to save course after multiple attempts. Please try again.');
   return null;
 }
 
 /**
  * Update an existing course in the database.
+ * Shows toast on failure so the user knows.
  */
-export async function updateCourseInDatabase(courseId: string, updates: Record<string, unknown>) {
+export async function updateCourseInDatabase(courseId: string, updates: Record<string, unknown>): Promise<boolean> {
   const { error } = await supabase
     .from('courses')
     .update({
@@ -154,8 +152,32 @@ export async function updateCourseInDatabase(courseId: string, updates: Record<s
 
   if (error) {
     console.error('❌ Failed to update course:', error);
+    toast.error('Failed to sync course changes.');
     return false;
   }
   console.log('✅ Course updated:', courseId);
   return true;
+}
+
+/**
+ * Safety-net: checks if a course row exists for the given builder_project_id.
+ * If not, creates one. Returns the course id.
+ * Used by auto-save when courseId is null but we have courseSpec + projectId.
+ */
+export async function ensureCourseExists(params: SaveCourseParams & { builderProjectId: string }): Promise<string | null> {
+  // Check if course already exists for this builder project
+  const { data: existing } = await supabase
+    .from('courses')
+    .select('id')
+    .eq('builder_project_id', params.builderProjectId)
+    .maybeSingle();
+
+  if (existing?.id) {
+    console.log('✅ Course already exists for project:', existing.id);
+    return existing.id;
+  }
+
+  // Doesn't exist — create it
+  const result = await saveCourseToDatabase(params);
+  return result?.id || null;
 }
