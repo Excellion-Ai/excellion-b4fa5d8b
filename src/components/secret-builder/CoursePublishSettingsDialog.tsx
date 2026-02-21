@@ -365,7 +365,7 @@ export function CoursePublishSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[780px] w-full">
+      <DialogContent className="sm:max-w-[780px] w-full max-h-[92vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
@@ -378,8 +378,8 @@ export function CoursePublishSettingsDialog({
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex flex-col flex-1 min-h-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 min-h-0 flex flex-col">
               <TabsList className="grid w-full grid-cols-4 mb-4">
                 <TabsTrigger value="general" className="gap-1.5 text-xs">
                   <Globe className="h-3.5 w-3.5" />
@@ -400,7 +400,7 @@ export function CoursePublishSettingsDialog({
               </TabsList>
 
               {/* General Tab */}
-              <TabsContent value="general" className="space-y-6">
+              <TabsContent value="general" className="space-y-6 overflow-y-auto flex-1 min-h-0">
                 <div className="space-y-3">
                   <Label>Your Course URL</Label>
                   <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
@@ -457,7 +457,7 @@ export function CoursePublishSettingsDialog({
               </TabsContent>
 
               {/* SEO Tab */}
-              <TabsContent value="seo" className="space-y-6">
+              <TabsContent value="seo" className="space-y-6 overflow-y-auto flex-1 min-h-0">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="seoTitle">SEO Title</Label>
@@ -516,7 +516,7 @@ export function CoursePublishSettingsDialog({
               </TabsContent>
 
               {/* Domain Tab */}
-              <TabsContent value="domain" className="space-y-6">
+              <TabsContent value="domain" className="space-y-6 overflow-y-auto flex-1 min-h-0">
                 {/* Default Excellion URL */}
                 <div className="space-y-3">
                   <Label>Default Course URL</Label>
@@ -697,7 +697,7 @@ export function CoursePublishSettingsDialog({
               </TabsContent>
 
               {/* Social Sharing Tab */}
-              <TabsContent value="social" className="space-y-6">
+              <TabsContent value="social" className="space-y-6 overflow-y-auto flex-1 min-h-0">
                 {/* Hidden file input */}
                 <input
                   ref={socialImageInputRef}
@@ -795,7 +795,7 @@ export function CoursePublishSettingsDialog({
 
             </Tabs>
 
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex gap-3 pt-4 border-t shrink-0">
               <Button
                 variant="outline"
                 className="flex-1"
@@ -818,7 +818,7 @@ export function CoursePublishSettingsDialog({
                 )}
               </Button>
             </div>
-          </>
+          </div>
         )}
       </DialogContent>
     </Dialog>
