@@ -667,6 +667,7 @@ export function BuilderShell() {
     const hasContent = spec?.html || spec?.siteSpec || spec?.courseSpec || (spec?.messages && spec.messages.length > 0);
     
     // Also try to find linked course for courseSettings and courseId
+    let linkedCourseId: string | null = null;
     if (courseModeFromState || spec?.courseSpec) {
       const { data: linkedCourse } = await supabase
         .from('courses')
@@ -675,6 +676,7 @@ export function BuilderShell() {
         .single();
       
       if (linkedCourse) {
+        linkedCourseId = linkedCourse.id;
         setCourseId(linkedCourse.id);
         if (linkedCourse.published_url) {
           setCoursePublishedUrl(linkedCourse.published_url);
@@ -698,9 +700,10 @@ export function BuilderShell() {
       if (spec?.siteSpec) {
         setSiteSpec(spec.siteSpec);
       }
-      // Load courseSpec if it exists
+      // Load courseSpec if it exists — always inject linked course id
       if (spec?.courseSpec) {
-        setCourseSpec(spec.courseSpec);
+        const resolvedCourseId = linkedCourseId || spec.courseSpec.id;
+        setCourseSpec({ ...spec.courseSpec, ...(resolvedCourseId ? { id: resolvedCourseId } : {}) });
       }
       if (spec?.messages && Array.isArray(spec.messages)) {
         setMessages(spec.messages.map((m, i) => ({
