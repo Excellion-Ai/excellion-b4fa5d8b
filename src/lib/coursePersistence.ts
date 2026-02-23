@@ -99,6 +99,16 @@ export async function saveCourseToDatabase(params: SaveCourseParams): Promise<{ 
     coursePayload.builder_project_id = params.builderProjectId;
   }
 
+  console.log('🔵 SAVING TO DATABASE:', { 
+    table: 'courses', 
+    action: 'insert', 
+    userId: params.userId,
+    title: params.title,
+    subdomain,
+    builderProjectId: params.builderProjectId,
+    payload: coursePayload 
+  });
+
   // Always INSERT — never upsert for new courses. Retry on subdomain conflicts.
   let attempts = 0;
   while (attempts < 3) {
@@ -110,8 +120,11 @@ export async function saveCourseToDatabase(params: SaveCourseParams): Promise<{ 
       .select('id')
       .maybeSingle();
 
+    console.log('🔵 DATABASE INSERT RESULT:', { data, error, attempt: attempts + 1 });
+
     if (!error && data) {
       console.log('✅ Course saved to database:', data.id, params.title);
+      toast.success('Course saved!');
       return data;
     }
 
@@ -142,6 +155,7 @@ export async function saveCourseToDatabase(params: SaveCourseParams): Promise<{ 
  * Shows toast on failure so the user knows.
  */
 export async function updateCourseInDatabase(courseId: string, updates: Record<string, unknown>): Promise<boolean> {
+  console.log('🔵 UPDATING COURSE IN DATABASE:', { courseId, updates });
   const { error } = await supabase
     .from('courses')
     .update({
@@ -149,6 +163,8 @@ export async function updateCourseInDatabase(courseId: string, updates: Record<s
       updated_at: new Date().toISOString(),
     } as any)
     .eq('id', courseId);
+
+  console.log('🔵 DATABASE UPDATE RESULT:', { courseId, error });
 
   if (error) {
     console.error('❌ Failed to update course:', error);

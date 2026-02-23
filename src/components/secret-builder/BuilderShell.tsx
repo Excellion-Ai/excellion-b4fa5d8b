@@ -1059,7 +1059,9 @@ export function BuilderShell() {
         await saveProject(null, allMessages, ideaToUse, null, courseSpec);
 
         // Also save to courses table so it appears in "Your Courses"
+        console.log('🟡 ABOUT TO SAVE COURSE TO DB. projectId:', projectId);
         const { data: { user: currentUser } } = await supabase.auth.getUser();
+        console.log('🟡 Current user for course save:', currentUser?.id || 'NO USER');
         if (currentUser) {
           const courseRow = await saveCourseToDatabase({
             userId: currentUser.id,
@@ -1077,11 +1079,18 @@ export function BuilderShell() {
             learningOutcomes: curriculum?.learningOutcomes,
           });
 
+          console.log('🟡 saveCourseToDatabase RESULT:', courseRow);
+
           if (courseRow?.id) {
             setCourseId(courseRow.id);
-            // Update courseSpec with the persisted ID
             setCourseSpecInternal(prev => prev ? { ...prev, id: courseRow.id } : prev);
+          } else {
+            console.error('🔴 saveCourseToDatabase returned null — course NOT saved!');
+            toast.error('Course was generated but failed to save to database. It will retry on next auto-save.');
           }
+        } else {
+          console.error('🔴 No authenticated user — cannot save course to database!');
+          toast.error('You must be logged in to save courses.');
         }
       }
 
