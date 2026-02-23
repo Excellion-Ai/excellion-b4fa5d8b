@@ -155,6 +155,7 @@ export async function saveCourseToDatabase(params: SaveCourseParams): Promise<{ 
  * Shows toast on failure so the user knows.
  */
 export async function updateCourseInDatabase(courseId: string, updates: Record<string, unknown>): Promise<boolean> {
+  console.log('🔵 UPDATING COURSE IN DATABASE:', { courseId, updates });
   const { error } = await supabase
     .from('courses')
     .update({
@@ -162,6 +163,8 @@ export async function updateCourseInDatabase(courseId: string, updates: Record<s
       updated_at: new Date().toISOString(),
     } as any)
     .eq('id', courseId);
+
+  console.log('🔵 DATABASE UPDATE RESULT:', { courseId, error });
 
   if (error) {
     console.error('❌ Failed to update course:', error);
