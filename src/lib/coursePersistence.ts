@@ -99,6 +99,16 @@ export async function saveCourseToDatabase(params: SaveCourseParams): Promise<{ 
     coursePayload.builder_project_id = params.builderProjectId;
   }
 
+  console.log('🔵 SAVING TO DATABASE:', { 
+    table: 'courses', 
+    action: 'insert', 
+    userId: params.userId,
+    title: params.title,
+    subdomain,
+    builderProjectId: params.builderProjectId,
+    payload: coursePayload 
+  });
+
   // Always INSERT — never upsert for new courses. Retry on subdomain conflicts.
   let attempts = 0;
   while (attempts < 3) {
@@ -110,8 +120,11 @@ export async function saveCourseToDatabase(params: SaveCourseParams): Promise<{ 
       .select('id')
       .maybeSingle();
 
+    console.log('🔵 DATABASE INSERT RESULT:', { data, error, attempt: attempts + 1 });
+
     if (!error && data) {
       console.log('✅ Course saved to database:', data.id, params.title);
+      toast.success('Course saved!');
       return data;
     }
 
