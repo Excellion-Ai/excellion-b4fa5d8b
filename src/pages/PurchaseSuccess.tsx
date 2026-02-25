@@ -204,7 +204,7 @@ export default function PurchaseSuccess() {
             <Button 
               size="lg" 
               className="w-full bg-primary hover:bg-primary/90"
-              onClick={() => navigate(`/learn/${purchaseData.course?.slug || courseSlug}`)}
+              onClick={() => navigate(`/course/${purchaseData.course?.slug || courseSlug}`)}
             >
               Start Learning
               <ArrowRight className="h-4 w-4 ml-2" />

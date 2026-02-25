@@ -70,7 +70,7 @@ export default function QuickstartCoursePage() {
     }
 
     if (isEnrolled) {
-      navigate('/learn/quickstart');
+      navigate('/course/quickstart');
       return;
     }
 
@@ -86,7 +86,7 @@ export default function QuickstartCoursePage() {
     if (error) {
       if (error.code === '23505') {
         // Already enrolled
-        navigate('/learn/quickstart');
+        navigate('/course/quickstart');
         return;
       }
       toast.error('Failed to enroll. Please try again.');
@@ -94,7 +94,7 @@ export default function QuickstartCoursePage() {
     }
 
     toast.success('Enrolled! Let\'s get started 🚀');
-    navigate('/learn/quickstart');
+    navigate('/course/quickstart');
   };
 
   if (isLoading) {
