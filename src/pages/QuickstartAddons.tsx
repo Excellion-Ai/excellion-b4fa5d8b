@@ -25,7 +25,7 @@ export default function QuickstartAddons() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/learn/quickstart')} className="mb-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/course/quickstart')} className="mb-6">
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to Course
         </Button>

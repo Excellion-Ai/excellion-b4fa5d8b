@@ -248,7 +248,7 @@ export default function StudentDashboard() {
                       </div>
                       <Button 
                         className="w-full sm:w-auto gap-2"
-                        onClick={() => navigate(`/learn/${mostRecentCourse.course.subdomain || mostRecentCourse.course.id}`)}
+                        onClick={() => navigate(`/course/${mostRecentCourse.course.subdomain || mostRecentCourse.course.id}`)}
                       >
                         Continue <ArrowRight className="h-4 w-4" />
                       </Button>
@@ -305,7 +305,7 @@ export default function StudentDashboard() {
                               )}
                               <Button 
                                 className="w-full"
-                                onClick={() => navigate(`/learn/${courseSlug}`)}
+                                onClick={() => navigate(`/course/${courseSlug}`)}
                               >
                                 Continue
                               </Button>
@@ -370,7 +370,7 @@ export default function StudentDashboard() {
                                 <Button 
                                   variant="secondary"
                                   className="w-full"
-                                  onClick={() => navigate(`/learn/${courseSlug}`)}
+                                  onClick={() => navigate(`/course/${courseSlug}`)}
                                 >
                                   Review Course
                                 </Button>

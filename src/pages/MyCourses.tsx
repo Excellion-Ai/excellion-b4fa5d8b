@@ -183,7 +183,7 @@ export default function MyCourses() {
                       <div className="flex flex-col gap-2">
                         <Button 
                           className="w-full"
-                          onClick={() => navigate(`/learn/${courseSlug}`)}
+                          onClick={() => navigate(`/course/${courseSlug}`)}
                         >
                           {isComplete ? 'Review Course' : 'Continue Learning'}
                         </Button>
