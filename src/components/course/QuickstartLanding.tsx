@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -88,6 +89,7 @@ function getModuleMinutes(mod: CourseModule): number {
 }
 
 export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }: QuickstartLandingProps) {
+  const navigate = useNavigate();
   const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
   const displayTime = '1 hour';
 
@@ -95,7 +97,9 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
     document.getElementById('curriculum')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const ctaLabel = isEnrolled ? 'Continue Learning' : 'Start Quickstart';
+  const goToStudio = () => {
+    navigate('/secret-builder-hub');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,8 +136,8 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
 
           {/* CTA */}
           <div className="flex flex-col items-center gap-3 pt-2">
-            <Button size="lg" className="text-base px-8 py-6" onClick={onEnroll} disabled={isEnrolling}>
-              {isEnrolling ? 'Enrolling…' : ctaLabel}
+            <Button size="lg" className="text-base px-8 py-6" onClick={goToStudio}>
+              Generate Your Draft
             </Button>
             <button
               onClick={scrollToCurriculum}
@@ -306,8 +310,8 @@ export function QuickstartLanding({ course, onEnroll, isEnrolled, isEnrolling }:
             Most coaches generate their full draft in under 10 minutes and publish the same day.
           </p>
           <div className="flex flex-col items-center gap-3">
-            <Button size="lg" className="text-base px-8 py-6" onClick={onEnroll} disabled={isEnrolling}>
-              {isEnrolling ? 'Enrolling…' : ctaLabel}
+            <Button size="lg" className="text-base px-8 py-6" onClick={goToStudio}>
+              Generate Your Draft
             </Button>
             <button
               onClick={scrollToCurriculum}
