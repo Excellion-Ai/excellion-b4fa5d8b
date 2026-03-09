@@ -1,86 +1,16 @@
 # Course Builder Rebuild Prompts for Lovable
 
-These prompts rebuild the Excellion course builder from scratch — data model first, then persistence, types, templates, builder UI, and finally the hub page. Paste them one at a time in order.
+These prompts rebuild the Excellion course builder from scratch — types first, then persistence, templates, builder UI, and finally the hub page. Paste them one at a time in order.
+
+**IMPORTANT:** My own Supabase project is already connected. Lovable must NOT create its own Supabase project, tables, storage buckets, or RLS policies. All tables and buckets already exist in my external Supabase. Use the existing supabase client import from `@/integrations/supabase/client` for all queries.
 
 ---
 
-## Prompt 1 — Supabase Schema (Data Model)
+## Prompt 1 — TypeScript Types & Utility Functions
 
 ```
-Create the Supabase database schema for a course builder platform. Create these tables:
+IMPORTANT: I have my own Supabase project already connected to this Lovable app. Do NOT create any Supabase tables, RLS policies, storage buckets, or database migrations. All tables already exist in my external Supabase. Use the existing supabase client from '@/integrations/supabase/client' for any database operations.
 
-1. **courses** table:
-   - id: UUID primary key (gen_random_uuid())
-   - user_id: UUID references auth.users(id) ON DELETE CASCADE, NOT NULL
-   - title: TEXT NOT NULL
-   - description: TEXT
-   - subdomain: TEXT UNIQUE (human-readable slug for public URL)
-   - difficulty: TEXT DEFAULT 'beginner' (beginner | intermediate | advanced)
-   - duration_weeks: INTEGER DEFAULT 6
-   - status: TEXT DEFAULT 'draft' (draft | published)
-   - published_url: TEXT
-   - published_at: TIMESTAMPTZ
-   - modules: JSONB DEFAULT '[]'::jsonb (array of module objects with lessons)
-   - thumbnail_url: TEXT
-   - price_cents: INTEGER DEFAULT 0
-   - currency: TEXT DEFAULT 'USD'
-   - total_students: INTEGER DEFAULT 0
-   - offer_type: TEXT DEFAULT 'standard' (standard | challenge | webinar | lead_magnet | coach_portfolio)
-   - builder_project_id: UUID REFERENCES builder_projects(id)
-   - design_config: JSONB DEFAULT '{}'::jsonb (colors, fonts, spacing, borderRadius)
-   - layout_template: TEXT DEFAULT 'suspended'
-   - section_order: JSONB (array of section names for landing page)
-   - page_sections: JSONB (landing page content configuration)
-   - deleted_at: TIMESTAMPTZ DEFAULT NULL (soft-delete timestamp)
-   - created_at: TIMESTAMPTZ DEFAULT now()
-   - updated_at: TIMESTAMPTZ DEFAULT now()
-
-2. **enrollments** table:
-   - id: UUID primary key
-   - course_id: UUID REFERENCES courses(id) ON DELETE CASCADE, NOT NULL
-   - user_id: UUID REFERENCES auth.users(id) ON DELETE CASCADE, NOT NULL
-   - enrolled_at: TIMESTAMPTZ DEFAULT now()
-   - completed_at: TIMESTAMPTZ
-   - progress_percent: INTEGER DEFAULT 0
-   - UNIQUE(course_id, user_id)
-
-3. **lesson_progress** table:
-   - id: UUID primary key
-   - enrollment_id: UUID REFERENCES enrollments(id) ON DELETE CASCADE, NOT NULL
-   - lesson_id: TEXT NOT NULL
-   - module_id: TEXT NOT NULL
-   - completed: BOOLEAN DEFAULT false
-   - completed_at: TIMESTAMPTZ
-   - time_spent_seconds: INTEGER DEFAULT 0
-   - created_at: TIMESTAMPTZ DEFAULT now()
-   - UNIQUE(enrollment_id, lesson_id)
-
-4. **custom_domains** table:
-   - id: UUID primary key
-   - domain: TEXT NOT NULL
-   - status: TEXT DEFAULT 'pending'
-   - verification_token: TEXT
-   - is_verified: BOOLEAN DEFAULT false
-   - ssl_provisioned: BOOLEAN DEFAULT false
-   - project_id: UUID (nullable, for builder projects)
-   - course_id: UUID REFERENCES courses(id)
-   - user_id: UUID REFERENCES auth.users(id) ON DELETE CASCADE
-   - created_at: TIMESTAMPTZ DEFAULT now()
-
-Add RLS policies:
-- Users can SELECT, INSERT, UPDATE, DELETE their own courses (WHERE user_id = auth.uid())
-- Users can SELECT, INSERT their own enrollments
-- Users can SELECT, INSERT, UPDATE their own lesson_progress (via enrollment ownership)
-- Course owners can view enrollments for their courses
-
-Create a Supabase storage bucket called "course-thumbnails" for course thumbnail and social images.
-```
-
----
-
-## Prompt 2 — TypeScript Types & Utility Functions
-
-```
 Create the file src/types/course-pages.ts with all TypeScript types for the course builder:
 
 1. **LandingSectionType** — union of: 'hero' | 'outcomes' | 'curriculum' | 'instructor' | 'pricing' | 'faq' | 'who_is_for' | 'course_includes' | 'testimonials' | 'guarantee' | 'bonuses' | 'community' | 'certificate'
@@ -162,9 +92,11 @@ Now add these exported utility functions:
 
 ---
 
-## Prompt 3 — Course Persistence Layer
+## Prompt 2 — Course Persistence Layer
 
 ```
+IMPORTANT: I have my own Supabase project already connected. Do NOT create any Supabase tables, RLS policies, storage buckets, or database migrations. All tables (courses, enrollments, lesson_progress, custom_domains) already exist in my external Supabase. Use the existing supabase client from '@/integrations/supabase/client'.
+
 Create src/lib/coursePersistence.ts with three functions for Supabase course CRUD:
 
 1. **saveCourseToDatabase(params: SaveCourseParams): Promise<{ id: string } | null>**
@@ -207,9 +139,11 @@ Import supabase client from '@/integrations/supabase/client'.
 
 ---
 
-## Prompt 4 — Course Template: Standard
+## Prompt 3 — Course Template: Standard
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create src/components/course-templates/StandardCourseTemplate.tsx — the default full-curriculum course template.
 
 Props:
@@ -248,9 +182,11 @@ Use lucide-react icons: Clock, BookOpen, GraduationCap, Check, Users, ChevronRig
 
 ---
 
-## Prompt 5 — Course Templates: Challenge, Webinar, Lead Magnet, Coach Portfolio
+## Prompt 4 — Course Templates: Challenge, Webinar, Lead Magnet, Coach Portfolio
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create four additional course template components in src/components/course-templates/:
 
 ### A. ChallengeTemplate.tsx
@@ -298,9 +234,11 @@ All templates use shadcn/ui Card, Badge, Button, Progress. Use lucide-react icon
 
 ---
 
-## Prompt 6 — CourseRenderer (Template Router)
+## Prompt 5 — CourseRenderer (Template Router)
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create src/components/course-templates/CourseRenderer.tsx — a router component that renders the correct template based on offer_type.
 
 Define:
@@ -327,9 +265,11 @@ Pass all props through to the selected template. Export both CourseRenderer and 
 
 ---
 
-## Prompt 7 — EditableText Component
+## Prompt 6 — EditableText Component
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create src/components/secret-builder/EditableText.tsx — a click-to-edit inline text component.
 
 Props:
@@ -350,9 +290,11 @@ Behavior:
 
 ---
 
-## Prompt 8 — PricingTab Component
+## Prompt 7 — PricingTab Component
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets. Use the existing supabase client from '@/integrations/supabase/client' to query my existing 'courses' table.
+
 Create src/components/secret-builder/PricingTab.tsx for course pricing configuration.
 
 Props:
@@ -375,14 +317,16 @@ UI Layout:
 4. Save button that calls supabase courses.update({ price_cents }) and then onUpdate callback
 5. Toast notification on save success/failure
 
-Use shadcn/ui Card, Input, Label, Switch, Button. Import supabase client.
+Use shadcn/ui Card, Input, Label, Switch, Button. Import supabase client from '@/integrations/supabase/client'.
 ```
 
 ---
 
-## Prompt 9 — RefineChat Component
+## Prompt 8 — RefineChat Component
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create src/components/secret-builder/RefineChat.tsx — a right-side Sheet panel for AI-powered course refinement.
 
 Props:
@@ -414,9 +358,11 @@ UI Layout:
 
 ---
 
-## Prompt 10 — CourseSettingsDialog
+## Prompt 9 — CourseSettingsDialog
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets. Use the existing supabase client from '@/integrations/supabase/client'. The 'course-thumbnails' storage bucket already exists in my Supabase — just use it, do not create it.
+
 Create src/components/secret-builder/CourseSettingsDialog.tsx — a dialog for course metadata and settings.
 
 Props:
@@ -450,9 +396,11 @@ Footer: Cancel and Save buttons. Save calls onUpdateSettings with localSettings.
 
 ---
 
-## Prompt 11 — CoursePublishDialog & CoursePublishSettingsDialog
+## Prompt 10 — CoursePublishDialog & CoursePublishSettingsDialog
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, storage buckets, or edge functions. All tables (courses, custom_domains) and the 'course-thumbnails' storage bucket already exist in my external Supabase. Use the existing supabase client from '@/integrations/supabase/client'.
+
 Create two publish-related dialogs:
 
 ### A. CoursePublishDialog.tsx
@@ -477,7 +425,7 @@ Props: open, onOpenChange, courseId (string|null), courseTitle, courseSubdomain,
 
 State: activeTab, settings (PublishSettings with seoTitle, seoDescription, status, socialImageUrl), isLoading, isSaving, copied, isUploadingImage, domainRecord, newDomainInput, domain operation booleans
 
-Supabase operations:
+Supabase operations (using existing tables — do NOT create them):
 - Load settings: SELECT from courses (status, seo_title, seo_description, custom_domain, social_image_url, published_url, subdomain)
 - Save settings: UPDATE courses (status, seo_title, seo_description, social_image_url, published_at)
 - Upload social image: storage.from('course-thumbnails').upload(), then getPublicUrl()
@@ -493,9 +441,11 @@ Tabs:
 
 ---
 
-## Prompt 12 — CourseCardPreview Component
+## Prompt 11 — CourseCardPreview Component
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create src/components/secret-builder/CourseCardPreview.tsx — a compact card showing a course summary.
 
 Props:
@@ -521,9 +471,11 @@ UI:
 
 ---
 
-## Prompt 13 — CourseStudentView Component
+## Prompt 12 — CourseStudentView Component
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create src/components/secret-builder/CourseStudentView.tsx — a mock student dashboard with three navigation views.
 
 Props:
@@ -567,9 +519,11 @@ Three-view navigation system (determined by which IDs are selected):
 
 ---
 
-## Prompt 14 — CourseBuilderPanel (Input & Generation)
+## Prompt 13 — CourseBuilderPanel (Input & Generation)
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create src/components/secret-builder/CourseBuilderPanel.tsx — the left panel where users describe and generate courses.
 
 Props:
@@ -618,9 +572,11 @@ UI Layout:
 
 ---
 
-## Prompt 15 — CoursePreviewTabs (Main Preview Interface)
+## Prompt 14 — CoursePreviewTabs (Main Preview Interface)
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets. Use the existing supabase client from '@/integrations/supabase/client' to update the existing 'courses' table.
+
 Create src/components/secret-builder/CoursePreviewTabs.tsx — the central multi-tab preview and editing interface. This is the largest component.
 
 Props:
@@ -685,9 +641,11 @@ When not editing: Render sections in order from landingSections array:
 
 ---
 
-## Prompt 16 — BuilderShell (Main Container)
+## Prompt 15 — BuilderShell (Main Container)
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, storage buckets, or edge functions. All tables (courses, builder_projects) already exist in my external Supabase. Use the existing supabase client from '@/integrations/supabase/client'.
+
 Create src/components/secret-builder/BuilderShell.tsx — the main layout container that orchestrates the entire course builder.
 
 This is the top-level component rendered by the SecretBuilder page. It manages all state and coordinates child components.
@@ -752,9 +710,11 @@ Render these dialogs at the bottom of the component:
 
 ---
 
-## Prompt 17 — SecretBuilderHub (Course Listing & Creation Page)
+## Prompt 16 — SecretBuilderHub (Course Listing & Creation Page)
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, storage buckets, or edge functions. All tables (courses, builder_projects) already exist in my external Supabase. Use the existing supabase client from '@/integrations/supabase/client'.
+
 Create src/pages/SecretBuilderHub.tsx — the landing page for the course builder with course listing and creation.
 
 **State:**
@@ -767,7 +727,7 @@ Create src/pages/SecretBuilderHub.tsx — the landing page for the course builde
 - selectedTemplate: string
 - isDarkMode: boolean (persisted to localStorage)
 
-**Supabase Queries on mount (useEffect):**
+**Supabase Queries on mount (useEffect) — querying existing tables, NOT creating them:**
 1. Fetch builder projects: SELECT id, name, idea, created_at, updated_at, spec, published_url, published_at FROM builder_projects WHERE user_id = currentUser ORDER BY updated_at DESC LIMIT 20
 2. Fetch active courses: SELECT * FROM courses WHERE user_id = currentUser AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT 50
 3. Fetch trashed courses: SELECT * FROM courses WHERE user_id = currentUser AND deleted_at IS NOT NULL ORDER BY deleted_at DESC LIMIT 50
@@ -809,9 +769,11 @@ Create src/pages/SecretBuilderHub.tsx — the landing page for the course builde
 
 ---
 
-## Prompt 18 — SecretBuilder Page & Routes
+## Prompt 17 — SecretBuilder Page & Routes
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create src/pages/SecretBuilder.tsx — the page component that wraps BuilderShell.
 
 This page:
@@ -832,9 +794,11 @@ All routes should require authentication (redirect to login if not signed in). W
 
 ---
 
-## Prompt 19 — CourseLandingPreview (Public Course Page)
+## Prompt 18 — CourseLandingPreview (Public Course Page)
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets. Use the existing supabase client from '@/integrations/supabase/client' to query the existing 'courses' table.
+
 Create src/components/secret-builder/CourseLandingPreview.tsx — a read-only landing page preview used for the public /course/:subdomain route.
 
 Props:
@@ -874,9 +838,11 @@ Also create a route /course/:subdomain that:
 
 ---
 
-## Prompt 20 — Builder Components (Legacy/Alternative)
+## Prompt 19 — Builder Components (Legacy/Alternative)
 
 ```
+IMPORTANT: I have my own Supabase already connected. Do NOT create any Supabase tables, migrations, or storage buckets.
+
 Create three components in src/components/builder/ for the legacy/alternative builder interface:
 
 ### A. BuilderChat.tsx
@@ -923,8 +889,9 @@ UI:
 ## Notes
 
 **Key architectural patterns used throughout:**
-- All Supabase queries use the client from `@/integrations/supabase/client`
-- RLS policies enforce user-scoped access — no manual user_id filtering needed for security, but queries still filter by user_id for correctness
+- All Supabase queries use the client from `@/integrations/supabase/client` — this connects to YOUR external Supabase project, NOT Lovable's built-in Supabase
+- Do NOT let Lovable create any database tables, RLS policies, storage buckets, or edge functions — all of these already exist in your external Supabase
+- RLS policies are already configured in your external Supabase — no need to recreate them
 - Course content (modules, lessons, quizzes) is stored as JSONB in the courses.modules column, not in separate tables
 - Design customization (colors, fonts) is stored as JSONB in courses.design_config
 - Landing page section order is stored in courses.section_order and courses.page_sections
